@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>赛博胡同 · Phase-1 像素预览</title>
+  <style>
+    :root {
+      --bg: #0b0e1a;
+      --panel: #1a2744;
+      --text: #f5f0e6;
+      --muted: #a8b0c0;
+      --neon: #3dfff0;
+      --pink: #ff6b9d;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "SF Mono", "JetBrains Mono", ui-monospace, Menlo, monospace;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
+    header {
+      padding: 1.5rem 2rem;
+      border-bottom: 1px solid #2e3a5c;
+      background: linear-gradient(180deg, #1a2744 0%, #0b0e1a 100%);
+    }
+    header h1 { margin: 0 0 .25rem; font-size: 1.4rem; color: var(--neon); }
+    header p { margin: 0; color: var(--muted); font-size: .9rem; }
+    main { padding: 1.5rem 2rem 3rem; max-width: 1100px; margin: 0 auto; }
+    section { margin-bottom: 2.5rem; }
+    h2 {
+      font-size: 1rem;
+      color: var(--pink);
+      border-left: 3px solid var(--pink);
+      padding-left: .6rem;
+      margin: 0 0 1rem;
+    }
+    .grid {
+      display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-end;
+    }
+    .card {
+      background: var(--panel);
+      border: 1px solid #2e3a5c;
+      border-radius: 6px;
+      padding: .75rem;
+      text-align: center;
+    }
+    .card figcaption {
+      margin-top: .5rem;
+      font-size: .7rem;
+      color: var(--muted);
+    }
+    img.pixel {
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+      background:
+        linear-gradient(45deg, #12162a 25%, transparent 25%),
+        linear-gradient(-45deg, #12162a 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, #12162a 75%),
+        linear-gradient(-45deg, transparent 75%, #12162a 75%);
+      background-size: 16px 16px;
+      background-position: 0 0, 0 8px, 8px -8px, -8px 0;
+      background-color: #0f1324;
+      border: 1px solid #2e3a5c;
+    }
+    .x3 { width: calc(32px * 3); height: auto; }
+    .x2 { width: calc(var(--w, 32) * 2px); height: auto; }
+    .room { width: 320px; max-width: 100%; height: auto; }
+    .strip { height: 64px; width: auto; max-width: 100%; }
+    .dialog { width: 512px; max-width: 100%; height: auto; }
+    footer {
+      padding: 1rem 2rem 2rem;
+      color: var(--muted);
+      font-size: .75rem;
+      text-align: center;
+    }
+    a { color: var(--neon); }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>赛博胡同 Cyber Hutong</h1>
+    <p>Phase-1 像素资产预览 · 32×32 · <code>image-rendering: pixelated</code> · 无 Agent/鉴权/DB</p>
+  </header>
+  <main>
+    <section>
+      <h2>角色 idle（×3）</h2>
+      <div class="grid" id="chars"></div>
+    </section>
+    <section>
+      <h2>地砖条带 tileset_32</h2>
+      <div class="card">
+        <img class="pixel strip" src="assets/tiles/tileset_32.png" alt="tileset" style="height:96px" />
+        <figcaption>floor · brick · neon · roof · grass · door · blind</figcaption>
+      </div>
+    </section>
+    <section>
+      <h2>道具 props</h2>
+      <div class="grid" id="props"></div>
+    </section>
+    <section>
+      <h2>房间 mock</h2>
+      <div class="grid" id="rooms"></div>
+    </section>
+    <section>
+      <h2>命名场景 · 夏威夷 Hawaii</h2>
+      <p style="color:var(--muted);font-size:.8rem;margin-top:-.5rem">靠窗长桌 · 三座位纵向排列 · 卷帘 / 笔记本 / 保温杯 / 绿植 / 文件夹</p>
+      <div class="grid" id="hawaii"></div>
+    </section>
+    <section>
+      <h2>对话框 UI</h2>
+      <div class="card">
+        <img class="pixel dialog" src="assets/ui/dialog_frame.png" alt="dialog" />
+        <figcaption>dialog_frame.png · 256×64</figcaption>
+      </div>
+    </section>
+  </main>
+  <footer>设计简报 <a href="../design/art-brief.md">design/art-brief.md</a> · 场景 <a href="../design/scenes/hawaii.md">hawaii.md</a></footer>
+  <script>
+    const pixel = (src, caption, cls = "x3") => {
+      const f = document.createElement("figure");
+      f.className = "card";
+      f.innerHTML = `<img class="pixel ${cls}" src="${src}" alt="${caption}" /><figcaption>${caption}</figcaption>`;
+      return f;
+    };
+    for (let i = 0; i < 4; i++) {
+      document.getElementById("chars").appendChild(
+        pixel(`assets/characters/hero_idle_${i}.png`, `hero_idle_${i}`)
+      );
+    }
+    const props = [
+      "desk","chair","chair_jacket","neon_sign","lantern","plant",
+      "server_rack","hologram","laptop","thermos","folders","long_desk"
+    ];
+    props.forEach(n => document.getElementById("props").appendChild(
+      pixel(`assets/props/${n}.png`, n + ".png", "x3")
+    ));
+    [
+      ["room_office.png", "工位"],
+      ["room_meeting.png", "会议室"],
+      ["room_hutong_gate.png", "胡同口"],
+    ].forEach(([f, label]) => {
+      document.getElementById("rooms").appendChild(
+        pixel(`assets/rooms/${f}`, label + " · " + f, "room")
+      );
+    });
+    document.getElementById("hawaii").appendChild(
+      pixel("assets/scenes/hawaii/scene_hawaii.png", "scene_hawaii.png · 三座位纵向", "room")
+    );
+    ["chair","chair_jacket","laptop","thermos","plant","folders","blind_tile","long_desk"].forEach(n => {
+      document.getElementById("hawaii").appendChild(
+        pixel(`assets/scenes/hawaii/${n}.png`, n, "x3")
+      );
+    });
+  </script>
+</body>
+</html>
