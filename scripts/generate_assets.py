@@ -40,6 +40,16 @@ P = {
     "jacket": (220, 215, 200, 255),
     "black": (20, 22, 28, 255),
     "trans": (0, 0, 0, 0),
+    # popmart pastels (still limited)
+    "box_pink": (255, 170, 190, 255),
+    "box_mint": (120, 220, 200, 255),
+    "box_yellow": (255, 220, 120, 255),
+    "box_lilac": (190, 170, 255, 255),
+    "tile_white": (220, 224, 232, 255),
+    "tile_grout": (160, 168, 180, 255),
+    "porcelain": (230, 235, 242, 255),
+    "sink_steel": (140, 150, 168, 255),
+    "stall_beige": (180, 170, 150, 255),
 }
 
 
@@ -635,6 +645,328 @@ def gen_hawaii():
     save(scene, out / "scene_hawaii.png")
 
 
+
+# ---------- Pop Mart (泡泡玛特店) ----------
+def prop_blind_box_closed(color_key: str = "box_pink") -> Image.Image:
+    """Unopened blind box — cube with question mark vibes."""
+    img = new(16, 16)
+    d = ImageDraw.Draw(img)
+    c = P[color_key]
+    # top face (lighter)
+    rect(d, [3, 2, 12, 5], P["white"])
+    rect(d, [4, 3, 11, 4], c)
+    # front
+    rect(d, [3, 5, 12, 14], c)
+    rect(d, [4, 6, 11, 13], P["white"])
+    # ? mark
+    rect(d, [6, 7, 9, 8], P["purple"])
+    rect(d, [8, 8, 9, 10], P["purple"])
+    d.point((7, 11), fill=P["purple"])
+    # side edge 2.5D
+    rect(d, [12, 5, 13, 14], P["dark"])
+    return img
+
+
+def prop_blind_box_open() -> Image.Image:
+    """Opened box + figure silhouette peeking out."""
+    img = new(16, 20)
+    d = ImageDraw.Draw(img)
+    # open box base
+    rect(d, [2, 10, 13, 18], P["box_yellow"])
+    rect(d, [3, 11, 12, 17], P["white"])
+    # flaps up
+    rect(d, [1, 6, 4, 11], P["box_yellow"])
+    rect(d, [11, 6, 14, 11], P["box_yellow"])
+    rect(d, [4, 5, 11, 8], P["box_mint"])
+    # figure silhouette
+    rect(d, [6, 2, 9, 12], P["black"])
+    rect(d, [5, 3, 10, 6], P["black"])  # head
+    d.point((6, 4), fill=P["holo"])
+    d.point((9, 4), fill=P["neon_p"])
+    # arms
+    rect(d, [4, 7, 5, 9], P["black"])
+    rect(d, [10, 7, 11, 9], P["black"])
+    return img
+
+
+def prop_figure_silhouette() -> Image.Image:
+    """Standalone blind-box figure prop (chibi silhouette)."""
+    img = new(16, 24)
+    d = ImageDraw.Draw(img)
+    # shadow
+    for dx in range(-4, 5):
+        for dy in range(-1, 2):
+            if abs(dx) / 4 + abs(dy) / 1.5 < 1:
+                d.point((8 + dx, 22 + dy), fill=P["shadow"])
+    # body
+    rect(d, [5, 10, 10, 18], P["box_lilac"])
+    rect(d, [6, 11, 9, 17], P["purple"])
+    # head
+    rect(d, [4, 3, 11, 10], P["skin"])
+    rect(d, [4, 2, 11, 5], P["hair"])
+    d.point((6, 6), fill=P["holo"])
+    d.point((9, 6), fill=P["holo"])
+    # blush
+    d.point((5, 8), fill=P["neon_p"])
+    d.point((10, 8), fill=P["neon_p"])
+    # legs
+    rect(d, [5, 18, 7, 21], P["dark"])
+    rect(d, [8, 18, 10, 21], P["dark"])
+    return img
+
+
+def prop_shelf_boxes() -> Image.Image:
+    """Wall shelf stacked with colorful blind boxes."""
+    img = new(48, 40)
+    d = ImageDraw.Draw(img)
+    # shelf boards
+    for sy in (8, 22, 36):
+        rect(d, [0, sy, 47, sy + 2], P["wood_d"])
+        rect(d, [0, sy, 47, sy], P["wood"])
+    # backboard
+    rect(d, [0, 0, 47, 7], P["brick"])
+    colors = ["box_pink", "box_mint", "box_yellow", "box_lilac", "neon_p", "holo"]
+    for row, y in enumerate([0, 12, 26]):
+        for col, x in enumerate([2, 14, 26, 38]):
+            c = P[colors[(row * 4 + col) % len(colors)]]
+            rect(d, [x, y + 2, x + 9, y + 10], c)
+            rect(d, [x + 1, y + 3, x + 8, y + 4], P["white"])
+            d.point((x + 4, y + 6), fill=P["purple"])
+    return img
+
+
+def prop_display_counter() -> Image.Image:
+    """Shop display counter with glass top glow."""
+    img = new(64, 32)
+    d = ImageDraw.Draw(img)
+    # counter body
+    rect(d, [2, 10, 61, 30], P["wood_d"])
+    rect(d, [4, 12, 59, 28], P["wood"])
+    # glass top
+    rect(d, [4, 4, 59, 12], P["floor2"])
+    rect(d, [6, 5, 57, 10], P["screen"])
+    # neon trim
+    rect(d, [2, 10, 61, 11], P["neon_p"])
+    # drawers
+    rect(d, [10, 16, 28, 24], P["wood_d"])
+    rect(d, [36, 16, 54, 24], P["wood_d"])
+    d.point((19, 20), fill=P["metal"])
+    d.point((45, 20), fill=P["metal"])
+    return img
+
+
+def gen_popmart():
+    out = ASSETS / "scenes" / "popmart"
+    save(prop_blind_box_closed("box_pink"), out / "box_closed.png")
+    save(prop_blind_box_open(), out / "box_opened.png")
+    save(prop_figure_silhouette(), out / "figure.png")
+    save(prop_shelf_boxes(), out / "shelf_boxes.png")
+    save(prop_display_counter(), out / "counter.png")
+    # also drop copies into shared props
+    save(prop_blind_box_closed("box_mint"), ASSETS / "props" / "blind_box.png")
+    save(prop_blind_box_open(), ASSETS / "props" / "blind_box_open.png")
+    save(prop_figure_silhouette(), ASSETS / "props" / "popmart_figure.png")
+    save(prop_shelf_boxes(), ASSETS / "props" / "shelf_boxes.png")
+    save(prop_display_counter(), ASSETS / "props" / "display_counter.png")
+
+    W, H = 320, 240
+    scene = new(W, H, P["bg"])
+    fill_floor(scene, tile_neon_floor())
+    brick = tile_brick_wall()
+    for x in range(0, W, 32):
+        blit(scene, brick, x, 0)
+        blit(scene, brick, x, 16)
+
+    d = ImageDraw.Draw(scene)
+    # pink/cyan shop strip light
+    rect(d, [0, 48, 319, 50], P["neon_p"])
+    rect(d, [0, 51, 319, 52], P["holo"])
+
+    # back wall shelves of blind boxes
+    shelf = prop_shelf_boxes()
+    blit(scene, shelf, 16, 40)
+    blit(scene, shelf, 80, 40)
+    blit(scene, shelf, 192, 40)
+    blit(scene, shelf, 256, 40)
+
+    # display counter center-front
+    counter = prop_display_counter()
+    blit(scene, counter, 128, 130)
+
+    # unopened boxes on counter + floor stack
+    for i, ck in enumerate(["box_pink", "box_mint", "box_yellow", "box_lilac"]):
+        blit(scene, prop_blind_box_closed(ck), 136 + i * 14, 122)
+    blit(scene, prop_blind_box_closed("neon_p"), 40, 160)
+    blit(scene, prop_blind_box_closed("box_mint"), 52, 168)
+    blit(scene, prop_blind_box_closed("box_yellow"), 44, 176)
+
+    # opened box + figure (拆盲盒 moment)
+    blit(scene, prop_blind_box_open(), 200, 118)
+    blit(scene, prop_figure_silhouette(), 230, 150)
+
+    # neon store sign
+    blit(scene, prop_neon_sign(), 136, 54)
+    # plant corner
+    blit(scene, prop_plant(), 292, 100)
+    blit(scene, prop_plant(), 8, 100)
+    # hero browsing
+    blit(scene, draw_hero(0), 100, 170)
+    # floor glow dots (cyber shop)
+    for x in range(20, 300, 16):
+        d.point((x, 220), fill=P["screen"])
+
+    save(scene, out / "scene_popmart.png")
+
+
+# ---------- Restroom (厕所) ----------
+def tile_restroom_floor() -> Image.Image:
+    t = new(32, 32, P["tile_white"])
+    d = ImageDraw.Draw(t)
+    # porcelain tiles with grout
+    for y in range(0, 32, 8):
+        for x in range(0, 32, 8):
+            rect(d, [x, y, x + 7, y + 7], P["porcelain"])
+            rect(d, [x, y, x + 7, y], P["tile_grout"])
+            rect(d, [x, y, x, y + 7], P["tile_grout"])
+    # subtle wet sheen
+    d.point((10, 12), fill=P["holo"])
+    d.point((22, 20), fill=P["screen"])
+    return t
+
+
+def prop_stall() -> Image.Image:
+    """One toilet stall (隔间) — door + side panels, 2.5D."""
+    img = new(40, 56)
+    d = ImageDraw.Draw(img)
+    # side walls
+    rect(d, [0, 4, 3, 52], P["stall_beige"])
+    rect(d, [36, 4, 39, 52], P["stall_beige"])
+    rect(d, [0, 4, 3, 8], P["wood"])
+    rect(d, [36, 4, 39, 8], P["wood"])
+    # door
+    rect(d, [4, 6, 35, 50], P["metal"])
+    rect(d, [6, 8, 33, 48], P["stall_beige"])
+    # gap under door
+    rect(d, [6, 46, 33, 50], P["floor"])
+    # door frame top
+    rect(d, [0, 0, 39, 5], P["dark"])
+    rect(d, [2, 1, 37, 3], P["metal"])
+    # lock / occupied indicator
+    rect(d, [28, 24, 32, 28], P["dark"])
+    d.point((30, 26), fill=P["neon_p2"])  # red-ish occupied/cyber lock
+    # feet gap hint (optional empty)
+    return img
+
+
+def prop_stall_open() -> Image.Image:
+    """Stall with door ajar — toilet bowl visible."""
+    img = prop_stall()
+    d = ImageDraw.Draw(img)
+    # open door swung (overwrite center with darker interior)
+    rect(d, [8, 10, 30, 48], P["floor2"])
+    # toilet
+    rect(d, [14, 28, 24, 40], P["porcelain"])
+    rect(d, [16, 22, 22, 28], P["porcelain"])
+    rect(d, [17, 30, 21, 36], P["screen"])  # water
+    # door panel to the side
+    rect(d, [30, 8, 38, 48], P["stall_beige"])
+    rect(d, [31, 10, 37, 46], P["metal"])
+    return img
+
+
+def prop_sink() -> Image.Image:
+    """Porcelain sink with faucet (水池)."""
+    img = new(28, 24)
+    d = ImageDraw.Draw(img)
+    # basin
+    rect(d, [2, 8, 25, 20], P["sink_steel"])
+    rect(d, [4, 10, 23, 18], P["porcelain"])
+    rect(d, [8, 12, 19, 16], P["screen"])  # water / reflection
+    # faucet
+    rect(d, [12, 2, 15, 10], P["metal"])
+    rect(d, [10, 2, 17, 4], P["metal"])
+    d.point((13, 1), fill=P["holo"])
+    # handles
+    rect(d, [6, 4, 9, 6], P["dark"])
+    rect(d, [18, 4, 21, 6], P["dark"])
+    # pedestal / wall mount shadow
+    rect(d, [10, 20, 17, 23], P["dark"])
+    return img
+
+
+def prop_mirror() -> Image.Image:
+    img = new(24, 20)
+    d = ImageDraw.Draw(img)
+    rect(d, [0, 0, 23, 19], P["metal"])
+    rect(d, [2, 2, 21, 17], P["floor2"])
+    rect(d, [3, 3, 20, 16], P["screen"])
+    # neon rim
+    rect(d, [1, 1, 22, 1], P["holo"])
+    rect(d, [1, 18, 22, 18], P["neon_p"])
+    return img
+
+
+def gen_restroom():
+    out = ASSETS / "scenes" / "restroom"
+    save(prop_stall(), out / "stall.png")
+    save(prop_stall_open(), out / "stall_open.png")
+    save(prop_sink(), out / "sink.png")
+    save(prop_mirror(), out / "mirror.png")
+    save(tile_restroom_floor(), out / "floor_tile.png")
+    save(prop_stall(), ASSETS / "props" / "stall.png")
+    save(prop_sink(), ASSETS / "props" / "sink.png")
+
+    W, H = 320, 240
+    scene = new(W, H, P["bg"])
+    fill_floor(scene, tile_restroom_floor())
+    brick = tile_brick_wall()
+    for x in range(0, W, 32):
+        blit(scene, brick, x, 0)
+        blit(scene, brick, x, 12)
+
+    d = ImageDraw.Draw(scene)
+    # fluorescent strip
+    rect(d, [40, 36, 280, 40], P["white"])
+    rect(d, [40, 40, 280, 41], P["holo"])
+
+    # Four stalls along the back wall
+    stall = prop_stall()
+    stall_open = prop_stall_open()
+    positions = [16, 64, 112, 160]
+    for i, x in enumerate(positions):
+        blit(scene, stall_open if i == 2 else stall, x, 44)
+
+    # Outside stalls: two sinks on the right wall area
+    sink = prop_sink()
+    mirror = prop_mirror()
+    blit(scene, mirror, 248, 48)
+    blit(scene, mirror, 280, 48)
+    blit(scene, sink, 246, 70)
+    blit(scene, sink, 278, 70)
+
+    # drain / wet floor accents
+    for x, y in [(220, 160), (230, 168), (210, 170)]:
+        d.point((x, y), fill=P["screen"])
+
+    # trash / paper bin hint
+    rect(d, [300, 160, 310, 180], P["dark"])
+    rect(d, [302, 162, 308, 170], P["metal"])
+
+    # neon exit strip on left
+    rect(d, [4, 100, 8, 140], P["holo"])
+    blit(scene, prop_neon_sign(), 8, 100)
+
+    # hero outside stalls near sinks
+    blit(scene, draw_hero(3), 220, 140)
+
+    # divider line suggesting stall front vs wash zone
+    for y in range(100, 200, 3):
+        d.point((210, y), fill=P["tile_grout"])
+
+    save(scene, out / "scene_restroom.png")
+
+
+
 def main():
     print("Generating cyber-hutong Phase-1 assets…")
     gen_characters()
@@ -643,6 +975,8 @@ def main():
     gen_rooms()
     gen_dialog()
     gen_hawaii()
+    gen_popmart()
+    gen_restroom()
     print("Done.")
 
 

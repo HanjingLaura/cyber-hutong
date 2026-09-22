@@ -80,5 +80,10 @@ public/assets/
 | 场景 ID | 中文名 | 说明 |
 |---------|--------|------|
 | `hawaii` | 夏威夷 | 靠窗长桌 + **三座位纵向排列**；详见 `design/scenes/hawaii.md` |
+| `popmart` | 泡泡玛特店 | 室内店 · **拆盲盒**；详见 `design/scenes/popmart.md` |
+| `restroom` | 厕所 | **四隔间** + 隔间外 **两个水池**；详见 `design/scenes/restroom.md` |
 
-合成图路径：`public/assets/scenes/hawaii/scene_hawaii.png`
+合成图路径：
+- `public/assets/scenes/hawaii/scene_hawaii.png`
+- `public/assets/scenes/popmart/scene_popmart.png`
+- `public/assets/scenes/restroom/scene_restroom.png`

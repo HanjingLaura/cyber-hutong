@@ -110,6 +110,16 @@
       <div class="grid" id="hawaii"></div>
     </section>
     <section>
+      <h2>命名场景 · 泡泡玛特店 Pop Mart</h2>
+      <p style="color:var(--muted);font-size:.8rem;margin-top:-.5rem">室内店面 · 盲盒货架 · 展示柜台 · 可拆盲盒（未开盒 / 已开盒 / 手办）</p>
+      <div class="grid" id="popmart"></div>
+    </section>
+    <section>
+      <h2>命名场景 · 厕所 Restroom</h2>
+      <p style="color:var(--muted);font-size:.8rem;margin-top:-.5rem">四隔间 · 隔间外两个水池 · 镜面灯带</p>
+      <div class="grid" id="restroom"></div>
+    </section>
+    <section>
       <h2>对话框 UI</h2>
       <div class="card">
         <img class="pixel dialog" src="assets/ui/dialog_frame.png" alt="dialog" />
@@ -117,7 +127,7 @@
       </div>
     </section>
   </main>
-  <footer>设计简报 <a href="../design/art-brief.md">design/art-brief.md</a> · 场景 <a href="../design/scenes/hawaii.md">hawaii.md</a></footer>
+  <footer>设计简报 <a href="../design/art-brief.md">design/art-brief.md</a> · 场景 <a href="../design/scenes/hawaii.md">hawaii</a> / <a href="../design/scenes/popmart.md">popmart</a> / <a href="../design/scenes/restroom.md">restroom</a></footer>
   <script>
     const pixel = (src, caption, cls = "x3") => {
       const f = document.createElement("figure");
@@ -132,7 +142,9 @@
     }
     const props = [
       "desk","chair","chair_jacket","neon_sign","lantern","plant",
-      "server_rack","hologram","laptop","thermos","folders","long_desk"
+      "server_rack","hologram","laptop","thermos","folders","long_desk",
+      "blind_box","blind_box_open","popmart_figure","shelf_boxes","display_counter",
+      "stall","sink"
     ];
     props.forEach(n => document.getElementById("props").appendChild(
       pixel(`assets/props/${n}.png`, n + ".png", "x3")
@@ -152,6 +164,22 @@
     ["chair","chair_jacket","laptop","thermos","plant","folders","blind_tile","long_desk"].forEach(n => {
       document.getElementById("hawaii").appendChild(
         pixel(`assets/scenes/hawaii/${n}.png`, n, "x3")
+      );
+    });
+    document.getElementById("popmart").appendChild(
+      pixel("assets/scenes/popmart/scene_popmart.png", "scene_popmart.png · 拆盲盒店", "room")
+    );
+    ["shelf_boxes","counter","box_closed","box_opened","figure"].forEach(n => {
+      document.getElementById("popmart").appendChild(
+        pixel(`assets/scenes/popmart/${n}.png`, n, "x3")
+      );
+    });
+    document.getElementById("restroom").appendChild(
+      pixel("assets/scenes/restroom/scene_restroom.png", "scene_restroom.png · 四隔间+两水池", "room")
+    );
+    ["stall","stall_open","sink","mirror","floor_tile"].forEach(n => {
+      document.getElementById("restroom").appendChild(
+        pixel(`assets/scenes/restroom/${n}.png`, n, "x3")
       );
     });
   </script>
