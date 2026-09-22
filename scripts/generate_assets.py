@@ -1,6 +1,11 @@
 #!/usr/bin/env python3
 """Generate Phase-1 pixel assets for 赛博胡同 (Cyber Hutong).
-Nearest-neighbor friendly, limited palette, 2.5D oblique top-down.
+
+Soul Knight / 元气骑士 style: chunky pixels, strong silhouettes,
+rich lighting accents, oblique top-down 2.5D, game-ready readability.
+
+Each named scene is a DISTINCT world (floor / wall / palette / light)
+— never the same dark-blue grid with swapped props.
 """
 from __future__ import annotations
 
@@ -11,40 +16,106 @@ from PIL import Image, ImageDraw
 ROOT = Path(__file__).resolve().parents[1]
 ASSETS = ROOT / "public" / "assets"
 
-# cyber-hutong-16
+# ---------------------------------------------------------------------------
+# Shared + per-scene palettes (opaque RGBA; nearest-neighbor friendly)
+# ---------------------------------------------------------------------------
 P = {
+    # shared / hero / UI
     "bg": (11, 14, 26, 255),
+    "white": (245, 240, 230, 255),
+    "metal": (168, 176, 192, 255),
+    "dark": (74, 85, 104, 255),
+    "black": (20, 22, 28, 255),
+    "shadow": (8, 10, 18, 180),
+    "skin": (232, 190, 160, 255),
+    "hair": (40, 36, 50, 255),
+    "purple": (123, 97, 255, 255),
+    "holo": (61, 255, 240, 255),
+    "screen": (0, 194, 184, 255),
+    "neon_p": (255, 107, 157, 255),
+    "neon_p2": (255, 61, 127, 255),
+    "lantern": (232, 195, 106, 255),
+    "green": (45, 106, 79, 255),
+    "green_d": (27, 67, 50, 255),
+    "jacket": (220, 215, 200, 255),
+    "trans": (0, 0, 0, 0),
+    # legacy / hutong shared
     "floor": (26, 39, 68, 255),
     "floor2": (46, 58, 92, 255),
     "brick": (139, 90, 60, 255),
     "brick_hi": (196, 120, 74, 255),
-    "lantern": (232, 195, 106, 255),
-    "neon_p": (255, 107, 157, 255),
-    "neon_p2": (255, 61, 127, 255),
-    "holo": (61, 255, 240, 255),
-    "screen": (0, 194, 184, 255),
-    "purple": (123, 97, 255, 255),
-    "white": (245, 240, 230, 255),
-    "metal": (168, 176, 192, 255),
-    "dark": (74, 85, 104, 255),
-    "green": (45, 106, 79, 255),
-    "green_d": (27, 67, 50, 255),
-    "shadow": (8, 10, 18, 255),
     "wood": (210, 180, 140, 255),
     "wood_d": (160, 120, 80, 255),
     "blind": (120, 128, 140, 255),
     "blind_d": (90, 96, 108, 255),
     "blue_folder": (70, 130, 220, 255),
-    "skin": (232, 190, 160, 255),
-    "hair": (40, 36, 50, 255),
-    "jacket": (220, 215, 200, 255),
-    "black": (20, 22, 28, 255),
-    "trans": (0, 0, 0, 0),
-    # popmart pastels (still limited)
-    "box_pink": (255, 170, 190, 255),
-    "box_mint": (120, 220, 200, 255),
-    "box_yellow": (255, 220, 120, 255),
-    "box_lilac": (190, 170, 255, 255),
+    # --- HAWAII: warm daylight office ---
+    "hw_floor": (196, 158, 110, 255),
+    "hw_floor2": (168, 128, 82, 255),
+    "hw_plank": (214, 178, 128, 255),
+    "hw_gap": (120, 86, 52, 255),
+    "hw_wall": (232, 214, 186, 255),
+    "hw_wall_d": (198, 172, 140, 255),
+    "hw_trim": (140, 108, 72, 255),
+    "hw_sun": (255, 236, 180, 255),
+    "hw_sun2": (255, 210, 120, 255),
+    "hw_blind": (210, 200, 185, 255),
+    "hw_blind_d": (150, 142, 128, 255),
+    "hw_blind_hi": (240, 232, 215, 255),
+    "hw_desk": (186, 140, 88, 255),
+    "hw_desk_hi": (220, 178, 120, 255),
+    "hw_desk_edge": (130, 92, 52, 255),
+    "hw_chair": (70, 78, 92, 255),
+    "hw_chair_hi": (110, 120, 138, 255),
+    # --- POPMART: candy / neon retail ---
+    "pm_floor": (255, 228, 240, 255),
+    "pm_floor2": (255, 200, 220, 255),
+    "pm_tile_a": (255, 214, 230, 255),
+    "pm_tile_b": (200, 245, 235, 255),
+    "pm_grout": (255, 160, 190, 255),
+    "pm_wall": (120, 70, 160, 255),
+    "pm_wall_hi": (170, 110, 220, 255),
+    "pm_panel": (255, 120, 170, 255),
+    "pm_panel2": (90, 230, 210, 255),
+    "pm_shelf": (255, 245, 250, 255),
+    "pm_neon": (255, 80, 160, 255),
+    "pm_neon2": (80, 255, 220, 255),
+    "pm_counter": (255, 190, 210, 255),
+    "pm_counter_d": (220, 100, 150, 255),
+    "pm_glass": (200, 255, 250, 255),
+    "box_pink": (255, 140, 180, 255),
+    "box_mint": (100, 230, 200, 255),
+    "box_yellow": (255, 220, 90, 255),
+    "box_lilac": (190, 150, 255, 255),
+    "box_sky": (120, 200, 255, 255),
+    "box_orange": (255, 160, 80, 255),
+    # --- RESTROOM: cool utilitarian tile ---
+    "rr_floor": (180, 195, 210, 255),
+    "rr_floor2": (155, 172, 190, 255),
+    "rr_grout": (110, 125, 145, 255),
+    "rr_wet": (140, 200, 220, 255),
+    "rr_wet2": (100, 170, 195, 255),
+    "rr_wall": (200, 210, 218, 255),
+    "rr_wall_d": (150, 165, 180, 255),
+    "rr_tile_hi": (230, 236, 242, 255),
+    "rr_stall": (165, 158, 145, 255),
+    "rr_stall_d": (120, 115, 105, 255),
+    "rr_metal": (130, 145, 160, 255),
+    "rr_porcelain": (235, 240, 245, 255),
+    "rr_fluoro": (230, 245, 255, 255),
+    "rr_fluoro2": (160, 210, 230, 255),
+    "rr_caution": (230, 200, 60, 255),
+    # supporting rooms
+    "of_floor": (32, 48, 72, 255),
+    "of_floor2": (48, 68, 98, 255),
+    "of_carpet": (55, 45, 85, 255),
+    "mt_floor": (18, 16, 40, 255),
+    "mt_floor2": (40, 30, 70, 255),
+    "mt_glow": (90, 60, 180, 255),
+    "hg_stone": (90, 85, 78, 255),
+    "hg_stone2": (70, 66, 60, 255),
+    "hg_dirt": (55, 50, 45, 255),
+    # aliases used by older props
     "tile_white": (220, 224, 232, 255),
     "tile_grout": (160, 168, 180, 255),
     "porcelain": (230, 235, 242, 255),
@@ -54,16 +125,7 @@ P = {
 
 
 def new(w: int, h: int, fill=None) -> Image.Image:
-    img = Image.new("RGBA", (w, h), fill or P["trans"])
-    return img
-
-
-def px(draw: ImageDraw.ImageDraw, xy, c):
-    if isinstance(xy[0], (list, tuple)):
-        for p in xy:
-            draw.point(p, fill=c)
-    else:
-        draw.point(xy, fill=c)
+    return Image.new("RGBA", (w, h), fill or P["trans"])
 
 
 def rect(draw, box, c):
@@ -76,58 +138,72 @@ def save(img: Image.Image, path: Path):
     print(f"  wrote {path.relative_to(ROOT)}")
 
 
-# ---------- character idle (32x32, 4 frames) ----------
+def blit(dst: Image.Image, src: Image.Image, x: int, y: int):
+    dst.paste(src, (x, y), src)
+
+
+def fill_floor(room: Image.Image, tile: Image.Image):
+    for y in range(0, room.height, tile.height):
+        for x in range(0, room.width, tile.width):
+            blit(room, tile, x, y)
+
+
+def outline_rect(d, box, fill, edge, thick=1):
+    """Filled rect with chunky silhouette edge (Soul Knight readability)."""
+    x0, y0, x1, y1 = box
+    rect(d, [x0, y0, x1, y1], edge)
+    rect(d, [x0 + thick, y0 + thick, x1 - thick, y1 - thick], fill)
+
+
+def soft_glow(d, cx, cy, r, color, step=2):
+    """Sparse radial accent (no alpha blend — hard pixels)."""
+    r2 = r * r
+    for dy in range(-r, r + 1, step):
+        for dx in range(-r, r + 1, step):
+            if dx * dx + dy * dy <= r2 and (dx + dy) % (step * 2) == 0:
+                d.point((cx + dx, cy + dy), fill=color)
+
+
+# ---------- character idle (32x32, 4 frames) — chunkier silhouette ----------
 def draw_hero(frame: int) -> Image.Image:
     img = new(32, 32)
     d = ImageDraw.Draw(img)
-    # foot shadow
     bob = (0, 0, 1, 0)[frame]
     sway = (0, 1, 0, -1)[frame]
     ox, oy = 16 + sway, 22 + bob
 
-    # shadow ellipse-ish
-    for dx in range(-5, 6):
+    for dx in range(-6, 7):
         for dy in range(-2, 3):
-            if abs(dx) / 5 + abs(dy) / 2.5 < 1:
-                d.point((ox + dx, oy + 6 + dy), fill=P["shadow"])
+            if abs(dx) / 6 + abs(dy) / 2.5 < 1:
+                d.point((ox + dx, oy + 7 + dy), fill=P["shadow"])
 
-    # legs
-    rect(d, [ox - 3, oy + 1, ox - 1, oy + 5], P["dark"])
-    rect(d, [ox + 1, oy + 1, ox + 3, oy + 5], P["dark"])
-    # boots
-    rect(d, [ox - 4, oy + 5, ox - 1, oy + 6], P["neon_p2"])
-    rect(d, [ox + 1, oy + 5, ox + 4, oy + 6], P["neon_p2"])
+    # legs + chunky boots
+    rect(d, [ox - 4, oy + 1, ox - 1, oy + 6], P["dark"])
+    rect(d, [ox + 1, oy + 1, ox + 4, oy + 6], P["dark"])
+    outline_rect(d, [ox - 5, oy + 5, ox - 1, oy + 7], P["neon_p2"], P["black"])
+    outline_rect(d, [ox + 1, oy + 5, ox + 5, oy + 7], P["neon_p2"], P["black"])
 
-    # body (hoodie + cyber vest)
-    rect(d, [ox - 5, oy - 8, ox + 5, oy + 1], P["purple"])
+    # body
+    outline_rect(d, [ox - 6, oy - 9, ox + 6, oy + 1], P["purple"], P["black"])
     rect(d, [ox - 4, oy - 7, ox + 4, oy - 1], P["floor2"])
-    # neon trim
     rect(d, [ox - 5, oy - 3, ox + 5, oy - 2], P["holo"])
 
-    # arms
     arm_y = oy - 6 + (1 if frame % 2 else 0)
-    rect(d, [ox - 7, arm_y, ox - 5, arm_y + 5], P["purple"])
-    rect(d, [ox + 5, arm_y, ox + 7, arm_y + 5], P["purple"])
-    # hands
-    d.point((ox - 6, arm_y + 5), fill=P["skin"])
-    d.point((ox + 6, arm_y + 5), fill=P["skin"])
+    rect(d, [ox - 8, arm_y, ox - 5, arm_y + 6], P["purple"])
+    rect(d, [ox + 5, arm_y, ox + 8, arm_y + 6], P["purple"])
+    d.point((ox - 7, arm_y + 6), fill=P["skin"])
+    d.point((ox + 7, arm_y + 6), fill=P["skin"])
 
-    # head
-    hy = oy - 14 + bob
-    rect(d, [ox - 4, hy, ox + 4, hy + 6], P["skin"])
-    # hair (messy top + bangs)
-    rect(d, [ox - 4, hy - 2, ox + 4, hy + 1], P["hair"])
-    rect(d, [ox - 5, hy, ox - 4, hy + 3], P["hair"])
-    rect(d, [ox + 4, hy, ox + 5, hy + 3], P["hair"])
-    # eyes
+    hy = oy - 15 + bob
+    outline_rect(d, [ox - 5, hy, ox + 5, hy + 7], P["skin"], P["black"])
+    rect(d, [ox - 5, hy - 2, ox + 5, hy + 2], P["hair"])
+    rect(d, [ox - 6, hy, ox - 5, hy + 4], P["hair"])
+    rect(d, [ox + 5, hy, ox + 6, hy + 4], P["hair"])
     d.point((ox - 2, hy + 3), fill=P["holo"])
     d.point((ox + 2, hy + 3), fill=P["holo"])
-    # cheek neon
     d.point((ox - 3, hy + 5), fill=P["neon_p"])
-    # antenna / earpiece
-    rect(d, [ox + 4, hy - 1, ox + 5, hy + 1], P["metal"])
-    d.point((ox + 5, hy - 2), fill=P["neon_p2"])
-
+    rect(d, [ox + 4, hy - 1, ox + 6, hy + 1], P["metal"])
+    d.point((ox + 6, hy - 2), fill=P["neon_p2"])
     return img
 
 
@@ -136,45 +212,42 @@ def gen_characters():
         save(draw_hero(i), ASSETS / "characters" / f"hero_idle_{i}.png")
 
 
-# ---------- tileset strip ----------
+# ---------- shared / supporting tiles ----------
 def tile_floor() -> Image.Image:
-    t = new(32, 32, P["floor"])
+    """工位 dark teal checker — NOT used by named scenes."""
+    t = new(32, 32, P["of_floor"])
     d = ImageDraw.Draw(t)
     for y in range(0, 32, 8):
         for x in range(0, 32, 8):
-            c = P["floor2"] if (x // 8 + y // 8) % 2 == 0 else P["floor"]
+            c = P["of_floor2"] if (x // 8 + y // 8) % 2 == 0 else P["of_floor"]
             rect(d, [x, y, x + 7, y + 7], c)
-            d.point((x + 1, y + 1), fill=P["dark"])
-    # subtle neon grit
-    d.point((10, 12), fill=P["screen"])
-    d.point((22, 20), fill=P["purple"])
+    d.point((6, 6), fill=P["screen"])
+    d.point((22, 18), fill=P["purple"])
     return t
 
 
 def tile_brick_wall() -> Image.Image:
     t = new(32, 32, P["brick"])
     d = ImageDraw.Draw(t)
-    # top face (lighter) for 2.5D
     rect(d, [0, 0, 31, 7], P["brick_hi"])
     for y in range(8, 32, 6):
         offset = 4 if (y // 6) % 2 else 0
         for x in range(-4, 36, 10):
             rect(d, [x + offset, y, x + offset + 8, y + 4], P["brick"])
             rect(d, [x + offset, y, x + offset + 8, y], P["brick_hi"])
-    # neon graffiti line
     rect(d, [4, 18, 28, 19], P["neon_p"])
     return t
 
 
 def tile_neon_floor() -> Image.Image:
-    t = new(32, 32, P["bg"])
+    """Meeting-room purple-dark neon (supporting only)."""
+    t = new(32, 32, P["mt_floor"])
     d = ImageDraw.Draw(t)
-    rect(d, [1, 1, 30, 30], P["floor"])
-    # cyan grid
+    rect(d, [1, 1, 30, 30], P["mt_floor2"])
     for i in range(0, 32, 8):
         for j in range(32):
-            d.point((i, j), fill=P["screen"])
-            d.point((j, i), fill=P["screen"])
+            d.point((i, j), fill=P["mt_glow"])
+            d.point((j, i), fill=P["mt_glow"])
     rect(d, [14, 14, 17, 17], P["holo"])
     return t
 
@@ -182,7 +255,6 @@ def tile_neon_floor() -> Image.Image:
 def tile_hutong_roof() -> Image.Image:
     t = new(32, 32, P["dark"])
     d = ImageDraw.Draw(t)
-    # wavy tile rows (oblique)
     for y in range(0, 32, 4):
         c = P["metal"] if (y // 4) % 2 == 0 else P["dark"]
         rect(d, [0, y, 31, y + 2], c)
@@ -203,35 +275,141 @@ def tile_grass() -> Image.Image:
 def tile_door() -> Image.Image:
     t = new(32, 32, P["wood_d"])
     d = ImageDraw.Draw(t)
-    rect(d, [4, 2, 27, 31], P["wood"])
+    outline_rect(d, [4, 2, 27, 31], P["wood"], P["black"])
     rect(d, [6, 4, 25, 29], P["wood_d"])
-    # panels
     rect(d, [8, 6, 14, 16], P["wood"])
     rect(d, [17, 6, 23, 16], P["wood"])
     rect(d, [8, 18, 14, 28], P["wood"])
     rect(d, [17, 18, 23, 28], P["wood"])
-    # cyber lock
     rect(d, [22, 14, 25, 18], P["holo"])
     d.point((24, 16), fill=P["neon_p2"])
     return t
 
 
 def tile_blind() -> Image.Image:
-    """Roller blind window wall for Hawaii scene."""
-    t = new(32, 32, P["blind"])
+    """Warm daylight roller blind (Hawaii)."""
+    t = new(32, 32, P["hw_blind"])
     d = ImageDraw.Draw(t)
-    # horizontal slats
     for y in range(0, 32, 3):
-        rect(d, [0, y, 31, y + 1], P["blind_d"])
-        rect(d, [0, y + 2, 31, y + 2], P["metal"])
-    # frame
-    rect(d, [0, 0, 31, 1], P["white"])
-    rect(d, [0, 0, 1, 31], P["white"])
-    rect(d, [30, 0, 31, 31], P["white"])
-    # pull cord
+        rect(d, [0, y, 31, y + 1], P["hw_blind_d"])
+        rect(d, [0, y + 2, 31, y + 2], P["hw_blind_hi"])
+    # sun bleed through slats
+    for y in range(2, 30, 6):
+        rect(d, [6, y, 24, y], P["hw_sun"])
+    rect(d, [0, 0, 31, 1], P["hw_trim"])
+    rect(d, [0, 0, 1, 31], P["hw_trim"])
+    rect(d, [30, 0, 31, 31], P["hw_trim"])
     for y in range(4, 28):
         d.point((28, y), fill=P["white"])
     d.point((28, 28), fill=P["lantern"])
+    return t
+
+
+def tile_hawaii_floor() -> Image.Image:
+    """Warm wood plank floor — office daylight."""
+    t = new(32, 32, P["hw_floor"])
+    d = ImageDraw.Draw(t)
+    for y in range(0, 32, 8):
+        base = P["hw_plank"] if (y // 8) % 2 == 0 else P["hw_floor"]
+        rect(d, [0, y, 31, y + 7], base)
+        rect(d, [0, y + 7, 31, y + 7], P["hw_gap"])
+        # plank seams
+        for x in (8, 20):
+            offset = 4 if (y // 8) % 2 else 0
+            rect(d, [x + offset, y, x + offset, y + 6], P["hw_floor2"])
+        # warm highlight grain
+        d.point((4, y + 2), fill=P["hw_sun"])
+        d.point((18, y + 4), fill=P["hw_desk_hi"])
+    return t
+
+
+def tile_hawaii_wall() -> Image.Image:
+    """Cream plaster wall with warm trim."""
+    t = new(32, 32, P["hw_wall"])
+    d = ImageDraw.Draw(t)
+    rect(d, [0, 0, 31, 4], P["hw_wall_d"])
+    rect(d, [0, 28, 31, 31], P["hw_trim"])
+    for x in range(4, 28, 6):
+        d.point((x, 12), fill=P["hw_wall_d"])
+    return t
+
+
+def tile_popmart_floor() -> Image.Image:
+    """Candy checker — pink / mint retail."""
+    t = new(32, 32, P["pm_tile_a"])
+    d = ImageDraw.Draw(t)
+    for y in range(0, 32, 16):
+        for x in range(0, 32, 16):
+            c = P["pm_tile_a"] if ((x // 16) + (y // 16)) % 2 == 0 else P["pm_tile_b"]
+            rect(d, [x, y, x + 15, y + 15], c)
+            rect(d, [x, y, x + 15, y], P["pm_grout"])
+            rect(d, [x, y, x, y + 15], P["pm_grout"])
+    # glossy sparkle
+    d.point((5, 5), fill=P["white"])
+    d.point((21, 21), fill=P["pm_neon2"])
+    d.point((12, 26), fill=P["pm_neon"])
+    return t
+
+
+def tile_popmart_wall() -> Image.Image:
+    """Purple/pink retail panel wall."""
+    t = new(32, 32, P["pm_wall"])
+    d = ImageDraw.Draw(t)
+    rect(d, [0, 0, 31, 6], P["pm_wall_hi"])
+    rect(d, [0, 7, 31, 8], P["pm_neon"])
+    for y in range(10, 28, 8):
+        rect(d, [2, y, 14, y + 5], P["pm_panel"])
+        rect(d, [17, y, 29, y + 5], P["pm_panel2"])
+        rect(d, [3, y + 1, 13, y + 2], P["white"])
+        rect(d, [18, y + 1, 28, y + 2], P["white"])
+    rect(d, [0, 30, 31, 31], P["pm_neon2"])
+    return t
+
+
+def tile_restroom_floor() -> Image.Image:
+    """Cool porcelain with wet sheen."""
+    t = new(32, 32, P["rr_floor"])
+    d = ImageDraw.Draw(t)
+    for y in range(0, 32, 10):
+        for x in range(0, 32, 10):
+            c = P["rr_porcelain"] if ((x // 10) + (y // 10)) % 2 == 0 else P["rr_floor"]
+            rect(d, [x, y, min(x + 9, 31), min(y + 9, 31)], c)
+            rect(d, [x, y, min(x + 9, 31), y], P["rr_grout"])
+            rect(d, [x, y, x, min(y + 9, 31)], P["rr_grout"])
+    # wet puddle hints
+    for pts in [(8, 10), (9, 11), (10, 10), (22, 20), (23, 21), (14, 24)]:
+        d.point(pts, fill=P["rr_wet"])
+    d.point((9, 10), fill=P["rr_wet2"])
+    d.point((23, 20), fill=P["white"])
+    return t
+
+
+def tile_restroom_wall() -> Image.Image:
+    """Cool subway tile wall."""
+    t = new(32, 32, P["rr_wall"])
+    d = ImageDraw.Draw(t)
+    for y in range(0, 32, 6):
+        offset = 0 if (y // 6) % 2 == 0 else 8
+        for x in range(-8, 40, 16):
+            rect(d, [x + offset, y, x + offset + 14, y + 4], P["rr_tile_hi"])
+            rect(d, [x + offset, y, x + offset + 14, y], P["rr_grout"])
+            rect(d, [x + offset, y, x + offset, y + 4], P["rr_grout"])
+            rect(d, [x + offset + 1, y + 1, x + offset + 4, y + 1], P["white"])
+    rect(d, [0, 0, 31, 2], P["rr_wall_d"])
+    return t
+
+
+def tile_hutong_stone() -> Image.Image:
+    """Outdoor alley cobble for 胡同口."""
+    t = new(32, 32, P["hg_stone"])
+    d = ImageDraw.Draw(t)
+    for y in range(0, 32, 8):
+        for x in range(0, 32, 8):
+            c = P["hg_stone2"] if (x // 8 + y // 8) % 2 else P["hg_stone"]
+            rect(d, [x + 1, y + 1, x + 6, y + 6], c)
+            rect(d, [x, y, x + 7, y], P["hg_dirt"])
+            rect(d, [x, y, x, y + 7], P["hg_dirt"])
+    d.point((12, 14), fill=P["lantern"])
     return t
 
 
@@ -244,8 +422,14 @@ def gen_tileset():
         tile_grass(),
         tile_door(),
         tile_blind(),
+        tile_hawaii_floor(),
+        tile_popmart_floor(),
+        tile_restroom_floor(),
     ]
-    labels = ["floor", "brick", "neon", "roof", "grass", "door", "blind"]
+    labels = [
+        "floor", "brick", "neon", "roof", "grass", "door", "blind",
+        "hawaii_wood", "popmart_candy", "restroom_tile",
+    ]
     strip = new(32 * len(tiles), 32)
     for i, t in enumerate(tiles):
         strip.paste(t, (i * 32, 0), t)
@@ -257,15 +441,11 @@ def gen_tileset():
 def prop_desk() -> Image.Image:
     img = new(32, 32)
     d = ImageDraw.Draw(img)
-    # top (oblique)
-    rect(d, [2, 10, 29, 18], P["wood"])
+    outline_rect(d, [2, 10, 29, 18], P["wood"], P["black"])
     rect(d, [2, 10, 29, 12], P["wood_d"])
-    # legs
     rect(d, [4, 18, 6, 28], P["metal"])
     rect(d, [25, 18, 27, 28], P["metal"])
-    # monitor glow
-    rect(d, [10, 4, 22, 11], P["dark"])
-    rect(d, [11, 5, 21, 10], P["screen"])
+    outline_rect(d, [10, 4, 22, 11], P["screen"], P["black"])
     d.point((16, 7), fill=P["holo"])
     return img
 
@@ -273,18 +453,14 @@ def prop_desk() -> Image.Image:
 def prop_chair() -> Image.Image:
     img = new(32, 32)
     d = ImageDraw.Draw(img)
-    # seat
-    rect(d, [8, 16, 23, 22], P["black"])
-    rect(d, [9, 16, 22, 18], P["dark"])
-    # back mesh
-    rect(d, [10, 4, 21, 16], P["dark"])
+    outline_rect(d, [8, 16, 23, 22], P["hw_chair"], P["black"])
+    rect(d, [9, 16, 22, 18], P["hw_chair_hi"])
+    outline_rect(d, [10, 4, 21, 16], P["hw_chair"], P["black"])
     for y in range(5, 15, 2):
         for x in range(11, 21, 2):
             d.point((x, y), fill=P["metal"])
-    # arms
     rect(d, [6, 12, 8, 18], P["metal"])
     rect(d, [23, 12, 25, 18], P["metal"])
-    # base
     rect(d, [14, 22, 17, 28], P["metal"])
     rect(d, [10, 27, 21, 29], P["dark"])
     return img
@@ -293,7 +469,6 @@ def prop_chair() -> Image.Image:
 def prop_chair_jacket() -> Image.Image:
     img = prop_chair()
     d = ImageDraw.Draw(img)
-    # draped jacket
     rect(d, [9, 6, 22, 14], P["jacket"])
     rect(d, [10, 8, 14, 18], P["jacket"])
     rect(d, [18, 9, 21, 17], P["dark"])
@@ -303,32 +478,23 @@ def prop_chair_jacket() -> Image.Image:
 def prop_neon_sign() -> Image.Image:
     img = new(32, 32)
     d = ImageDraw.Draw(img)
-    rect(d, [2, 8, 29, 24], P["bg"])
-    rect(d, [3, 9, 28, 23], P["floor"])
-    # 胡 characters simplified as neon bars
+    outline_rect(d, [2, 8, 29, 24], P["floor"], P["black"])
     rect(d, [6, 12, 10, 20], P["neon_p"])
     rect(d, [12, 12, 16, 20], P["holo"])
     rect(d, [18, 12, 26, 14], P["neon_p2"])
     rect(d, [18, 16, 26, 18], P["purple"])
-    # glow pixels
-    d.point((4, 10), fill=P["neon_p"])
-    d.point((27, 22), fill=P["holo"])
+    soft_glow(d, 16, 16, 10, P["neon_p"], step=3)
     return img
 
 
 def prop_lantern() -> Image.Image:
     img = new(16, 24)
     d = ImageDraw.Draw(img)
-    # string
     rect(d, [7, 0, 8, 3], P["metal"])
-    # body
-    rect(d, [3, 4, 12, 18], P["neon_p2"])
-    rect(d, [4, 5, 11, 17], P["lantern"])
+    outline_rect(d, [3, 4, 12, 18], P["lantern"], P["neon_p2"])
     rect(d, [5, 7, 10, 10], P["white"])
-    # top/bottom caps
     rect(d, [4, 3, 11, 4], P["dark"])
     rect(d, [4, 18, 11, 19], P["dark"])
-    # tassels
     d.point((5, 20), fill=P["neon_p"])
     d.point((8, 21), fill=P["neon_p"])
     d.point((10, 20), fill=P["neon_p"])
@@ -338,10 +504,8 @@ def prop_lantern() -> Image.Image:
 def prop_plant() -> Image.Image:
     img = new(16, 20)
     d = ImageDraw.Draw(img)
-    # pot
-    rect(d, [4, 12, 11, 19], P["white"])
+    outline_rect(d, [4, 12, 11, 19], P["white"], P["black"])
     rect(d, [5, 13, 10, 18], P["metal"])
-    # leaves
     for pts, c in [
         ([(8, 2), (7, 3), (8, 4), (9, 3)], P["green"]),
         ([(5, 5), (4, 6), (5, 8), (6, 6)], P["green"]),
@@ -357,8 +521,7 @@ def prop_plant() -> Image.Image:
 def prop_server_rack() -> Image.Image:
     img = new(24, 32)
     d = ImageDraw.Draw(img)
-    rect(d, [2, 2, 21, 31], P["dark"])
-    rect(d, [3, 3, 20, 30], P["black"])
+    outline_rect(d, [2, 2, 21, 31], P["black"], P["dark"])
     for y in range(5, 28, 5):
         rect(d, [5, y, 18, y + 3], P["floor2"])
         d.point((7, y + 1), fill=P["holo"])
@@ -371,18 +534,14 @@ def prop_server_rack() -> Image.Image:
 def prop_hologram() -> Image.Image:
     img = new(24, 28)
     d = ImageDraw.Draw(img)
-    # pedestal
     rect(d, [8, 22, 15, 27], P["metal"])
     rect(d, [6, 20, 17, 22], P["dark"])
-    # holo figure / diamond
-    pts = [(12, 2), (18, 10), (12, 18), (6, 10)]
-    for x, y in [(12, 4), (10, 8), (14, 8), (12, 12), (8, 10), (16, 10), (12, 16)]:
-        d.point((x, y), fill=P["holo"])
     for x in range(7, 18):
         for y in range(3, 18):
             if abs(x - 12) + abs(y - 10) < 8 and (x + y) % 2 == 0:
                 d.point((x, y), fill=P["screen"])
-    # scanline
+    for x, y in [(12, 4), (10, 8), (14, 8), (12, 12), (8, 10), (16, 10), (12, 16)]:
+        d.point((x, y), fill=P["holo"])
     rect(d, [8, 10, 16, 10], P["white"])
     return img
 
@@ -390,21 +549,20 @@ def prop_hologram() -> Image.Image:
 def prop_laptop() -> Image.Image:
     img = new(16, 16)
     d = ImageDraw.Draw(img)
-    # base
-    rect(d, [2, 10, 13, 14], P["metal"])
+    outline_rect(d, [2, 10, 13, 14], P["metal"], P["black"])
     rect(d, [3, 11, 12, 13], P["dark"])
-    # screen
-    rect(d, [3, 2, 12, 10], P["dark"])
-    rect(d, [4, 3, 11, 9], P["screen"])
+    outline_rect(d, [3, 2, 12, 10], P["screen"], P["black"])
     d.point((7, 5), fill=P["holo"])
     d.point((8, 6), fill=P["white"])
+    # warm screen glow for hawaii
+    d.point((5, 4), fill=P["hw_sun"])
     return img
 
 
 def prop_thermos() -> Image.Image:
     img = new(8, 16)
     d = ImageDraw.Draw(img)
-    rect(d, [2, 2, 5, 14], P["black"])
+    outline_rect(d, [2, 2, 5, 14], P["black"], P["metal"])
     rect(d, [2, 2, 5, 4], P["metal"])
     rect(d, [3, 6, 4, 10], P["dark"])
     d.point((3, 1), fill=P["metal"])
@@ -414,7 +572,7 @@ def prop_thermos() -> Image.Image:
 def prop_folders() -> Image.Image:
     img = new(16, 12)
     d = ImageDraw.Draw(img)
-    rect(d, [1, 4, 14, 11], P["blue_folder"])
+    outline_rect(d, [1, 4, 14, 11], P["blue_folder"], P["black"])
     rect(d, [2, 2, 13, 9], P["white"])
     rect(d, [3, 3, 12, 8], P["blue_folder"])
     rect(d, [4, 1, 11, 3], P["metal"])
@@ -422,15 +580,11 @@ def prop_folders() -> Image.Image:
 
 
 def prop_long_desk_segment() -> Image.Image:
-    """One 32px segment of window-side long desk."""
     img = new(32, 24)
     d = ImageDraw.Draw(img)
-    # top surface
-    rect(d, [0, 4, 31, 14], P["wood"])
-    rect(d, [0, 4, 31, 6], P["wood_d"])
-    # front edge
-    rect(d, [0, 14, 31, 16], P["wood_d"])
-    # legs
+    outline_rect(d, [0, 4, 31, 14], P["hw_desk"], P["hw_desk_edge"])
+    rect(d, [0, 4, 31, 6], P["hw_desk_hi"])
+    rect(d, [0, 14, 31, 16], P["hw_desk_edge"])
     rect(d, [2, 16, 4, 23], P["metal"])
     rect(d, [27, 16, 29, 23], P["metal"])
     return img
@@ -455,88 +609,73 @@ def gen_props():
         save(img, ASSETS / "props" / name)
 
 
-# ---------- room composites ----------
-def blit(dst: Image.Image, src: Image.Image, x: int, y: int):
-    dst.paste(src, (x, y), src)
-
-
-def fill_floor(room: Image.Image, tile: Image.Image):
-    for y in range(0, room.height, 32):
-        for x in range(0, room.width, 32):
-            blit(room, tile, x, y)
-
-
+# ---------- supporting rooms (distinct worlds) ----------
 def room_office() -> Image.Image:
+    """工位 — dark teal carpet + brick, cyber monitors (not hawaii wood)."""
     W, H = 320, 240
     room = new(W, H, P["bg"])
-    floor = tile_floor()
-    fill_floor(room, floor)
-    # back wall
+    fill_floor(room, tile_floor())
     brick = tile_brick_wall()
     for x in range(0, W, 32):
         blit(room, brick, x, 0)
         blit(room, brick, x, 16)
-    # desks row
+    d = ImageDraw.Draw(room)
+    rect(d, [0, 48, 319, 50], P["holo"])
     desk = prop_desk()
     chair = prop_chair()
-    plant = prop_plant()
-    neon = prop_neon_sign()
     for i, x in enumerate([40, 120, 200]):
         blit(room, desk, x, 80)
         blit(room, chair, x + 4, 108)
         if i == 1:
             blit(room, prop_laptop(), x + 8, 78)
-    blit(room, plant, 280, 100)
-    blit(room, neon, 140, 36)
+    blit(room, prop_plant(), 280, 100)
+    blit(room, prop_neon_sign(), 140, 36)
     blit(room, prop_server_rack(), 16, 70)
-    # hero
     blit(room, draw_hero(0), 160, 160)
     return room
 
 
 def room_meeting() -> Image.Image:
+    """会议室 — deep purple neon grid + hologram table."""
     W, H = 320, 240
-    room = new(W, H, P["bg"])
+    room = new(W, H, P["mt_floor"])
     fill_floor(room, tile_neon_floor())
-    brick = tile_brick_wall()
-    for x in range(0, W, 32):
-        blit(room, brick, x, 0)
-    # big table (compose from wood rects)
     d = ImageDraw.Draw(room)
-    rect(d, [80, 90, 240, 150], P["wood_d"])
-    rect(d, [84, 94, 236, 146], P["wood"])
-    # hologram center
+    # purple velvet back wall
+    for x in range(0, W, 32):
+        rect(d, [x, 0, x + 31, 40], P["mt_glow"])
+        rect(d, [x + 2, 4, x + 28, 36], P["purple"])
+    rect(d, [0, 40, 319, 42], P["holo"])
+    outline_rect(d, [80, 90, 240, 150], P["wood"], P["black"])
+    rect(d, [84, 94, 236, 146], P["wood_d"])
     blit(room, prop_hologram(), 148, 100)
-    # chairs around
+    soft_glow(d, 160, 120, 28, P["holo"], step=4)
     ch = prop_chair()
     for pos in [(100, 70), (160, 70), (220, 70), (90, 150), (160, 155), (230, 150)]:
         blit(room, ch, pos[0], pos[1])
-    blit(room, prop_neon_sign(), 120, 28)
+    blit(room, prop_neon_sign(), 120, 18)
     blit(room, draw_hero(1), 60, 180)
     return room
 
 
 def room_hutong_gate() -> Image.Image:
+    """胡同口 — night cobble alley + paifang (outdoor stone)."""
     W, H = 320, 240
     room = new(W, H, P["bg"])
-    fill_floor(room, tile_floor())
-    # side walls
+    fill_floor(room, tile_hutong_stone())
     brick = tile_brick_wall()
     for y in range(0, 160, 32):
         blit(room, brick, 0, y)
         blit(room, brick, 288, y)
-    # gate / paifang
     roof = tile_hutong_roof()
     for x in range(64, 256, 32):
         blit(room, roof, x, 16)
         blit(room, roof, x, 0)
-    door = tile_door()
-    blit(room, door, 144, 48)
-    # neon gate glow
+    blit(room, tile_door(), 144, 48)
     d = ImageDraw.Draw(room)
     rect(d, [100, 70, 220, 72], P["neon_p"])
     rect(d, [110, 40, 210, 42], P["holo"])
-    # lanterns
+    soft_glow(d, 160, 80, 40, P["neon_p"], step=5)
     lan = prop_lantern()
     blit(room, lan, 100, 48)
     blit(room, lan, 204, 48)
@@ -544,7 +683,6 @@ def room_hutong_gate() -> Image.Image:
     blit(room, prop_plant(), 48, 160)
     blit(room, prop_plant(), 260, 160)
     blit(room, draw_hero(2), 152, 140)
-    # scanline barrier
     for x in range(120, 200, 4):
         d.point((x, 100), fill=P["holo"])
         d.point((x + 1, 102), fill=P["screen"])
@@ -557,35 +695,28 @@ def gen_rooms():
     save(room_hutong_gate(), ASSETS / "rooms" / "room_hutong_gate.png")
 
 
-# ---------- dialog UI ----------
 def gen_dialog():
     img = new(256, 64)
     d = ImageDraw.Draw(img)
-    # outer neon
     rect(d, [0, 0, 255, 63], P["neon_p"])
     rect(d, [2, 2, 253, 61], P["purple"])
     rect(d, [4, 4, 251, 59], P["bg"])
-    # inner panel
     rect(d, [8, 8, 247, 55], P["floor"])
     rect(d, [10, 10, 245, 53], P["bg"])
-    # corner ornaments
     for cx, cy in [(6, 6), (249, 6), (6, 57), (249, 57)]:
         rect(d, [cx - 2, cy - 2, cx + 2, cy + 2], P["holo"])
-    # speaker nameplate
     rect(d, [12, 4, 80, 14], P["dark"])
     rect(d, [14, 6, 78, 12], P["neon_p2"])
-    # fake text dots (placeholder)
     for row, y in enumerate([20, 28, 36, 44]):
         for x in range(16, 200 - row * 10, 4):
             d.point((x, y), fill=P["metal"] if (x // 4) % 3 else P["white"])
-    # continue chevron
     d.point((240, 48), fill=P["lantern"])
     d.point((238, 46), fill=P["lantern"])
     d.point((242, 46), fill=P["lantern"])
     save(img, ASSETS / "ui" / "dialog_frame.png")
 
 
-# ---------- Hawaii scene ----------
+# ---------- Hawaii: warm daylight window office ----------
 def gen_hawaii():
     out = ASSETS / "scenes" / "hawaii"
     blind = tile_blind()
@@ -597,161 +728,180 @@ def gen_hawaii():
     save(prop_thermos(), out / "thermos.png")
     save(prop_plant(), out / "plant.png")
     save(prop_folders(), out / "folders.png")
+    save(tile_hawaii_floor(), out / "floor_wood.png")
+    save(tile_hawaii_wall(), out / "wall_cream.png")
 
-    # Window top + 靠窗长桌; three seats in a vertical line toward the window
     W, H = 320, 288
-    scene = new(W, H, P["bg"])
-    fill_floor(scene, tile_floor())
-    for x in range(0, W, 32):
-        blit(scene, blind, x, 0)
-        blit(scene, blind, x, 20)
-
+    scene = new(W, H, P["hw_wall"])
+    fill_floor(scene, tile_hawaii_floor())
     d = ImageDraw.Draw(scene)
-    rect(d, [0, 50, 319, 55], P["white"])
-    rect(d, [0, 55, 319, 57], P["metal"])
 
-    # Horizontal ledge under window
-    rect(d, [32, 58, 288, 78], P["wood_d"])
-    rect(d, [34, 60, 286, 76], P["wood"])
-    rect(d, [34, 60, 286, 63], P["wood_d"])
+    # cream side walls (2.5D thickness)
+    for y in range(52, H):
+        rect(d, [0, y, 10, y], P["hw_wall_d"])
+        rect(d, [309, y, 319, y], P["hw_wall_d"])
 
-    # Vertical desk run — seats line up along it (toward window)
-    dx = 120
-    rect(d, [dx, 70, dx + 56, 260], P["wood_d"])
-    rect(d, [dx + 2, 72, dx + 54, 258], P["wood"])
-    rect(d, [dx, 70, dx + 8, 260], P["wood_d"])
-    for ly in (100, 170, 240):
-        rect(d, [dx + 10, ly, dx + 12, ly + 10], P["metal"])
-        rect(d, [dx + 44, ly, dx + 46, ly + 10], P["metal"])
+    # window wall with blinds + sun shafts
+    for x in range(0, W, 32):
+        blit(scene, tile_hawaii_wall(), x, 0)
+        blit(scene, blind, x, 8)
+        blit(scene, blind, x, 28)
+    # sill
+    rect(d, [0, 56, 319, 62], P["hw_trim"])
+    rect(d, [0, 56, 319, 58], P["hw_desk_hi"])
+
+    # warm sun beams onto floor (chunky diagonal shafts)
+    for i, x0 in enumerate([40, 100, 160, 220]):
+        for k in range(0, 90, 3):
+            xx = x0 + k // 3
+            yy = 64 + k
+            if 12 < xx < 300 and yy < 250:
+                d.point((xx, yy), fill=P["hw_sun"] if k % 6 == 0 else P["hw_sun2"])
+
+    # continuous window-side long desk (horizontal ledge)
+    outline_rect(d, [24, 64, 296, 88], P["hw_desk"], P["hw_desk_edge"])
+    rect(d, [26, 66, 294, 70], P["hw_desk_hi"])
+    rect(d, [26, 84, 294, 86], P["hw_desk_edge"])
+
+    # vertical desk run — 3 seats in a vertical line toward the window
+    dx = 118
+    outline_rect(d, [dx, 78, dx + 60, 262], P["hw_desk"], P["hw_desk_edge"])
+    rect(d, [dx + 2, 80, dx + 58, 84], P["hw_desk_hi"])
+    rect(d, [dx, 78, dx + 6, 262], P["hw_desk_edge"])
+    # leg hints
+    for ly in (110, 178, 246):
+        rect(d, [dx + 8, ly, dx + 10, ly + 8], P["metal"])
+        rect(d, [dx + 48, ly, dx + 50, ly + 8], P["metal"])
 
     chairs = [
-        (dx + 60, 78, prop_chair()),
-        (dx + 60, 148, prop_chair_jacket()),
-        (dx + 60, 218, prop_chair()),
+        (dx + 64, 86, prop_chair()),
+        (dx + 64, 154, prop_chair_jacket()),
+        (dx + 64, 222, prop_chair()),
     ]
     for x, y, spr in chairs:
         blit(scene, spr, x, y)
 
-    blit(scene, prop_laptop(), dx + 14, 86)
-    blit(scene, prop_thermos(), dx + 36, 156)
-    blit(scene, prop_folders(), dx + 12, 228)
-    blit(scene, prop_plant(), 250, 58)
-    blit(scene, prop_plant(), dx + 38, 72)
-    blit(scene, prop_neon_sign(), 16, 120)
-    blit(scene, draw_hero(1), 250, 170)
-    for y in range(80, 280, 4):
-        d.point((290, y), fill=P["screen"])
+    blit(scene, prop_laptop(), dx + 16, 92)
+    blit(scene, prop_thermos(), dx + 40, 162)
+    blit(scene, prop_folders(), dx + 14, 234)
+    blit(scene, prop_plant(), 260, 66)
+    blit(scene, prop_plant(), dx + 40, 80)
+    # cyber hutong accent (small) — not a neon shop strip
+    rect(d, [16, 120, 18, 200], P["screen"])
+    blit(scene, prop_folders(), 20, 180)
+    blit(scene, draw_hero(1), 248, 168)
+
+    # soft warm ambient dots
+    for x, y in [(50, 200), (90, 240), (200, 250), (280, 200)]:
+        d.point((x, y), fill=P["hw_sun"])
 
     save(scene, out / "scene_hawaii.png")
 
 
-
-# ---------- Pop Mart (泡泡玛特店) ----------
+# ---------- Pop Mart: candy neon retail ----------
 def prop_blind_box_closed(color_key: str = "box_pink") -> Image.Image:
-    """Unopened blind box — cube with question mark vibes."""
     img = new(16, 16)
     d = ImageDraw.Draw(img)
     c = P[color_key]
-    # top face (lighter)
-    rect(d, [3, 2, 12, 5], P["white"])
-    rect(d, [4, 3, 11, 4], c)
-    # front
-    rect(d, [3, 5, 12, 14], c)
-    rect(d, [4, 6, 11, 13], P["white"])
-    # ? mark
+    outline_rect(d, [2, 2, 13, 14], c, P["black"])
+    rect(d, [3, 3, 12, 5], P["white"])
+    rect(d, [4, 6, 11, 12], P["white"])
     rect(d, [6, 7, 9, 8], P["purple"])
     rect(d, [8, 8, 9, 10], P["purple"])
     d.point((7, 11), fill=P["purple"])
-    # side edge 2.5D
-    rect(d, [12, 5, 13, 14], P["dark"])
+    rect(d, [13, 4, 14, 14], P["dark"])
     return img
 
 
 def prop_blind_box_open() -> Image.Image:
-    """Opened box + figure silhouette peeking out."""
     img = new(16, 20)
     d = ImageDraw.Draw(img)
-    # open box base
-    rect(d, [2, 10, 13, 18], P["box_yellow"])
+    outline_rect(d, [2, 10, 13, 18], P["box_yellow"], P["black"])
     rect(d, [3, 11, 12, 17], P["white"])
-    # flaps up
     rect(d, [1, 6, 4, 11], P["box_yellow"])
     rect(d, [11, 6, 14, 11], P["box_yellow"])
     rect(d, [4, 5, 11, 8], P["box_mint"])
-    # figure silhouette
     rect(d, [6, 2, 9, 12], P["black"])
-    rect(d, [5, 3, 10, 6], P["black"])  # head
+    rect(d, [5, 3, 10, 6], P["black"])
     d.point((6, 4), fill=P["holo"])
     d.point((9, 4), fill=P["neon_p"])
-    # arms
     rect(d, [4, 7, 5, 9], P["black"])
     rect(d, [10, 7, 11, 9], P["black"])
     return img
 
 
 def prop_figure_silhouette() -> Image.Image:
-    """Standalone blind-box figure prop (chibi silhouette)."""
     img = new(16, 24)
     d = ImageDraw.Draw(img)
-    # shadow
     for dx in range(-4, 5):
         for dy in range(-1, 2):
             if abs(dx) / 4 + abs(dy) / 1.5 < 1:
                 d.point((8 + dx, 22 + dy), fill=P["shadow"])
-    # body
-    rect(d, [5, 10, 10, 18], P["box_lilac"])
+    outline_rect(d, [5, 10, 10, 18], P["box_lilac"], P["black"])
     rect(d, [6, 11, 9, 17], P["purple"])
-    # head
-    rect(d, [4, 3, 11, 10], P["skin"])
+    outline_rect(d, [4, 3, 11, 10], P["skin"], P["black"])
     rect(d, [4, 2, 11, 5], P["hair"])
     d.point((6, 6), fill=P["holo"])
     d.point((9, 6), fill=P["holo"])
-    # blush
     d.point((5, 8), fill=P["neon_p"])
     d.point((10, 8), fill=P["neon_p"])
-    # legs
     rect(d, [5, 18, 7, 21], P["dark"])
     rect(d, [8, 18, 10, 21], P["dark"])
     return img
 
 
 def prop_shelf_boxes() -> Image.Image:
-    """Wall shelf stacked with colorful blind boxes."""
-    img = new(48, 40)
+    """Tall blind-box wall shelf — chunky candy cubes."""
+    img = new(56, 56)
     d = ImageDraw.Draw(img)
-    # shelf boards
-    for sy in (8, 22, 36):
-        rect(d, [0, sy, 47, sy + 2], P["wood_d"])
-        rect(d, [0, sy, 47, sy], P["wood"])
-    # backboard
-    rect(d, [0, 0, 47, 7], P["brick"])
-    colors = ["box_pink", "box_mint", "box_yellow", "box_lilac", "neon_p", "holo"]
-    for row, y in enumerate([0, 12, 26]):
-        for col, x in enumerate([2, 14, 26, 38]):
+    outline_rect(d, [0, 0, 55, 55], P["pm_shelf"], P["black"])
+    rect(d, [2, 2, 53, 6], P["pm_neon"])
+    colors = [
+        "box_pink", "box_mint", "box_yellow", "box_lilac",
+        "box_sky", "box_orange", "neon_p", "holo",
+    ]
+    for row, y in enumerate([8, 22, 36]):
+        rect(d, [2, y + 12, 53, y + 14], P["pm_wall"])
+        for col, x in enumerate([4, 16, 28, 40]):
             c = P[colors[(row * 4 + col) % len(colors)]]
-            rect(d, [x, y + 2, x + 9, y + 10], c)
-            rect(d, [x + 1, y + 3, x + 8, y + 4], P["white"])
-            d.point((x + 4, y + 6), fill=P["purple"])
+            outline_rect(d, [x, y, x + 10, y + 11], c, P["black"])
+            rect(d, [x + 1, y + 1, x + 9, y + 3], P["white"])
+            d.point((x + 5, y + 6), fill=P["purple"])
     return img
 
 
 def prop_display_counter() -> Image.Image:
-    """Shop display counter with glass top glow."""
-    img = new(64, 32)
+    img = new(80, 40)
     d = ImageDraw.Draw(img)
-    # counter body
-    rect(d, [2, 10, 61, 30], P["wood_d"])
-    rect(d, [4, 12, 59, 28], P["wood"])
-    # glass top
-    rect(d, [4, 4, 59, 12], P["floor2"])
-    rect(d, [6, 5, 57, 10], P["screen"])
-    # neon trim
-    rect(d, [2, 10, 61, 11], P["neon_p"])
-    # drawers
-    rect(d, [10, 16, 28, 24], P["wood_d"])
-    rect(d, [36, 16, 54, 24], P["wood_d"])
-    d.point((19, 20), fill=P["metal"])
-    d.point((45, 20), fill=P["metal"])
+    outline_rect(d, [2, 12, 77, 38], P["pm_counter"], P["black"])
+    rect(d, [4, 14, 75, 36], P["pm_counter_d"])
+    # glass top with neon edge
+    outline_rect(d, [4, 2, 75, 14], P["pm_glass"], P["pm_neon2"])
+    rect(d, [6, 4, 73, 10], P["white"])
+    rect(d, [2, 12, 77, 13], P["pm_neon"])
+    rect(d, [12, 20, 34, 30], P["pm_wall"])
+    rect(d, [46, 20, 68, 30], P["pm_wall"])
+    d.point((23, 25), fill=P["pm_neon2"])
+    d.point((57, 25), fill=P["pm_neon2"])
+    return img
+
+
+def prop_blind_box_wall() -> Image.Image:
+    """Full-height colorful blind-box wall panel."""
+    img = new(48, 64)
+    d = ImageDraw.Draw(img)
+    outline_rect(d, [0, 0, 47, 63], P["pm_wall"], P["black"])
+    colors = [
+        "box_pink", "box_mint", "box_yellow", "box_lilac",
+        "box_sky", "box_orange", "pm_neon", "pm_neon2",
+    ]
+    for row in range(5):
+        for col in range(3):
+            x, y = 4 + col * 14, 4 + row * 12
+            c = P[colors[(row * 3 + col) % len(colors)]]
+            outline_rect(d, [x, y, x + 11, y + 10], c, P["black"])
+            rect(d, [x + 1, y + 1, x + 10, y + 3], P["white"])
+            d.point((x + 5, y + 6), fill=P["purple"])
     return img
 
 
@@ -762,7 +912,10 @@ def gen_popmart():
     save(prop_figure_silhouette(), out / "figure.png")
     save(prop_shelf_boxes(), out / "shelf_boxes.png")
     save(prop_display_counter(), out / "counter.png")
-    # also drop copies into shared props
+    save(prop_blind_box_wall(), out / "box_wall.png")
+    save(tile_popmart_floor(), out / "floor_candy.png")
+    save(tile_popmart_wall(), out / "wall_retail.png")
+
     save(prop_blind_box_closed("box_mint"), ASSETS / "props" / "blind_box.png")
     save(prop_blind_box_open(), ASSETS / "props" / "blind_box_open.png")
     save(prop_figure_silhouette(), ASSETS / "props" / "popmart_figure.png")
@@ -770,139 +923,114 @@ def gen_popmart():
     save(prop_display_counter(), ASSETS / "props" / "display_counter.png")
 
     W, H = 320, 240
-    scene = new(W, H, P["bg"])
-    fill_floor(scene, tile_neon_floor())
-    brick = tile_brick_wall()
-    for x in range(0, W, 32):
-        blit(scene, brick, x, 0)
-        blit(scene, brick, x, 16)
-
+    scene = new(W, H, P["pm_wall"])
+    fill_floor(scene, tile_popmart_floor())
     d = ImageDraw.Draw(scene)
-    # pink/cyan shop strip light
-    rect(d, [0, 48, 319, 50], P["neon_p"])
-    rect(d, [0, 51, 319, 52], P["holo"])
 
-    # back wall shelves of blind boxes
+    # retail back wall panels
+    for x in range(0, W, 32):
+        blit(scene, tile_popmart_wall(), x, 0)
+        blit(scene, tile_popmart_wall(), x, 20)
+
+    # pink/mint strip lights
+    rect(d, [0, 52, 319, 54], P["pm_neon"])
+    rect(d, [0, 55, 319, 56], P["pm_neon2"])
+    soft_glow(d, 80, 60, 20, P["pm_neon"], step=4)
+    soft_glow(d, 240, 60, 20, P["pm_neon2"], step=4)
+
+    # blind-box walls + shelves
+    wall = prop_blind_box_wall()
+    blit(scene, wall, 8, 40)
+    blit(scene, wall, 264, 40)
     shelf = prop_shelf_boxes()
-    blit(scene, shelf, 16, 40)
-    blit(scene, shelf, 80, 40)
-    blit(scene, shelf, 192, 40)
-    blit(scene, shelf, 256, 40)
+    blit(scene, shelf, 70, 36)
+    blit(scene, shelf, 150, 36)
 
-    # display counter center-front
+    # store neon marquee
+    outline_rect(d, [100, 58, 220, 78], P["pm_wall_hi"], P["black"])
+    rect(d, [104, 62, 216, 74], P["pm_neon"])
+    for x in range(110, 210, 12):
+        rect(d, [x, 64, x + 6, 72], P["white"])
+        d.point((x + 3, 68), fill=P["pm_neon2"])
+
+    # central display counter
     counter = prop_display_counter()
-    blit(scene, counter, 128, 130)
+    blit(scene, counter, 120, 130)
 
-    # unopened boxes on counter + floor stack
-    for i, ck in enumerate(["box_pink", "box_mint", "box_yellow", "box_lilac"]):
-        blit(scene, prop_blind_box_closed(ck), 136 + i * 14, 122)
-    blit(scene, prop_blind_box_closed("neon_p"), 40, 160)
-    blit(scene, prop_blind_box_closed("box_mint"), 52, 168)
-    blit(scene, prop_blind_box_closed("box_yellow"), 44, 176)
+    for i, ck in enumerate(["box_pink", "box_mint", "box_yellow", "box_lilac", "box_sky"]):
+        blit(scene, prop_blind_box_closed(ck), 128 + i * 14, 122)
 
-    # opened box + figure (拆盲盒 moment)
-    blit(scene, prop_blind_box_open(), 200, 118)
-    blit(scene, prop_figure_silhouette(), 230, 150)
+    # openable boxes on floor + 拆盲盒 moment
+    blit(scene, prop_blind_box_closed("box_orange"), 36, 160)
+    blit(scene, prop_blind_box_closed("box_mint"), 50, 170)
+    blit(scene, prop_blind_box_closed("box_yellow"), 42, 182)
+    blit(scene, prop_blind_box_open(), 210, 118)
+    blit(scene, prop_figure_silhouette(), 240, 148)
 
-    # neon store sign
-    blit(scene, prop_neon_sign(), 136, 54)
-    # plant corner
-    blit(scene, prop_plant(), 292, 100)
-    blit(scene, prop_plant(), 8, 100)
-    # hero browsing
-    blit(scene, draw_hero(0), 100, 170)
-    # floor glow dots (cyber shop)
-    for x in range(20, 300, 16):
-        d.point((x, 220), fill=P["screen"])
+    # candy floor path lights
+    for x in range(16, 304, 20):
+        d.point((x, 220), fill=P["pm_neon"] if (x // 20) % 2 else P["pm_neon2"])
 
+    blit(scene, draw_hero(0), 90, 168)
     save(scene, out / "scene_popmart.png")
 
 
-# ---------- Restroom (厕所) ----------
-def tile_restroom_floor() -> Image.Image:
-    t = new(32, 32, P["tile_white"])
-    d = ImageDraw.Draw(t)
-    # porcelain tiles with grout
-    for y in range(0, 32, 8):
-        for x in range(0, 32, 8):
-            rect(d, [x, y, x + 7, y + 7], P["porcelain"])
-            rect(d, [x, y, x + 7, y], P["tile_grout"])
-            rect(d, [x, y, x, y + 7], P["tile_grout"])
-    # subtle wet sheen
-    d.point((10, 12), fill=P["holo"])
-    d.point((22, 20), fill=P["screen"])
-    return t
-
-
+# ---------- Restroom: cool utilitarian ----------
 def prop_stall() -> Image.Image:
-    """One toilet stall (隔间) — door + side panels, 2.5D."""
-    img = new(40, 56)
+    img = new(44, 60)
     d = ImageDraw.Draw(img)
-    # side walls
-    rect(d, [0, 4, 3, 52], P["stall_beige"])
-    rect(d, [36, 4, 39, 52], P["stall_beige"])
-    rect(d, [0, 4, 3, 8], P["wood"])
-    rect(d, [36, 4, 39, 8], P["wood"])
-    # door
-    rect(d, [4, 6, 35, 50], P["metal"])
-    rect(d, [6, 8, 33, 48], P["stall_beige"])
+    outline_rect(d, [0, 4, 3, 56], P["rr_stall"], P["black"])
+    outline_rect(d, [40, 4, 43, 56], P["rr_stall"], P["black"])
+    outline_rect(d, [4, 6, 39, 54], P["rr_stall"], P["black"])
+    rect(d, [6, 8, 37, 50], P["rr_stall_d"])
     # gap under door
-    rect(d, [6, 46, 33, 50], P["floor"])
-    # door frame top
-    rect(d, [0, 0, 39, 5], P["dark"])
-    rect(d, [2, 1, 37, 3], P["metal"])
-    # lock / occupied indicator
-    rect(d, [28, 24, 32, 28], P["dark"])
-    d.point((30, 26), fill=P["neon_p2"])  # red-ish occupied/cyber lock
-    # feet gap hint (optional empty)
+    rect(d, [6, 50, 37, 54], P["rr_floor2"])
+    outline_rect(d, [0, 0, 43, 6], P["rr_metal"], P["black"])
+    # cyber lock
+    outline_rect(d, [30, 26, 36, 32], P["dark"], P["black"])
+    d.point((33, 29), fill=P["neon_p2"])
     return img
 
 
 def prop_stall_open() -> Image.Image:
-    """Stall with door ajar — toilet bowl visible."""
     img = prop_stall()
     d = ImageDraw.Draw(img)
-    # open door swung (overwrite center with darker interior)
-    rect(d, [8, 10, 30, 48], P["floor2"])
-    # toilet
-    rect(d, [14, 28, 24, 40], P["porcelain"])
-    rect(d, [16, 22, 22, 28], P["porcelain"])
-    rect(d, [17, 30, 21, 36], P["screen"])  # water
-    # door panel to the side
-    rect(d, [30, 8, 38, 48], P["stall_beige"])
-    rect(d, [31, 10, 37, 46], P["metal"])
+    rect(d, [8, 10, 32, 52], P["rr_wall_d"])
+    # toilet bowl
+    outline_rect(d, [14, 30, 28, 46], P["rr_porcelain"], P["black"])
+    rect(d, [16, 22, 26, 30], P["rr_porcelain"])
+    rect(d, [18, 33, 24, 40], P["rr_wet"])
+    # door ajar
+    outline_rect(d, [32, 8, 42, 52], P["rr_stall"], P["black"])
+    rect(d, [33, 10, 41, 50], P["rr_metal"])
     return img
 
 
 def prop_sink() -> Image.Image:
-    """Porcelain sink with faucet (水池)."""
-    img = new(28, 24)
+    img = new(32, 28)
     d = ImageDraw.Draw(img)
-    # basin
-    rect(d, [2, 8, 25, 20], P["sink_steel"])
-    rect(d, [4, 10, 23, 18], P["porcelain"])
-    rect(d, [8, 12, 19, 16], P["screen"])  # water / reflection
+    outline_rect(d, [2, 10, 29, 24], P["rr_metal"], P["black"])
+    rect(d, [4, 12, 27, 22], P["rr_porcelain"])
+    rect(d, [8, 14, 23, 19], P["rr_wet"])
+    d.point((15, 16), fill=P["white"])
     # faucet
-    rect(d, [12, 2, 15, 10], P["metal"])
-    rect(d, [10, 2, 17, 4], P["metal"])
-    d.point((13, 1), fill=P["holo"])
-    # handles
-    rect(d, [6, 4, 9, 6], P["dark"])
-    rect(d, [18, 4, 21, 6], P["dark"])
-    # pedestal / wall mount shadow
-    rect(d, [10, 20, 17, 23], P["dark"])
+    outline_rect(d, [13, 2, 18, 12], P["rr_metal"], P["black"])
+    rect(d, [10, 2, 21, 5], P["rr_metal"])
+    d.point((15, 1), fill=P["rr_fluoro2"])
+    rect(d, [6, 5, 10, 8], P["dark"])
+    rect(d, [21, 5, 25, 8], P["dark"])
+    rect(d, [12, 24, 19, 27], P["dark"])
     return img
 
 
 def prop_mirror() -> Image.Image:
-    img = new(24, 20)
+    img = new(28, 24)
     d = ImageDraw.Draw(img)
-    rect(d, [0, 0, 23, 19], P["metal"])
-    rect(d, [2, 2, 21, 17], P["floor2"])
-    rect(d, [3, 3, 20, 16], P["screen"])
-    # neon rim
-    rect(d, [1, 1, 22, 1], P["holo"])
-    rect(d, [1, 18, 22, 18], P["neon_p"])
+    outline_rect(d, [0, 0, 27, 23], P["rr_metal"], P["black"])
+    rect(d, [2, 2, 25, 21], P["rr_fluoro"])
+    rect(d, [4, 4, 23, 18], P["rr_wet2"])
+    rect(d, [1, 1, 26, 1], P["rr_fluoro2"])
+    rect(d, [1, 22, 26, 22], P["holo"])
     return img
 
 
@@ -913,62 +1041,79 @@ def gen_restroom():
     save(prop_sink(), out / "sink.png")
     save(prop_mirror(), out / "mirror.png")
     save(tile_restroom_floor(), out / "floor_tile.png")
+    save(tile_restroom_wall(), out / "wall_subway.png")
     save(prop_stall(), ASSETS / "props" / "stall.png")
     save(prop_sink(), ASSETS / "props" / "sink.png")
 
     W, H = 320, 240
-    scene = new(W, H, P["bg"])
+    scene = new(W, H, P["rr_wall"])
     fill_floor(scene, tile_restroom_floor())
-    brick = tile_brick_wall()
-    for x in range(0, W, 32):
-        blit(scene, brick, x, 0)
-        blit(scene, brick, x, 12)
-
     d = ImageDraw.Draw(scene)
-    # fluorescent strip
-    rect(d, [40, 36, 280, 40], P["white"])
-    rect(d, [40, 40, 280, 41], P["holo"])
 
-    # Four stalls along the back wall
+    # cool subway tile back + side walls
+    for x in range(0, W, 32):
+        blit(scene, tile_restroom_wall(), x, 0)
+        blit(scene, tile_restroom_wall(), x, 16)
+    for y in range(48, H, 32):
+        blit(scene, tile_restroom_wall(), 0, y)
+        # right wall only below sink zone starts later
+
+    # fluorescent tube with cool bloom
+    outline_rect(d, [24, 36, 296, 44], P["rr_fluoro"], P["rr_metal"])
+    rect(d, [28, 38, 292, 42], P["white"])
+    soft_glow(d, 160, 48, 36, P["rr_fluoro2"], step=4)
+
+    # Four stalls
     stall = prop_stall()
     stall_open = prop_stall_open()
-    positions = [16, 64, 112, 160]
+    positions = [20, 68, 116, 164]
     for i, x in enumerate(positions):
-        blit(scene, stall_open if i == 2 else stall, x, 44)
+        blit(scene, stall_open if i == 2 else stall, x, 48)
 
-    # Outside stalls: two sinks on the right wall area
+    # Outside stalls: two sinks + mirrors
     sink = prop_sink()
     mirror = prop_mirror()
-    blit(scene, mirror, 248, 48)
-    blit(scene, mirror, 280, 48)
-    blit(scene, sink, 246, 70)
-    blit(scene, sink, 278, 70)
+    blit(scene, mirror, 236, 48)
+    blit(scene, mirror, 276, 48)
+    blit(scene, sink, 234, 74)
+    blit(scene, sink, 274, 74)
 
-    # drain / wet floor accents
-    for x, y in [(220, 160), (230, 168), (210, 170)]:
-        d.point((x, y), fill=P["screen"])
+    # wet floor puddles near sinks / aisle
+    for cluster in [
+        [(228, 150), (230, 152), (232, 150), (231, 154)],
+        [(250, 160), (252, 162), (254, 161)],
+        [(180, 170), (182, 172), (184, 170), (183, 174)],
+        [(100, 190), (102, 191)],
+    ]:
+        for x, y in cluster:
+            d.point((x, y), fill=P["rr_wet"])
+        d.point(cluster[0], fill=P["rr_wet2"])
 
-    # trash / paper bin hint
-    rect(d, [300, 160, 310, 180], P["dark"])
-    rect(d, [302, 162, 308, 170], P["metal"])
+    # caution wet stripe
+    for x in range(210, 300, 4):
+        c = P["rr_caution"] if (x // 4) % 2 == 0 else P["black"]
+        rect(d, [x, 200, x + 3, 203], c)
 
-    # neon exit strip on left
-    rect(d, [4, 100, 8, 140], P["holo"])
-    blit(scene, prop_neon_sign(), 8, 100)
+    # trash bin
+    outline_rect(d, [298, 150, 314, 185], P["rr_metal"], P["black"])
+    rect(d, [300, 152, 312, 160], P["dark"])
 
-    # hero outside stalls near sinks
+    # cool exit strip (utilitarian, not neon shop)
+    rect(d, [6, 100, 10, 150], P["rr_fluoro2"])
+    outline_rect(d, [12, 108, 40, 128], P["rr_wall_d"], P["black"])
+    rect(d, [14, 110, 38, 126], P["rr_fluoro"])
+    d.point((26, 118), fill=P["holo"])
+
+    # stall / wash zone divider
+    for y in range(110, 200, 2):
+        d.point((214, y), fill=P["rr_grout"])
+
     blit(scene, draw_hero(3), 220, 140)
-
-    # divider line suggesting stall front vs wash zone
-    for y in range(100, 200, 3):
-        d.point((210, y), fill=P["tile_grout"])
-
     save(scene, out / "scene_restroom.png")
 
 
-
 def main():
-    print("Generating cyber-hutong Phase-1 assets…")
+    print("Generating cyber-hutong Phase-1 assets (Soul Knight 2.5D, distinct worlds)…")
     gen_characters()
     gen_tileset()
     gen_props()
