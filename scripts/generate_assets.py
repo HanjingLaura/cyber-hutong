@@ -89,22 +89,22 @@ P = {
     "box_lilac": (190, 150, 255, 255),
     "box_sky": (120, 200, 255, 255),
     "box_orange": (255, 160, 80, 255),
-    # --- RESTROOM: cool utilitarian tile ---
-    "rr_floor": (180, 195, 210, 255),
-    "rr_floor2": (155, 172, 190, 255),
-    "rr_grout": (110, 125, 145, 255),
-    "rr_wet": (140, 200, 220, 255),
-    "rr_wet2": (100, 170, 195, 255),
-    "rr_wall": (200, 210, 218, 255),
-    "rr_wall_d": (150, 165, 180, 255),
-    "rr_tile_hi": (230, 236, 242, 255),
-    "rr_stall": (165, 158, 145, 255),
-    "rr_stall_d": (120, 115, 105, 255),
-    "rr_metal": (130, 145, 160, 255),
-    "rr_porcelain": (235, 240, 245, 255),
-    "rr_fluoro": (230, 245, 255, 255),
-    "rr_fluoro2": (160, 210, 230, 255),
-    "rr_caution": (230, 200, 60, 255),
+    # --- RESTROOM: pastel game-toilet (NOT muddy public-toilet grey) ---
+    "rr_floor": (210, 235, 230, 255),
+    "rr_floor2": (180, 215, 208, 255),
+    "rr_grout": (160, 200, 195, 255),
+    "rr_wet": (190, 230, 240, 255),
+    "rr_wet2": (160, 210, 220, 255),
+    "rr_wall": (230, 245, 240, 255),
+    "rr_wall_d": (170, 205, 198, 255),
+    "rr_tile_hi": (250, 255, 252, 255),
+    "rr_stall": (180, 220, 210, 255),
+    "rr_stall_d": (120, 175, 165, 255),
+    "rr_metal": (150, 175, 185, 255),
+    "rr_porcelain": (250, 252, 255, 255),
+    "rr_fluoro": (255, 250, 230, 255),
+    "rr_fluoro2": (200, 240, 230, 255),
+    "rr_caution": (255, 170, 190, 255),
     # supporting rooms
     "of_floor": (32, 48, 72, 255),
     "of_floor2": (48, 68, 98, 255),
@@ -376,11 +376,11 @@ def tile_restroom_floor() -> Image.Image:
             rect(d, [x, y, min(x + 9, 31), min(y + 9, 31)], c)
             rect(d, [x, y, min(x + 9, 31), y], P["rr_grout"])
             rect(d, [x, y, x, min(y + 9, 31)], P["rr_grout"])
-    # wet puddle hints
-    for pts in [(8, 10), (9, 11), (10, 10), (22, 20), (23, 21), (14, 24)]:
-        d.point(pts, fill=P["rr_wet"])
-    d.point((9, 10), fill=P["rr_wet2"])
-    d.point((23, 20), fill=P["white"])
+    # cute sparkle hints (not grimy puddles)
+    for pts in [(8, 10), (22, 20), (14, 24)]:
+        d.point(pts, fill=P["rr_fluoro"])
+    d.point((9, 10), fill=P["white"])
+    d.point((23, 20), fill=P["rr_caution"])
     return t
 
 
@@ -975,7 +975,7 @@ def gen_popmart():
     save(scene, out / "scene_popmart.png")
 
 
-# ---------- Restroom: cool utilitarian ----------
+# ---------- Restroom: pastel game-toilet (charming, not grimy) ----------
 def prop_stall() -> Image.Image:
     img = new(44, 60)
     d = ImageDraw.Draw(img)
@@ -1078,31 +1078,25 @@ def gen_restroom():
     blit(scene, sink, 234, 74)
     blit(scene, sink, 274, 74)
 
-    # wet floor puddles near sinks / aisle
-    for cluster in [
-        [(228, 150), (230, 152), (232, 150), (231, 154)],
-        [(250, 160), (252, 162), (254, 161)],
-        [(180, 170), (182, 172), (184, 170), (183, 174)],
-        [(100, 190), (102, 191)],
-    ]:
-        for x, y in cluster:
-            d.point((x, y), fill=P["rr_wet"])
-        d.point(cluster[0], fill=P["rr_wet2"])
+    # charm mats + sparkles (fill empty aisle)
+    outline_rect(d, [80, 130, 130, 210], P["rr_stall"], P["black"])
+    for y in range(136, 205, 10):
+        rect(d, [84, y, 126, y + 4], P["rr_caution"] if (y // 10) % 2 else P["rr_fluoro"])
+    outline_rect(d, [220, 110, 300, 120], P["rr_stall"], P["black"])
+    outline_rect(d, [220, 175, 300, 185], P["rr_stall"], P["black"])
 
-    # caution wet stripe
-    for x in range(210, 300, 4):
-        c = P["rr_caution"] if (x // 4) % 2 == 0 else P["black"]
-        rect(d, [x, 200, x + 3, 203], c)
-
-    # trash bin
+    # pastel trash
     outline_rect(d, [298, 150, 314, 185], P["rr_metal"], P["black"])
-    rect(d, [300, 152, 312, 160], P["dark"])
+    rect(d, [300, 152, 312, 160], P["rr_caution"])
 
-    # cool exit strip (utilitarian, not neon shop)
-    rect(d, [6, 100, 10, 150], P["rr_fluoro2"])
+    # cute exit / sign
+    rect(d, [6, 100, 10, 150], P["rr_caution"])
     outline_rect(d, [12, 108, 40, 128], P["rr_wall_d"], P["black"])
     rect(d, [14, 110, 38, 126], P["rr_fluoro"])
     d.point((26, 118), fill=P["holo"])
+    # plant accents
+    blit(scene, prop_plant(), 196, 100)
+    blit(scene, prop_plant(), 50, 180)
 
     # stall / wash zone divider
     for y in range(110, 200, 2):
@@ -1122,6 +1116,24 @@ def main():
     gen_hawaii()
     gen_popmart()
     gen_restroom()
+    # Scene A/B/C variants (prettier options; does not touch cast sprites)
+    try:
+        from generate_scene_variants import main as gen_variants
+        gen_variants()
+        # Promote densest/warmer B as default scene mocks
+        import shutil
+        for scene, name in (
+            ("restroom", "scene_restroom.png"),
+            ("popmart", "scene_popmart.png"),
+            ("hawaii", "scene_hawaii.png"),
+        ):
+            src = ASSETS / "scenes" / scene / "variants" / "b" / "scene.png"
+            dst = ASSETS / "scenes" / scene / name
+            if src.exists():
+                shutil.copy2(src, dst)
+                print(f"  promoted variants/b -> {dst.relative_to(ROOT)}")
+    except Exception as e:
+        print(f"  (variants skipped: {e})")
     print("Done.")
 
 

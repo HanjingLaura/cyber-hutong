@@ -29,6 +29,9 @@ Soul Knight 风格的 **2.5D 斜俯视** 像素探索小品。当前仓库为 **
 # 重新生成像素图（需 Python3 + Pillow）
 python3 scripts/generate_assets.py
 
+# 场景 A/B/C 变体（Soul Knight 选型，不碰 cast）
+python3 scripts/generate_scene_variants.py
+
 # 本地打开画廊
 npx --yes serve public -p 4173
 # 或直接用浏览器打开 public/index.html
@@ -45,11 +48,12 @@ cyber-hutong/
 ├── design/
 │   ├── art-brief.md              # 调色板、2.5D、瓦片规格
 │   └── scenes/
-│       ├── hawaii.md             # 夏威夷场景简报
-│       ├── popmart.md            # 泡泡玛特店
-│       └── restroom.md           # 厕所（四隔间+两水池）
+│       ├── hawaii.md / popmart.md / restroom.md
+│       └── variants.md           # A/B/C 选型 trait 矩阵
 ├── scripts/
-│   └── generate_assets.py        # Pillow 生成全部 PNG
+│   ├── generate_assets.py        # Pillow 生成全部 PNG
+│   ├── generate_cast.py          # 8 chibi cast（勿删）
+│   └── generate_scene_variants.py # 场景 A/B/C 变体
 └── public/
     ├── index.html                # 像素预览画廊
     └── assets/
@@ -60,8 +64,15 @@ cyber-hutong/
         ├── scenes/hawaii/        # 夏威夷合成 + 局部道具
         ├── scenes/popmart/       # 泡泡玛特店 + 盲盒道具
         ├── scenes/restroom/      # 厕所四隔间 + 水池
+        │     └── variants/{a,b,c}/
         └── ui/                   # 对话框边框
 ```
+
+## 场景变体（选型）
+
+每场景 A/B/C：palette / denser props / warmer light。详见 [`design/scenes/variants.md`](design/scenes/variants.md)。  
+当前主图 `scene_*.png` = **变体 B**（dense + warmer）。
+
 
 ## 场景差异化（v2）
 
@@ -71,7 +82,7 @@ cyber-hutong/
 |------|------|------|
 | 夏威夷 | 暖木地板 | 窗缝暖日光 |
 | 泡泡玛特 | 粉×薄荷糖果格 | 粉/青霓虹 |
-| 厕所 | 冷瓷砖 + 积水 | 冷白荧光 |
+| 厕所 | pastel 瓷（非泥灰） | 舒适暖白/粉 |
 | 工位 / 会议室 / 胡同口 | 暗青绿 / 深紫霓虹 / 夜石板 | 各自独立 |
 
 风格对标 Soul Knight：chunky 轮廓、强剪影、斜俯视 2.5D。

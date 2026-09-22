@@ -121,8 +121,21 @@
     </section>
     <section>
       <h2>命名场景 · 厕所 Restroom</h2>
-      <p style="color:var(--muted);font-size:.8rem;margin-top:-.5rem">四隔间 · 隔间外两个水池 · 镜面灯带</p>
+      <p style="color:var(--muted);font-size:.8rem;margin-top:-.5rem">四隔间 · 隔间外两个水池 · pastel 游戏风（非泥灰）· 主图=变体 B</p>
       <div class="grid" id="restroom"></div>
+    </section>
+    <section>
+      <h2>场景变体 · 选型 A / B / C</h2>
+      <p style="color:var(--muted);font-size:.8rem;margin-top:-.5rem">
+        Soul Knight cute chunky · A pastel/cleaner · B denser+warmer · C accent palette ·
+        详见 <code>design/scenes/variants.md</code> · 主图暂用 B
+      </p>
+      <h3 style="color:var(--neon);font-size:.85rem">厕所 restroom</h3>
+      <div class="grid" id="var-restroom"></div>
+      <h3 style="color:var(--neon);font-size:.85rem">泡泡玛特 popmart</h3>
+      <div class="grid" id="var-popmart"></div>
+      <h3 style="color:var(--neon);font-size:.85rem">夏威夷 hawaii</h3>
+      <div class="grid" id="var-hawaii"></div>
     </section>
     <section>
       <h2>对话框 UI</h2>
@@ -132,7 +145,7 @@
       </div>
     </section>
   </main>
-  <footer>设计简报 <a href="../design/art-brief.md">art-brief</a> · <a href="../design/cast.md">cast</a> · 场景 <a href="../design/scenes/hawaii.md">hawaii</a> / <a href="../design/scenes/popmart.md">popmart</a> / <a href="../design/scenes/restroom.md">restroom</a></footer>
+  <footer>设计简报 <a href="../design/art-brief.md">art-brief</a> · <a href="../design/cast.md">cast</a> · 场景 <a href="../design/scenes/hawaii.md">hawaii</a> / <a href="../design/scenes/popmart.md">popmart</a> / <a href="../design/scenes/restroom.md">restroom</a> / <a href="../design/scenes/variants.md">variants</a></footer>
   <script>
     const pixel = (src, caption, cls = "x3") => {
       const f = document.createElement("figure");
@@ -192,6 +205,22 @@
       document.getElementById("restroom").appendChild(
         pixel(`assets/scenes/restroom/${n}.png`, n, "x3")
       );
+    });
+
+    const varLabels = {
+      restroom: {a:"A mint pastel", b:"B peach dense+warm", c:"C lilac arcade"},
+      popmart:  {a:"A candy pink×mint", b:"B peach warm dense", c:"C lilac×sky"},
+      hawaii:   {a:"A honey soft", b:"B amber dense", c:"C cream-olive"},
+    };
+    ["restroom","popmart","hawaii"].forEach(scene => {
+      const el = document.getElementById("var-" + scene);
+      ["a","b","c"].forEach(k => {
+        el.appendChild(pixel(
+          `assets/scenes/${scene}/variants/${k}/scene.png`,
+          `${scene} ${k.toUpperCase()} · ${varLabels[scene][k]}`,
+          "room"
+        ));
+      });
     });
   </script>
 </body>

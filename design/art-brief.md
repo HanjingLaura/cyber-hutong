@@ -28,7 +28,7 @@
 |------|------|------|------|------|
 | 夏威夷 | 暖色木地板 | 奶油灰泥 + 卷帘窗 | 暖日光斜射 | 工位午后 |
 | 泡泡玛特店 | 粉×薄荷糖果格 | 紫粉零售面板 | 粉/青霓虹灯带 | 潮玩店 |
-| 厕所 | 冷灰瓷砖 + 积水反光 | 冷色地铁砖 | 冷白荧光管 | 实用洗手间 |
+| 厕所 | pastel 瓷砖（非泥灰） | 干净地铁砖 | 舒适暖白/粉光 | 游戏风可爱厕 |
 | 工位（supporting） | 暗青绿格子 | 青砖 + 霓虹描边 | 屏幕青光 | 夜班工位 |
 | 会议室 | 深紫霓虹网格 | 紫绒墙 | 全息青光 | 赛博会议 |
 | 胡同口 | 夜间石板/卵石 | 青砖巷壁 + 牌楼 | 灯笼暖光 + 霓虹 | 户外夜巷 |
@@ -77,12 +77,15 @@ public/assets/
     hawaii/    scene_hawaii.png + props + floor_wood / wall_cream
     popmart/   scene_popmart.png + candy floor / retail wall / box wall
     restroom/  scene_restroom.png + subway tile / wall_subway
+    */variants/{a,b,c}/scene.png  # Soul Knight 选型变体
   ui/          dialog_frame.png
 ```
 
 ## 风格关键词
 
-Soul Knight 可读性、chunky 轮廓、独立场景光色、霓虹雨夜胡同、潮玩糖果店、暖日光工位、冷瓷洗手间。
+Soul Knight 可读性、chunky 轮廓、独立场景光色、霓虹雨夜胡同、潮玩糖果店、暖日光工位、pastel 游戏风洗手间。
+
+场景变体选型：[`design/scenes/variants.md`](scenes/variants.md) · `scripts/generate_scene_variants.py`
 
 ## 非目标（本阶段不做）
 
