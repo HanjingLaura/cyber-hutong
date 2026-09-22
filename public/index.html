@@ -86,7 +86,12 @@
   </header>
   <main>
     <section>
-      <h2>角色 idle（×3）</h2>
+      <h2>Cast · 8 Soul Knight chibi（idle_front ×3）</h2>
+      <p style="color:var(--muted);font-size:.8rem;margin-top:-.5rem">大头小身 · 粗描边 · 发型/衣着线索差异化 · 详见 <code>design/cast.md</code></p>
+      <div class="grid" id="cast"></div>
+    </section>
+    <section>
+      <h2>Hero idle（原型）</h2>
       <div class="grid" id="chars"></div>
     </section>
     <section>
@@ -127,7 +132,7 @@
       </div>
     </section>
   </main>
-  <footer>设计简报 <a href="../design/art-brief.md">design/art-brief.md</a> · 场景 <a href="../design/scenes/hawaii.md">hawaii</a> / <a href="../design/scenes/popmart.md">popmart</a> / <a href="../design/scenes/restroom.md">restroom</a></footer>
+  <footer>设计简报 <a href="../design/art-brief.md">art-brief</a> · <a href="../design/cast.md">cast</a> · 场景 <a href="../design/scenes/hawaii.md">hawaii</a> / <a href="../design/scenes/popmart.md">popmart</a> / <a href="../design/scenes/restroom.md">restroom</a></footer>
   <script>
     const pixel = (src, caption, cls = "x3") => {
       const f = document.createElement("figure");
@@ -135,6 +140,12 @@
       f.innerHTML = `<img class="pixel ${cls}" src="${src}" alt="${caption}" /><figcaption>${caption}</figcaption>`;
       return f;
     };
+    for (let i = 1; i <= 8; i++) {
+      const id = String(i).padStart(2, "0");
+      document.getElementById("cast").appendChild(
+        pixel(`assets/characters/cast_${id}/idle_front.png`, `cast_${id}`)
+      );
+    }
     for (let i = 0; i < 4; i++) {
       document.getElementById("chars").appendChild(
         pixel(`assets/characters/hero_idle_${i}.png`, `hero_idle_${i}`)

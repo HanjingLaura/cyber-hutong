@@ -85,3 +85,14 @@ cyber-hutong/
 ## 许可证
 
 私有仓库。资产与代码归项目所有者。
+
+## Cast (8 chibi)
+
+Soul Knight–style pixel avatars (stylized, not photoreal). See `design/cast.md`.
+
+```
+public/assets/characters/cast_XX/{idle_front,idle_side,walk_0,walk_1}.png
+```
+
+Regenerate: `python3 scripts/generate_cast.py`
+
