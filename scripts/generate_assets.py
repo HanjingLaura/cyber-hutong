@@ -32,10 +32,12 @@ import generate_rooms as rooms  # noqa: E402
 def tile_hutong_floor():
     t = new(32, 32, rooms.HT["floor"])
     d = ImageDraw.Draw(t)
-    for y in range(0, 32, 8):
-        base = rooms.HT["floor"] if (y // 8) % 2 == 0 else rooms.HT["floor2"]
-        rect(d, [0, y, 31, y + 7], base)
-        hline(d, 0, 31, y + 7, rooms.HT["gap"])
+    for y in range(0, 32, 16):
+        for x in range(0, 32, 16):
+            c = rooms.HT["floor"] if ((x + y) // 16) % 2 == 0 else rooms.HT["floor2"]
+            rect(d, [x, y, min(x + 15, 31), min(y + 15, 31)], c)
+            hline(d, x, min(x + 15, 31), y, rooms.HT["gap"])
+            vline(d, x, y, min(y + 15, 31), rooms.HT["gap"])
     return t
 
 

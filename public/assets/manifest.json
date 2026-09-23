@@ -8,7 +8,7 @@
       "id": "hutong",
       "title": "胡同工位区",
       "src": "assets/scenes/hutong/scene_hutong.png",
-      "walk_y": 148,
+      "walk_y": 158,
       "line": "这边还能放杯子。",
       "beat_t": "09:20",
       "action": "sit_aisle"

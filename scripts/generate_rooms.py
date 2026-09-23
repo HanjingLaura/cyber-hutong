@@ -35,20 +35,20 @@ import generate_cast as gc  # noqa: E402
 W, H = 256, 192
 
 HT = {
-    "ceil": (246, 244, 238, 255),
-    "wall": (236, 230, 220, 255),
-    "wall_d": (204, 196, 182, 255),
-    "trim": (36, 92, 70, 255),
-    "floor": (198, 168, 122, 255),
-    "floor2": (178, 146, 100, 255),
-    "gap": (140, 108, 70, 255),
-    "desk": (232, 214, 176, 255),
-    "desk_hi": (248, 236, 204, 255),
-    "desk_e": (168, 132, 84, 255),
-    "pad": (242, 228, 190, 255),
+    "ceil": (250, 248, 246, 255),
+    "wall": (244, 242, 238, 255),
+    "wall_d": (214, 210, 204, 255),
+    "trim": (36, 34, 38, 255),
+    "floor": (214, 214, 216, 255),
+    "floor2": (200, 200, 204, 255),
+    "gap": (176, 176, 180, 255),
+    "desk": (236, 228, 212, 255),
+    "desk_hi": (248, 242, 232, 255),
+    "desk_e": (176, 164, 146, 255),
+    "pad": (246, 240, 228, 255),
     "chair": (32, 32, 36, 255),
     "mesh": (56, 56, 64, 255),
-    "sun": (255, 232, 176, 255),
+    "sun": (255, 240, 210, 255),
     "win": (174, 206, 228, 255),
 }
 EL = {
@@ -236,66 +236,110 @@ def chair_back(jacket=False) -> Image.Image:
     return img
 
 
+def chair_north(jacket=False) -> Image.Image:
+    """Mesh chair facing the far wall: dark seat + BACK toward the aisle."""
+    img = new(18, 20)
+    d = ImageDraw.Draw(img)
+    oval_shadow(d, 9, 18, 7, 2)
+    vline(d, 8, 14, 17, PAL["metal"])
+    hline(d, 4, 13, 17, PAL["metal_d"])
+    rect(d, [3, 5, 14, 9], HT["chair"])
+    box1(d, 2, 7, 15, 16, HT["chair"])
+    for y in range(9, 15):
+        for x in range(4, 14):
+            if (x + y) % 2 == 0:
+                d.point((x, y), fill=HT["mesh"])
+    if jacket:
+        rect(d, [4, 9, 13, 14], HW["jacket"])
+    return img
+
+
+def prop_spray() -> Image.Image:
+    img = new(5, 10)
+    d = ImageDraw.Draw(img)
+    box1(d, 1, 3, 3, 9, (220, 232, 242, 255))
+    rect(d, [1, 1, 3, 3], PAL["metal"])
+    d.point((2, 0), fill=PAL["metal_d"])
+    return img
+
+
+def seated_facing_wall(cid) -> Image.Image:
+    """Compact back-of-head + shoulders; sitting, facing the far wall."""
+    spec = next(s for s in gc.CAST if s["id"] == cid)
+    img = new(18, 18)
+    d = ImageDraw.Draw(img)
+    rect(d, [1, 10, 16, 17], spec["sleeve"])
+    rect(d, [4, 1, 13, 11], INK)
+    rect(d, [5, 2, 12, 10], (28, 22, 24, 255))
+    rect(d, [7, 10, 10, 12], spec["skin"])
+    return img
+
+
 def cast_sprite(cid="cast_01", view="front", frame=0):
     spec = next(s for s in gc.CAST if s["id"] == cid)
     return gc.draw_cast(spec, view, frame)
 
 
 # ===========================================================================
-# 1. 胡同 — 朝里 · 长桌贴左墙 · 四座朝墙 · 空 pad
+# 1. 胡同 — 远墙一条浅色长桌 · 一侧四座朝墙 · 桌面留空
+#    Layout from the side-along-the-desk photo (not the deep-office shot).
+#    WALL (top) | DESK | people/chairs facing wall | AISLE (bottom)
 # ===========================================================================
 def scene_hutong() -> Image.Image:
     room = new(W, H, HT["floor"])
     d = ImageDraw.Draw(room)
-    wood_floor(room, 52, HT["floor"], HT["floor2"], HT["gap"], 6)
+    # pale office floor — faint seams, not a checker floorplan
+    rect(d, [0, 84, W - 1, H - 1], HT["floor"])
+    for y in range(84, H, 28):
+        hline(d, 0, W - 1, y, HT["floor2"])
+    for x in range(0, W, 40):
+        vline(d, x, 84, H - 1, HT["floor2"])
+    dither(d, 0, 84, W - 1, H - 1, HT["floor2"], 7)
 
-    # ceiling + receding fixtures
-    rect(d, [0, 0, W - 1, 18], HT["ceil"])
-    for x0, x1, y in ((36, 220, 4), (64, 192, 9), (90, 166, 14)):
-        prism(d, x0, y, x1 - x0, 2, 2, WHITE, HT["wall_d"])
-        dither(d, x0, y + 3, x1, y + 4, HT["sun"], 4)
+    # white ceiling + fluorescent
+    rect(d, [0, 0, W - 1, 13], HT["ceil"])
+    prism(d, 24, 3, 208, 3, 3, WHITE, HT["wall_d"])
+    dither(d, 36, 8, 220, 12, HT["sun"], 5)
 
-    # far wall
-    rect(d, [0, 19, W - 1, 51], HT["wall"])
-    hline(d, 0, W - 1, 19, HT["wall_d"])
-    rect(d, [16, 26, 150, 32], HT["trim"])
-    tiny_text(d, 22, 27, "ttc", WHITE)
-    for x in (24, 40, 56, 72, 88, 104, 120, 136):
-        prism(d, x, 35, 8, 3, 8, WHITE, HT["wall_d"])
-        d.point((x + 3, 39), fill=HT["trim"])
-    # far window light
-    prism(d, 176, 22, 70, 4, 26, HT["win"], (140, 176, 200, 255))
-    for y in range(26, 48, 3):
-        hline(d, 178, 244, y, HT["sun"] if y % 6 == 2 else (200, 220, 236, 255))
-    for k in range(0, 36, 2):
-        d.point((200 + k // 4, 54 + k), fill=HT["sun"])
+    # FAR white wall — ttc + small frames. Desk flush to THIS wall.
+    rect(d, [0, 14, W - 1, 51], HT["wall"])
+    hline(d, 0, W - 1, 14, HT["wall_d"])
+    tiny_text(d, 8, 18, "ttc", HT["trim"])
+    frames = (
+        (8, 28), (22, 26), (36, 30), (52, 24), (66, 29),
+        (84, 26), (100, 31), (116, 24), (132, 28), (148, 26),
+        (164, 30), (180, 24), (196, 29), (212, 26), (228, 31),
+        (16, 40), (40, 38), (70, 42), (98, 39), (130, 41),
+        (160, 38), (190, 42), (220, 39),
+    )
+    for i, (fx, fy) in enumerate(frames):
+        box1(d, fx, fy, fx + 7, fy + 9, WHITE, HT["wall_d"])
+        if i % 4 == 0:
+            rect(d, [fx + 2, fy + 3, fx + 5, fy + 6], HT["wall_d"])
 
-    # LEFT inner wall (seats face this)
-    rect(d, [0, 19, 16, H - 1], HT["wall"])
-    vline(d, 16, 19, H - 1, HT["wall_d"])
-    dither(d, 2, 56, 14, 180, HT["wall_d"], 6)
+    dither(d, 232, 16, 254, 50, HT["sun"], 6)
 
-    # ONE continuous bench flush to the left wall; lip faces the AISLE (east)
-    prism(d, 18, 54, 52, 124, 8, HT["desk"], HT["desk_e"], lip="east")
-    items = [
-        (58, "box", prop_blindbox(BOXC[2]), False),
-        (86, "note", prop_notebook(), True),
-        (116, "laptop", prop_laptop(), False),
-        (148, "cup", prop_cup(), False),
-    ]
-    for y, name, spr, jacket in items:
-        # cool-white pad so the vacant bay reads on warm wood
-        empty_pad(d, 28, y, 36, 22, (236, 236, 230, 255), (120, 96, 64, 255))
-        blit(room, spr, 20, y + 6)
-        blit(room, chair_back(jacket=jacket), 76, y)
+    # ONE deep horizontal pale desk flush to the far wall (south lip = aisle)
+    prism(d, 6, 50, 244, 26, 8, HT["desk"], HT["desk_e"])
+    hline(d, 8, 247, 51, HT["desk_hi"])
 
-    # aisle column + plant + bag
-    prism(d, 228, 58, 18, 10, 70, HT["wall"], HT["wall_d"])
-    blit(room, prop_plant(), 232, 128)
-    prism(d, 210, 168, 12, 4, 14, (40, 40, 46, 255), (24, 24, 28, 255))
+    # four seat bays — faint pads, lots of bare laminate between them
+    bays = (16, 74, 132, 190)
+    items = (prop_laptop(), None, prop_cup(), prop_notebook())
+    for i, (bx, spr) in enumerate(zip(bays, items)):
+        empty_pad(d, bx + 12, 58, 24, 8, (240, 232, 218, 255), (200, 188, 170, 255))
+        if spr is not None:
+            blit(room, spr, bx + 12, 54)
+        blit(room, chair_north(), bx + 16, 86)
 
-    blit(room, cast_sprite("cast_01", "back", 0), 148, 148)
-    blit(room, cast_sprite("cast_06", "side", 0), 170, 112)
+    blit(room, prop_spray(), 10, 60)
+    blit(room, prop_plant(), 236, 38)
+
+    # sit BETWEEN chair and desk, facing the wall (backs to the aisle)
+    blit(room, seated_facing_wall("cast_02"), 88, 78)
+    blit(room, seated_facing_wall("cast_06"), 146, 78)
+
+    blit(room, cast_sprite("cast_01", "side", 0), 118, 152)
     return room
 
 
@@ -548,10 +592,10 @@ def scene_meeting() -> Image.Image:
 
 SCENES = [
     dict(id="hutong", title="胡同工位区",
-         blurb="朝里 · 长桌贴墙 · 一边四座朝墙 · 每座空 pad",
-         fn=scene_hutong, walk_y=148, line="这边还能放杯子。",
+         blurb="远墙一条浅色长桌 · 一侧四座朝墙 · 桌面留空",
+         fn=scene_hutong, walk_y=158, line="这边还能放杯子。",
          beat_t="09:20", action="sit_aisle",
-         why="相机在过道朝里：左墙一条长凳桌，四把黑椅背对过道、脸朝墙。每格桌面盖着空物位，只在靠墙侧放一件。"),
+         why="相机在过道朝墙：白墙 ttc + 小镜框，一条浅色长桌贴远墙，四把黑椅在桌南侧、人朝墙坐。桌面大块留空，只靠墙放一两件。纵深办公室照片只作白墙/黑椅/顶灯气氛。"),
     dict(id="elevator", title="电梯间",
          blurb="米黄石材 · 开门体积 · 雕塑台座 · 屏与按钮",
          fn=scene_elevator, walk_y=126, line="先等这梯。",

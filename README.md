@@ -36,7 +36,7 @@ npx --yes serve public -p 4173
 
 | ID | 中文 | 要点 | 路径 |
 |----|------|------|------|
-| `hutong` | 胡同工位区 | **朝里拍**，一边四座，里侧朝墙，桌面留空 | `public/assets/scenes/hutong/` |
+| `hutong` | 胡同工位区 | 远墙一条浅色长桌，一侧四座朝墙，桌面留空 | `public/assets/scenes/hutong/` |
 | `elevator` | 电梯间 | 米黄石材、开门、雕塑台座、屏与按钮 | `public/assets/scenes/elevator/` |
 | `hawaii` | 夏威夷 | 窗边，座位留物位 | `public/assets/scenes/hawaii/` |
 | `popmart` | 泡泡玛特店 | 细格盲盒墙，柜台留空 | `public/assets/scenes/popmart/` |
