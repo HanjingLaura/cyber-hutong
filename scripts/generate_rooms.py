@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """11 Laura-named scenes — 2.5D refined pixel, 256×192, empty desk pads.
 
-v3: hawaii 9-seat vertical desks; hutong two rows + bottom + 4 wall seats;
+v3: hawaii 9-seat vertical desks; hutong two desk rows + 4 wall seats;
 concert / cafe / gym / mixian added. Same 1px ink + wall-FACE language.
 """
 from __future__ import annotations
@@ -434,7 +434,7 @@ def office_floor(d, y0, c1, c2, seam):
 
 
 # ===========================================================================
-# 1. 胡同 — 远墙四座 + 两行平行工位 + 底部一排
+# 1. 胡同 — 就两排桌子：远墙一排四座 + 再一排平行工位
 # ===========================================================================
 def scene_hutong() -> Image.Image:
     room = new(W, H, HT["floor"])
@@ -460,7 +460,7 @@ def scene_hutong() -> Image.Image:
             rect(d, [fx + 2, fy + 2, fx + fw - 3, fy + fh - 3], shade(HT["wall_d"], -6))
     dither(d, 220, 12, 254, 36, HT["sun"], 5)
 
-    # TOP wall-flush desk + 4 chairs facing the wall
+    # ROW 1 — wall-flush desk + 4 chairs facing the wall
     prism(d, 4, 40, 248, 14, 8, HT["desk"], HT["desk_e"])
     dither(d, 8, 42, 246, 50, shade(HT["desk"], -12), 8)
     top_bays = (16, 76, 136, 196)
@@ -473,34 +473,22 @@ def scene_hutong() -> Image.Image:
     blit(room, seated_facing_wall("cast_02"), 86, 54)
     blit(room, seated_facing_wall("cast_05"), 26, 54)
 
-    def desk_row(y, left_item, right_item, extra_pad=True):
-        for x, item in ((6, left_item), (132, right_item)):
-            prism(d, x, y, 118, 12, 7, HT["desk"], HT["desk_e"])
-            empty_pad(d, x + 6, y + 2, 22, 8, HT["pad"], shade(HT["desk_e"], 16))
-            empty_pad(d, x + 48, y + 2, 22, 8, HT["pad"], shade(HT["desk_e"], 16))
-            if extra_pad:
-                empty_pad(d, x + 88, y + 2, 22, 8, HT["pad"], shade(HT["desk_e"], 16))
-            if item:
-                blit(room, item, x + 10, y)
-            blit(room, chair_north(), x + 10, y + 16)
-            blit(room, chair_north(), x + 50, y + 16)
-            blit(room, chair_north(), x + 90, y + 16)
+    # ROW 2 — one parallel workstation row (two islands, aisle in the middle)
+    for x, item, jacket in (
+        (6, prop_laptop(), False),
+        (132, prop_notebook(), True),
+    ):
+        prism(d, x, 118, 118, 14, 8, HT["desk"], HT["desk_e"])
+        empty_pad(d, x + 6, 121, 28, 8, HT["pad"], shade(HT["desk_e"], 16))
+        empty_pad(d, x + 44, 121, 28, 8, HT["pad"], shade(HT["desk_e"], 16))
+        empty_pad(d, x + 82, 121, 28, 8, HT["pad"], shade(HT["desk_e"], 16))
+        if item:
+            blit(room, item, x + 10, 118)
+        blit(room, chair_north(), x + 10, 140)
+        blit(room, chair_north(), x + 48, 140)
+        blit(room, chair_north(jacket=jacket), x + 86, 140)
 
-    # two parallel workstation rows (denser: 3 chairs × 2 islands)
-    desk_row(86, prop_laptop(), prop_cup((40, 40, 46, 255)))
-    desk_row(122, None, prop_notebook())
-    # bottom row — chairs sit on the desk's south lip, not past the canvas
-    prism(d, 16, 156, 224, 12, 7, HT["desk"], HT["desk_e"])
-    empty_pad(d, 28, 158, 36, 8, HT["pad"], shade(HT["desk_e"], 16))
-    empty_pad(d, 78, 158, 36, 8, HT["pad"], shade(HT["desk_e"], 16))
-    empty_pad(d, 128, 158, 36, 8, HT["pad"], shade(HT["desk_e"], 16))
-    empty_pad(d, 178, 158, 36, 8, HT["pad"], shade(HT["desk_e"], 16))
-    blit(room, prop_plant(), 18, 144)
-    blit(room, chair_north(), 36, 160)
-    blit(room, chair_north(), 86, 160)
-    blit(room, chair_north(), 136, 160)
-    blit(room, chair_north(jacket=True), 186, 160)
-
+    blit(room, prop_plant(), 118, 168)
     blit(room, prop_spray(), 6, 42)
     return room
 
@@ -1072,10 +1060,10 @@ def scene_mixian() -> Image.Image:
 
 SCENES = [
     dict(id="hutong", title="胡同工位区",
-         blurb="远墙四座朝墙 · 两行平行工位 · 底部再一排 · 大块空 pad",
-         fn=scene_hutong, walk_y=140, line="这边还能放杯子。",
+         blurb="就两排桌子：远墙四座朝墙 + 再一排平行工位 · 大块空 pad",
+         fn=scene_hutong, walk_y=148, line="这边还能放杯子。",
          beat_t="09:20", action="sit_aisle",
-         why="白墙 ttc + 镜框。远墙一条浅色长桌、四把黑椅朝墙。中间两行平行工位岛（每岛三椅三 pad）。底部再一排长桌四 pad。比示意图更密，仍留过道。不描摹合影里的人。"),
+         why="白墙 ttc + 镜框。就两排桌子：远墙一条浅色长桌、四把黑椅朝墙；再一排平行工位岛（中留过道、每岛三椅三 pad）。没有第三排。不描摹合影里的人。"),
     dict(id="elevator", title="电梯间",
          blurb="米黄石材 · 开门体积 · 雕塑台座 · 屏与按钮",
          fn=scene_elevator, walk_y=140, line="先等这梯。",
