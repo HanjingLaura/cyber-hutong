@@ -134,7 +134,7 @@
 <body>
   <header>
     <h1>赛博胡同 Cyber Hutong</h1>
-    <p class="sub">精致像素 · 256×192 · 7 房 · Online-control / Offline-agent / Behavior-learning · 蒸馏只冷启动 · 无后端</p>
+    <p class="sub">精致像素 v2 · 256×192 · 7 房 · Online-control / Offline-agent / Behavior-learning · 蒸馏只冷启动 · 无后端</p>
     <nav>
       <a href="#gallery" data-tab="gallery">画廊</a>
       <a href="#day" data-tab="day">一天故事板</a>
@@ -192,17 +192,18 @@
     <a href="../design/cast.md">cast</a> ·
     <a href="../design/parallel-universe.md">主循环</a> ·
     <a href="../design/distill-spec.md">蒸馏</a> ·
-    <a href="../design/day-in-life.md">一天</a>
+    <a href="../design/day-in-life.md">一天</a> ·
+    <a href="../design/iteration-rounds-v2.md">10 轮 v2</a>
     · 本地：<code>npx --yes serve public -p 4173</code>
   </footer>
   <div id="lb"><img alt="zoom" /></div>
   <script>
     const ROOMS = [
       { id:"hutong", title:"胡同工位区", src:"assets/scenes/hutong/scene_hutong.png",
-        line:"这边还能放杯子。", y:158, t:"09:20", action:"sit_aisle",
+        line:"这边还能放杯子。", y:148, t:"09:20", action:"sit_aisle",
         why:"远墙贴一条浅色长桌，一侧四座朝墙，桌面留空。" },
       { id:"elevator", title:"电梯间", src:"assets/scenes/elevator/scene_elevator.png",
-        line:"先等这梯。", y:128, t:"09:12", action:"wait_lift",
+        line:"先等这梯。", y:140, t:"09:12", action:"wait_lift",
         why:"米黄石材、开门、雕塑台座、屏与按钮。" },
       { id:"hawaii", title:"夏威夷", src:"assets/scenes/hawaii/scene_hawaii.png",
         line:"窗边这档先开。", y:140, t:"09:40", action:"open_laptop",

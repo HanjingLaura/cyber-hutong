@@ -1,6 +1,6 @@
 # 赛博胡同 Cyber Hutong
 
-精致像素 · **2.5D 可读** · 小地图高密度。当前仓库为素材 + 静态预览，无 Agent / 登录 / 数据库。
+精致像素 · **2.5D 可读** · 小地图高密度。v2 画质轮次见 [`design/iteration-rounds-v2.md`](design/iteration-rounds-v2.md)。当前仓库为素材 + 静态预览，无 Agent / 登录 / 数据库。
 
 Laura 过夜纠正后的范围：**只做她点名的 7 个场景**，八人 cast 按照片线索重画，桌椅留出放杯子 / 笔记本 / 盲盒的空位。
 

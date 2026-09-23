@@ -8,7 +8,7 @@
       "id": "hutong",
       "title": "胡同工位区",
       "src": "assets/scenes/hutong/scene_hutong.png",
-      "walk_y": 158,
+      "walk_y": 148,
       "line": "这边还能放杯子。",
       "beat_t": "09:20",
       "action": "sit_aisle"
@@ -17,7 +17,7 @@
       "id": "elevator",
       "title": "电梯间",
       "src": "assets/scenes/elevator/scene_elevator.png",
-      "walk_y": 126,
+      "walk_y": 140,
       "line": "先等这梯。",
       "beat_t": "09:12",
       "action": "wait_lift"
@@ -35,7 +35,7 @@
       "id": "popmart",
       "title": "泡泡玛特店",
       "src": "assets/scenes/popmart/scene_popmart.png",
-      "walk_y": 142,
+      "walk_y": 146,
       "line": "就拆一个。",
       "beat_t": "10:40",
       "action": "unbox"
@@ -44,7 +44,7 @@
       "id": "restroom",
       "title": "厕所",
       "src": "assets/scenes/restroom/scene_restroom.png",
-      "walk_y": 130,
+      "walk_y": 132,
       "line": "洗一下。",
       "beat_t": "12:10",
       "action": "wash"
@@ -53,7 +53,7 @@
       "id": "office",
       "title": "普通工位",
       "src": "assets/scenes/office/scene_office.png",
-      "walk_y": 148,
+      "walk_y": 150,
       "line": "回岛上。",
       "beat_t": "16:20",
       "action": "desk_work"
@@ -62,7 +62,7 @@
       "id": "meeting",
       "title": "会议室",
       "src": "assets/scenes/meeting/scene_meeting.png",
-      "walk_y": 148,
+      "walk_y": 150,
       "line": "我记，你们说。",
       "beat_t": "14:00",
       "action": "take_notes"

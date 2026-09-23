@@ -12,7 +12,7 @@ from pathlib import Path
 from PIL import Image, ImageDraw
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from pxlib import PAL, new, oval_shadow, rect, save, zoom
+from pxlib import PAL, new, outline_sprite, rect, save, solid_shadow, zoom
 
 ROOT = Path(__file__).resolve().parents[1]
 ASSETS = ROOT / "public" / "assets" / "characters"
@@ -66,18 +66,20 @@ def face(d, cx, hy, skin, glasses=False):
     d.point((cx + 1, hy + 3), fill=HI)
     d.point((cx - 4, hy + 6), fill=BLUSH)
     d.point((cx + 3, hy + 6), fill=BLUSH)
+    # tiny mouth
+    d.point((cx - 1, hy + 7), fill=SKIN_D)
+    d.point((cx, hy + 7), fill=SKIN_D)
     if glasses:
         # 1px rims only
-        d.point((cx - 4, hy + 3), fill=INK)
-        d.point((cx - 1, hy + 3), fill=INK)
-        d.point((cx - 4, hy + 5), fill=INK)
-        d.point((cx - 1, hy + 5), fill=INK)
-        d.point((cx, hy + 3), fill=INK)
-        d.point((cx + 3, hy + 3), fill=INK)
-        d.point((cx, hy + 5), fill=INK)
-        d.point((cx + 3, hy + 5), fill=INK)
-        d.point((cx - 4, hy + 4), fill=INK)
-        d.point((cx + 3, hy + 4), fill=INK)
+        # thicker rims so glasses survive 3×
+        rect(d, [cx - 5, hy + 3, cx - 1, hy + 5], INK)
+        rect(d, [cx, hy + 3, cx + 4, hy + 5], INK)
+        d.point((cx - 4, hy + 4), fill=skin)
+        d.point((cx - 3, hy + 4), fill=EYE)
+        d.point((cx + 1, hy + 4), fill=skin)
+        d.point((cx + 2, hy + 4), fill=EYE)
+        d.point((cx - 1, hy + 4), fill=INK)
+        d.point((cx, hy + 4), fill=INK)
 
 
 def legs_front(d, cx, fy, frame=0):
@@ -200,8 +202,10 @@ def body_sweater_collar(d, cx, by):
     rect(d, [cx - 5, by, cx + 4, by + 8], INK)
     rect(d, [cx - 4, by + 1, cx + 3, by + 7], C["black"])
     # light-blue collar — a full band so it reads at 4×
-    rect(d, [cx - 3, by + 1, cx + 2, by + 2], C["blue"])
-    rect(d, [cx - 3, by + 3, cx + 2, by + 3], C["black_hi"])
+    rect(d, [cx - 4, by + 1, cx + 3, by + 3], C["blue"])
+    d.point((cx - 1, by + 2), fill=SKIN)
+    d.point((cx, by + 2), fill=SKIN)
+    rect(d, [cx - 3, by + 4, cx + 2, by + 4], C["black_hi"])
 
 
 def body_sweater(d, cx, by):
@@ -227,10 +231,13 @@ def hair_long_ombre_bangs(d, cx, hy):
     rect(d, [cx + 4, hy + 12, cx + 6, hy + 15], C["hair_tip"])
     d.point((cx - 6, hy + 15), fill=C["hair_tip2"])
     d.point((cx + 5, hy + 15), fill=C["hair_tip2"])
-    for x in (cx - 3, cx - 2, cx, cx + 1, cx + 3):
+    for x in (cx - 4, cx - 3, cx - 2, cx, cx + 1, cx + 3):
         d.point((x, hy + 2), fill=C["hair"])
     d.point((cx - 1, hy + 2), fill=C["hair_mid"])
     d.point((cx + 2, hy + 2), fill=C["hair_mid"])
+    # ombre tips must survive 4×
+    rect(d, [cx - 7, hy + 13, cx - 5, hy + 16], C["hair_tip"])
+    rect(d, [cx + 4, hy + 13, cx + 6, hy + 16], C["hair_tip"])
     d.point((cx - 5, hy - 3), fill=INK)
     d.point((cx + 4, hy - 3), fill=INK)
 
@@ -435,7 +442,7 @@ def draw_cast(spec, view="front", frame=0):
     by = 16 + bob
     fy = 24 + bob
 
-    oval_shadow(d, cx, 30, rx=7, ry=2)
+    solid_shadow(d, cx, 30, rx=7, ry=2)
 
     if view == "side":
         legs_side(d, cx, fy, frame)
@@ -449,7 +456,7 @@ def draw_cast(spec, view="front", frame=0):
             rect(d, [cx + 1, hy + 3, cx + 3, hy + 5], INK)
             d.point((cx + 2, hy + 4), fill=EYE)
         spec["hair_fn"](d, cx, hy)
-        return img
+        return outline_sprite(img)
 
     if view == "back":
         legs_back(d, cx, fy, frame)
@@ -457,8 +464,9 @@ def draw_cast(spec, view="front", frame=0):
         arms(d, cx, by, spec["sleeve"], frame)
         # hair covers head
         spec["hair_fn"](d, cx, hy)
-        rect(d, [cx - 4, hy + 1, cx + 3, hy + 6], C.get("hair", (28, 22, 24, 255)))
-        return img
+        hair_c = C["brown"] if spec["id"] == "cast_06" else C.get("hair", (28, 22, 24, 255))
+        rect(d, [cx - 4, hy + 1, cx + 3, hy + 6], hair_c)
+        return outline_sprite(img)
 
     if view == "walk":
         legs_walk(d, cx, fy, frame)
@@ -469,7 +477,7 @@ def draw_cast(spec, view="front", frame=0):
     arms(d, cx, by, spec["sleeve"], frame)
     face(d, cx, hy, spec["skin"], glasses=spec.get("glasses", False))
     spec["hair_fn"](d, cx, hy)
-    return img
+    return outline_sprite(img)
 
 
 def write_cast_md():
