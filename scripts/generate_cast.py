@@ -111,6 +111,20 @@ def legs_side(d, cx, fy):
     d.rectangle([cx - 2, fy + 4, cx + 2, fy + 5], fill=C["shoe"])
 
 
+def legs_side_walk(d, cx, fy, frame=0):
+    """Side-view walk: leading/trailing foot swap."""
+    if frame % 2 == 0:
+        d.rectangle([cx - 3, fy + 1, cx - 1, fy + 5], fill=C["pants"])
+        d.rectangle([cx, fy, cx + 2, fy + 4], fill=C["pants"])
+        d.rectangle([cx - 4, fy + 5, cx - 1, fy + 6], fill=C["shoe"])
+        d.rectangle([cx + 1, fy + 4, cx + 4, fy + 5], fill=C["shoe"])
+    else:
+        d.rectangle([cx - 3, fy, cx - 1, fy + 4], fill=C["pants"])
+        d.rectangle([cx, fy + 1, cx + 2, fy + 5], fill=C["pants"])
+        d.rectangle([cx - 4, fy + 4, cx - 1, fy + 5], fill=C["shoe"])
+        d.rectangle([cx + 1, fy + 5, cx + 4, fy + 6], fill=C["shoe"])
+
+
 def arms(d, cx, by, sleeve, frame=0):
     ay = by + 2 + (frame % 2)
     # left
@@ -335,11 +349,38 @@ CAST = [
 ]
 
 
+def _paint_side_portrait(d, spec, cx, hy, by):
+    spec["body_fn"](d, cx, by)
+    d.rectangle([cx + 3, by + 2, cx + 5, by + 6], fill=C["outline"])
+    d.rectangle([cx + 3, by + 3, cx + 4, by + 5], fill=spec["sleeve"])
+    d.point((cx + 4, by + 6), fill=C["skin"])
+    face(d, cx, hy, spec["skin"])
+    d.rectangle([cx - 4, hy + 1, cx + 3, hy + 8], fill=spec["skin"])
+    d.point((cx + 2, hy + 4), fill=C["eye"])
+    d.point((cx + 2, hy + 3), fill=C["eye_hi"])
+    spec["hair_fn"](d, cx, hy)
+
+
+def _paint_back(d, spec, cx, hy, by):
+    """Back view: no face plate — hair covers the head mass."""
+    spec["body_fn"](d, cx, by)
+    # hide front-facing neck skin
+    d.point((cx - 1, by + 1), fill=spec["sleeve"])
+    d.point((cx, by + 1), fill=spec["sleeve"])
+    arms(d, cx, by, spec["sleeve"], 0)
+    # head mass
+    d.rectangle([cx - 5, hy, cx + 4, hy + 9], fill=C["outline"])
+    d.rectangle([cx - 4, hy + 1, cx + 3, hy + 8], fill=C["hair_dk"])
+    spec["hair_fn"](d, cx, hy)
+    # extra rear fill so bangs don't punch a face hole
+    d.rectangle([cx - 3, hy + 3, cx + 2, hy + 8], fill=C["hair_dk"])
+
+
 def draw_cast(spec, view="front", frame=0):
     img = new()
     d = ImageDraw.Draw(img)
     cx = 16
-    bob = 1 if (view == "front" and frame % 4 == 1) else 0
+    bob = 1 if (view in ("front", "back") and frame % 4 == 1) else 0
     hy = 6 + bob
     by = 16 + bob
     fy = 24 + bob
@@ -348,16 +389,20 @@ def draw_cast(spec, view="front", frame=0):
 
     if view == "side":
         legs_side(d, cx, fy)
-        spec["body_fn"](d, cx, by)
-        d.rectangle([cx + 3, by + 2, cx + 5, by + 6], fill=C["outline"])
-        d.rectangle([cx + 3, by + 3, cx + 4, by + 5], fill=spec["sleeve"])
-        d.point((cx + 4, by + 6), fill=C["skin"])
-        face(d, cx, hy, spec["skin"])
-        # one side eye only
-        d.rectangle([cx - 4, hy + 1, cx + 3, hy + 8], fill=spec["skin"])
-        d.point((cx + 2, hy + 4), fill=C["eye"])
-        d.point((cx + 2, hy + 4), fill=C["eye_hi"])
-        spec["hair_fn"](d, cx, hy)
+        _paint_side_portrait(d, spec, cx, hy, by)
+        return img
+
+    if view == "walk_side":
+        legs_side_walk(d, cx, fy, frame)
+        _paint_side_portrait(d, spec, cx, hy, by)
+        return img
+
+    if view in ("back", "walk_back"):
+        if view == "walk_back":
+            legs_walk(d, cx, fy, frame)
+        else:
+            legs_front(d, cx, fy, frame)
+        _paint_back(d, spec, cx, hy, by)
         return img
 
     if view == "walk":
@@ -392,10 +437,23 @@ def write_cast_md():
         "",
         "```",
         "public/assets/characters/cast_XX/idle_front.png",
+        "public/assets/characters/cast_XX/idle_front_1.png",
         "public/assets/characters/cast_XX/idle_side.png",
+        "public/assets/characters/cast_XX/idle_back.png",
         "public/assets/characters/cast_XX/walk_0.png",
         "public/assets/characters/cast_XX/walk_1.png",
-        "public/assets/characters/cast_XX/idle_front_1.png",
+        "public/assets/characters/cast_XX/walk_side_0.png",
+        "public/assets/characters/cast_XX/walk_side_1.png",
+        "public/assets/characters/cast_XX/walk_back_0.png",
+        "public/assets/characters/cast_XX/walk_back_1.png",
+        "```",
+        "",
+        "## NPC extras (路人 / 快递 / 咖啡师)",
+        "",
+        "```",
+        "public/assets/characters/npc_courier/{idle_front,idle_side,walk_0,walk_1}.png",
+        "public/assets/characters/npc_barista/{idle_front,idle_side,walk_0,walk_1}.png",
+        "public/assets/characters/npc_passerby/{idle_front,idle_side,walk_0,walk_1}.png",
         "```",
         "",
         "## Refs",
@@ -430,18 +488,177 @@ def make_sheet(sprites):
     return sheet
 
 
+# ---- small-company NPCs (same chibi language, distinct silhouette) ----
+NPC = {
+    "orange": (232, 122, 48, 255),
+    "orange_d": (176, 78, 28, 255),
+    "helmet": (48, 52, 62, 255),
+    "apron": (122, 72, 48, 255),
+    "apron_hi": (168, 110, 72, 255),
+    "cream": (240, 220, 190, 255),
+    "hoodie": (72, 140, 150, 255),
+    "hoodie_d": (40, 88, 96, 255),
+    "box": (196, 148, 88, 255),
+    "box_d": (140, 98, 52, 255),
+    "cup": (245, 240, 230, 255),
+    "coffee": (92, 56, 36, 255),
+}
+
+
+def _npc_shadow(d, cx=16, cy=30):
+    shadow(d, cx, cy, 11)
+
+
+def draw_npc_courier(view="front", frame=0):
+    img = new()
+    d = ImageDraw.Draw(img)
+    cx, bob = 16, 1 if frame % 2 else 0
+    hy, by, fy = 6 + bob, 16 + bob, 24 + bob
+    _npc_shadow(d)
+    if view == "side":
+        legs_side(d, cx, fy)
+    elif view == "walk":
+        legs_walk(d, cx, fy, frame)
+    else:
+        legs_front(d, cx, fy, frame)
+    # orange vest
+    d.rectangle([cx - 6, by, cx + 5, by + 8], fill=C["outline"])
+    d.rectangle([cx - 5, by + 1, cx + 4, by + 7], fill=NPC["orange"])
+    d.rectangle([cx - 1, by + 1, cx, by + 7], fill=C["white"])
+    d.point((cx - 3, by + 3), fill=NPC["orange_d"])
+    if view != "side":
+        arms(d, cx, by, NPC["orange"], frame)
+    else:
+        d.rectangle([cx + 3, by + 2, cx + 5, by + 6], fill=C["outline"])
+        d.rectangle([cx + 3, by + 3, cx + 4, by + 5], fill=NPC["orange"])
+    # parcel
+    bx, byx = (cx + 5, by + 3) if view == "side" else (cx + 4, by + 4)
+    d.rectangle([bx, byx, bx + 7, byx + 6], fill=C["outline"])
+    d.rectangle([bx + 1, byx + 1, bx + 6, byx + 5], fill=NPC["box"])
+    d.rectangle([bx + 1, byx + 3, bx + 6, byx + 3], fill=NPC["box_d"])
+    # helmet + visor
+    d.rectangle([cx - 6, hy - 2, cx + 5, hy + 5], fill=C["outline"])
+    d.rectangle([cx - 5, hy - 1, cx + 4, hy + 4], fill=NPC["helmet"])
+    d.rectangle([cx - 4, hy + 2, cx + 3, hy + 4], fill=C["metal"])
+    if view != "back":
+        d.point((cx - 2, hy + 5), fill=C["skin"])
+        d.point((cx + 1, hy + 5), fill=C["skin"])
+    return img
+
+
+def draw_npc_barista(view="front", frame=0):
+    img = new()
+    d = ImageDraw.Draw(img)
+    cx, bob = 16, 1 if frame % 2 else 0
+    hy, by, fy = 6 + bob, 16 + bob, 24 + bob
+    _npc_shadow(d)
+    if view == "side":
+        legs_side(d, cx, fy)
+    elif view == "walk":
+        legs_walk(d, cx, fy, frame)
+    else:
+        legs_front(d, cx, fy, frame)
+    d.rectangle([cx - 5, by, cx + 4, by + 8], fill=C["outline"])
+    d.rectangle([cx - 4, by + 1, cx + 3, by + 7], fill=NPC["cream"])
+    # apron
+    d.rectangle([cx - 3, by + 3, cx + 2, by + 7], fill=NPC["apron"])
+    d.rectangle([cx - 2, by + 3, cx + 1, by + 4], fill=NPC["apron_hi"])
+    if view != "side":
+        arms(d, cx, by, NPC["cream"], frame)
+    # coffee cup
+    cupx = cx + 5 if view == "side" else cx + 4
+    d.rectangle([cupx, by + 3, cupx + 4, by + 8], fill=C["outline"])
+    d.rectangle([cupx + 1, by + 4, cupx + 3, by + 7], fill=NPC["cup"])
+    d.rectangle([cupx + 1, by + 5, cupx + 3, by + 6], fill=NPC["coffee"])
+    d.point((cupx + 2, by + 2), fill=C["white_d"])
+    # cap + face
+    if view == "back":
+        d.rectangle([cx - 5, hy, cx + 4, hy + 8], fill=C["outline"])
+        d.rectangle([cx - 4, hy + 1, cx + 3, hy + 7], fill=C["hair_dk"])
+    else:
+        face(d, cx, hy, C["skin_fair"])
+    d.rectangle([cx - 6, hy - 2, cx + 5, hy + 2], fill=C["outline"])
+    d.rectangle([cx - 5, hy - 1, cx + 4, hy + 1], fill=NPC["apron"])
+    d.rectangle([cx - 4, hy - 2, cx + 3, hy - 1], fill=NPC["apron_hi"])
+    return img
+
+
+def draw_npc_passerby(view="front", frame=0):
+    img = new()
+    d = ImageDraw.Draw(img)
+    cx, bob = 16, 1 if frame % 2 else 0
+    hy, by, fy = 6 + bob, 16 + bob, 24 + bob
+    _npc_shadow(d)
+    if view == "side":
+        legs_side(d, cx, fy)
+    elif view == "walk":
+        legs_walk(d, cx, fy, frame)
+    else:
+        legs_front(d, cx, fy, frame)
+    d.rectangle([cx - 6, by, cx + 5, by + 8], fill=C["outline"])
+    d.rectangle([cx - 5, by + 1, cx + 4, by + 7], fill=NPC["hoodie"])
+    d.rectangle([cx - 2, by + 1, cx + 1, by + 3], fill=C["skin"])
+    d.rectangle([cx - 4, by + 4, cx + 3, by + 5], fill=NPC["hoodie_d"])
+    if view != "side":
+        arms(d, cx, by, NPC["hoodie"], frame)
+    # backpack
+    if view != "front":
+        d.rectangle([cx - 7, by + 1, cx - 4, by + 7], fill=C["outline"])
+        d.rectangle([cx - 6, by + 2, cx - 5, by + 6], fill=C["charcoal"])
+    else:
+        d.rectangle([cx - 6, by + 2, cx - 5, by + 6], fill=C["charcoal_d"])
+        d.rectangle([cx + 4, by + 2, cx + 5, by + 6], fill=C["charcoal_d"])
+    if view == "back":
+        d.rectangle([cx - 5, hy, cx + 4, hy + 8], fill=C["outline"])
+        d.rectangle([cx - 4, hy + 1, cx + 3, hy + 7], fill=C["hair_dk"])
+        d.rectangle([cx - 3, hy - 2, cx + 2, hy], fill=C["hair_dk"])
+    else:
+        face(d, cx, hy, C["skin"])
+        d.rectangle([cx - 5, hy - 2, cx + 4, hy + 2], fill=C["hair_dk"])
+        d.rectangle([cx - 6, hy, cx - 5, hy + 5], fill=C["hair_dk"])
+        d.rectangle([cx + 4, hy, cx + 5, hy + 5], fill=C["hair_dk"])
+        for x in range(cx - 3, cx + 4):
+            d.point((x, hy + 2), fill=C["hair_dk"])
+        d.point((cx, hy + 2), fill=C["skin"])
+    return img
+
+
+NPC_DRAW = {
+    "npc_courier": draw_npc_courier,
+    "npc_barista": draw_npc_barista,
+    "npc_passerby": draw_npc_passerby,
+}
+
+
+def gen_npcs():
+    for nid, fn in NPC_DRAW.items():
+        out = ASSETS / nid
+        save(fn("front", 0), out / "idle_front.png")
+        save(fn("front", 1), out / "idle_front_1.png")
+        save(fn("side", 0), out / "idle_side.png")
+        save(fn("walk", 0), out / "walk_0.png")
+        save(fn("walk", 1), out / "walk_1.png")
+        save(fn("back", 0), out / "idle_back.png")
+
+
 def main():
-    print("Generating 8 cast sprites…")
+    print("Generating 8 cast sprites + direction frames + NPCs…")
     fronts = []
     for s in CAST:
         out = ASSETS / s["id"]
         front = draw_cast(s, "front", 0)
         save(front, out / "idle_front.png")
+        save(draw_cast(s, "front", 1), out / "idle_front_1.png")
         save(draw_cast(s, "side", 0), out / "idle_side.png")
+        save(draw_cast(s, "back", 0), out / "idle_back.png")
         save(draw_cast(s, "walk", 0), out / "walk_0.png")
         save(draw_cast(s, "walk", 1), out / "walk_1.png")
-        save(draw_cast(s, "front", 1), out / "idle_front_1.png")
+        save(draw_cast(s, "walk_side", 0), out / "walk_side_0.png")
+        save(draw_cast(s, "walk_side", 1), out / "walk_side_1.png")
+        save(draw_cast(s, "walk_back", 0), out / "walk_back_0.png")
+        save(draw_cast(s, "walk_back", 1), out / "walk_back_1.png")
         fronts.append(front)
+    gen_npcs()
     write_cast_md()
     SHOTS.mkdir(parents=True, exist_ok=True)
     sheet = make_sheet(fronts)

@@ -1,109 +1,107 @@
 # 赛博胡同 Cyber Hutong
 
-Soul Knight 风格的 **2.5D 斜俯视** 像素探索小品。当前仓库为 **Phase-1：像素资源 only**。
+Soul Knight 风格的 **2.5D 斜俯视** 像素探索小品。  
+当前：**Phase 1.5 — 日常公司素材 + 平行宇宙可感预览**（无 Agent 后端 / 无登录 / 无数据库）。
 
-> 北京胡同 × 赛博霓虹 —— 先把地砖、角色 idle、道具和房间 / 命名场景 mock 画出来。
+> 北京胡同 × 赛博霓虹公司。远期：问答蒸馏出「公司版的你」，在平行宇宙房间里做你平时会做的事。
+
+## 明早验收（上海）怎么打开
+
+```bash
+# 已生成的 PNG 在 public/ 里，直接预览即可
+npx --yes serve public -p 4173
+```
+
+浏览器打开：
+
+| 页 | URL | 看什么 |
+|----|-----|--------|
+| 画廊 | http://localhost:4173/ | 6 间新房 + 道具分类 + cast 10 帧 + 3 NPC |
+| 一天故事板 | http://localhost:4173/#day | 进门→工位→拆盒→茶水间→开会→天台 |
+| 房间漫游 | http://localhost:4173/#walk | 点房间切换，角色走一个往返 |
+| 放大截图 | http://localhost:4173/preview/zoomed/ | 各房 3× PNG，方便直接截 |
+
+也可双击 `public/index.html`（file://）。设计文档在 `design/`，用编辑器打开即可。
+
+重新生成全部像素（需 Python3 + Pillow）：
+
+```bash
+python3 scripts/generate_assets.py
+# 分步：
+python3 scripts/generate_cast.py
+python3 scripts/generate_scene_variants.py
+python3 scripts/generate_daily_life.py
+```
 
 ## 本阶段范围
 
 | 做 | 不做 |
 |----|------|
-| 32×32 像素资产（PNG） | Agent / LLM |
-| 中文设计简报 | 登录 / 鉴权 |
-| 命名场景「夏威夷 / 泡泡玛特 / 厕所」 | 数据库 / 存档 |
-| 静态预览画廊 | 完整游戏循环 |
+| 新日常房间 ≥6 + 缩略 + 3× 放大 | 假大空 LLM agent 后端 |
+| 分类道具（电脑/杯/快递/白板/打印机…） | 登录 / 鉴权 / 数据库 |
+| cast 方向与走动帧 + 3 个小 NPC | 真人照片进仓 |
+| 平行宇宙三份设计（卡 / 蒸馏 / 一天） | 真日历、真聊天同步 |
+| 静态画廊 + 故事板 + canvas 漫游 | 完整游戏循环 |
 
-详见 [`design/art-brief.md`](design/art-brief.md)。
+平行宇宙怎么走：先读 [`design/parallel-universe.md`](design/parallel-universe.md)。  
+题库 + JSON：[`design/distill-spec.md`](design/distill-spec.md)。  
+故事板：[`design/day-in-life.md`](design/day-in-life.md)。
 
-## 命名场景
+## 房间总表
 
-| ID | 中文 | 说明 | 路径 |
-|----|------|------|------|
-| `hawaii` | 夏威夷 | 靠窗长桌 + **三座位纵向排列**；卷帘、笔记本、保温杯、绿植、文件夹 | [`design/scenes/hawaii.md`](design/scenes/hawaii.md) → `public/assets/scenes/hawaii/` |
-| `popmart` | 泡泡玛特店 | 室内店 · **拆盲盒**；货架、柜台、未开/已开盒、手办 | [`design/scenes/popmart.md`](design/scenes/popmart.md) → `public/assets/scenes/popmart/` |
-| `restroom` | 厕所 | **四隔间** + 隔间外 **两个水池** | [`design/scenes/restroom.md`](design/scenes/restroom.md) → `public/assets/scenes/restroom/` |
+| ID | 中文 | 地板 / 光 | 路径 |
+|----|------|-----------|------|
+| `hawaii` | 夏威夷 | 暖木 + 窗缝日光 | `public/assets/scenes/hawaii/` |
+| `popmart` | 泡泡玛特店 | 粉×薄荷糖果格 | `public/assets/scenes/popmart/` |
+| `restroom` | 厕所 | pastel 瓷 | `public/assets/scenes/restroom/` |
+| `office` | 工位 | 暗青绿 | `public/assets/rooms/room_office.png` |
+| `meeting` | 会议室 | 深紫霓虹 | `public/assets/rooms/room_meeting.png` |
+| `gate` | 胡同口 | 夜石板 | `public/assets/rooms/room_hutong_gate.png` |
+| **`pantry`** | **茶水间** | 陶土暖砖 + 蒸汽黄灯 | `public/assets/rooms/room_pantry.png` |
+| **`print`** | **打印区** | 冷灰油地胶 | `public/assets/rooms/room_print.png` |
+| **`hallway`** | **楼梯/过道** | 夜砖 + 青霓虹 | `public/assets/rooms/room_hallway.png` |
+| **`rooftop`** | **天台** | 水泥 + 月光/城市窗 | `public/assets/rooms/room_rooftop.png` |
+| **`boss`** | **老板办公室** | 人字纹木 + 金线酒红 | `public/assets/rooms/room_boss.png` |
+| **`delivery`** | **快递门口** | 户外水泥 + 黄昏 | `public/assets/rooms/room_delivery.png` |
 
-## 快速预览
-
-```bash
-# 重新生成像素图（需 Python3 + Pillow）
-python3 scripts/generate_assets.py
-
-# 场景 A/B/C 变体（Soul Knight 选型，不碰 cast）
-python3 scripts/generate_scene_variants.py
-
-# 本地打开画廊
-npx --yes serve public -p 4173
-# 或直接用浏览器打开 public/index.html
-```
-
-浏览器访问：`http://localhost:4173/`  
-资源目录：`public/assets/`
+命名场景仍各有 A/B/C。主图 `scene_*.png` = **变体 B**。Laura 可改选 A/C（见 [`design/scenes/variants.md`](design/scenes/variants.md)）。
 
 ## 目录结构
 
 ```
 cyber-hutong/
-├── README.md
 ├── design/
-│   ├── art-brief.md              # 调色板、2.5D、瓦片规格
-│   └── scenes/
-│       ├── hawaii.md / popmart.md / restroom.md
-│       └── variants.md           # A/B/C 选型 trait 矩阵
+│   ├── art-brief.md
+│   ├── cast.md
+│   ├── parallel-universe.md      # 蒸馏 → 卡 → 房间微行为
+│   ├── distill-spec.md           # 12 题 + PersonaCard JSON
+│   ├── day-in-life.md            # 一天故事板
+│   └── scenes/                   # 各房简报（含 6 间新房）
 ├── scripts/
-│   ├── generate_assets.py        # Pillow 生成全部 PNG
-│   ├── generate_cast.py          # 8 chibi cast（勿删）
-│   └── generate_scene_variants.py # 场景 A/B/C 变体
+│   ├── generate_assets.py        # 总入口（含 cast / 变体 / 日常）
+│   ├── generate_cast.py          # 8 cast + 3 NPC + 方向帧
+│   ├── generate_scene_variants.py
+│   └── generate_daily_life.py    # 新房 / 分类道具 / 放大图
 └── public/
-    ├── index.html                # 像素预览画廊
+    ├── index.html                # 画廊 · #day · #walk
+    ├── preview/zoomed/           # 3× 截图
     └── assets/
-        ├── characters/           # 角色 idle 四帧
-        ├── tiles/                # 32×32 地砖条带
-        ├── props/                # 桌椅、霓虹牌、灯笼等
-        ├── rooms/                # 工位 / 会议室 / 胡同口
-        ├── scenes/hawaii/        # 夏威夷合成 + 局部道具
-        ├── scenes/popmart/       # 泡泡玛特店 + 盲盒道具
-        ├── scenes/restroom/      # 厕所四隔间 + 水池
-        │     └── variants/{a,b,c}/
-        └── ui/                   # 对话框边框
+        ├── characters/cast_XX/   # 10 帧
+        ├── characters/npc_*      # 快递 / 咖啡师 / 路人
+        ├── tiles/
+        ├── props/                # 根目录别名 + devices/drinks/parcels/…
+        ├── rooms/ + rooms/thumbs/
+        ├── scenes/{hawaii,popmart,restroom,pantry,print,hallway,rooftop,boss,delivery}/
+        └── ui/
 ```
 
-## 场景变体（选型）
+## 风格锁
 
-每场景 A/B/C：palette / denser props / warmer light。详见 [`design/scenes/variants.md`](design/scenes/variants.md)。  
-当前主图 `scene_*.png` = **变体 B**（dense + warmer）。
-
-
-## 场景差异化（v2）
-
-每个命名场景是独立世界（地板 / 墙 / 光色），禁止共用深蓝网格再换道具：
-
-| 场景 | 地板 | 光色 |
-|------|------|------|
-| 夏威夷 | 暖木地板 | 窗缝暖日光 |
-| 泡泡玛特 | 粉×薄荷糖果格 | 粉/青霓虹 |
-| 厕所 | pastel 瓷（非泥灰） | 舒适暖白/粉 |
-| 工位 / 会议室 / 胡同口 | 暗青绿 / 深紫霓虹 / 夜石板 | 各自独立 |
-
-风格对标 Soul Knight：chunky 轮廓、强剪影、斜俯视 2.5D。
-
-## 技术约定
-
-- **瓦片**：32×32，有限调色板，最近邻友好
-- **视角**：斜俯视 2.5D（侧墙 + 顶面暗示体积）
-- **预览**：CSS `image-rendering: pixelated`，整数倍放大
+- 32×32 瓦片，chunky 轮廓，斜俯视 2.5D
+- **禁止**所有房间共用同一套深蓝网格再换道具
+- 预览 `image-rendering: pixelated`，整数倍放大
+- **不要提交真人照片 refs**
 
 ## 许可证
 
 私有仓库。资产与代码归项目所有者。
-
-## Cast (8 chibi)
-
-Soul Knight–style pixel avatars (stylized, not photoreal). See `design/cast.md`.
-
-```
-public/assets/characters/cast_XX/{idle_front,idle_side,walk_0,walk_1}.png
-```
-
-Regenerate: `python3 scripts/generate_cast.py`
-

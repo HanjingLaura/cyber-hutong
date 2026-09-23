@@ -20,10 +20,23 @@
 
 ```
 public/assets/characters/cast_XX/idle_front.png
+public/assets/characters/cast_XX/idle_front_1.png
 public/assets/characters/cast_XX/idle_side.png
+public/assets/characters/cast_XX/idle_back.png
 public/assets/characters/cast_XX/walk_0.png
 public/assets/characters/cast_XX/walk_1.png
-public/assets/characters/cast_XX/idle_front_1.png
+public/assets/characters/cast_XX/walk_side_0.png
+public/assets/characters/cast_XX/walk_side_1.png
+public/assets/characters/cast_XX/walk_back_0.png
+public/assets/characters/cast_XX/walk_back_1.png
+```
+
+## NPC extras (路人 / 快递 / 咖啡师)
+
+```
+public/assets/characters/npc_courier/{idle_front,idle_side,walk_0,walk_1}.png
+public/assets/characters/npc_barista/{idle_front,idle_side,walk_0,walk_1}.png
+public/assets/characters/npc_passerby/{idle_front,idle_side,walk_0,walk_1}.png
 ```
 
 ## Refs

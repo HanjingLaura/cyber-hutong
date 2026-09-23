@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>赛博胡同 · Phase-1 像素预览</title>
+  <title>赛博胡同 · 日常公司预览</title>
   <style>
     :root {
       --bg: #0b0e1a;
@@ -12,8 +12,10 @@
       --muted: #a8b0c0;
       --neon: #3dfff0;
       --pink: #ff6b9d;
+      --gold: #e8c36a;
     }
     * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
     body {
       margin: 0;
       font-family: "SF Mono", "JetBrains Mono", ui-monospace, Menlo, monospace;
@@ -22,24 +24,37 @@
       line-height: 1.5;
     }
     header {
-      padding: 1.5rem 2rem;
+      position: sticky; top: 0; z-index: 20;
+      padding: 1rem 1.5rem .75rem;
       border-bottom: 1px solid #2e3a5c;
-      background: linear-gradient(180deg, #1a2744 0%, #0b0e1a 100%);
+      background: linear-gradient(180deg, #1a2744 0%, #0b0e1a 92%);
     }
-    header h1 { margin: 0 0 .25rem; font-size: 1.4rem; color: var(--neon); }
-    header p { margin: 0; color: var(--muted); font-size: .9rem; }
-    main { padding: 1.5rem 2rem 3rem; max-width: 1100px; margin: 0 auto; }
-    section { margin-bottom: 2.5rem; }
+    header h1 { margin: 0 0 .2rem; font-size: 1.25rem; color: var(--neon); }
+    header .sub { margin: 0 0 .75rem; color: var(--muted); font-size: .8rem; }
+    nav { display: flex; flex-wrap: wrap; gap: .5rem; }
+    nav a {
+      color: var(--text);
+      text-decoration: none;
+      border: 1px solid #2e3a5c;
+      padding: .25rem .7rem;
+      border-radius: 999px;
+      font-size: .75rem;
+    }
+    nav a:hover, nav a.active { border-color: var(--neon); color: var(--neon); }
+    main { padding: 1.25rem 1.5rem 3rem; max-width: 1180px; margin: 0 auto; }
+    .panel { display: none; }
+    .panel.active { display: block; }
+    section { margin-bottom: 2.25rem; }
     h2 {
       font-size: 1rem;
       color: var(--pink);
       border-left: 3px solid var(--pink);
       padding-left: .6rem;
-      margin: 0 0 1rem;
+      margin: 0 0 .75rem;
     }
-    .grid {
-      display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-end;
-    }
+    h3 { color: var(--neon); font-size: .85rem; margin: 1rem 0 .5rem; }
+    .note { color: var(--muted); font-size: .78rem; margin: -.25rem 0 1rem; }
+    .grid { display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-end; }
     .card {
       background: var(--panel);
       border: 1px solid #2e3a5c;
@@ -47,11 +62,7 @@
       padding: .75rem;
       text-align: center;
     }
-    .card figcaption {
-      margin-top: .5rem;
-      font-size: .7rem;
-      color: var(--muted);
-    }
+    .card figcaption { margin-top: .45rem; font-size: .68rem; color: var(--muted); }
     img.pixel {
       image-rendering: pixelated;
       image-rendering: crisp-edges;
@@ -64,88 +75,181 @@
       background-position: 0 0, 0 8px, 8px -8px, -8px 0;
       background-color: #0f1324;
       border: 1px solid #2e3a5c;
+      cursor: zoom-in;
     }
     .x3 { width: calc(32px * 3); height: auto; }
-    .x2 { width: calc(var(--w, 32) * 2px); height: auto; }
+    .x4 { width: calc(32px * 4); height: auto; }
     .room { width: 320px; max-width: 100%; height: auto; }
     .strip { height: 64px; width: auto; max-width: 100%; }
     .dialog { width: 512px; max-width: 100%; height: auto; }
-    footer {
-      padding: 1rem 2rem 2rem;
-      color: var(--muted);
+    .beat {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 1rem;
+      background: var(--panel);
+      border: 1px solid #2e3a5c;
+      border-radius: 8px;
+      padding: .85rem;
+      margin-bottom: 1rem;
+    }
+    @media (max-width: 720px) { .beat { grid-template-columns: 1fr; } }
+    .beat img { width: 100%; max-width: 320px; height: auto; }
+    .beat .t { color: var(--gold); font-size: .8rem; }
+    .beat h3 { margin: .2rem 0; color: var(--neon); }
+    .bubble {
+      display: inline-block;
+      margin-top: .5rem;
+      padding: .35rem .7rem;
+      background: #0b0e1a;
+      border: 1px solid var(--pink);
+      border-radius: 6px;
+      color: var(--text);
+    }
+    .chips { display: flex; flex-wrap: wrap; gap: .4rem; margin-bottom: .75rem; }
+    .chips button {
+      font: inherit; font-size: .72rem;
+      color: var(--text); background: var(--panel);
+      border: 1px solid #2e3a5c; border-radius: 999px;
+      padding: .25rem .65rem; cursor: pointer;
+    }
+    .chips button.on { border-color: var(--neon); color: var(--neon); }
+    #stage-wrap {
+      position: relative;
+      width: min(100%, 640px);
+      aspect-ratio: 320 / 240;
+      border: 1px solid #2e3a5c;
+      background: #0f1324;
+      overflow: hidden;
+    }
+    #stage { width: 100%; height: 100%; image-rendering: pixelated; display: block; }
+    #say {
+      position: absolute; left: 12px; top: 10px;
+      background: rgba(11,14,26,.86);
+      border: 1px solid var(--pink);
+      color: var(--text);
       font-size: .75rem;
+      padding: .3rem .55rem;
+      border-radius: 4px;
+      max-width: 80%;
+    }
+    footer {
+      padding: 1rem 1.5rem 2rem;
+      color: var(--muted);
+      font-size: .72rem;
       text-align: center;
     }
     a { color: var(--neon); }
+    #lb {
+      display: none; position: fixed; inset: 0; z-index: 50;
+      background: rgba(0,0,0,.82);
+      align-items: center; justify-content: center; padding: 2rem;
+    }
+    #lb.on { display: flex; }
+    #lb img { max-width: 96vw; max-height: 90vh; image-rendering: pixelated; }
   </style>
 </head>
 <body>
   <header>
     <h1>赛博胡同 Cyber Hutong</h1>
-    <p>Phase-1 像素资产预览 · 32×32 · <code>image-rendering: pixelated</code> · 无 Agent/鉴权/DB</p>
+    <p class="sub">Phase 1.5 · 元气骑士 2.5D 日常公司素材 + 平行宇宙一天预览 · 主图变体 B · 无后端</p>
+    <nav>
+      <a href="#gallery" data-tab="gallery">画廊</a>
+      <a href="#day" data-tab="day">一天故事板</a>
+      <a href="#walk" data-tab="walk">房间漫游</a>
+    </nav>
   </header>
   <main>
-    <section>
-      <h2>Cast · 8 Soul Knight chibi（idle_front ×3）</h2>
-      <p style="color:var(--muted);font-size:.8rem;margin-top:-.5rem">大头小身 · 粗描边 · 发型/衣着线索差异化 · 详见 <code>design/cast.md</code></p>
-      <div class="grid" id="cast"></div>
-    </section>
-    <section>
-      <h2>Hero idle（原型）</h2>
-      <div class="grid" id="chars"></div>
-    </section>
-    <section>
-      <h2>地砖条带 tileset_32</h2>
-      <div class="card">
-        <img class="pixel strip" src="assets/tiles/tileset_32.png" alt="tileset" style="height:96px" />
-        <figcaption>floor · brick · neon · roof · grass · door · blind · hawaii_wood · popmart_candy · restroom_tile</figcaption>
-      </div>
-    </section>
-    <section>
-      <h2>道具 props</h2>
-      <div class="grid" id="props"></div>
-    </section>
-    <section>
-      <h2>房间 mock</h2>
-      <div class="grid" id="rooms"></div>
-    </section>
-    <section>
-      <h2>命名场景 · 夏威夷 Hawaii</h2>
-      <p style="color:var(--muted);font-size:.8rem;margin-top:-.5rem">靠窗长桌 · 三座位纵向排列 · 卷帘 / 笔记本 / 保温杯 / 绿植 / 文件夹</p>
-      <div class="grid" id="hawaii"></div>
-    </section>
-    <section>
-      <h2>命名场景 · 泡泡玛特店 Pop Mart</h2>
-      <p style="color:var(--muted);font-size:.8rem;margin-top:-.5rem">室内店面 · 盲盒货架 · 展示柜台 · 可拆盲盒（未开盒 / 已开盒 / 手办）</p>
-      <div class="grid" id="popmart"></div>
-    </section>
-    <section>
-      <h2>命名场景 · 厕所 Restroom</h2>
-      <p style="color:var(--muted);font-size:.8rem;margin-top:-.5rem">四隔间 · 隔间外两个水池 · pastel 游戏风（非泥灰）· 主图=变体 B</p>
-      <div class="grid" id="restroom"></div>
-    </section>
-    <section>
-      <h2>场景变体 · 选型 A / B / C</h2>
-      <p style="color:var(--muted);font-size:.8rem;margin-top:-.5rem">
-        Soul Knight cute chunky · A pastel/cleaner · B denser+warmer · C accent palette ·
-        详见 <code>design/scenes/variants.md</code> · 主图暂用 B
-      </p>
-      <h3 style="color:var(--neon);font-size:.85rem">厕所 restroom</h3>
-      <div class="grid" id="var-restroom"></div>
-      <h3 style="color:var(--neon);font-size:.85rem">泡泡玛特 popmart</h3>
-      <div class="grid" id="var-popmart"></div>
-      <h3 style="color:var(--neon);font-size:.85rem">夏威夷 hawaii</h3>
-      <div class="grid" id="var-hawaii"></div>
-    </section>
-    <section>
-      <h2>对话框 UI</h2>
-      <div class="card">
-        <img class="pixel dialog" src="assets/ui/dialog_frame.png" alt="dialog" />
-        <figcaption>dialog_frame.png · 256×64</figcaption>
-      </div>
-    </section>
+    <div id="gallery" class="panel active">
+      <section>
+        <h2>新房间 · 日常公司（今晚新增）</h2>
+        <p class="note">茶水间 / 打印区 / 楼梯过道 / 天台 / 老板办公室 / 快递门口 · 各有独立地板与光色 · 点图放大</p>
+        <div class="grid" id="new-rooms"></div>
+      </section>
+      <section>
+        <h2>Cast · 方向与走动帧</h2>
+        <p class="note">8 人各 10 帧：idle 正/侧/背 + walk 正/侧/背 · 点开看全身</p>
+        <div class="grid" id="cast"></div>
+      </section>
+      <section>
+        <h2>NPC · 快递 / 咖啡师 / 路人</h2>
+        <div class="grid" id="npcs"></div>
+      </section>
+      <section>
+        <h2>道具 · 已分类</h2>
+        <p class="note">devices / drinks / parcels / furniture / nature / signs · 根目录也有常用别名</p>
+        <div class="grid" id="props"></div>
+      </section>
+      <section>
+        <h2>地砖条带</h2>
+        <div class="card">
+          <img class="pixel strip" src="assets/tiles/tileset_32.png" alt="tileset" style="height:96px" />
+          <figcaption>旧 10 格 + 新 6 格（陶土/油地胶/夜廊/水泥/人字纹/卸货）</figcaption>
+        </div>
+        <div class="card" style="margin-top:.75rem">
+          <img class="pixel strip" src="assets/tiles/tileset_daily_32.png" alt="daily tiles" style="height:96px" />
+          <figcaption>tileset_daily_32.png</figcaption>
+        </div>
+      </section>
+      <section>
+        <h2>已有房间 / 命名场景</h2>
+        <div class="grid" id="legacy-rooms"></div>
+      </section>
+      <section>
+        <h2>夏威夷 / 泡泡玛特 / 厕所 + 变体 A/B/C</h2>
+        <p class="note">主图暂用 B（dense+warm）。Laura 仍可改选 A/C。</p>
+        <div class="grid" id="named"></div>
+        <h3>厕所</h3><div class="grid" id="var-restroom"></div>
+        <h3>泡泡玛特</h3><div class="grid" id="var-popmart"></div>
+        <h3>夏威夷</h3><div class="grid" id="var-hawaii"></div>
+      </section>
+      <section>
+        <h2>截图用放大图</h2>
+        <p class="note">3× nearest · 路径 <code>preview/zoomed/</code> · 总表 <code>preview/room_sheet.png</code></p>
+        <div class="card">
+          <img class="pixel" src="preview/room_sheet.png" alt="sheet" style="width:min(100%,720px);height:auto" />
+          <figcaption>room_sheet.png</figcaption>
+        </div>
+      </section>
+      <section>
+        <h2>对话框 UI</h2>
+        <div class="card">
+          <img class="pixel dialog" src="assets/ui/dialog_frame.png" alt="dialog" />
+          <figcaption>dialog_frame.png</figcaption>
+        </div>
+      </section>
+    </div>
+
+    <div id="day" class="panel">
+      <section>
+        <h2>平行宇宙的一天</h2>
+        <p class="note">默认 Laura demo 卡：进门 → 夏威夷开机 → 拆盲盒 → 茶水间 → 开会记录 → 天台吹风。设计见 <code>design/day-in-life.md</code></p>
+        <div id="beats"></div>
+      </section>
+    </div>
+
+    <div id="walk" class="panel">
+      <section>
+        <h2>房间漫游</h2>
+        <p class="note">点房间切换背景。角色用 walk 帧走一个往返，停下来 idle 呼吸。不接引擎、无后端。</p>
+        <div class="chips" id="room-chips"></div>
+        <div id="stage-wrap">
+          <canvas id="stage" width="320" height="240"></canvas>
+          <div id="say">先让我进去。</div>
+        </div>
+        <p class="note" id="walk-meta"></p>
+      </section>
+    </div>
   </main>
-  <footer>设计简报 <a href="../design/art-brief.md">art-brief</a> · <a href="../design/cast.md">cast</a> · 场景 <a href="../design/scenes/hawaii.md">hawaii</a> / <a href="../design/scenes/popmart.md">popmart</a> / <a href="../design/scenes/restroom.md">restroom</a> / <a href="../design/scenes/variants.md">variants</a></footer>
+  <footer>
+    设计：<a href="../design/parallel-universe.md">平行宇宙</a> ·
+    <a href="../design/distill-spec.md">蒸馏 spec</a> ·
+    <a href="../design/day-in-life.md">一天</a> ·
+    <a href="../design/art-brief.md">美术</a> ·
+    <a href="../design/cast.md">cast</a>
+    · 本地：<code>npx serve public -p 4173</code>
+  </footer>
+  <div id="lb"><img alt="zoom" /></div>
+
   <script>
     const pixel = (src, caption, cls = "x3") => {
       const f = document.createElement("figure");
@@ -153,58 +257,80 @@
       f.innerHTML = `<img class="pixel ${cls}" src="${src}" alt="${caption}" /><figcaption>${caption}</figcaption>`;
       return f;
     };
+
+    const FRAMES = [
+      "idle_front","idle_front_1","idle_side","idle_back",
+      "walk_0","walk_1","walk_side_0","walk_side_1","walk_back_0","walk_back_1"
+    ];
     for (let i = 1; i <= 8; i++) {
       const id = String(i).padStart(2, "0");
-      document.getElementById("cast").appendChild(
-        pixel(`assets/characters/cast_${id}/idle_front.png`, `cast_${id}`)
-      );
+      FRAMES.forEach(fr => {
+        document.getElementById("cast").appendChild(
+          pixel(`assets/characters/cast_${id}/${fr}.png`, `cast_${id} ${fr}`, "x4")
+        );
+      });
     }
-    for (let i = 0; i < 4; i++) {
-      document.getElementById("chars").appendChild(
-        pixel(`assets/characters/hero_idle_${i}.png`, `hero_idle_${i}`)
+    ["npc_courier","npc_barista","npc_passerby"].forEach(id => {
+      ["idle_front","idle_front_1","idle_side","idle_back","walk_0","walk_1"].forEach(fr => {
+        document.getElementById("npcs").appendChild(
+          pixel(`assets/characters/${id}/${fr}.png`, `${id} ${fr}`, "x4")
+        );
+      });
+    });
+
+    const newRooms = [
+      ["room_pantry.png", "茶水间 / 咖啡角"],
+      ["room_print.png", "打印区"],
+      ["room_hallway.png", "楼梯 / 过道"],
+      ["room_rooftop.png", "天台"],
+      ["room_boss.png", "老板办公室"],
+      ["room_delivery.png", "快递门口"],
+    ];
+    newRooms.forEach(([f, label]) => {
+      document.getElementById("new-rooms").appendChild(
+        pixel(`assets/rooms/${f}`, label + " · " + f, "room")
       );
-    }
+    });
+
     const props = [
-      "desk","chair","chair_jacket","neon_sign","lantern","plant",
-      "server_rack","hologram","laptop","thermos","folders","long_desk",
-      "blind_box","blind_box_open","popmart_figure","shelf_boxes","display_counter",
-      "stall","sink"
+      "computer","coffee_cup","coffee_machine","printer","whiteboard","parcel","parcel_stack",
+      "door","chair_leather","plant_tall","lamp_desk","neon_exit","scooter","water_cooler","vending",
+      "desk","chair","chair_jacket","neon_sign","lantern","plant","server_rack","hologram","laptop",
+      "thermos","folders","long_desk","blind_box","blind_box_open","popmart_figure","shelf_boxes",
+      "display_counter","stall","sink"
     ];
     props.forEach(n => document.getElementById("props").appendChild(
       pixel(`assets/props/${n}.png`, n + ".png", "x3")
     ));
     [
+      "devices/computer.png","devices/printer.png","devices/coffee_machine.png","devices/whiteboard.png",
+      "devices/microwave.png","devices/shredder.png","devices/water_cooler.png",
+      "drinks/coffee_cup.png","drinks/kettle.png",
+      "parcels/parcel.png","parcels/parcel_stack.png","parcels/blind_box.png",
+      "furniture/door.png","furniture/chair_leather.png","furniture/boss_desk.png","furniture/sofa.png",
+      "nature/plant_tall.png",
+      "signs/lamp_desk.png","signs/neon_exit.png","signs/scooter.png","signs/vending.png",
+      "signs/railing.png","signs/ac_unit.png","signs/award.png","signs/cigarette.png"
+    ].forEach(rel => {
+      document.getElementById("props").appendChild(pixel(`assets/props/${rel}`, rel, "x3"));
+    });
+
+    [
       ["room_office.png", "工位"],
       ["room_meeting.png", "会议室"],
       ["room_hutong_gate.png", "胡同口"],
     ].forEach(([f, label]) => {
-      document.getElementById("rooms").appendChild(
+      document.getElementById("legacy-rooms").appendChild(
         pixel(`assets/rooms/${f}`, label + " · " + f, "room")
       );
     });
-    document.getElementById("hawaii").appendChild(
-      pixel("assets/scenes/hawaii/scene_hawaii.png", "scene_hawaii.png · 三座位纵向", "room")
-    );
-    ["chair","chair_jacket","laptop","thermos","plant","folders","blind_tile","long_desk"].forEach(n => {
-      document.getElementById("hawaii").appendChild(
-        pixel(`assets/scenes/hawaii/${n}.png`, n, "x3")
-      );
-    });
-    document.getElementById("popmart").appendChild(
-      pixel("assets/scenes/popmart/scene_popmart.png", "scene_popmart.png · 拆盲盒店", "room")
-    );
-    ["shelf_boxes","counter","box_closed","box_opened","figure"].forEach(n => {
-      document.getElementById("popmart").appendChild(
-        pixel(`assets/scenes/popmart/${n}.png`, n, "x3")
-      );
-    });
-    document.getElementById("restroom").appendChild(
-      pixel("assets/scenes/restroom/scene_restroom.png", "scene_restroom.png · 四隔间+两水池", "room")
-    );
-    ["stall","stall_open","sink","mirror","floor_tile"].forEach(n => {
-      document.getElementById("restroom").appendChild(
-        pixel(`assets/scenes/restroom/${n}.png`, n, "x3")
-      );
+
+    [
+      ["assets/scenes/hawaii/scene_hawaii.png", "夏威夷 · 三座位纵向"],
+      ["assets/scenes/popmart/scene_popmart.png", "泡泡玛特 · 拆盲盒"],
+      ["assets/scenes/restroom/scene_restroom.png", "厕所 · 四隔间+两水池"],
+    ].forEach(([src, label]) => {
+      document.getElementById("named").appendChild(pixel(src, label, "room"));
     });
 
     const varLabels = {
@@ -222,6 +348,161 @@
         ));
       });
     });
+
+    const BEATS = [
+      { t:"09:12", title:"进胡同 / 快递门口", room:"delivery",
+        src:"assets/rooms/room_delivery.png", action:"badge_in",
+        line:"先让我进去。",
+        why:"刷门禁，和抱盒骑手擦肩。parcelHabit=sprint 会先签收。" },
+      { t:"09:18", title:"夏威夷工位开机", room:"hawaii",
+        src:"assets/scenes/hawaii/scene_hawaii.png", action:"open_laptop",
+        line:"先把窗边这档开了。",
+        why:"窗边三座位纵向。默认 arrivalRitual。" },
+      { t:"10:40", title:"泡泡玛特摸鱼", room:"popmart",
+        src:"assets/scenes/popmart/scene_popmart.png", action:"unbox",
+        line:"就拆一个。",
+        why:"slackOff=popmart。卡若改茶水间/天台则跳过本格。" },
+      { t:"11:05", title:"茶水间续命", room:"pantry",
+        src:"assets/rooms/room_pantry.png", action:"pull_espresso",
+        line:"第二杯。",
+        why:"咖啡师 NPC + 陶土砖厨房。fuel=tea 则改水壶。" },
+      { t:"14:00", title:"会议室记录", room:"meeting",
+        src:"assets/rooms/room_meeting.png", action:"take_notes",
+        line:"我记，你们说。",
+        why:"meetingRole=notes。lead 会站到全息前。" },
+      { t:"17:40", title:"天台吹风", room:"rooftop",
+        src:"assets/rooms/room_rooftop.png", action:"lean_rail",
+        line:"风比会好。",
+        why:"rooftopHabit=wind。smoke 则加火星；avoid 则改看窗结束。" },
+    ];
+    const beatsEl = document.getElementById("beats");
+    BEATS.forEach((b, i) => {
+      const d = document.createElement("article");
+      d.className = "beat";
+      d.innerHTML = `
+        <img class="pixel" src="${b.src}" alt="${b.title}" />
+        <div>
+          <div class="t">${b.t} · 0${i+1} / 06 · ${b.action}</div>
+          <h3>${b.title}</h3>
+          <p class="note">${b.why}</p>
+          <div class="bubble">${b.line}</div>
+        </div>`;
+      beatsEl.appendChild(d);
+    });
+
+    const WALK = [
+      { id:"delivery", title:"快递门口", src:"assets/rooms/room_delivery.png", line:"先让我进去。", y: 176 },
+      { id:"hawaii", title:"夏威夷", src:"assets/scenes/hawaii/scene_hawaii.png", line:"先把窗边这档开了。", y: 190 },
+      { id:"popmart", title:"泡泡玛特", src:"assets/scenes/popmart/scene_popmart.png", line:"就拆一个。", y: 168 },
+      { id:"pantry", title:"茶水间", src:"assets/rooms/room_pantry.png", line:"第二杯。", y: 168 },
+      { id:"meeting", title:"会议室", src:"assets/rooms/room_meeting.png", line:"我记，你们说。", y: 180 },
+      { id:"rooftop", title:"天台", src:"assets/rooms/room_rooftop.png", line:"风比会好。", y: 176 },
+      { id:"hallway", title:"过道楼梯", src:"assets/rooms/room_hallway.png", line:"先让一让。", y: 160 },
+      { id:"print", title:"打印区", src:"assets/rooms/room_print.png", line:"别卡纸。", y: 170 },
+      { id:"boss", title:"老板办公室", src:"assets/rooms/room_boss.png", line:"…你说。", y: 176 },
+    ];
+
+    const chips = document.getElementById("room-chips");
+    const canvas = document.getElementById("stage");
+    const ctx = canvas.getContext("2d");
+    ctx.imageSmoothingEnabled = false;
+    const say = document.getElementById("say");
+    const meta = document.getElementById("walk-meta");
+
+    const walkImgs = { 0: new Image(), 1: new Image(), idle0: new Image(), idle1: new Image() };
+    walkImgs[0].src = "assets/characters/cast_01/walk_side_0.png";
+    walkImgs[1].src = "assets/characters/cast_01/walk_side_1.png";
+    walkImgs.idle0.src = "assets/characters/cast_01/idle_front.png";
+    walkImgs.idle1.src = "assets/characters/cast_01/idle_front_1.png";
+
+    const bgCache = {};
+    let cur = 0, x = 40, dir = 1, tick = 0, walking = true;
+
+    function loadBg(src) {
+      if (bgCache[src]) return bgCache[src];
+      const im = new Image();
+      im.src = src;
+      bgCache[src] = im;
+      return im;
+    }
+    WALK.forEach(w => loadBg(w.src));
+
+    function setRoom(i) {
+      cur = i;
+      x = 36;
+      dir = 1;
+      walking = true;
+      say.textContent = WALK[i].line;
+      meta.textContent = WALK[i].title + " · " + WALK[i].src;
+      [...chips.children].forEach((b, j) => b.classList.toggle("on", j === i));
+    }
+    WALK.forEach((w, i) => {
+      const b = document.createElement("button");
+      b.textContent = w.title;
+      b.addEventListener("click", () => setRoom(i));
+      chips.appendChild(b);
+    });
+    setRoom(0);
+
+    function loop() {
+      const room = WALK[cur];
+      const bg = bgCache[room.src];
+      ctx.clearRect(0, 0, 320, 240);
+      if (bg && bg.complete) {
+        ctx.drawImage(bg, 0, 0, 320, 240);
+      } else {
+        ctx.fillStyle = "#0f1324";
+        ctx.fillRect(0, 0, 320, 240);
+      }
+      tick++;
+      if (walking) {
+        x += dir * 0.7;
+        if (x > 260) { dir = -1; }
+        if (x < 36) { dir = 1; walking = false; }
+      }
+      if (!walking && tick % 180 === 0) walking = true;
+      const spr = walking
+        ? walkImgs[(tick >> 3) % 2]
+        : walkImgs[(tick >> 4) % 2 ? "idle1" : "idle0"];
+      if (spr && spr.complete) {
+        ctx.save();
+        if (walking && dir < 0) {
+          ctx.translate(x + 32, 0);
+          ctx.scale(-1, 1);
+          ctx.drawImage(spr, 0, room.y);
+        } else {
+          ctx.drawImage(spr, x, room.y);
+        }
+        ctx.restore();
+      }
+      requestAnimationFrame(loop);
+    }
+    requestAnimationFrame(loop);
+
+    const panels = { gallery: document.getElementById("gallery"), day: document.getElementById("day"), walk: document.getElementById("walk") };
+    const navs = [...document.querySelectorAll("nav a")];
+    function showTab(name) {
+      const id = panels[name] ? name : "gallery";
+      Object.entries(panels).forEach(([k, el]) => el.classList.toggle("active", k === id));
+      navs.forEach(a => a.classList.toggle("active", a.dataset.tab === id));
+    }
+    function fromHash() {
+      showTab((location.hash || "#gallery").slice(1));
+    }
+    window.addEventListener("hashchange", fromHash);
+    fromHash();
+
+    const lb = document.getElementById("lb");
+    document.addEventListener("click", (e) => {
+      const img = e.target.closest("img.pixel");
+      if (!img || img.closest("#lb")) {
+        if (e.target === lb) lb.classList.remove("on");
+        return;
+      }
+      lb.querySelector("img").src = img.src;
+      lb.classList.add("on");
+    });
+    document.addEventListener("keydown", (e) => { if (e.key === "Escape") lb.classList.remove("on"); });
   </script>
 </body>
 </html>

@@ -5,6 +5,9 @@
   "description": "赛博胡同 Phase-1 pixel assets gallery",
   "scripts": {
     "assets": "python3 scripts/generate_assets.py",
+    "assets:cast": "python3 scripts/generate_cast.py",
+    "assets:daily": "python3 scripts/generate_daily_life.py",
+    "assets:variants": "python3 scripts/generate_scene_variants.py",
     "preview": "npx --yes serve public -p 4173"
   }
 }

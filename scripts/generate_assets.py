@@ -1134,6 +1134,16 @@ def main():
                 print(f"  promoted variants/b -> {dst.relative_to(ROOT)}")
     except Exception as e:
         print(f"  (variants skipped: {e})")
+    try:
+        from generate_cast import main as gen_cast
+        gen_cast()
+    except Exception as e:
+        print(f"  (cast skipped: {e})")
+    try:
+        from generate_daily_life import main as gen_daily
+        gen_daily()
+    except Exception as e:
+        print(f"  (daily life skipped: {e})")
     print("Done.")
 
 

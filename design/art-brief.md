@@ -1,6 +1,7 @@
 # 「赛博胡同」美术与设计简报（Phase-1）
 
-> 阶段目标：仅像素资源与预览画廊。无 Agent / LLM / 鉴权 / 数据库。
+> 阶段目标：像素资源 + 可感预览（画廊 / 一天故事板 / 房间漫游）。无 Agent 后端 / LLM / 鉴权 / 数据库。
+> 平行宇宙产品路径见 [`parallel-universe.md`](parallel-universe.md)。
 
 ## 游戏定位
 
@@ -32,6 +33,12 @@
 | 工位（supporting） | 暗青绿格子 | 青砖 + 霓虹描边 | 屏幕青光 | 夜班工位 |
 | 会议室 | 深紫霓虹网格 | 紫绒墙 | 全息青光 | 赛博会议 |
 | 胡同口 | 夜间石板/卵石 | 青砖巷壁 + 牌楼 | 灯笼暖光 + 霓虹 | 户外夜巷 |
+| 茶水间 | 陶土暖砖 | 奶油墙 + 暖腰线 | 蒸汽黄吊灯 | 续命 |
+| 打印区 | 冷灰油地胶 | 浅灰 + 蓝踢脚 | 冷白灯管 | 后勤 |
+| 楼梯/过道 | 暗青夜砖 | 青砖 + 霓虹腰线 | 出口绿灯 | 过场 |
+| 天台 | 水泥缝 | 夜空 + 城市剪影 | 月光 / 烟火星 | 吹风 |
+| 老板办公室 | 深色人字纹木 | 酒红 + 金线 | 台灯暖光 | 被叫进去 |
+| 快递门口 | 户外水泥板 | 青砖 + 卷帘 | 黄昏橙 | 签收 / 进门 |
 
 ## 瓦片规格
 
@@ -98,6 +105,12 @@ Soul Knight 可读性、chunky 轮廓、独立场景光色、霓虹雨夜胡同�
 | `hawaii` | 夏威夷 | 靠窗长桌 + **三座位纵向排列**；详见 `design/scenes/hawaii.md` |
 | `popmart` | 泡泡玛特店 | 室内店 · **拆盲盒**；详见 `design/scenes/popmart.md` |
 | `restroom` | 厕所 | **四隔间** + 隔间外 **两个水池**；详见 `design/scenes/restroom.md` |
+| `pantry` | 茶水间 | 咖啡机 / 高桌 / 咖啡师；`design/scenes/pantry.md` |
+| `print` | 打印区 | 双打印机 + 白板 + 文件格；`design/scenes/print.md` |
+| `hallway` | 楼梯/过道 | 2.5D 台阶 + 贩卖机；`design/scenes/hallway.md` |
+| `rooftop` | 天台 | 栏杆 / 城市剪影 / 风；`design/scenes/rooftop.md` |
+| `boss` | 老板办公室 | 大班台 + 皮椅 + 金线窗；`design/scenes/boss.md` |
+| `delivery` | 快递门口 | 卷帘 + 电驴 + 骑手；`design/scenes/delivery.md` |
 
 合成图路径：
 - `public/assets/scenes/hawaii/scene_hawaii.png`

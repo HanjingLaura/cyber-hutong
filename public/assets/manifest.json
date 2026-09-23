@@ -1,0 +1,235 @@
+{
+  "phase": "1.5-daily-life",
+  "heroVariant": "B",
+  "rooms": [
+    {
+      "id": "pantry",
+      "title": "茶水间 / 咖啡角",
+      "src": "assets/rooms/room_pantry.png",
+      "thumb": "assets/rooms/thumbs/room_pantry.png",
+      "zoom": "preview/zoomed/room_pantry.png",
+      "scene": "assets/scenes/pantry/scene_pantry.png"
+    },
+    {
+      "id": "print",
+      "title": "打印区",
+      "src": "assets/rooms/room_print.png",
+      "thumb": "assets/rooms/thumbs/room_print.png",
+      "zoom": "preview/zoomed/room_print.png",
+      "scene": "assets/scenes/print/scene_print.png"
+    },
+    {
+      "id": "hallway",
+      "title": "楼梯 / 过道",
+      "src": "assets/rooms/room_hallway.png",
+      "thumb": "assets/rooms/thumbs/room_hallway.png",
+      "zoom": "preview/zoomed/room_hallway.png",
+      "scene": "assets/scenes/hallway/scene_hallway.png"
+    },
+    {
+      "id": "rooftop",
+      "title": "天台",
+      "src": "assets/rooms/room_rooftop.png",
+      "thumb": "assets/rooms/thumbs/room_rooftop.png",
+      "zoom": "preview/zoomed/room_rooftop.png",
+      "scene": "assets/scenes/rooftop/scene_rooftop.png"
+    },
+    {
+      "id": "boss",
+      "title": "老板办公室",
+      "src": "assets/rooms/room_boss.png",
+      "thumb": "assets/rooms/thumbs/room_boss.png",
+      "zoom": "preview/zoomed/room_boss.png",
+      "scene": "assets/scenes/boss/scene_boss.png"
+    },
+    {
+      "id": "delivery",
+      "title": "快递门口",
+      "src": "assets/rooms/room_delivery.png",
+      "thumb": "assets/rooms/thumbs/room_delivery.png",
+      "zoom": "preview/zoomed/room_delivery.png",
+      "scene": "assets/scenes/delivery/scene_delivery.png"
+    }
+  ],
+  "legacyRooms": [
+    {
+      "id": "office",
+      "title": "工位",
+      "src": "assets/rooms/room_office.png"
+    },
+    {
+      "id": "meeting",
+      "title": "会议室",
+      "src": "assets/rooms/room_meeting.png"
+    },
+    {
+      "id": "gate",
+      "title": "胡同口",
+      "src": "assets/rooms/room_hutong_gate.png"
+    }
+  ],
+  "namedScenes": [
+    {
+      "id": "hawaii",
+      "title": "夏威夷",
+      "src": "assets/scenes/hawaii/scene_hawaii.png"
+    },
+    {
+      "id": "popmart",
+      "title": "泡泡玛特店",
+      "src": "assets/scenes/popmart/scene_popmart.png"
+    },
+    {
+      "id": "restroom",
+      "title": "厕所",
+      "src": "assets/scenes/restroom/scene_restroom.png"
+    }
+  ],
+  "props": [
+    {
+      "src": "assets/props/devices/computer.png",
+      "id": "devices/computer.png"
+    },
+    {
+      "src": "assets/props/devices/printer.png",
+      "id": "devices/printer.png"
+    },
+    {
+      "src": "assets/props/devices/coffee_machine.png",
+      "id": "devices/coffee_machine.png"
+    },
+    {
+      "src": "assets/props/devices/whiteboard.png",
+      "id": "devices/whiteboard.png"
+    },
+    {
+      "src": "assets/props/devices/microwave.png",
+      "id": "devices/microwave.png"
+    },
+    {
+      "src": "assets/props/devices/shredder.png",
+      "id": "devices/shredder.png"
+    },
+    {
+      "src": "assets/props/devices/water_cooler.png",
+      "id": "devices/water_cooler.png"
+    },
+    {
+      "src": "assets/props/drinks/coffee_cup.png",
+      "id": "drinks/coffee_cup.png"
+    },
+    {
+      "src": "assets/props/drinks/kettle.png",
+      "id": "drinks/kettle.png"
+    },
+    {
+      "src": "assets/props/parcels/parcel.png",
+      "id": "parcels/parcel.png"
+    },
+    {
+      "src": "assets/props/parcels/parcel_stack.png",
+      "id": "parcels/parcel_stack.png"
+    },
+    {
+      "src": "assets/props/parcels/blind_box.png",
+      "id": "parcels/blind_box.png"
+    },
+    {
+      "src": "assets/props/furniture/door.png",
+      "id": "furniture/door.png"
+    },
+    {
+      "src": "assets/props/furniture/chair_office.png",
+      "id": "furniture/chair_office.png"
+    },
+    {
+      "src": "assets/props/furniture/chair_leather.png",
+      "id": "furniture/chair_leather.png"
+    },
+    {
+      "src": "assets/props/furniture/boss_desk.png",
+      "id": "furniture/boss_desk.png"
+    },
+    {
+      "src": "assets/props/furniture/sofa.png",
+      "id": "furniture/sofa.png"
+    },
+    {
+      "src": "assets/props/nature/plant_tall.png",
+      "id": "nature/plant_tall.png"
+    },
+    {
+      "src": "assets/props/signs/lamp_desk.png",
+      "id": "signs/lamp_desk.png"
+    },
+    {
+      "src": "assets/props/signs/neon_exit.png",
+      "id": "signs/neon_exit.png"
+    },
+    {
+      "src": "assets/props/signs/fire_extinguisher.png",
+      "id": "signs/fire_extinguisher.png"
+    },
+    {
+      "src": "assets/props/signs/vending.png",
+      "id": "signs/vending.png"
+    },
+    {
+      "src": "assets/props/signs/railing.png",
+      "id": "signs/railing.png"
+    },
+    {
+      "src": "assets/props/signs/ac_unit.png",
+      "id": "signs/ac_unit.png"
+    },
+    {
+      "src": "assets/props/signs/scooter.png",
+      "id": "signs/scooter.png"
+    },
+    {
+      "src": "assets/props/signs/award.png",
+      "id": "signs/award.png"
+    },
+    {
+      "src": "assets/props/signs/books.png",
+      "id": "signs/books.png"
+    },
+    {
+      "src": "assets/props/signs/cigarette.png",
+      "id": "signs/cigarette.png"
+    },
+    {
+      "src": "assets/props/signs/water_tank.png",
+      "id": "signs/water_tank.png"
+    },
+    {
+      "src": "assets/props/signs/inbox.png",
+      "id": "signs/inbox.png"
+    },
+    {
+      "src": "assets/props/signs/paper_stack.png",
+      "id": "signs/paper_stack.png"
+    },
+    {
+      "src": "assets/props/signs/snack_shelf.png",
+      "id": "signs/snack_shelf.png"
+    }
+  ],
+  "castFrames": [
+    "idle_front",
+    "idle_front_1",
+    "idle_side",
+    "idle_back",
+    "walk_0",
+    "walk_1",
+    "walk_side_0",
+    "walk_side_1",
+    "walk_back_0",
+    "walk_back_1"
+  ],
+  "npcs": [
+    "npc_courier",
+    "npc_barista",
+    "npc_passerby"
+  ]
+}
