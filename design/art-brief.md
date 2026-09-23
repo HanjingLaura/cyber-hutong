@@ -39,13 +39,15 @@
 - 角色帧：32×32
 - 道具：6–16 px 小件（杯 / 本 / 盲盒 / 笔记本）
 
-## 产品主循环（高于画风）
+## 产品主循环（高于画风，不要只画画）
 
-见 [`parallel-universe.md`](parallel-universe.md)：
+以 [`parallel-universe.md`](parallel-universe.md) 为准：
 
-1. **本人在线** — 玩家直接操控自己的小人（走、进房、往空桌位放东西、对话）。
-2. **本人离线** — 该角色的 agent 驱动同一个小人。
-3. **学习** — agent 学在线操作轨迹。蒸馏 Q&A / PersonaCard **只做冷启动**。
+1. **Online-control · 本人在线** — 玩家直接操控自己的小人（移动 / 进房 / 往空桌位放东西 / 对话）。
+2. **Offline-agent · 本人离线** — 该角色的 agent 驱动**同一个**小人在胡同里活动。
+3. **Behavior-learning · 学习** — agent 学真人在线操作（常去房、停留、摆物、社交、摸鱼）。蒸馏 Q&A / PersonaCard **只做冷启动**；在线操作日志才是持续更新信号。
+
+MVP：录操作事件 → 规则 / 事件牌回放。本周不必接大模型。合并规则见 [`distill-spec.md`](distill-spec.md)。
 
 ## 非目标
 

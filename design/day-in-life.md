@@ -1,6 +1,6 @@
 # 一条一天 · 只链保留场景
 
-> 不是「纯 agent 演完一天」。本人在线操控；离线才由 agent 按卡回放。蒸馏只冷启动。见 [`parallel-universe.md`](parallel-universe.md)。
+> 主循环：Online-control（本人在线操控）→ Offline-agent（离线驱动同一小人）→ Behavior-learning（学在线轨迹）。蒸馏 Q&A / PersonaCard 只冷启动。见 [`parallel-universe.md`](parallel-universe.md)。
 
 下架：茶水间 / 打印区 / 楼梯过道 / 天台 / 老板办公室 / 快递门口。
 

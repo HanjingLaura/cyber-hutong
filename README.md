@@ -4,7 +4,15 @@
 
 Laura 过夜纠正后的范围：**只做她点名的 7 个场景**，八人 cast 按照片线索重画，桌椅留出放杯子 / 笔记本 / 盲盒的空位。
 
-产品主循环（见 [`design/parallel-universe.md`](design/parallel-universe.md)）：**本人在线操控** → 离线由 agent 驱动同一小人 → agent **学习在线操作轨迹**。蒸馏 Q&A 只做冷启动。
+## 产品主循环（高于画风）
+
+Laura 刚定，写入 [`design/parallel-universe.md`](design/parallel-universe.md)，不要只画画。
+
+1. **Online-control · 本人在线** — 玩家直接操控自己的小人（移动 / 进房 / 放桌上物品 / 对话）。
+2. **Offline-agent · 本人离线** — 该角色的 agent 驱动**同一个**小人在胡同里活动。
+3. **Behavior-learning · 学习** — agent 必须学习真人在线时的操作（常去房间、停留时长、桌面摆物、社交对象、摸鱼偏好）。蒸馏 Q&A / PersonaCard **只做冷启动**；在线操作日志才是持续训练 / 更新信号。
+
+MVP 先「录操作事件 → 规则 / 事件牌回放」，本周不必接大模型。卡如何合并见 [`design/distill-spec.md`](design/distill-spec.md)。场景与八人精致像素继续，不冲突。
 
 ## 本地预览
 
