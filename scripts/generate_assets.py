@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """赛博胡同 refined-pixel pipeline.
 
-Generates shared tiles / props / UI, then the 8-person cast and the 7
-Laura-named scenes. Does not emit delisted rooms or A/B/C variants.
+Generates shared tiles / props / UI, then the 8-person cast (A/B/C
+variants + photo map) and the 11 Laura-named scenes.
 """
 from __future__ import annotations
 
@@ -102,6 +102,43 @@ def tile_meeting():
     return t
 
 
+def tile_concert():
+    t = new(32, 32, rooms.CN["floor"])
+    d = ImageDraw.Draw(t)
+    rect(d, [0, 0, 31, 31], rooms.CN["floor"])
+    rect(d, [4, 4, 27, 27], rooms.CN["floor2"])
+    return t
+
+
+def tile_cafe():
+    t = new(32, 32, rooms.CF["floor"])
+    d = ImageDraw.Draw(t)
+    for y in range(0, 32, 8):
+        base = rooms.CF["floor"] if (y // 8) % 2 == 0 else rooms.CF["floor2"]
+        rect(d, [0, y, 31, y + 7], base)
+        hline(d, 0, 31, y + 7, rooms.CF["gap"])
+    return t
+
+
+def tile_gym():
+    t = new(32, 32, rooms.GY["floor"])
+    d = ImageDraw.Draw(t)
+    rect(d, [0, 0, 31, 31], rooms.GY["floor"])
+    hline(d, 0, 31, 16, rooms.GY["floor2"])
+    vline(d, 16, 0, 31, rooms.GY["floor2"])
+    return t
+
+
+def tile_mixian():
+    t = new(32, 32, rooms.MX["floor"])
+    d = ImageDraw.Draw(t)
+    for y in range(0, 32, 8):
+        base = rooms.MX["floor"] if (y // 8) % 2 == 0 else rooms.MX["floor2"]
+        rect(d, [0, y, 31, y + 7], base)
+        hline(d, 0, 31, y + 7, rooms.MX["wood_e"])
+    return t
+
+
 def gen_tileset():
     labels = [
         ("hutong", tile_hutong_floor()),
@@ -111,6 +148,10 @@ def gen_tileset():
         ("restroom", tile_restroom()),
         ("office", tile_office()),
         ("meeting", tile_meeting()),
+        ("concert", tile_concert()),
+        ("cafe", tile_cafe()),
+        ("gym", tile_gym()),
+        ("mixian", tile_mixian()),
     ]
     strip = new(32 * len(labels), 32)
     for i, (name, t) in enumerate(labels):

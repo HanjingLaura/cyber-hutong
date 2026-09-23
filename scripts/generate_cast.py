@@ -12,7 +12,7 @@ from pathlib import Path
 from PIL import Image, ImageDraw
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from pxlib import PAL, new, outline_sprite, rect, save, solid_shadow, zoom
+from pxlib import PAL, hline, new, outline_sprite, rect, save, shade, solid_shadow, vline, zoom
 
 ROOT = Path(__file__).resolve().parents[1]
 ASSETS = ROOT / "public" / "assets" / "characters"
@@ -34,9 +34,9 @@ C = {
     "hair_tip": (210, 168, 110, 255),
     "hair_tip2": (186, 140, 88, 255),
     "brown": (92, 62, 42, 255),
-    "charcoal": (74, 78, 86, 255),
-    "charcoal_d": (50, 52, 60, 255),
-    "charcoal_hi": (112, 116, 124, 255),
+    "charcoal": (108, 112, 122, 255),
+    "charcoal_d": (72, 76, 86, 255),
+    "charcoal_hi": (156, 160, 170, 255),
     "black": (26, 26, 32, 255),
     "black_hi": (48, 50, 58, 255),
     "grey": (140, 144, 152, 255),
@@ -50,6 +50,12 @@ C = {
     "pants": (48, 50, 62, 255),
     "shoe": (24, 24, 28, 255),
     "tee": (34, 36, 42, 255),
+    "polo": (28, 28, 32, 255),
+    "mint": (214, 232, 214, 255),
+    "mint_d": (170, 196, 176, 255),
+    "sky": (176, 204, 230, 255),
+    "red": (200, 56, 64, 255),
+    "red_hi": (240, 120, 120, 255),
 }
 
 
@@ -70,14 +76,14 @@ def face(d, cx, hy, skin, glasses=False):
     d.point((cx - 1, hy + 7), fill=SKIN_D)
     d.point((cx, hy + 7), fill=SKIN_D)
     if glasses:
-        # 1px rims only
-        # thicker rims so glasses survive 3×
-        rect(d, [cx - 5, hy + 3, cx - 1, hy + 5], INK)
-        rect(d, [cx, hy + 3, cx + 4, hy + 5], INK)
-        d.point((cx - 4, hy + 4), fill=skin)
-        d.point((cx - 3, hy + 4), fill=EYE)
-        d.point((cx + 1, hy + 4), fill=skin)
-        d.point((cx + 2, hy + 4), fill=EYE)
+        hline(d, cx - 4, cx - 1, hy + 3, INK)
+        hline(d, cx - 4, cx - 1, hy + 5, INK)
+        vline(d, cx - 4, hy + 3, hy + 5, INK)
+        vline(d, cx - 1, hy + 3, hy + 5, INK)
+        hline(d, cx, cx + 3, hy + 3, INK)
+        hline(d, cx, cx + 3, hy + 5, INK)
+        vline(d, cx, hy + 3, hy + 5, INK)
+        vline(d, cx + 3, hy + 3, hy + 5, INK)
         d.point((cx - 1, hy + 4), fill=INK)
         d.point((cx, hy + 4), fill=INK)
 
@@ -216,6 +222,67 @@ def body_sweater(d, cx, by):
     d.point((cx, by + 1), fill=SKIN)
 
 
+def body_polo(d, cx, by):
+    rect(d, [cx - 5, by, cx + 4, by + 8], INK)
+    rect(d, [cx - 4, by + 1, cx + 3, by + 7], C["polo"])
+    d.point((cx - 1, by + 1), fill=SKIN)
+    d.point((cx, by + 1), fill=SKIN)
+    # collar V
+    d.point((cx - 2, by + 1), fill=C["black_hi"])
+    d.point((cx + 1, by + 1), fill=C["black_hi"])
+    d.point((cx - 1, by + 2), fill=C["black_hi"])
+    d.point((cx, by + 2), fill=C["black_hi"])
+
+
+def body_mint_shirt(d, cx, by):
+    rect(d, [cx - 5, by, cx + 4, by + 8], INK)
+    rect(d, [cx - 4, by + 1, cx + 3, by + 7], C["mint"])
+    d.point((cx - 2, by + 1), fill=C["mint_d"])
+    d.point((cx + 1, by + 1), fill=C["mint_d"])
+    d.point((cx - 1, by + 1), fill=SKIN)
+    d.point((cx, by + 1), fill=SKIN)
+
+
+def body_sky_shirt(d, cx, by):
+    rect(d, [cx - 5, by, cx + 4, by + 8], INK)
+    rect(d, [cx - 4, by + 1, cx + 3, by + 7], C["sky"])
+    d.point((cx - 1, by + 1), fill=SKIN)
+    d.point((cx, by + 1), fill=SKIN)
+    d.point((cx - 3, by + 4), fill=shade(C["sky"], -20))
+
+
+def body_red_stripe(d, cx, by):
+    rect(d, [cx - 5, by, cx + 4, by + 8], INK)
+    for i, y in enumerate(range(by + 1, by + 8)):
+        rect(d, [cx - 4, y, cx + 3, y], C["red"] if i % 2 == 0 else C["white"])
+    d.point((cx - 1, by + 1), fill=SKIN)
+    d.point((cx, by + 1), fill=SKIN)
+
+
+def hair_double_buns(d, cx, hy):
+    """Guessed silhouette — not confirmed on the group photo."""
+    rect(d, [cx - 5, hy - 1, cx + 4, hy + 2], C["hair"])
+    # two buns
+    rect(d, [cx - 8, hy - 3, cx - 4, hy + 1], C["hair"])
+    rect(d, [cx + 3, hy - 3, cx + 7, hy + 1], C["hair"])
+    d.point((cx - 7, hy - 3), fill=C["hair_mid"])
+    d.point((cx + 6, hy - 3), fill=C["hair_mid"])
+    rect(d, [cx - 6, hy, cx - 5, hy + 6], C["hair"])
+    rect(d, [cx + 4, hy, cx + 5, hy + 6], C["hair"])
+
+
+def hair_long_ombre_heavy(d, cx, hy):
+    hair_long_ombre_bangs(d, cx, hy)
+    for x in range(cx - 4, cx + 4):
+        d.point((x, hy + 2), fill=C["hair"])
+
+
+def hair_center_part_soft(d, cx, hy):
+    hair_center_part_long(d, cx, hy)
+    d.point((cx - 2, hy + 2), fill=SKIN_F)
+    d.point((cx + 1, hy + 2), fill=SKIN_F)
+
+
 # ---- hair (drawn AFTER face; never wipe the whole plate) ----
 def hair_long_ombre_bangs(d, cx, hy):
     """cast_01: long dark → lighter tips + see-through bangs."""
@@ -333,104 +400,140 @@ def hair_center_part_long(d, cx, hy):
     d.point((cx + 6, hy + 5), fill=HI)  # tiny stud
 
 
+def _v(tag, label, hair_fn, body_fn, sleeve, skin, glasses=False):
+    return dict(tag=tag, label=label, hair_fn=hair_fn, body_fn=body_fn,
+                sleeve=sleeve, skin=skin, glasses=glasses)
+
+
 CAST = [
     dict(
         id="cast_01",
-        hair="long dark-brown → lighter tips, thin see-through bangs",
-        clothes="charcoal grey blazer over black layer",
-        notes="From Laura ID cast_01_ref. Fair skin. HAS front face.",
+        hair="薄刘海 + 深棕→浅发尾",
+        clothes="炭灰西装 / 黑内搭",
+        photo="cast01-ref 证件正脸",
+        group_pos="—（独立证件照，不在合影里点名）",
         face_status="has_front",
-        hair_fn=hair_long_ombre_bangs,
-        body_fn=body_blazer_open,
-        sleeve=C["charcoal"],
-        skin=SKIN_F,
-        glasses=False,
+        notes="灰西装、浅发尾、薄刘海。多版仍贴这张正脸。",
+        variants=[
+            _v("A", "薄刘海+浅发尾+炭灰西装", hair_long_ombre_bangs, body_blazer_open, C["charcoal"], SKIN_F),
+            _v("B", "刘海更密", hair_long_ombre_heavy, body_blazer_open, C["charcoal"], SKIN_F),
+            _v("C", "西装略浅", hair_long_ombre_bangs, body_grey_suit, C["grey"], SKIN_F),
+        ],
     ),
     dict(
         id="cast_02",
-        hair="dark hair pulled low / nape",
-        clothes="white pinstripe shirt + thin glasses",
-        notes="Office selfie / 合影. 3/4 face visible.",
-        face_status="has_front",
-        hair_fn=hair_pulled_back,
-        body_fn=body_white_shirt,
-        sleeve=C["white"],
-        skin=SKIN_F,
-        glasses=True,
+        hair="深发挽低 / 后颈",
+        clothes="白衬衫 + 细框眼镜",
+        photo="hutong-wall-seats 合影",
+        group_pos="朝墙长桌·中间那位（白衬衫、眼镜、手撑头、侧对镜头）",
+        face_status="need_front",
+        notes="仅合影 3/4 侧。A=眼镜白衫（推荐）。",
+        variants=[
+            _v("A", "眼镜+白衬衫+低马尾", hair_pulled_back, body_white_shirt, C["white"], SKIN_F, True),
+            _v("B", "同发型无眼镜", hair_pulled_back, body_white_shirt, C["white"], SKIN_F, False),
+            _v("C", "头发放下", hair_shoulder_wave, body_white_shirt, C["white"], SKIN_F, True),
+        ],
     ),
     dict(
         id="cast_03",
-        hair="short black, fuller sides",
-        clothes="black tee",
-        notes="Office 合影 only (back/side). NEED Laura front ID.",
+        hair="短黑、两侧略厚",
+        clothes="黑 polo",
+        photo="hutong-inward 合影",
+        group_pos="前排左二：黑 polo、短发、转向镜头（3/4 脸）",
         face_status="need_front",
-        hair_fn=hair_short_male_office,
-        body_fn=body_black_tee,
-        sleeve=C["tee"],
-        skin=SKIN,
-        glasses=False,
+        notes="合影有 3/4 脸，不是证件正脸。黑 polo 男。",
+        variants=[
+            _v("A", "黑 polo 短发", hair_short_male_office, body_polo, C["polo"], SKIN),
+            _v("B", "黑 T", hair_short_male_office, body_black_tee, C["tee"], SKIN),
+            _v("C", "白衬衫男（拉开差异，合影未穿）", hair_short_male_office, body_white_shirt, C["white"], SKIN),
+        ],
     ),
     dict(
         id="cast_04",
-        hair="shoulder-length soft wave, side-part",
-        clothes="black blazer with gold buttons + gold stud",
-        notes="From portrait ref. HAS front face.",
-        face_status="has_front",
-        hair_fn=hair_shoulder_wave,
-        body_fn=body_gold_blazer,
-        sleeve=C["black"],
-        skin=SKIN_F,
-        glasses=False,
+        hair="短黑 + 眼镜",
+        clothes="黑 T",
+        photo="hutong-inward 合影",
+        group_pos="前排右：黑 T、眼镜、托腮看屏幕",
+        face_status="need_front",
+        notes="仅合影侧/3/4。眼镜是辨认点。",
+        variants=[
+            _v("A", "黑T+眼镜", hair_peak_short, body_black_tee, C["tee"], SKIN, True),
+            _v("B", "黑T无眼镜", hair_peak_short, body_black_tee, C["tee"], SKIN, False),
+            _v("C", "灰西装+眼镜", hair_peak_short, body_grey_suit, C["grey"], SKIN, True),
+        ],
     ),
     dict(
         id="cast_05",
-        hair="neat crew / buzz-top",
-        clothes="grey suit jacket over black shirt",
-        notes="From portrait ref. HAS front face.",
-        face_status="has_front",
-        hair_fn=hair_crew_neat,
-        body_fn=body_grey_suit,
-        sleeve=C["grey"],
-        skin=SKIN,
-        glasses=False,
+        hair="深发、侧对墙",
+        clothes="浅薄荷短袖",
+        photo="hutong-inward 合影",
+        group_pos="前排最左：浅色短袖、坐着打平板，侧/背对镜头",
+        face_status="need_front",
+        notes="仅合影侧/背。衣服颜色是辨认点。",
+        variants=[
+            _v("A", "薄荷短袖+深发", hair_pulled_back, body_mint_shirt, C["mint"], SKIN_F),
+            _v("B", "白短袖", hair_pulled_back, body_white_shirt, C["white"], SKIN_F),
+            _v("C", "短发薄荷衫", hair_crew_neat, body_mint_shirt, C["mint"], SKIN_F),
+        ],
     ),
     dict(
         id="cast_06",
-        hair="long brown with fuller bangs",
-        clothes="navy–white horizontal stripe shirt",
-        notes="Office selfie (peace sign). HAS front face.",
-        face_status="has_front",
-        hair_fn=hair_long_brown_bangs,
-        body_fn=body_navy_stripe,
-        sleeve=C["stripe_n"],
-        skin=SKIN_F,
-        glasses=False,
+        hair="褐长发",
+        clothes="浅蓝衬衫",
+        photo="hutong-wall-seats 合影",
+        group_pos="朝墙长桌·右侧那位（褐发、蓝衬衫、打电话、背影）",
+        face_status="need_front",
+        notes="仅合影背。B 红白条 / C 双丸子是拉开差异的变体，合影未确认。",
+        variants=[
+            _v("A", "褐长发+浅蓝衫", hair_long_brown_bangs, body_sky_shirt, C["sky"], SKIN_F),
+            _v("B", "红白横条（变体，合影未穿）", hair_long_brown_bangs, body_red_stripe, C["red"], SKIN_F),
+            _v("C", "双丸子头（变体，合影看不清）", hair_double_buns, body_sky_shirt, C["sky"], SKIN_F),
+        ],
     ),
     dict(
         id="cast_07",
-        hair="short neat with a slight front peak",
-        clothes="black sweater over light-blue collar",
-        notes="From portrait ref. HAS front face.",
-        face_status="has_front",
-        hair_fn=hair_peak_short,
-        body_fn=body_sweater_collar,
-        sleeve=C["black"],
-        skin=SKIN,
-        glasses=False,
+        hair="深发、远",
+        clothes="深色衣",
+        photo="hutong-inward 合影",
+        group_pos="后排靠绿墙 / ttc 字：深衣深发，只看见背或很小的侧影",
+        face_status="need_front",
+        notes="仅合影背/远。A 深衣短发；B 黑毛衣蓝领；C 双丸子（猜测）。",
+        variants=[
+            _v("A", "短发深衣", hair_peak_short, body_dark_top, C["black"], SKIN),
+            _v("B", "黑毛衣浅蓝领", hair_peak_short, body_sweater_collar, C["black"], SKIN),
+            _v("C", "双丸子+深衣（猜测）", hair_double_buns, body_dark_top, C["black"], SKIN_F),
+        ],
     ),
     dict(
         id="cast_08",
-        hair="long center-part jet black",
-        clothes="black crew-neck sweater + tiny stud",
-        notes="From Laura ID ref-b. Fair skin. HAS front face.",
+        hair="中分黑长直",
+        clothes="黑圆领毛衣 + 小耳钉",
+        photo="cast08-ref 证件正脸",
+        group_pos="—（独立证件照）",
         face_status="has_front",
-        hair_fn=hair_center_part_long,
-        body_fn=body_sweater,
-        sleeve=C["black"],
-        skin=SKIN_F,
-        glasses=False,
+        notes="中分黑长直、黑毛衣。多版仍贴这张正脸。",
+        variants=[
+            _v("A", "中分长直+黑毛衣", hair_center_part_long, body_sweater, C["black"], SKIN_F),
+            _v("B", "中分略露额", hair_center_part_soft, body_sweater, C["black"], SKIN_F),
+            _v("C", "同发型+开衫感", hair_center_part_long, body_blazer_open, C["charcoal"], SKIN_F),
+        ],
     ),
 ]
+
+
+def _apply_variant(person, variant=None):
+    """Copy A (or given) variant fields onto the person dict for draw_cast."""
+    v = variant or person["variants"][0]
+    person["hair_fn"] = v["hair_fn"]
+    person["body_fn"] = v["body_fn"]
+    person["sleeve"] = v["sleeve"]
+    person["skin"] = v["skin"]
+    person["glasses"] = v["glasses"]
+    return person
+
+
+for _p in CAST:
+    _apply_variant(_p)
 
 
 def draw_cast(spec, view="front", frame=0):
@@ -480,22 +583,68 @@ def draw_cast(spec, view="front", frame=0):
     return outline_sprite(img)
 
 
+def draw_variant(person, tag="A", view="front", frame=0):
+    v = next(x for x in person["variants"] if x["tag"] == tag)
+    tmp = dict(person)
+    _apply_variant(tmp, v)
+    return draw_cast(tmp, view, frame)
+
+
+def cue_chip(person) -> Image.Image:
+    """Stylized 48×48 photo-cue — NOT a real photograph."""
+    img = new(48, 48, (28, 30, 38, 255))
+    d = ImageDraw.Draw(img)
+    v = person["variants"][0]
+    # colored plate
+    rect(d, [4, 4, 43, 43], (44, 40, 48, 255))
+    # hair block
+    hc = C["brown"] if "褐" in person["hair"] or person["id"] == "cast_06" else C["hair"]
+    if person["id"] == "cast_01":
+        hc = C["hair_br"]
+    rect(d, [14, 8, 33, 22], hc)
+    if person["id"] == "cast_01":
+        rect(d, [14, 20, 18, 28], C["hair_tip"])
+        rect(d, [29, 20, 33, 28], C["hair_tip"])
+    if person["id"] == "cast_08":
+        d.point((23, 8), fill=SKIN_F)
+        d.point((24, 8), fill=SKIN_F)
+    if person["id"] == "cast_06" and True:
+        rect(d, [12, 18, 16, 34], C["brown"])
+        rect(d, [31, 18, 35, 34], C["brown"])
+    # face
+    rect(d, [18, 16, 29, 26], v["skin"])
+    d.point((20, 20), fill=EYE)
+    d.point((26, 20), fill=EYE)
+    if v["glasses"]:
+        rect(d, [18, 19, 23, 22], INK)
+        rect(d, [24, 19, 29, 22], INK)
+    # body
+    rect(d, [15, 28, 32, 42], v["sleeve"])
+    if person["id"] == "cast_01":
+        rect(d, [22, 28, 25, 42], C["black"])
+    return outline_sprite(img)
+
+
 def write_cast_md():
     lines = [
-        "# Cast · 8 refined-pixel chibi",
+        "# Cast · 8 refined-pixel chibi（多版 A/B/C）",
         "",
-        "> Stylized **game avatars** from hair + outfit cues. Not photoreal likenesses.",
-        "> Size: 32×32 · large head / small body · 1px outline · 2.5D-readable.",
+        "> Q 版游戏头，抓发型/衣服。**不要写真脸**。每人 2–3 个变体，默认 idle 用 **A**。",
+        "> 真人 JPG **不入库**。对照页左栏是像素 cue，不是照片。",
         "",
-        "## Trait table",
+        "## 照片映射",
         "",
-        "| ID | Hair | Clothes | Front face | Notes |",
-        "|----|------|---------|------------|-------|",
+        "| ID | 照片 | 合影里第几个 / 衣服发型 | 正脸 | 推荐 A | B / C |",
+        "|----|------|------------------------|------|--------|-------|",
     ]
     for s in CAST:
-        flag = "有正脸" if s["face_status"] == "has_front" else "**缺正脸**"
+        flag = "有正脸" if s["face_status"] == "has_front" else "**仅合影侧/背**"
+        if s["id"] == "cast_03":
+            flag = "合影 3/4 脸（非证件）"
+        b = s["variants"][1]["label"] if len(s["variants"]) > 1 else "—"
+        c = s["variants"][2]["label"] if len(s["variants"]) > 2 else "—"
         lines.append(
-            f"| `{s['id']}` | {s['hair']} | {s['clothes']} | {flag} | {s['notes']} |"
+            f"| `{s['id']}` | {s['photo']} | {s['group_pos']} | {flag} | {s['variants'][0]['label']} | {b} / {c} |"
         )
     lines += [
         "",
@@ -503,41 +652,29 @@ def write_cast_md():
         "",
         "| ID | 现有线索 | 为什么缺 |",
         "|----|----------|----------|",
-        "| `cast_03` | 办公室合影：短发、黑 T、侧背影 | 没有一张正脸证件照，发型/五官只能按合影猜 |",
+        "| `cast_02` | wall-seats 中间：白衬衫+眼镜+挽发 | 只有 3/4 侧，不是证件正脸 |",
+        "| `cast_03` | inward 左二：黑 polo 短发看镜头 | 有 3/4 脸，仍缺证件正脸 |",
+        "| `cast_04` | inward 右：黑 T + 眼镜托腮 | 仅侧/3/4 |",
+        "| `cast_05` | inward 最左：薄荷短袖打平板 | 仅侧/背 |",
+        "| `cast_06` | wall-seats 右：褐发蓝衫打电话 | 仅背影。B 红白条 / C 丸子是拉开差异，合影未确认 |",
+        "| `cast_07` | inward 后排绿墙边深衣 | 只看见远/背。C 丸子是猜测 |",
         "",
-        "`cast_02` 用合影 3/4 脸（眼镜 + 白衬衫），能辨认但不是证件正脸；若要更准也欢迎补一张。",
+        "合影里**没有**清楚的「白衬衫男」正脸；`cast_03` C 是拉开差异的白衬衫变体，已标明合影未穿。",
+        "合影里**没有**确认的双丸子头；只作为 `cast_06` C / `cast_07` C 的猜测剪影。",
         "",
         "## Asset paths",
         "",
         "```",
-        "public/assets/characters/cast_XX/idle_front.png",
-        "public/assets/characters/cast_XX/idle_front_1.png",
-        "public/assets/characters/cast_XX/idle_side.png",
-        "public/assets/characters/cast_XX/idle_back.png",
-        "public/assets/characters/cast_XX/walk_0.png",
-        "public/assets/characters/cast_XX/walk_1.png",
-        "public/assets/characters/cast_XX/walk_side_0.png",
-        "public/assets/characters/cast_XX/walk_side_1.png",
-        "public/assets/characters/cast_sheet.png",
+        "public/assets/characters/cast_XX/idle_front.png          # 推荐 A",
+        "public/assets/characters/cast_XX/variant_A.png",
+        "public/assets/characters/cast_XX/variant_B.png",
+        "public/assets/characters/cast_XX/variant_C.png",
+        "public/preview/cast_sheet.png",
+        "public/preview/cast_variants_sheet.png",
+        "public/preview/cast_photo_map.png",
         "```",
         "",
-        "## Refs（不入库）",
-        "",
-        "- `cast_01` ← 证件正脸：刘海 + 棕金发尾 + 炭灰西装",
-        "- `cast_02` ← 工位合影：眼镜 + 白细条纹衬衫 + 低马尾",
-        "- `cast_03` ← 工位合影侧/背：短发黑 T（**缺正脸**）",
-        "- `cast_04` ← 证件正脸：齐肩软波 + 黑西装金扣",
-        "- `cast_05` ← 证件正脸：寸平头 + 灰西装黑衬衫",
-        "- `cast_06` ← 工位自拍：棕色长发刘海 + 海军细横条",
-        "- `cast_07` ← 证件正脸：短发微峰 + 黑毛衣浅蓝领",
-        "- `cast_08` ← 证件正脸：中分长直发 + 黑圆领毛衣",
-        "",
-        "真人照片只作本地对照，**不提交进仓库**。",
-        "",
-        "## Preview",
-        "",
-        "- `public/assets/characters/cast_sheet.png`",
-        "- `public/preview/cast_sheet.png`",
+        "真人照片只放本地 `uploads/`，**不提交进仓库**。",
         "",
     ]
     path = DESIGN / "cast.md"
@@ -582,10 +719,74 @@ def make_grid_sheet(rows):
     return sheet
 
 
+def make_variants_sheet():
+    scale, pad = 5, 8
+    cell = 32 * scale
+    cols = 3
+    rows = 8
+    W = 70 + cols * (cell + pad) + pad
+    H = pad + rows * (cell + 22) + pad
+    sheet = Image.new("RGBA", (W, H), (18, 20, 28, 255))
+    d = ImageDraw.Draw(sheet)
+    d.text((pad, 2), "cast variants A / B / C  (default idle = A)", fill=(200, 168, 120, 255))
+    for r, person in enumerate(CAST):
+        y0 = pad + 12 + r * (cell + 22)
+        d.text((pad, y0 + cell // 2), person["id"], fill=(168, 176, 192, 255))
+        for c, v in enumerate(person["variants"]):
+            sp = draw_variant(person, v["tag"])
+            x = 70 + c * (cell + pad)
+            big = zoom(sp, scale)
+            sheet.paste(big, (x, y0), big)
+            d.text((x + 4, y0 + cell + 2), v["tag"], fill=(200, 176, 130, 255))
+    return sheet
+
+
+def make_photo_map():
+    """Left: stylized cue (not a photo). Right: A/B/C sprites."""
+    scale, pad = 4, 8
+    cell = 32 * scale
+    cue = 96
+    note_w = 220
+    W = pad + cue + 12 + 3 * (cell + pad) + note_w
+    H = pad + 8 * (max(cell, cue) + 22) + 28
+    sheet = Image.new("RGBA", (W, H), (18, 20, 28, 255))
+    d = ImageDraw.Draw(sheet)
+    d.text((pad, 2), "photo map  |  left=stylized cue (NOT a photo)  |  A B C", fill=(200, 168, 120, 255))
+    cues = {
+        "cast_01": "ID front  grey blazer  light tips",
+        "cast_02": "wall-seats MID  white shirt+glasses  3/4",
+        "cast_03": "inward L2  black polo  3/4",
+        "cast_04": "inward RIGHT  black tee+glasses",
+        "cast_05": "inward LEFT  mint shirt  side/back",
+        "cast_06": "wall-seats RIGHT  brown/blue  BACK",
+        "cast_07": "inward BACK wall  dark clothes",
+        "cast_08": "ID front  center-part  black sweater",
+    }
+    for r, person in enumerate(CAST):
+        y0 = 18 + r * (cell + 22)
+        chip = zoom(cue_chip(person), 2)
+        sheet.paste(chip, (pad, y0), chip)
+        flag = "FRONT" if person["face_status"] == "has_front" else "side/back"
+        if person["id"] == "cast_03":
+            flag = "3/4"
+        d.text((pad, y0 + cue + 2), person["id"] + " " + flag, fill=(168, 176, 192, 255))
+        for c, v in enumerate(person["variants"]):
+            sp = draw_variant(person, v["tag"])
+            x = pad + cue + 12 + c * (cell + pad)
+            big = zoom(sp, scale)
+            sheet.paste(big, (x, y0), big)
+            d.text((x + 2, y0 + cell + 1), v["tag"], fill=(200, 176, 130, 255))
+        nx = pad + cue + 12 + 3 * (cell + pad)
+        d.text((nx, y0 + 20), cues.get(person["id"], ""), fill=(200, 176, 130, 255))
+        d.text((nx, y0 + 36), person["photo"], fill=(140, 148, 164, 255))
+    return sheet
+
+
 def main():
-    print("Generating 8 refined cast sprites…")
+    print("Generating 8 refined cast sprites + A/B/C variants…")
     fronts = []
     for s in CAST:
+        _apply_variant(s)
         out = ASSETS / s["id"]
         front = draw_cast(s, "front", 0)
         save(front, out / "idle_front.png")
@@ -596,6 +797,8 @@ def main():
         save(draw_cast(s, "walk", 1), out / "walk_1.png")
         save(draw_cast(s, "side", 0), out / "walk_side_0.png")
         save(draw_cast(s, "side", 1), out / "walk_side_1.png")
+        for v in s["variants"]:
+            save(draw_variant(s, v["tag"]), out / f"variant_{v['tag']}.png")
         fronts.append(front)
     write_cast_md()
     sheet = make_sheet(fronts)
@@ -603,12 +806,14 @@ def main():
     save(sheet, PREVIEW / "cast_sheet.png")
     grid = make_grid_sheet(
         [
-            ("idle_front", fronts),
+            ("idle_front A", fronts),
             ("idle_side", [draw_cast(s, "side", 0) for s in CAST]),
             ("walk_0", [draw_cast(s, "walk", 0) for s in CAST]),
         ]
     )
     save(grid, PREVIEW / "cast_frames.png")
+    save(make_variants_sheet(), PREVIEW / "cast_variants_sheet.png")
+    save(make_photo_map(), PREVIEW / "cast_photo_map.png")
     print("Done cast.")
 
 

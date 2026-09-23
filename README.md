@@ -2,7 +2,7 @@
 
 精致像素 · **2.5D 可读** · 小地图高密度。v2 画质轮次见 [`design/iteration-rounds-v2.md`](design/iteration-rounds-v2.md)。当前仓库为素材 + 静态预览，无 Agent / 登录 / 数据库。
 
-Laura 过夜纠正后的范围：**只做她点名的 7 个场景**，八人 cast 按照片线索重画，桌椅留出放杯子 / 笔记本 / 盲盒的空位。
+Laura 当前范围：**11 个场景**（原 7 + concert / cafe / gym / mixian），八人 cast 按证件照 + 胡同合影重画并出 A/B/C，桌椅留出放杯子 / 笔记本 / 盲盒的空位。
 
 ## 产品主循环（高于画风）
 
@@ -33,10 +33,12 @@ npx --yes serve public -p 4173
 
 | 页 | URL | 看什么 |
 |----|-----|--------|
-| 画廊 | http://localhost:4173/ | 八人 sheet + 7 个保留场景 |
+| 画廊 | http://localhost:4173/ | 八人 sheet + A/B/C + 照片对照 + 11 房 |
 | 一天故事板 | http://localhost:4173/#day | 只链保留房 |
 | 房间漫游 | http://localhost:4173/#walk | 点房间切换，cast_01 走一个往返 |
 | 放大图 | `public/preview/zoomed/` | 各房 3× nearest |
+| 对照 | `public/preview/cast_photo_map.png` | 左栏像素 cue（不是真人照片）/ 右栏 A B C |
+| 多版 | `public/preview/cast_variants_sheet.png` | 八人 × A/B/C |
 
 也可直接打开 `public/index.html`。
 
@@ -44,13 +46,17 @@ npx --yes serve public -p 4173
 
 | ID | 中文 | 要点 | 路径 |
 |----|------|------|------|
-| `hutong` | 胡同工位区 | 远墙一条浅色长桌，一侧四座朝墙，桌面留空 | `public/assets/scenes/hutong/` |
+| `hutong` | 胡同工位区 | 远墙四座朝墙 + 两行平行工位 + 底部一排 | `public/assets/scenes/hutong/` |
 | `elevator` | 电梯间 | 米黄石材、开门、雕塑台座、屏与按钮 | `public/assets/scenes/elevator/` |
-| `hawaii` | 夏威夷 | 窗边，座位留物位 | `public/assets/scenes/hawaii/` |
+| `hawaii` | 夏威夷 | 朝窗：左竖桌 3 椅 · 窗前 3 椅 · 右竖桌 3 椅 | `public/assets/scenes/hawaii/` |
 | `popmart` | 泡泡玛特店 | 细格盲盒墙，柜台留空 | `public/assets/scenes/popmart/` |
 | `restroom` | 厕所 | 四隔间 + 两水池 | `public/assets/scenes/restroom/` |
 | `office` | 普通工位 | 岛式桌，空垫 | `public/assets/scenes/office/` |
 | `meeting` | 会议室 | 长桌中央留空 | `public/assets/scenes/meeting/` |
+| `concert` | 演唱会内场 | 舞台 + 中央过道观众席 | `public/assets/scenes/concert/` |
+| `cafe` | 咖啡店 | 街窗、柜台空 pad、四张小桌 | `public/assets/scenes/cafe/` |
+| `gym` | 健身房 | 镜墙、深蹲架、跑步机 | `public/assets/scenes/gym/` |
+| `mixian` | 米线店 | 红墙灯笼、蒸汽锅、四桌双空 pad | `public/assets/scenes/mixian/` |
 
 已下架（画廊 / 一天 / 漫游均不链）：茶水间、打印区、楼梯过道、天台、老板办公室、快递门口、旧胡同口牌楼。
 
@@ -70,12 +76,12 @@ cyber-hutong/
 ├── scripts/
 │   ├── pxlib.py            # 1px 描边 / 2.5D 盒
 │   ├── generate_cast.py
-│   ├── generate_rooms.py   # 仅 7 房
+│   ├── generate_rooms.py   # 11 房
 │   └── generate_assets.py  # 总入口
 └── public/
     ├── index.html
     ├── assets/{characters,rooms,scenes,props,tiles,ui}/
-    └── preview/{zoomed,cast_sheet.png,room_sheet.png}
+    └── preview/{zoomed,cast_sheet,cast_variants_sheet,cast_photo_map,room_sheet}
 ```
 
 ## 技术约定

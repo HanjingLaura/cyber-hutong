@@ -134,7 +134,7 @@
 <body>
   <header>
     <h1>赛博胡同 Cyber Hutong</h1>
-    <p class="sub">精致像素 v2 · 256×192 · 7 房 · Online-control / Offline-agent / Behavior-learning · 蒸馏只冷启动 · 无后端</p>
+      <p class="sub">精致像素 v3 · 256×192 · 11 房 · 八人 A/B/C · Online-control / Offline-agent / Behavior-learning · 蒸馏只冷启动 · 无后端</p>
     <nav>
       <a href="#gallery" data-tab="gallery">画廊</a>
       <a href="#day" data-tab="day">一天故事板</a>
@@ -144,17 +144,25 @@
   <main>
     <div id="gallery" class="panel active">
       <section>
-        <h2>八人 cast sheet</h2>
-        <p class="note">精致像素 chibi · 发型衣着可辨 · 非写实 · 详见 <code>design/cast.md</code></p>
+        <h2>八人 cast · 推荐 A + 多版</h2>
+        <p class="note">精致像素 chibi · 抓发型/衣服 · 不要写真脸 · 每人 A/B/C，默认 idle 用 A。详见 <code>design/cast.md</code></p>
         <div class="card">
           <img class="pixel sheet" src="assets/characters/cast_sheet.png" alt="cast sheet" />
-          <figcaption>cast_sheet.png · idle_front × 8 · 6× nearest</figcaption>
+          <figcaption>cast_sheet.png · idle_front × 8（推荐 A）· 6× nearest</figcaption>
+        </div>
+        <div class="card">
+          <img class="pixel sheet" src="preview/cast_variants_sheet.png" alt="cast variants" />
+          <figcaption>cast_variants_sheet.png · 八人 × A/B/C</figcaption>
+        </div>
+        <div class="card">
+          <img class="pixel sheet" src="preview/cast_photo_map.png" alt="cast photo map" />
+          <figcaption>cast_photo_map.png · 左栏像素 cue（不是真人照片）/ 右栏 A B C</figcaption>
         </div>
         <div class="grid" id="cast"></div>
       </section>
       <section>
-        <h2>保留场景 · 7</h2>
-        <p class="note">胡同工位：远墙一条长桌、一侧四座朝墙、桌面留空 / 电梯间 / 夏威夷 / 泡泡玛特 / 厕所 / 普通工位 / 会议室。茶水间、打印区、楼梯过道、天台、老板办公室、快递门口、胡同口已下架。</p>
+        <h2>保留场景 · 11</h2>
+        <p class="note">胡同（远墙四座 + 两行工位 + 底排）/ 电梯间 / 夏威夷（左竖桌3椅 · 窗前3椅 · 右竖桌3椅）/ 泡泡玛特 / 厕所 / 普通工位 / 会议室 / 演唱会 / 咖啡店 / 健身房 / 米线店。</p>
         <div class="grid" id="rooms"></div>
       </section>
       <section>
@@ -200,26 +208,38 @@
   <script>
     const ROOMS = [
       { id:"hutong", title:"胡同工位区", src:"assets/scenes/hutong/scene_hutong.png",
-        line:"这边还能放杯子。", y:148, t:"09:20", action:"sit_aisle",
-        why:"远墙贴一条浅色长桌，一侧四座朝墙，桌面留空。" },
+        line:"这边还能放杯子。", y:140, t:"09:20", action:"sit_aisle",
+        why:"远墙四座朝墙 + 两行平行工位 + 底部一排。ttc / 镜框。大块空 pad。" },
       { id:"elevator", title:"电梯间", src:"assets/scenes/elevator/scene_elevator.png",
         line:"先等这梯。", y:140, t:"09:12", action:"wait_lift",
         why:"米黄石材、开门、雕塑台座、屏与按钮。" },
       { id:"hawaii", title:"夏威夷", src:"assets/scenes/hawaii/scene_hawaii.png",
-        line:"窗边这档先开。", y:140, t:"09:40", action:"open_laptop",
-        why:"窗边长桌，座位留物位。" },
+        line:"窗边这档先开。", y:148, t:"09:40", action:"open_laptop",
+        why:"朝窗：左竖桌+3椅，窗前3椅，右竖桌+3椅。约九座。暖木+奶油+日光。" },
       { id:"popmart", title:"泡泡玛特店", src:"assets/scenes/popmart/scene_popmart.png",
-        line:"就拆一个。", y:140, t:"10:40", action:"unbox",
+        line:"就拆一个。", y:146, t:"10:40", action:"unbox",
         why:"细格盲盒墙，柜台留空。" },
       { id:"restroom", title:"厕所", src:"assets/scenes/restroom/scene_restroom.png",
         line:"洗一下。", y:132, t:"12:10", action:"wash",
         why:"四隔间 + 两水池。" },
       { id:"office", title:"普通工位", src:"assets/scenes/office/scene_office.png",
-        line:"回岛上。", y:148, t:"16:20", action:"desk_work",
+        line:"回岛上。", y:150, t:"16:20", action:"desk_work",
         why:"岛式双人桌，空垫。" },
       { id:"meeting", title:"会议室", src:"assets/scenes/meeting/scene_meeting.png",
-        line:"我记，你们说。", y:148, t:"14:00", action:"take_notes",
+        line:"我记，你们说。", y:150, t:"14:00", action:"take_notes",
         why:"长桌中央留空。" },
+      { id:"concert", title:"演唱会内场", src:"assets/scenes/concert/scene_concert.png",
+        line:"这排还能挤。", y:150, t:"19:10", action:"watch_live",
+        why:"舞台 + 中央过道观众席，内场感。" },
+      { id:"cafe", title:"咖啡店", src:"assets/scenes/cafe/scene_cafe.png",
+        line:"先点一杯。", y:148, t:"11:20", action:"order_coffee",
+        why:"街窗、柜台空 pad、四张小桌。" },
+      { id:"gym", title:"健身房", src:"assets/scenes/gym/scene_gym.png",
+        line:"再一组。", y:148, t:"18:00", action:"lift",
+        why:"镜墙、深蹲架、跑步机、垫上留瓶位。" },
+      { id:"mixian", title:"米线店", src:"assets/scenes/mixian/scene_mixian.png",
+        line:"一碗米线。", y:148, t:"12:40", action:"eat_mixian",
+        why:"红墙灯笼、后厨蒸汽锅、四桌双空 pad。" },
     ];
 
     const pixel = (src, caption, cls = "x4") => {
@@ -248,7 +268,7 @@
       d.innerHTML = `
         <img class="pixel" src="${b.src}" alt="${b.title}" />
         <div>
-          <div class="t">${b.t} · 0${i + 1} / 07 · ${b.action}</div>
+          <div class="t">${b.t} · ${String(i + 1).padStart(2, "0")} / ${String(ROOMS.length).padStart(2, "0")} · ${b.action}</div>
           <h3>${b.title}</h3>
           <p class="note">${b.why}</p>
           <div class="bubble">${b.line}</div>

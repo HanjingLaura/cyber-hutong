@@ -161,6 +161,18 @@ def prism(d, x, y, w, h, thick, top, front, side=None, edge=INK, lip="south"):
         if w > 3:
             hline(d, x + 1, x + w - 2, y + 1, hi)
             vline(d, x + 1, y + 1, y + h - 2, hi)
+    elif lip == "west":
+        drop_shadow(d, x - thick, y + h - 2, w + thick, 4, ox=1, oy=2)
+        rect(d, [x - thick, y, x - 1, y + h - 1], front)
+        if thick > 3:
+            vline(d, x - 1, y + 1, y + h - 2, bevel)
+        hline(d, x - thick, x + w - 1, y, edge)
+        hline(d, x - thick, x + w - 1, y + h - 1, edge)
+        vline(d, x - thick, y, y + h - 1, edge)
+        vline(d, x, y, y + h - 1, edge)
+        vline(d, x + w - 1, y, y + h - 1, edge)
+        if w > 3:
+            hline(d, x + 1, x + w - 2, y + 1, hi)
     else:
         # two-tone riser so it is a FACE, not a stroke
         rect(d, [x, y + h, x + w - 1, y + h + thick - 1], front)
@@ -318,7 +330,7 @@ def tiny_text(d, x, y, text: str, color):
             for col, bit in enumerate(rowbits):
                 if bit == "1":
                     d.point((cx + col, y + row), fill=color)
-        cx += 4
+        cx += max(4, len(bits[0]) + 1)
 
 
 def letter_3d(d, x, y, text, face, depth=None):
@@ -347,6 +359,19 @@ GLYPHS = {
     "3": ["111", "001", "011", "001", "111"],
     "4": ["101", "101", "111", "001", "001"],
     "8": ["111", "101", "111", "101", "111"],
+    "9": ["111", "101", "111", "001", "111"],
+    "G": ["011", "100", "101", "101", "011"],
+    "Y": ["101", "101", "010", "010", "010"],
+    "N": ["1001", "1101", "1011", "1001", "1001"],
+    "I": ["111", "010", "010", "010", "111"],
+    "X": ["101", "010", "010", "010", "101"],
+    "F": ["111", "100", "110", "100", "100"],
+    "S": ["011", "100", "010", "001", "110"],
+    "U": ["101", "101", "101", "101", "011"],
+    "B": ["110", "101", "110", "101", "110"],
+    "K": ["101", "110", "100", "110", "101"],
+    "W": ["101", "101", "111", "111", "101"],
+    "D": ["110", "101", "101", "101", "110"],
     " ": ["000", "000", "000", "000", "000"],
     "-": ["000", "000", "111", "000", "000"],
     ".": ["000", "000", "000", "000", "010"],

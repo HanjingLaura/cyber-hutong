@@ -1,57 +1,45 @@
-# Cast · 8 refined-pixel chibi
+# Cast · 8 refined-pixel chibi（多版 A/B/C）
 
-> Stylized **game avatars** from hair + outfit cues. Not photoreal likenesses.
-> Size: 32×32 · large head / small body · 1px outline · 2.5D-readable.
+> Q 版游戏头，抓发型/衣服。**不要写真脸**。每人 2–3 个变体，默认 idle 用 **A**。
+> 真人 JPG **不入库**。对照页左栏是像素 cue，不是照片。
 
-## Trait table
+## 照片映射
 
-| ID | Hair | Clothes | Front face | Notes |
-|----|------|---------|------------|-------|
-| `cast_01` | long dark-brown → lighter tips, thin see-through bangs | charcoal grey blazer over black layer | 有正脸 | From Laura ID cast_01_ref. Fair skin. HAS front face. |
-| `cast_02` | dark hair pulled low / nape | white pinstripe shirt + thin glasses | 有正脸 | Office selfie / 合影. 3/4 face visible. |
-| `cast_03` | short black, fuller sides | black tee | **缺正脸** | Office 合影 only (back/side). NEED Laura front ID. |
-| `cast_04` | shoulder-length soft wave, side-part | black blazer with gold buttons + gold stud | 有正脸 | From portrait ref. HAS front face. |
-| `cast_05` | neat crew / buzz-top | grey suit jacket over black shirt | 有正脸 | From portrait ref. HAS front face. |
-| `cast_06` | long brown with fuller bangs | navy–white horizontal stripe shirt | 有正脸 | Office selfie (peace sign). HAS front face. |
-| `cast_07` | short neat with a slight front peak | black sweater over light-blue collar | 有正脸 | From portrait ref. HAS front face. |
-| `cast_08` | long center-part jet black | black crew-neck sweater + tiny stud | 有正脸 | From Laura ID ref-b. Fair skin. HAS front face. |
+| ID | 照片 | 合影里第几个 / 衣服发型 | 正脸 | 推荐 A | B / C |
+|----|------|------------------------|------|--------|-------|
+| `cast_01` | cast01-ref 证件正脸 | —（独立证件照，不在合影里点名） | 有正脸 | 薄刘海+浅发尾+炭灰西装 | 刘海更密 / 西装略浅 |
+| `cast_02` | hutong-wall-seats 合影 | 朝墙长桌·中间那位（白衬衫、眼镜、手撑头、侧对镜头） | **仅合影侧/背** | 眼镜+白衬衫+低马尾 | 同发型无眼镜 / 头发放下 |
+| `cast_03` | hutong-inward 合影 | 前排左二：黑 polo、短发、转向镜头（3/4 脸） | 合影 3/4 脸（非证件） | 黑 polo 短发 | 黑 T / 白衬衫男（拉开差异，合影未穿） |
+| `cast_04` | hutong-inward 合影 | 前排右：黑 T、眼镜、托腮看屏幕 | **仅合影侧/背** | 黑T+眼镜 | 黑T无眼镜 / 灰西装+眼镜 |
+| `cast_05` | hutong-inward 合影 | 前排最左：浅色短袖、坐着打平板，侧/背对镜头 | **仅合影侧/背** | 薄荷短袖+深发 | 白短袖 / 短发薄荷衫 |
+| `cast_06` | hutong-wall-seats 合影 | 朝墙长桌·右侧那位（褐发、蓝衬衫、打电话、背影） | **仅合影侧/背** | 褐长发+浅蓝衫 | 红白横条（变体，合影未穿） / 双丸子头（变体，合影看不清） |
+| `cast_07` | hutong-inward 合影 | 后排靠绿墙 / ttc 字：深衣深发，只看见背或很小的侧影 | **仅合影侧/背** | 短发深衣 | 黑毛衣浅蓝领 / 双丸子+深衣（猜测） |
+| `cast_08` | cast08-ref 证件正脸 | —（独立证件照） | 有正脸 | 中分长直+黑毛衣 | 中分略露额 / 同发型+开衫感 |
 
 ## 还缺 Laura 补正脸
 
 | ID | 现有线索 | 为什么缺 |
 |----|----------|----------|
-| `cast_03` | 办公室合影：短发、黑 T、侧背影 | 没有一张正脸证件照，发型/五官只能按合影猜 |
+| `cast_02` | wall-seats 中间：白衬衫+眼镜+挽发 | 只有 3/4 侧，不是证件正脸 |
+| `cast_03` | inward 左二：黑 polo 短发看镜头 | 有 3/4 脸，仍缺证件正脸 |
+| `cast_04` | inward 右：黑 T + 眼镜托腮 | 仅侧/3/4 |
+| `cast_05` | inward 最左：薄荷短袖打平板 | 仅侧/背 |
+| `cast_06` | wall-seats 右：褐发蓝衫打电话 | 仅背影。B 红白条 / C 丸子是拉开差异，合影未确认 |
+| `cast_07` | inward 后排绿墙边深衣 | 只看见远/背。C 丸子是猜测 |
 
-`cast_02` 用合影 3/4 脸（眼镜 + 白衬衫），能辨认但不是证件正脸；若要更准也欢迎补一张。
+合影里**没有**清楚的「白衬衫男」正脸；`cast_03` C 是拉开差异的白衬衫变体，已标明合影未穿。
+合影里**没有**确认的双丸子头；只作为 `cast_06` C / `cast_07` C 的猜测剪影。
 
 ## Asset paths
 
 ```
-public/assets/characters/cast_XX/idle_front.png
-public/assets/characters/cast_XX/idle_front_1.png
-public/assets/characters/cast_XX/idle_side.png
-public/assets/characters/cast_XX/idle_back.png
-public/assets/characters/cast_XX/walk_0.png
-public/assets/characters/cast_XX/walk_1.png
-public/assets/characters/cast_XX/walk_side_0.png
-public/assets/characters/cast_XX/walk_side_1.png
-public/assets/characters/cast_sheet.png
+public/assets/characters/cast_XX/idle_front.png          # 推荐 A
+public/assets/characters/cast_XX/variant_A.png
+public/assets/characters/cast_XX/variant_B.png
+public/assets/characters/cast_XX/variant_C.png
+public/preview/cast_sheet.png
+public/preview/cast_variants_sheet.png
+public/preview/cast_photo_map.png
 ```
 
-## Refs（不入库）
-
-- `cast_01` ← 证件正脸：刘海 + 棕金发尾 + 炭灰西装
-- `cast_02` ← 工位合影：眼镜 + 白细条纹衬衫 + 低马尾
-- `cast_03` ← 工位合影侧/背：短发黑 T（**缺正脸**）
-- `cast_04` ← 证件正脸：齐肩软波 + 黑西装金扣
-- `cast_05` ← 证件正脸：寸平头 + 灰西装黑衬衫
-- `cast_06` ← 工位自拍：棕色长发刘海 + 海军细横条
-- `cast_07` ← 证件正脸：短发微峰 + 黑毛衣浅蓝领
-- `cast_08` ← 证件正脸：中分长直发 + 黑圆领毛衣
-
-真人照片只作本地对照，**不提交进仓库**。
-
-## Preview
-
-- `public/assets/characters/cast_sheet.png`
-- `public/preview/cast_sheet.png`
+真人照片只放本地 `uploads/`，**不提交进仓库**。

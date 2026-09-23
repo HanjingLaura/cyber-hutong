@@ -2,9 +2,9 @@
 
 > 精致像素 · 256×192 · 2.5D · 桌面留物位
 
-窗边 2.5D 长桌 · 三空位
+朝窗：左竖桌+3椅 · 窗前3椅 · 右竖桌+3椅 · 约九座
 
-卷帘日光 + 一条靠窗桌，三格空 pad，物靠边。
+玩家朝落地卷帘看。左侧竖向长桌，椅子在桌右侧朝房间内排 3 把；窗前中间再 3 把；右侧竖向长桌旁再 3 把。暖木地板、奶油墙、暖日光。桌面空 pad。hawaii-ref 只取工位气氛，不描人物。
 
 - `public/assets/scenes/hawaii/scene_hawaii.png`
 - `public/preview/zoomed/hawaii.png`

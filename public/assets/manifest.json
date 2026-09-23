@@ -8,7 +8,7 @@
       "id": "hutong",
       "title": "胡同工位区",
       "src": "assets/scenes/hutong/scene_hutong.png",
-      "walk_y": 148,
+      "walk_y": 140,
       "line": "这边还能放杯子。",
       "beat_t": "09:20",
       "action": "sit_aisle"
@@ -26,7 +26,7 @@
       "id": "hawaii",
       "title": "夏威夷",
       "src": "assets/scenes/hawaii/scene_hawaii.png",
-      "walk_y": 140,
+      "walk_y": 148,
       "line": "窗边这档先开。",
       "beat_t": "09:40",
       "action": "open_laptop"
@@ -66,6 +66,42 @@
       "line": "我记，你们说。",
       "beat_t": "14:00",
       "action": "take_notes"
+    },
+    {
+      "id": "concert",
+      "title": "演唱会内场",
+      "src": "assets/scenes/concert/scene_concert.png",
+      "walk_y": 150,
+      "line": "这排还能挤。",
+      "beat_t": "19:10",
+      "action": "watch_live"
+    },
+    {
+      "id": "cafe",
+      "title": "咖啡店",
+      "src": "assets/scenes/cafe/scene_cafe.png",
+      "walk_y": 148,
+      "line": "先点一杯。",
+      "beat_t": "11:20",
+      "action": "order_coffee"
+    },
+    {
+      "id": "gym",
+      "title": "健身房",
+      "src": "assets/scenes/gym/scene_gym.png",
+      "walk_y": 148,
+      "line": "再一组。",
+      "beat_t": "18:00",
+      "action": "lift"
+    },
+    {
+      "id": "mixian",
+      "title": "米线店",
+      "src": "assets/scenes/mixian/scene_mixian.png",
+      "walk_y": 148,
+      "line": "一碗米线。",
+      "beat_t": "12:40",
+      "action": "eat_mixian"
     }
   ]
 }

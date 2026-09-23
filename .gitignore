@@ -9,5 +9,6 @@ __pycache__/
 *.pyc
 cyber-hutong-refs/
 cyber-hutong-shots/
+uploads/
 *.jpg
 !public/**/*.png

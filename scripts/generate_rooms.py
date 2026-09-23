@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""7 Laura-named scenes — 2.5D refined pixel, 256×192, empty desk pads.
+"""11 Laura-named scenes — 2.5D refined pixel, 256×192, empty desk pads.
 
-v2 quality pass: wall-FACE + floor composition (not an IKEA plan),
-unified 1px ink, ceiling light + contact shadows, readable micro-detail.
+v3: hawaii 9-seat vertical desks; hutong two rows + bottom + 4 wall seats;
+concert / cafe / gym / mixian added. Same 1px ink + wall-FACE language.
 """
 from __future__ import annotations
 
@@ -92,19 +92,62 @@ EL = {
     "red": (204, 44, 52, 255),
 }
 HW = {
-    "wall": (198, 200, 206, 255),
-    "blind": (142, 146, 154, 255),
-    "blind_d": (108, 112, 120, 255),
-    "blind_hi": (176, 180, 188, 255),
-    "floor": (186, 140, 84, 255),
-    "floor2": (164, 118, 66, 255),
-    "gap": (112, 76, 42, 255),
-    "desk": (220, 184, 126, 255),
-    "desk_hi": (242, 214, 160, 255),
-    "desk_e": (140, 98, 52, 255),
-    "pad": (236, 210, 154, 255),
+    "wall": (244, 234, 214, 255),
+    "cream": (250, 242, 224, 255),
+    "blind": (168, 164, 156, 255),
+    "blind_d": (128, 124, 116, 255),
+    "blind_hi": (196, 192, 184, 255),
+    "floor": (196, 148, 92, 255),
+    "floor2": (174, 126, 74, 255),
+    "gap": (120, 84, 48, 255),
+    "desk": (186, 128, 64, 255),
+    "desk_hi": (220, 168, 96, 255),
+    "desk_e": (110, 70, 36, 255),
+    "pad": (232, 196, 130, 255),
     "sun": (255, 226, 150, 255),
     "jacket": (244, 240, 232, 255),
+}
+CN = {
+    "floor": (36, 28, 44, 255),
+    "floor2": (28, 22, 36, 255),
+    "wall": (52, 36, 64, 255),
+    "stage": (88, 48, 96, 255),
+    "wood": (160, 96, 64, 255),
+    "spot": (255, 220, 140, 255),
+    "neon": (255, 90, 160, 255),
+    "seat": (72, 40, 80, 255),
+    "pad": (236, 220, 200, 255),
+}
+CF = {
+    "floor": (186, 140, 88, 255),
+    "floor2": (164, 118, 70, 255),
+    "gap": (120, 82, 46, 255),
+    "wall": (246, 232, 210, 255),
+    "counter": (168, 96, 64, 255),
+    "counter_d": (120, 64, 40, 255),
+    "pad": (240, 220, 180, 255),
+    "cup": (120, 72, 48, 255),
+    "plant": (46, 110, 78, 255),
+}
+GY = {
+    "floor": (48, 48, 52, 255),
+    "floor2": (36, 36, 40, 255),
+    "wall": (70, 72, 78, 255),
+    "metal": (160, 166, 176, 255),
+    "rubber": (32, 32, 36, 255),
+    "pad": (220, 220, 224, 255),
+    "red": (196, 56, 56, 255),
+}
+MX = {
+    "floor": (214, 170, 110, 255),
+    "floor2": (190, 146, 88, 255),
+    "wall": (196, 72, 56, 255),
+    "wood": (176, 112, 64, 255),
+    "wood_e": (120, 72, 40, 255),
+    "steam": (240, 236, 228, 255),
+    "bowl": (250, 244, 230, 255),
+    "pad": (244, 226, 186, 255),
+    "lantern": (255, 160, 70, 255),
 }
 PM = {
     "a": (255, 206, 222, 255),
@@ -284,6 +327,26 @@ def chair_north(jacket=False) -> Image.Image:
     return outline_sprite(img)
 
 
+def chair_east(jacket=False) -> Image.Image:
+    """Seat to the right (facing an east-side vertical desk)."""
+    img = new(22, 26)
+    d = ImageDraw.Draw(img)
+    solid_shadow(d, 11, 24, 8, 2)
+    hline(d, 4, 17, 23, PAL["metal_d"])
+    vline(d, 11, 18, 23, PAL["metal"])
+    prism(d, 8, 14, 12, 4, 4, HT["mesh"], HT["chair"])
+    box1(d, 2, 1, 10, 18, HT["chair"])
+    for y in range(3, 17):
+        for x in range(4, 9):
+            if (x + y) % 2 == 0:
+                d.point((x, y), fill=HT["mesh"])
+    vline(d, 1, 8, 20, PAL["metal"])
+    vline(d, 20, 12, 20, PAL["metal"])
+    if jacket:
+        rect(d, [3, 4, 9, 13], HW["jacket"])
+    return outline_sprite(img)
+
+
 def chair_back(jacket=False) -> Image.Image:
     """Chair seen from the aisle, seat toward a south-facing desk."""
     img = new(20, 26)
@@ -371,67 +434,74 @@ def office_floor(d, y0, c1, c2, seam):
 
 
 # ===========================================================================
-# 1. 胡同 — 远墙横长桌 · 一侧四座朝墙 · 桌面大块空 pad
+# 1. 胡同 — 远墙四座 + 两行平行工位 + 底部一排
 # ===========================================================================
 def scene_hutong() -> Image.Image:
     room = new(W, H, HT["floor"])
     d = ImageDraw.Draw(room)
-    office_floor(d, 108, HT["floor"], HT["floor2"], HT["gap"])
-    light_pool(d, 64, 158, 36, 10, HT["sun"], 3)
-    light_pool(d, 190, 158, 36, 10, HT["sun"], 3)
+    office_floor(d, 46, HT["floor"], HT["floor2"], HT["gap"])
+    light_pool(d, 70, 170, 30, 8, HT["sun"], 3)
+    light_pool(d, 190, 170, 30, 8, HT["sun"], 3)
 
-    rect(d, [0, 0, W - 1, 12], HT["ceil"])
-    hline(d, 0, W - 1, 12, HT["wall_d"])
-    fluorescent(d, 18, 2, 220, HT["sun"])
-
-    wall_face(d, 0, 13, W - 1, 62, HT["wall"], lip=6, lip_c=HT["lip"])
-    draw_ttc(d, 8, 18)
-    # irregular frames (photo: scattered white frames, not a keyboard)
+    rect(d, [0, 0, W - 1, 10], HT["ceil"])
+    fluorescent(d, 18, 1, 220, HT["sun"])
+    wall_face(d, 0, 11, W - 1, 38, HT["wall"], lip=4, lip_c=HT["lip"])
+    draw_ttc(d, 8, 14)
     frames = (
-        (8, 34, 9, 10), (22, 32, 7, 8), (34, 36, 10, 11),
-        (50, 31, 8, 9), (64, 35, 7, 8), (78, 32, 11, 10),
-        (96, 36, 8, 8), (110, 30, 7, 9), (124, 34, 10, 10),
-        (140, 32, 8, 8), (154, 36, 7, 9), (168, 31, 11, 11),
-        (186, 34, 8, 8), (200, 32, 7, 10), (214, 36, 9, 9),
-        (228, 33, 8, 8), (16, 48, 8, 8), (40, 50, 10, 9),
-        (70, 48, 7, 8), (100, 50, 9, 8), (132, 47, 8, 9),
-        (164, 50, 10, 8), (196, 48, 8, 9), (224, 50, 7, 8),
+        (48, 16, 8, 9), (62, 18, 7, 8), (78, 16, 9, 9),
+        (96, 18, 7, 8), (112, 16, 8, 9), (128, 18, 7, 8),
+        (146, 16, 9, 9), (164, 18, 7, 8), (180, 16, 8, 9),
+        (198, 18, 7, 8), (214, 16, 8, 9), (230, 18, 7, 8),
+        (56, 28, 7, 7), (88, 28, 8, 7), (140, 28, 7, 7), (200, 28, 8, 7),
     )
     for i, (fx, fy, fw, fh) in enumerate(frames):
         prism(d, fx, fy, fw, fh, 2, HT["frame"], HT["wall_d"], HT["lip"])
         if i % 3 == 0:
             rect(d, [fx + 2, fy + 2, fx + fw - 3, fy + fh - 3], shade(HT["wall_d"], -6))
-        elif i % 4 == 0:
-            rect(d, [fx + 2, fy + 2, fx + fw - 3, fy + fh - 3], (176, 188, 200, 255))
-    dither(d, 220, 14, 254, 60, HT["sun"], 5)
+    dither(d, 220, 12, 254, 36, HT["sun"], 5)
 
-    # closer, thicker desk — top must read as laminate, front as a wood riser
-    prism(d, 2, 64, 248, 26, 14, HT["desk"], HT["desk_e"], shade(HT["desk_e"], -18))
-    hline(d, 4, 247, 65, HT["desk_hi"])
-    dither(d, 6, 70, 246, 86, shade(HT["desk"], -14), 8)
-    # cable tray
-    hline(d, 16, 236, 103, shade(HT["desk_e"], -24))
+    # TOP wall-flush desk + 4 chairs facing the wall
+    prism(d, 4, 40, 248, 14, 8, HT["desk"], HT["desk_e"])
+    dither(d, 8, 42, 246, 50, shade(HT["desk"], -12), 8)
+    top_bays = (16, 76, 136, 196)
+    top_items = (prop_laptop(), None, prop_cup(), prop_notebook())
+    for bx, spr in zip(top_bays, top_items):
+        empty_pad(d, bx + 8, 43, 26, 8, HT["pad"], shade(HT["desk_e"], 16))
+        if spr:
+            blit(room, spr, bx + 10, 41)
+        blit(room, chair_north(), bx + 12, 60)
+    blit(room, seated_facing_wall("cast_02"), 86, 54)
+    blit(room, seated_facing_wall("cast_05"), 26, 54)
 
-    bays = (14, 74, 136, 198)
-    items = (prop_laptop(), None, prop_cup(), prop_notebook())
-    for i, (bx, spr) in enumerate(zip(bays, items)):
-        empty_pad(d, bx + 10, 74, 30, 12, HT["pad"], shade(HT["desk_e"], 16))
-        if spr is not None:
-            blit(room, spr, bx + 12, 70)
-        blit(room, chair_north(), bx + 16, 108)
+    def desk_row(y, left_item, right_item, extra_pad=True):
+        for x, item in ((6, left_item), (132, right_item)):
+            prism(d, x, y, 118, 12, 7, HT["desk"], HT["desk_e"])
+            empty_pad(d, x + 6, y + 2, 22, 8, HT["pad"], shade(HT["desk_e"], 16))
+            empty_pad(d, x + 48, y + 2, 22, 8, HT["pad"], shade(HT["desk_e"], 16))
+            if extra_pad:
+                empty_pad(d, x + 88, y + 2, 22, 8, HT["pad"], shade(HT["desk_e"], 16))
+            if item:
+                blit(room, item, x + 10, y)
+            blit(room, chair_north(), x + 10, y + 16)
+            blit(room, chair_north(), x + 50, y + 16)
+            blit(room, chair_north(), x + 90, y + 16)
 
-    blit(room, prop_spray(), 6, 72)
-    blit(room, prop_plant(), 236, 50)
-    blit(room, prop_cup((40, 40, 46, 255)), 234, 70)
+    # two parallel workstation rows (denser: 3 chairs × 2 islands)
+    desk_row(86, prop_laptop(), prop_cup((40, 40, 46, 255)))
+    desk_row(122, None, prop_notebook())
+    # bottom row — chairs sit on the desk's south lip, not past the canvas
+    prism(d, 16, 156, 224, 12, 7, HT["desk"], HT["desk_e"])
+    empty_pad(d, 28, 158, 36, 8, HT["pad"], shade(HT["desk_e"], 16))
+    empty_pad(d, 78, 158, 36, 8, HT["pad"], shade(HT["desk_e"], 16))
+    empty_pad(d, 128, 158, 36, 8, HT["pad"], shade(HT["desk_e"], 16))
+    empty_pad(d, 178, 158, 36, 8, HT["pad"], shade(HT["desk_e"], 16))
+    blit(room, prop_plant(), 18, 144)
+    blit(room, chair_north(), 36, 160)
+    blit(room, chair_north(), 86, 160)
+    blit(room, chair_north(), 136, 160)
+    blit(room, chair_north(jacket=True), 186, 160)
 
-    # sit overlapping the chair backs (not floating blobs)
-    blit(room, seated_facing_wall("cast_02"), 88, 98)
-    blit(room, seated_facing_wall("cast_06"), 150, 98)
-
-    # aisle clutter so the floor is not a blank plan
-    prism(d, 28, 168, 10, 6, 8, (48, 48, 54, 255), (24, 24, 28, 255))
-    blit(room, prop_cup((236, 236, 240, 255)), 42, 172)
-    blit(room, cast_sprite("cast_01", "side", 0), 118, 150)
+    blit(room, prop_spray(), 6, 42)
     return room
 
 
@@ -551,55 +621,61 @@ def scene_elevator() -> Image.Image:
 
 
 # ===========================================================================
-# 3. 夏威夷 — 卷帘 + 靠窗 2.5D 长桌，三空位
+# 3. 夏威夷 — 朝窗：左竖桌+3椅 / 窗前3椅 / 右竖桌+3椅
 # ===========================================================================
 def scene_hawaii() -> Image.Image:
     room = new(W, H, HW["floor"])
     d = ImageDraw.Draw(room)
-    wood_planks(d, 0, 98, W - 1, H - 1, HW["floor"], HW["floor2"], HW["gap"], 7)
-    light_pool(d, 80, 160, 40, 10, HW["sun"], 3)
-    light_pool(d, 190, 160, 30, 8, HW["sun"], 3)
+    wood_planks(d, 0, 72, W - 1, H - 1, HW["floor"], HW["floor2"], HW["gap"], 6)
+    light_pool(d, 128, 160, 50, 12, HW["sun"], 3)
 
-    # TALL roller-blind wall
-    rect(d, [0, 0, W - 1, 78], HW["wall"])
-    for y in range(8, 72):
+    # cream side walls + tall blinds dead ahead
+    rect(d, [0, 0, 18, 72], HW["cream"])
+    rect(d, [238, 0, W - 1, 72], HW["cream"])
+    rect(d, [18, 0, 237, 68], HW["wall"])
+    for y in range(6, 64):
         c = HW["blind_d"] if y % 3 == 0 else (HW["blind"] if y % 3 == 1 else HW["blind_hi"])
-        hline(d, 10, 246, y, c)
-    # light seams
-    for y in range(14, 70, 9):
-        hline(d, 28, 228, y, HW["sun"])
-    # side rails
-    vline(d, 10, 8, 72, shade(HW["blind_d"], -20))
-    vline(d, 246, 8, 72, shade(HW["blind_d"], -20))
-    # sill 2.5D
-    prism(d, 0, 74, W, 6, 6, HW["desk_hi"], HW["desk_e"])
-    # sun shafts
-    for k in range(0, 56, 3):
-        d.point((46 + k // 3, 86 + k), fill=HW["sun"])
-        d.point((150 + k // 4, 86 + k), fill=HW["sun"])
+        hline(d, 22, 233, y, c)
+    for y in range(12, 62, 10):
+        hline(d, 40, 216, y, HW["sun"])
+    vline(d, 22, 6, 64, shade(HW["blind_d"], -20))
+    vline(d, 233, 6, 64, shade(HW["blind_d"], -20))
+    prism(d, 18, 66, 220, 5, 5, HW["desk_hi"], HW["desk_e"])
+    for k in range(0, 48, 3):
+        d.point((70 + k // 3, 78 + k), fill=HW["sun"])
+        d.point((160 + k // 4, 78 + k), fill=HW["sun"])
 
-    # window-side bench
-    drop_shadow(d, 14, 104, 228, 8, ox=1, oy=2)
-    prism(d, 12, 82, 232, 18, 12, HW["desk"], HW["desk_e"], shade(HW["desk_e"], -16))
-    dither(d, 16, 86, 240, 96, shade(HW["desk"], -14), 9)
-    slots = [(24, 88, "laptop"), (100, 88, "cup"), (176, 88, "note")]
-    stuff = {
-        "laptop": prop_laptop(),
-        "cup": prop_cup((40, 40, 44, 255)),
-        "note": prop_notebook(),
-    }
-    for i, (x, y, kind) in enumerate(slots):
-        empty_pad(d, x + 16, y, 40, 10, HW["pad"], shade(HW["desk_e"], 10))
-        blit(room, stuff[kind], x, y)
-        blit(room, chair_north(jacket=(i == 2)), x + 18, 110)
+    def wood_desk(x, y, w, h, lip):
+        prism(d, x, y, w, h, 8, HW["desk"], HW["desk_e"], lip=lip)
+        for gy in range(y + 4, y + h - 2, 6):
+            hline(d, x + 2, x + w - 3, gy, shade(HW["desk"], -18))
+        # near-end cap so it reads as a table, not a wall
+        prism(d, x, y + h - 6, w, 6, 6, HW["desk_hi"], HW["desk_e"])
 
-    blit(room, prop_plant(), 232, 68)
-    blit(room, prop_bottle(), 8, 86)
-    blit(room, prop_plant(), 6, 154)
-    # white shirt reads on a black chair (cast_08 hair+sweater vanished into the mesh)
-    blit(room, seated_facing_wall("cast_02"), 116, 104)
-    blit(room, prop_phone(), 132, 100)
-    blit(room, cast_sprite("cast_08", "side", 0), 200, 148)
+    # LEFT vertical desk; chairs on its RIGHT (into the room)
+    wood_desk(6, 78, 32, 92, "east")
+    for i, yy in enumerate((86, 118, 148)):
+        empty_pad(d, 10, yy, 22, 12, HW["pad"], shade(HW["desk_e"], 10))
+        if i == 0:
+            blit(room, prop_laptop(), 12, yy + 2)
+        elif i == 2:
+            blit(room, prop_cup((40, 40, 44, 255)), 14, yy + 4)
+        blit(room, chair_back(jacket=(i == 1)), 42, yy + 2)
+
+    # RIGHT vertical desk; chairs on its LEFT
+    wood_desk(218, 78, 32, 92, "west")
+    for i, yy in enumerate((86, 118, 148)):
+        empty_pad(d, 222, yy, 22, 12, HW["pad"], shade(HW["desk_e"], 10))
+        if i == 1:
+            blit(room, prop_notebook(), 224, yy + 2)
+        blit(room, chair_east(jacket=(i == 0)), 192, yy + 2)
+
+    # 3 chairs in front of the blinds (middle column)
+    for i, xx in enumerate((86, 118, 150)):
+        blit(room, chair_north(), xx, 78)
+    blit(room, prop_plant(), 118, 58)
+    blit(room, prop_bottle(), 72, 70)
+    blit(room, seated_facing_wall("cast_06"), 120, 72)
     return room
 
 
@@ -825,22 +901,191 @@ def scene_meeting() -> Image.Image:
     return room
 
 
+# ===========================================================================
+# 8. 演唱会内场
+# ===========================================================================
+def scene_concert() -> Image.Image:
+    room = new(W, H, CN["floor"])
+    d = ImageDraw.Draw(room)
+    rect(d, [0, 78, W - 1, H - 1], CN["floor"])
+    noise(d, 0, 78, W - 1, H - 1, CN["floor2"], every=11)
+    # dark house + stage face
+    rect(d, [0, 0, W - 1, 76], CN["wall"])
+    wall_face(d, 0, 0, W - 1, 26, shade(CN["wall"], -10), lip=3, lip_c=shade(CN["wall"], -28))
+    prism(d, 16, 24, 224, 16, 18, CN["wood"], shade(CN["wood"], -30))
+    dither(d, 24, 28, 232, 38, CN["spot"], 4)
+    for cx in (48, 100, 156, 208):
+        downlight(d, cx, 3, CN["spot"])
+        dither(d, cx - 14, 12, cx + 14, 24, CN["spot"], 3)
+    tiny_text(d, 108, 6, "LIVE", CN["neon"])
+    # mic stand + side stacks
+    prism(d, 124, 16, 5, 3, 16, PAL["metal"], PAL["metal_d"])
+    prism(d, 22, 32, 18, 10, 20, CN["seat"], (20, 16, 24, 255))
+    prism(d, 216, 32, 18, 10, 20, CN["seat"], (20, 16, 24, 255))
+    # performer silhouette on stage (not a cast portrait)
+    rect(d, [118, 18, 136, 38], shade(CN["seat"], -10))
+    rect(d, [122, 10, 132, 18], shade(CN["seat"], 10))
+    # audience: 4 rows, center aisle, empty merch pad on one seat
+    for r, y in enumerate((80, 104, 128, 152)):
+        for c, x in enumerate((6, 30, 54, 78, 150, 174, 198, 222)):
+            prism(d, x, y, 20, 7, 7, CN["seat"], shade(CN["seat"], -20))
+            if (r + c) % 5 == 0:
+                rect(d, [x + 6, y - 4, x + 14, y + 2], shade(CN["neon"], -40))
+            if r == 1 and c == 3:
+                empty_pad(d, x + 3, y + 2, 14, 4, CN["pad"], shade(CN["seat"], 20))
+    blit(room, cast_sprite("cast_06", "front", 0), 114, 156)
+    blit(room, cast_sprite("cast_01", "side", 0), 100, 124)
+    return room
+
+
+# ===========================================================================
+# 9. 咖啡店
+# ===========================================================================
+def scene_cafe() -> Image.Image:
+    room = new(W, H, CF["floor"])
+    d = ImageDraw.Draw(room)
+    wood_planks(d, 0, 70, W - 1, H - 1, CF["floor"], CF["floor2"], CF["gap"], 6)
+    rect(d, [0, 0, W - 1, 64], CF["wall"])
+    wall_face(d, 0, 0, W - 1, 62, CF["wall"], lip=5, lip_c=shade(CF["wall"], -24))
+    fluorescent(d, 30, 4, 180, (255, 230, 180, 255))
+    tiny_text(d, 16, 12, "CAFE", (120, 72, 48, 255))
+    # street window
+    prism(d, 8, 22, 52, 6, 28, (186, 214, 226, 255), shade(CF["wall"], -30))
+    dither(d, 12, 26, 54, 46, WHITE, 5)
+    # menu board
+    prism(d, 70, 12, 70, 8, 22, (40, 32, 28, 255), (24, 20, 18, 255))
+    dither(d, 76, 16, 132, 30, (200, 180, 120, 255), 4)
+    # pastry case + counter + machine
+    prism(d, 148, 28, 36, 10, 18, (246, 228, 196, 255), CF["counter_d"])
+    for i, col in enumerate(((240, 180, 120, 255), (200, 80, 70, 255), (250, 220, 160, 255))):
+        box1(d, 154 + i * 10, 34, 160 + i * 10, 40, col)
+    prism(d, 160, 48, 90, 16, 28, CF["counter"], CF["counter_d"])
+    empty_pad(d, 172, 52, 28, 10, CF["pad"], CF["counter_d"])
+    empty_pad(d, 210, 52, 28, 10, CF["pad"], CF["counter_d"])
+    prism(d, 168, 36, 22, 8, 16, PAL["metal"], PAL["metal_d"])
+    box1(d, 172, 40, 186, 48, (40, 28, 22, 255))
+    blit(room, prop_cup(CF["cup"]), 214, 46)
+    # four cafe tables — pads empty for cups
+    for x, y, item in (
+        (10, 86, prop_cup()),
+        (86, 86, None),
+        (10, 138, prop_notebook()),
+        (86, 138, None),
+    ):
+        prism(d, x, y, 54, 14, 8, HW["desk_hi"], CF["counter_d"])
+        empty_pad(d, x + 10, y + 3, 32, 8, CF["pad"], CF["counter_d"])
+        if item:
+            blit(room, item, x + 14, y + 2)
+        blit(room, chair_north(), x + 14, y + 20)
+    blit(room, prop_plant(), 160, 140)
+    blit(room, cast_sprite("cast_08", "front", 0), 200, 150)
+    return room
+
+
+# ===========================================================================
+# 10. 健身房
+# ===========================================================================
+def scene_gym() -> Image.Image:
+    room = new(W, H, GY["floor"])
+    d = ImageDraw.Draw(room)
+    rect(d, [0, 58, W - 1, H - 1], GY["floor"])
+    noise(d, 0, 58, W - 1, H - 1, GY["floor2"], every=10)
+    for y in range(58, H, 16):
+        hline(d, 0, W - 1, y, shade(GY["floor2"], 12))
+    rect(d, [0, 0, W - 1, 56], GY["wall"])
+    wall_face(d, 0, 0, W - 1, 52, GY["wall"], lip=5, lip_c=shade(GY["wall"], -20))
+    prism(d, 20, 8, 216, 8, 28, (180, 196, 210, 255), PAL["metal"])
+    dither(d, 28, 14, 228, 32, WHITE, 5)
+    tiny_text(d, 110, 4, "GYM", GY["red"])
+    # squat rack
+    prism(d, 12, 68, 74, 12, 22, GY["metal"], shade(GY["metal"], -30))
+    vline(d, 18, 54, 102, GY["metal"])
+    vline(d, 78, 54, 102, GY["metal"])
+    hline(d, 18, 78, 60, GY["red"])
+    # bench + water-bottle pad
+    prism(d, 96, 86, 70, 14, 10, GY["rubber"], (20, 20, 24, 255))
+    empty_pad(d, 114, 90, 34, 8, GY["pad"], PAL["metal_d"])
+    blit(room, prop_bottle(), 118, 88)
+    # treadmill
+    prism(d, 176, 70, 68, 16, 10, GY["metal"], shade(GY["metal"], -28))
+    rect(d, [184, 76, 236, 92], GY["rubber"])
+    box1(d, 180, 62, 200, 72, (30, 30, 34, 255))
+    # bike
+    prism(d, 178, 118, 36, 10, 8, GY["metal"], shade(GY["metal"], -24))
+    box1(d, 188, 108, 200, 118, GY["rubber"])
+    # dumbbell tree
+    for i, x in enumerate((12, 32, 52)):
+        prism(d, x, 118 + (i % 2) * 8, 16, 6, 8, GY["metal"], shade(GY["metal"], -24))
+        rect(d, [x + 2, 120 + (i % 2) * 8, x + 6, 128 + (i % 2) * 8], GY["rubber"])
+    prism(d, 16, 148, 88, 10, 6, GY["red"], shade(GY["red"], -30))
+    empty_pad(d, 36, 150, 28, 6, GY["pad"], shade(GY["red"], -10))
+    blit(room, cast_sprite("cast_03", "front", 0), 160, 148)
+    return room
+
+
+# ===========================================================================
+# 11. 米线店
+# ===========================================================================
+def scene_mixian() -> Image.Image:
+    room = new(W, H, MX["floor"])
+    d = ImageDraw.Draw(room)
+    wood_planks(d, 0, 72, W - 1, H - 1, MX["floor"], MX["floor2"], shade(MX["wood_e"], 10), 6)
+    rect(d, [0, 0, W - 1, 66], MX["wall"])
+    wall_face(d, 0, 0, W - 1, 64, MX["wall"], lip=5, lip_c=shade(MX["wall"], -24))
+    # shop plaque (latin 5px N reads as H; skip the word)
+    prism(d, 8, 8, 28, 6, 10, MX["wood"], MX["wood_e"])
+    box1(d, 16, 12, 26, 18, MX["bowl"])
+    d.point((20, 10), fill=MX["lantern"])
+    # hanging menu slips
+    for i, x in enumerate((52, 64, 76)):
+        rect(d, [x, 18, x + 8, 36], (250, 236, 190, 255))
+        hline(d, x + 1, x + 7, 22 + i, shade(MX["wall"], -40))
+    for cx in (96, 136, 176):
+        prism(d, cx, 6, 10, 4, 10, MX["lantern"], shade(MX["lantern"], -40))
+        dither(d, cx - 6, 18, cx + 16, 28, MX["lantern"], 3)
+    # kitchen counter + steaming pots
+    prism(d, 140, 40, 108, 14, 22, MX["wood"], MX["wood_e"])
+    for x in (150, 176, 202):
+        prism(d, x, 32, 18, 8, 12, PAL["metal"], PAL["metal_d"])
+        dither(d, x + 2, 22, x + 16, 32, MX["steam"], 2)
+    empty_pad(d, 150, 44, 24, 8, MX["pad"], MX["wood_e"])
+    empty_pad(d, 186, 44, 24, 8, MX["pad"], MX["wood_e"])
+    empty_pad(d, 220, 44, 22, 8, MX["pad"], MX["wood_e"])
+    # four two-top tables, bowls parked, pads empty
+    for x, y, item in (
+        (8, 82, None),
+        (84, 82, prop_cup()),
+        (8, 136, None),
+        (84, 136, prop_notebook()),
+    ):
+        prism(d, x, y, 64, 16, 8, MX["wood"], MX["wood_e"])
+        empty_pad(d, x + 8, y + 3, 22, 10, MX["pad"], MX["wood_e"])
+        empty_pad(d, x + 34, y + 3, 22, 10, MX["pad"], MX["wood_e"])
+        if item:
+            blit(room, item, x + 10, y + 2)
+        box1(d, x + 36, y + 4, x + 48, y + 12, MX["bowl"])
+        blit(room, chair_north(), x + 16, y + 22)
+    blit(room, cast_sprite("cast_05", "side", 0), 200, 148)
+    blit(room, cast_sprite("cast_02", "front", 0), 168, 118)
+    return room
+
+
 SCENES = [
     dict(id="hutong", title="胡同工位区",
-         blurb="远墙一条浅色长桌 · 一侧四座朝墙 · 桌面留空",
-         fn=scene_hutong, walk_y=148, line="这边还能放杯子。",
+         blurb="远墙四座朝墙 · 两行平行工位 · 底部再一排 · 大块空 pad",
+         fn=scene_hutong, walk_y=140, line="这边还能放杯子。",
          beat_t="09:20", action="sit_aisle",
-         why="相机在过道朝墙：白墙 ttc + 小镜框，一条浅色长桌贴远墙，四把黑椅在桌南侧、人朝墙坐。桌面大块留空，只靠墙放一两件。纵深办公室照片只作白墙/黑椅/顶灯气氛。"),
+         why="白墙 ttc + 镜框。远墙一条浅色长桌、四把黑椅朝墙。中间两行平行工位岛（每岛三椅三 pad）。底部再一排长桌四 pad。比示意图更密，仍留过道。不描摹合影里的人。"),
     dict(id="elevator", title="电梯间",
          blurb="米黄石材 · 开门体积 · 雕塑台座 · 屏与按钮",
          fn=scene_elevator, walk_y=140, line="先等这梯。",
          beat_t="09:12", action="wait_lift",
          why="石材块墙、白石地、中轴雕塑、右侧门拉开见轿厢。人物是 cast。"),
     dict(id="hawaii", title="夏威夷",
-         blurb="窗边 2.5D 长桌 · 三空位",
-         fn=scene_hawaii, walk_y=140, line="窗边这档先开。",
+         blurb="朝窗：左竖桌+3椅 · 窗前3椅 · 右竖桌+3椅 · 约九座",
+         fn=scene_hawaii, walk_y=148, line="窗边这档先开。",
          beat_t="09:40", action="open_laptop",
-         why="卷帘日光 + 一条靠窗桌，三格空 pad，物靠边。"),
+         why="玩家朝落地卷帘看。左侧竖向长桌，椅子在桌右侧朝房间内排 3 把；窗前中间再 3 把；右侧竖向长桌旁再 3 把。暖木地板、奶油墙、暖日光。桌面空 pad。hawaii-ref 只取工位气氛，不描人物。"),
     dict(id="popmart", title="泡泡玛特店",
          blurb="2.5D 盒架 · 柜台三空位",
          fn=scene_popmart, walk_y=146, line="就拆一个。",
@@ -861,6 +1106,26 @@ SCENES = [
          fn=scene_meeting, walk_y=150, line="我记，你们说。",
          beat_t="14:00", action="take_notes",
          why="木桌 2.5D，中央整块空位，本和杯只在两端。"),
+    dict(id="concert", title="演唱会内场",
+         blurb="舞台 + 中央过道观众席 · 内场感",
+         fn=scene_concert, walk_y=150, line="这排还能挤。",
+         beat_t="19:10", action="watch_live",
+         why="暗厅、暖木舞台、筒灯、左右音箱。观众席四排、中间过道。座面留空 pad。Q 版小人，不是写真。"),
+    dict(id="cafe", title="咖啡店",
+         blurb="街窗 + 柜台空 pad + 四张小桌",
+         fn=scene_cafe, walk_y=148, line="先点一杯。",
+         beat_t="11:20", action="order_coffee",
+         why="奶油墙、暖木地、菜单板、咖啡机、点心柜。柜台两格空 pad，四张小桌各留杯位。"),
+    dict(id="gym", title="健身房",
+         blurb="镜墙 · 深蹲架 · 跑步机 · 垫上留瓶位",
+         fn=scene_gym, walk_y=148, line="再一组。",
+         beat_t="18:00", action="lift",
+         why="橡胶地、镜面墙、架+卧推凳+跑步机+单车+哑铃。凳面和垫面空 pad 放水瓶。"),
+    dict(id="mixian", title="米线店",
+         blurb="红墙灯笼 · 后厨蒸汽锅 · 四桌双空 pad",
+         fn=scene_mixian, walk_y=148, line="一碗米线。",
+         beat_t="12:40", action="eat_mixian",
+         why="红墙、灯笼、菜单条、后厨三口蒸汽锅。四张木桌各两格空 pad，碗靠边。"),
 ]
 
 
@@ -926,7 +1191,7 @@ def make_room_sheet(images):
 
 
 def main():
-    print("Generating 7 2.5D scenes…")
+    print("Generating 11 2.5D scenes…")
     manifest = {"canvas": [W, H], "scenes": []}
     painted = []
     for stale in (
