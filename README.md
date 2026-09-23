@@ -48,7 +48,7 @@ npx --yes serve public -p 4173
 |----|------|------|------|
 | `hutong` | 胡同工位区 | 就两排桌子：远墙四座朝墙 + 再一排平行工位 | `public/assets/scenes/hutong/` |
 | `elevator` | 电梯间 | 米黄石材、开门、雕塑台座、屏与按钮 | `public/assets/scenes/elevator/` |
-| `hawaii` | 夏威夷 | 朝窗：左竖桌 3 椅 · 窗前 3 椅 · 右竖桌 3 椅 | `public/assets/scenes/hawaii/` |
+| `hawaii` | 夏威夷 | 开窗见蓝天高楼 · 左竖桌 3 椅 · 右竖桌 3 椅 · 约六座 | `public/assets/scenes/hawaii/` |
 | `popmart` | 泡泡玛特店 | 细格盲盒墙，柜台留空 | `public/assets/scenes/popmart/` |
 | `restroom` | 厕所 | 四隔间 + 两水池 | `public/assets/scenes/restroom/` |
 | `office` | 普通工位 | 岛式桌，空垫 | `public/assets/scenes/office/` |

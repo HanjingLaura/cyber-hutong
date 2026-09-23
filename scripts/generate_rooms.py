@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """11 Laura-named scenes — 2.5D refined pixel, 256×192, empty desk pads.
 
-v3: hawaii 9-seat vertical desks; hutong two desk rows + 4 wall seats;
+v3: hawaii open window + 6 seats; hutong two desk rows + 4 wall seats;
 concert / cafe / gym / mixian added. Same 1px ink + wall-FACE language.
 """
 from __future__ import annotations
@@ -106,6 +106,16 @@ HW = {
     "pad": (232, 196, 130, 255),
     "sun": (255, 226, 150, 255),
     "jacket": (244, 240, 232, 255),
+    "sky": (126, 192, 236, 255),
+    "sky2": (78, 154, 216, 255),
+    "sky3": (206, 232, 252, 255),
+    "bldg": (42, 48, 72, 255),
+    "bldg2": (28, 34, 56, 255),
+    "bldg3": (64, 56, 92, 255),
+    "bldg4": (78, 88, 110, 255),
+    "lit": (255, 214, 130, 255),
+    "neon_c": (70, 230, 206, 255),
+    "neon_p": (255, 96, 168, 255),
 }
 CN = {
     "floor": (36, 28, 44, 255),
@@ -609,35 +619,94 @@ def scene_elevator() -> Image.Image:
 
 
 # ===========================================================================
-# 3. 夏威夷 — 朝窗：左竖桌+3椅 / 窗前3椅 / 右竖桌+3椅
+# 3. 夏威夷 — 开窗：左竖桌+3椅 / 右竖桌+3椅 / 窗外蓝天高楼
 # ===========================================================================
+def _hawaii_skyline(d, x0, y0, x1, y1):
+    """Pixel cyber skyline — blue sky + towers, not a photo."""
+    # sky wash, lighter at the horizon
+    for y in range(y0, y1 + 1):
+        t = (y - y0) / max(1, y1 - y0)
+        c = mix(HW["sky2"], HW["sky3"], t)
+        hline(d, x0, x1, y, c)
+    dither(d, x0, y0, x1, y0 + 10, shade(HW["sky2"], -16), 6)
+    # sun
+    box1(d, 188, y0 + 6, 200, y0 + 16, HW["sun"])
+    dither(d, 184, y0 + 4, 204, y0 + 18, HW["sun"], 3)
+    # far haze band
+    hline(d, x0, x1, y1 - 22, mix(HW["sky3"], HW["bldg4"], 0.35))
+    # building slabs (x, top, w, face)
+    towers = (
+        (x0 + 4, y1 - 18, 14, HW["bldg2"]),
+        (x0 + 16, y1 - 28, 12, HW["bldg"]),
+        (x0 + 28, y1 - 22, 18, HW["bldg3"]),
+        (x0 + 46, y1 - 40, 16, HW["bldg"]),
+        (x0 + 62, y1 - 26, 14, HW["bldg4"]),
+        (x0 + 76, y1 - 48, 18, HW["bldg2"]),
+        (x0 + 94, y1 - 32, 12, HW["bldg3"]),
+        (x0 + 108, y1 - 54, 20, HW["bldg"]),
+        (x0 + 128, y1 - 36, 16, HW["bldg4"]),
+        (x0 + 144, y1 - 24, 14, HW["bldg2"]),
+        (x0 + 158, y1 - 44, 22, HW["bldg3"]),
+        (x0 + 180, y1 - 30, 16, HW["bldg"]),
+        (x0 + 196, y1 - 20, 12, HW["bldg4"]),
+    )
+    for bx, top, bw, face in towers:
+        if bx + bw > x1:
+            continue
+        rect(d, [bx, top, bx + bw - 1, y1], face)
+        vline(d, bx, top, y1, shade(face, -22))
+        hline(d, bx, bx + bw - 1, top, shade(face, 24))
+        # window grid
+        for wy in range(top + 3, y1 - 2, 4):
+            for wx in range(bx + 2, bx + bw - 2, 3):
+                on = ((wx * 7 + wy * 3) % 7) == 0
+                d.point((wx, wy), fill=HW["lit"] if on else shade(face, 18))
+        # antenna / crown on the tall ones
+        if y1 - top >= 40:
+            vline(d, bx + bw // 2, top - 6, top, PAL["metal"])
+            d.point((bx + bw // 2, top - 7), fill=HW["neon_p"])
+        if y1 - top >= 46:
+            rect(d, [bx + 3, top + 4, bx + bw - 4, top + 8], HW["neon_c"])
+    # nearer dark plinth so the city sits on a ground line
+    rect(d, [x0, y1 - 6, x1, y1], shade(HW["bldg2"], -10))
+    hline(d, x0, x1, y1 - 6, shade(HW["bldg"], 20))
+
+
 def scene_hawaii() -> Image.Image:
     room = new(W, H, HW["floor"])
     d = ImageDraw.Draw(room)
     wood_planks(d, 0, 72, W - 1, H - 1, HW["floor"], HW["floor2"], HW["gap"], 6)
     light_pool(d, 128, 160, 50, 12, HW["sun"], 3)
+    light_pool(d, 128, 96, 40, 10, HW["sun"], 3)
 
-    # cream side walls + tall blinds dead ahead
+    # cream side walls; OPEN window (blinds rolled up), skyline visible
     rect(d, [0, 0, 18, 72], HW["cream"])
     rect(d, [238, 0, W - 1, 72], HW["cream"])
     rect(d, [18, 0, 237, 68], HW["wall"])
-    for y in range(6, 64):
-        c = HW["blind_d"] if y % 3 == 0 else (HW["blind"] if y % 3 == 1 else HW["blind_hi"])
-        hline(d, 22, 233, y, c)
-    for y in range(12, 62, 10):
-        hline(d, 40, 216, y, HW["sun"])
-    vline(d, 22, 6, 64, shade(HW["blind_d"], -20))
-    vline(d, 233, 6, 64, shade(HW["blind_d"], -20))
-    prism(d, 18, 66, 220, 5, 5, HW["desk_hi"], HW["desk_e"])
-    for k in range(0, 48, 3):
-        d.point((70 + k // 3, 78 + k), fill=HW["sun"])
-        d.point((160 + k // 4, 78 + k), fill=HW["sun"])
+    _hawaii_skyline(d, 24, 4, 231, 62)
+    # frame + mullions (glass is open — no pulled-down blinds)
+    vline(d, 22, 2, 64, shade(HW["desk_e"], -20))
+    vline(d, 233, 2, 64, shade(HW["desk_e"], -20))
+    hline(d, 22, 233, 2, shade(HW["desk_e"], -20))
+    vline(d, 127, 4, 62, mix(HW["cream"], (255, 255, 255, 255), 0.35))
+    vline(d, 128, 4, 62, shade(HW["desk_e"], 10))
+    # rolled-up blinds at the head — window is open
+    prism(d, 24, 2, 208, 4, 4, HW["blind_hi"], HW["blind_d"])
+    for x in range(28, 228, 6):
+        d.point((x, 4), fill=HW["blind"])
+    # sill + empty sunlit floor (no middle chairs)
+    prism(d, 18, 64, 220, 6, 6, HW["desk_hi"], HW["desk_e"])
+    dither(d, 70, 72, 186, 88, HW["sun"], 4)
+    for k in range(0, 36, 3):
+        d.point((88 + k // 2, 76 + k), fill=HW["sun"])
+        d.point((150 + k // 3, 76 + k), fill=HW["sun"])
+    blit(room, prop_plant(), 28, 50)
+    blit(room, prop_bottle(), 214, 52)
 
     def wood_desk(x, y, w, h, lip):
         prism(d, x, y, w, h, 8, HW["desk"], HW["desk_e"], lip=lip)
         for gy in range(y + 4, y + h - 2, 6):
             hline(d, x + 2, x + w - 3, gy, shade(HW["desk"], -18))
-        # near-end cap so it reads as a table, not a wall
         prism(d, x, y + h - 6, w, 6, 6, HW["desk_hi"], HW["desk_e"])
 
     # LEFT vertical desk; chairs on its RIGHT (into the room)
@@ -657,13 +726,6 @@ def scene_hawaii() -> Image.Image:
         if i == 1:
             blit(room, prop_notebook(), 224, yy + 2)
         blit(room, chair_east(jacket=(i == 0)), 192, yy + 2)
-
-    # 3 chairs in front of the blinds (middle column)
-    for i, xx in enumerate((86, 118, 150)):
-        blit(room, chair_north(), xx, 78)
-    blit(room, prop_plant(), 118, 58)
-    blit(room, prop_bottle(), 72, 70)
-    blit(room, seated_facing_wall("cast_06"), 120, 72)
     return room
 
 
@@ -1070,10 +1132,10 @@ SCENES = [
          beat_t="09:12", action="wait_lift",
          why="石材块墙、白石地、中轴雕塑、右侧门拉开见轿厢。人物是 cast。"),
     dict(id="hawaii", title="夏威夷",
-         blurb="朝窗：左竖桌+3椅 · 窗前3椅 · 右竖桌+3椅 · 约九座",
+         blurb="开窗：左竖桌+3椅 · 右竖桌+3椅 · 约六座 · 窗外蓝天高楼",
          fn=scene_hawaii, walk_y=148, line="窗边这档先开。",
          beat_t="09:40", action="open_laptop",
-         why="玩家朝落地卷帘看。左侧竖向长桌，椅子在桌右侧朝房间内排 3 把；窗前中间再 3 把；右侧竖向长桌旁再 3 把。暖木地板、奶油墙、暖日光。桌面空 pad。hawaii-ref 只取工位气氛，不描人物。"),
+         why="窗户打开，卷帘卷在顶上，能看见蓝天和高楼天际线（精致像素，不是照片）。左侧竖向长桌内侧 3 椅，右侧竖向长桌旁 3 椅，合计约六座。窗前只留窗台和日光，不再摆中间三椅。"),
     dict(id="popmart", title="泡泡玛特店",
          blurb="2.5D 盒架 · 柜台三空位",
          fn=scene_popmart, walk_y=146, line="就拆一个。",
