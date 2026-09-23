@@ -1,10 +1,12 @@
 {
   "name": "cyber-hutong",
   "private": true,
-  "version": "0.1.0",
-  "description": "赛博胡同 Phase-1 pixel assets gallery",
+  "version": "0.2.0",
+  "description": "赛博胡同 refined-pixel gallery",
   "scripts": {
     "assets": "python3 scripts/generate_assets.py",
+    "cast": "python3 scripts/generate_cast.py",
+    "rooms": "python3 scripts/generate_rooms.py",
     "preview": "npx --yes serve public -p 4173"
   }
 }

@@ -3,17 +3,19 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>赛博胡同 · Phase-1 像素预览</title>
+  <title>赛博胡同 · 精致像素预览</title>
   <style>
     :root {
-      --bg: #0b0e1a;
-      --panel: #1a2744;
-      --text: #f5f0e6;
+      --bg: #12141c;
+      --panel: #1c2030;
+      --text: #f4efe6;
       --muted: #a8b0c0;
-      --neon: #3dfff0;
-      --pink: #ff6b9d;
+      --neon: #7ee0d4;
+      --pink: #ff8aa8;
+      --gold: #e4c37a;
     }
     * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
     body {
       margin: 0;
       font-family: "SF Mono", "JetBrains Mono", ui-monospace, Menlo, monospace;
@@ -22,206 +24,325 @@
       line-height: 1.5;
     }
     header {
-      padding: 1.5rem 2rem;
-      border-bottom: 1px solid #2e3a5c;
-      background: linear-gradient(180deg, #1a2744 0%, #0b0e1a 100%);
+      position: sticky; top: 0; z-index: 20;
+      padding: 1rem 1.5rem .75rem;
+      border-bottom: 1px solid #2a3148;
+      background: linear-gradient(180deg, #1c2030 0%, #12141c 92%);
     }
-    header h1 { margin: 0 0 .25rem; font-size: 1.4rem; color: var(--neon); }
-    header p { margin: 0; color: var(--muted); font-size: .9rem; }
-    main { padding: 1.5rem 2rem 3rem; max-width: 1100px; margin: 0 auto; }
-    section { margin-bottom: 2.5rem; }
+    header h1 { margin: 0 0 .2rem; font-size: 1.2rem; color: var(--neon); }
+    header .sub { margin: 0 0 .75rem; color: var(--muted); font-size: .8rem; }
+    nav { display: flex; flex-wrap: wrap; gap: .5rem; }
+    nav a {
+      color: var(--text); text-decoration: none;
+      border: 1px solid #2a3148; padding: .25rem .7rem;
+      border-radius: 999px; font-size: .75rem;
+    }
+    nav a:hover, nav a.active { border-color: var(--neon); color: var(--neon); }
+    main { padding: 1.25rem 1.5rem 3rem; max-width: 1100px; margin: 0 auto; }
+    .panel { display: none; }
+    .panel.active { display: block; }
+    section { margin-bottom: 2.25rem; }
     h2 {
-      font-size: 1rem;
-      color: var(--pink);
+      font-size: 1rem; color: var(--pink);
       border-left: 3px solid var(--pink);
-      padding-left: .6rem;
-      margin: 0 0 1rem;
+      padding-left: .6rem; margin: 0 0 .75rem;
     }
-    .grid {
-      display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-end;
-    }
+    .note { color: var(--muted); font-size: .78rem; margin: -.25rem 0 1rem; }
+    .grid { display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-end; }
     .card {
       background: var(--panel);
-      border: 1px solid #2e3a5c;
+      border: 1px solid #2a3148;
       border-radius: 6px;
       padding: .75rem;
       text-align: center;
     }
-    .card figcaption {
-      margin-top: .5rem;
-      font-size: .7rem;
-      color: var(--muted);
-    }
+    .card figcaption { margin-top: .45rem; font-size: .68rem; color: var(--muted); }
     img.pixel {
       image-rendering: pixelated;
       image-rendering: crisp-edges;
       background:
-        linear-gradient(45deg, #12162a 25%, transparent 25%),
-        linear-gradient(-45deg, #12162a 25%, transparent 25%),
-        linear-gradient(45deg, transparent 75%, #12162a 75%),
-        linear-gradient(-45deg, transparent 75%, #12162a 75%);
+        linear-gradient(45deg, #161820 25%, transparent 25%),
+        linear-gradient(-45deg, #161820 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, #161820 75%),
+        linear-gradient(-45deg, transparent 75%, #161820 75%);
       background-size: 16px 16px;
       background-position: 0 0, 0 8px, 8px -8px, -8px 0;
-      background-color: #0f1324;
-      border: 1px solid #2e3a5c;
+      background-color: #101218;
+      border: 1px solid #2a3148;
+      cursor: zoom-in;
     }
-    .x3 { width: calc(32px * 3); height: auto; }
-    .x2 { width: calc(var(--w, 32) * 2px); height: auto; }
-    .room { width: 320px; max-width: 100%; height: auto; }
-    .strip { height: 64px; width: auto; max-width: 100%; }
-    .dialog { width: 512px; max-width: 100%; height: auto; }
+    .x4 { width: calc(32px * 4); height: auto; }
+    .room { width: 384px; max-width: 100%; height: auto; }
+    .sheet { width: min(100%, 720px); height: auto; }
+    .beat {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 1rem;
+      background: var(--panel);
+      border: 1px solid #2a3148;
+      border-radius: 8px;
+      padding: .85rem;
+      margin-bottom: 1rem;
+    }
+    @media (max-width: 720px) { .beat { grid-template-columns: 1fr; } }
+    .beat img { width: 100%; max-width: 320px; height: auto; }
+    .beat .t { color: var(--gold); font-size: .8rem; }
+    .beat h3 { margin: .2rem 0; color: var(--neon); }
+    .bubble {
+      display: inline-block; margin-top: .5rem;
+      padding: .35rem .7rem; background: #12141c;
+      border: 1px solid var(--pink); border-radius: 6px;
+    }
+    .chips { display: flex; flex-wrap: wrap; gap: .4rem; margin-bottom: .75rem; }
+    .chips button {
+      font: inherit; font-size: .72rem;
+      color: var(--text); background: var(--panel);
+      border: 1px solid #2a3148; border-radius: 999px;
+      padding: .25rem .65rem; cursor: pointer;
+    }
+    .chips button.on { border-color: var(--neon); color: var(--neon); }
+    #stage-wrap {
+      position: relative;
+      width: min(100%, 640px);
+      aspect-ratio: 256 / 192;
+      border: 1px solid #2a3148;
+      background: #101218;
+      overflow: hidden;
+    }
+    #stage { width: 100%; height: 100%; image-rendering: pixelated; display: block; }
+    #say {
+      position: absolute; left: 12px; top: 10px;
+      background: rgba(18,20,28,.88);
+      border: 1px solid var(--pink);
+      color: var(--text); font-size: .75rem;
+      padding: .3rem .55rem; border-radius: 4px; max-width: 80%;
+    }
     footer {
-      padding: 1rem 2rem 2rem;
-      color: var(--muted);
-      font-size: .75rem;
-      text-align: center;
+      padding: 1rem 1.5rem 2rem;
+      color: var(--muted); font-size: .72rem; text-align: center;
     }
     a { color: var(--neon); }
+    #lb {
+      display: none; position: fixed; inset: 0; z-index: 50;
+      background: rgba(0,0,0,.82);
+      align-items: center; justify-content: center; padding: 2rem;
+    }
+    #lb.on { display: flex; }
+    #lb img { max-width: 96vw; max-height: 90vh; image-rendering: pixelated; }
   </style>
 </head>
 <body>
   <header>
     <h1>赛博胡同 Cyber Hutong</h1>
-    <p>Phase-1 像素资产预览 · 32×32 · <code>image-rendering: pixelated</code> · 无 Agent/鉴权/DB</p>
+    <p class="sub">精致像素 · 256×192 · 7 房 · 在线本人操控 / 离线 agent / 蒸馏只冷启动 · 无后端</p>
+    <nav>
+      <a href="#gallery" data-tab="gallery">画廊</a>
+      <a href="#day" data-tab="day">一天故事板</a>
+      <a href="#walk" data-tab="walk">房间漫游</a>
+    </nav>
   </header>
   <main>
-    <section>
-      <h2>Cast · 8 Soul Knight chibi（idle_front ×3）</h2>
-      <p style="color:var(--muted);font-size:.8rem;margin-top:-.5rem">大头小身 · 粗描边 · 发型/衣着线索差异化 · 详见 <code>design/cast.md</code></p>
-      <div class="grid" id="cast"></div>
-    </section>
-    <section>
-      <h2>Hero idle（原型）</h2>
-      <div class="grid" id="chars"></div>
-    </section>
-    <section>
-      <h2>地砖条带 tileset_32</h2>
-      <div class="card">
-        <img class="pixel strip" src="assets/tiles/tileset_32.png" alt="tileset" style="height:96px" />
-        <figcaption>floor · brick · neon · roof · grass · door · blind · hawaii_wood · popmart_candy · restroom_tile</figcaption>
-      </div>
-    </section>
-    <section>
-      <h2>道具 props</h2>
-      <div class="grid" id="props"></div>
-    </section>
-    <section>
-      <h2>房间 mock</h2>
-      <div class="grid" id="rooms"></div>
-    </section>
-    <section>
-      <h2>命名场景 · 夏威夷 Hawaii</h2>
-      <p style="color:var(--muted);font-size:.8rem;margin-top:-.5rem">靠窗长桌 · 三座位纵向排列 · 卷帘 / 笔记本 / 保温杯 / 绿植 / 文件夹</p>
-      <div class="grid" id="hawaii"></div>
-    </section>
-    <section>
-      <h2>命名场景 · 泡泡玛特店 Pop Mart</h2>
-      <p style="color:var(--muted);font-size:.8rem;margin-top:-.5rem">室内店面 · 盲盒货架 · 展示柜台 · 可拆盲盒（未开盒 / 已开盒 / 手办）</p>
-      <div class="grid" id="popmart"></div>
-    </section>
-    <section>
-      <h2>命名场景 · 厕所 Restroom</h2>
-      <p style="color:var(--muted);font-size:.8rem;margin-top:-.5rem">四隔间 · 隔间外两个水池 · pastel 游戏风（非泥灰）· 主图=变体 B</p>
-      <div class="grid" id="restroom"></div>
-    </section>
-    <section>
-      <h2>场景变体 · 选型 A / B / C</h2>
-      <p style="color:var(--muted);font-size:.8rem;margin-top:-.5rem">
-        Soul Knight cute chunky · A pastel/cleaner · B denser+warmer · C accent palette ·
-        详见 <code>design/scenes/variants.md</code> · 主图暂用 B
-      </p>
-      <h3 style="color:var(--neon);font-size:.85rem">厕所 restroom</h3>
-      <div class="grid" id="var-restroom"></div>
-      <h3 style="color:var(--neon);font-size:.85rem">泡泡玛特 popmart</h3>
-      <div class="grid" id="var-popmart"></div>
-      <h3 style="color:var(--neon);font-size:.85rem">夏威夷 hawaii</h3>
-      <div class="grid" id="var-hawaii"></div>
-    </section>
-    <section>
-      <h2>对话框 UI</h2>
-      <div class="card">
-        <img class="pixel dialog" src="assets/ui/dialog_frame.png" alt="dialog" />
-        <figcaption>dialog_frame.png · 256×64</figcaption>
-      </div>
-    </section>
+    <div id="gallery" class="panel active">
+      <section>
+        <h2>八人 cast sheet</h2>
+        <p class="note">精致像素 chibi · 发型衣着可辨 · 非写实 · 详见 <code>design/cast.md</code></p>
+        <div class="card">
+          <img class="pixel sheet" src="assets/characters/cast_sheet.png" alt="cast sheet" />
+          <figcaption>cast_sheet.png · idle_front × 8 · 6× nearest</figcaption>
+        </div>
+        <div class="grid" id="cast"></div>
+      </section>
+      <section>
+        <h2>保留场景 · 7</h2>
+        <p class="note">胡同工位朝里四座 / 电梯间 / 夏威夷 / 泡泡玛特 / 厕所 / 普通工位 / 会议室。茶水间、打印区、楼梯过道、天台、老板办公室、快递门口、胡同口已下架。</p>
+        <div class="grid" id="rooms"></div>
+      </section>
+      <section>
+        <h2>总表 / 放大</h2>
+        <div class="card">
+          <img class="pixel sheet" src="preview/room_sheet.png" alt="room sheet" />
+          <figcaption>preview/room_sheet.png</figcaption>
+        </div>
+      </section>
+    </div>
+
+    <div id="day" class="panel">
+      <section>
+        <h2>一天故事板</h2>
+        <p class="note">不是纯 agent 演一天。本人在线操控；离线才回放。蒸馏=冷启动。见 <code>design/parallel-universe.md</code></p>
+        <div id="beats"></div>
+      </section>
+    </div>
+
+    <div id="walk" class="panel">
+      <section>
+        <h2>房间漫游</h2>
+        <p class="note">点房间切换。cast_01 走一个往返。画布 256×192。</p>
+        <div class="chips" id="room-chips"></div>
+        <div id="stage-wrap">
+          <canvas id="stage" width="256" height="192"></canvas>
+          <div id="say">这边还能放杯子。</div>
+        </div>
+        <p class="note" id="walk-meta"></p>
+      </section>
+    </div>
   </main>
-  <footer>设计简报 <a href="../design/art-brief.md">art-brief</a> · <a href="../design/cast.md">cast</a> · 场景 <a href="../design/scenes/hawaii.md">hawaii</a> / <a href="../design/scenes/popmart.md">popmart</a> / <a href="../design/scenes/restroom.md">restroom</a> / <a href="../design/scenes/variants.md">variants</a></footer>
+  <footer>
+    <a href="../design/art-brief.md">美术</a> ·
+    <a href="../design/cast.md">cast</a> ·
+    <a href="../design/parallel-universe.md">主循环</a> ·
+    <a href="../design/distill-spec.md">蒸馏</a> ·
+    <a href="../design/day-in-life.md">一天</a>
+    · 本地：<code>npx --yes serve public -p 4173</code>
+  </footer>
+  <div id="lb"><img alt="zoom" /></div>
   <script>
-    const pixel = (src, caption, cls = "x3") => {
+    const ROOMS = [
+      { id:"hutong", title:"胡同工位区", src:"assets/scenes/hutong/scene_hutong.png",
+        line:"这边还能放杯子。", y:148, t:"09:20", action:"sit_aisle",
+        why:"朝里拍，一边四座，里侧朝墙，桌面留空位。" },
+      { id:"elevator", title:"电梯间", src:"assets/scenes/elevator/scene_elevator.png",
+        line:"先等这梯。", y:128, t:"09:12", action:"wait_lift",
+        why:"米黄石材、开门、雕塑台座、屏与按钮。" },
+      { id:"hawaii", title:"夏威夷", src:"assets/scenes/hawaii/scene_hawaii.png",
+        line:"窗边这档先开。", y:140, t:"09:40", action:"open_laptop",
+        why:"窗边长桌，座位留物位。" },
+      { id:"popmart", title:"泡泡玛特店", src:"assets/scenes/popmart/scene_popmart.png",
+        line:"就拆一个。", y:140, t:"10:40", action:"unbox",
+        why:"细格盲盒墙，柜台留空。" },
+      { id:"restroom", title:"厕所", src:"assets/scenes/restroom/scene_restroom.png",
+        line:"洗一下。", y:132, t:"12:10", action:"wash",
+        why:"四隔间 + 两水池。" },
+      { id:"office", title:"普通工位", src:"assets/scenes/office/scene_office.png",
+        line:"回岛上。", y:148, t:"16:20", action:"desk_work",
+        why:"岛式双人桌，空垫。" },
+      { id:"meeting", title:"会议室", src:"assets/scenes/meeting/scene_meeting.png",
+        line:"我记，你们说。", y:148, t:"14:00", action:"take_notes",
+        why:"长桌中央留空。" },
+    ];
+
+    const pixel = (src, caption, cls = "x4") => {
       const f = document.createElement("figure");
       f.className = "card";
       f.innerHTML = `<img class="pixel ${cls}" src="${src}" alt="${caption}" /><figcaption>${caption}</figcaption>`;
       return f;
     };
+
     for (let i = 1; i <= 8; i++) {
       const id = String(i).padStart(2, "0");
-      document.getElementById("cast").appendChild(
-        pixel(`assets/characters/cast_${id}/idle_front.png`, `cast_${id}`)
-      );
+      ["idle_front", "idle_side", "walk_0"].forEach(fr => {
+        document.getElementById("cast").appendChild(
+          pixel(`assets/characters/cast_${id}/${fr}.png`, `cast_${id} ${fr}`, "x4")
+        );
+      });
     }
-    for (let i = 0; i < 4; i++) {
-      document.getElementById("chars").appendChild(
-        pixel(`assets/characters/hero_idle_${i}.png`, `hero_idle_${i}`)
-      );
-    }
-    const props = [
-      "desk","chair","chair_jacket","neon_sign","lantern","plant",
-      "server_rack","hologram","laptop","thermos","folders","long_desk",
-      "blind_box","blind_box_open","popmart_figure","shelf_boxes","display_counter",
-      "stall","sink"
-    ];
-    props.forEach(n => document.getElementById("props").appendChild(
-      pixel(`assets/props/${n}.png`, n + ".png", "x3")
-    ));
-    [
-      ["room_office.png", "工位"],
-      ["room_meeting.png", "会议室"],
-      ["room_hutong_gate.png", "胡同口"],
-    ].forEach(([f, label]) => {
-      document.getElementById("rooms").appendChild(
-        pixel(`assets/rooms/${f}`, label + " · " + f, "room")
-      );
-    });
-    document.getElementById("hawaii").appendChild(
-      pixel("assets/scenes/hawaii/scene_hawaii.png", "scene_hawaii.png · 三座位纵向", "room")
-    );
-    ["chair","chair_jacket","laptop","thermos","plant","folders","blind_tile","long_desk"].forEach(n => {
-      document.getElementById("hawaii").appendChild(
-        pixel(`assets/scenes/hawaii/${n}.png`, n, "x3")
-      );
-    });
-    document.getElementById("popmart").appendChild(
-      pixel("assets/scenes/popmart/scene_popmart.png", "scene_popmart.png · 拆盲盒店", "room")
-    );
-    ["shelf_boxes","counter","box_closed","box_opened","figure"].forEach(n => {
-      document.getElementById("popmart").appendChild(
-        pixel(`assets/scenes/popmart/${n}.png`, n, "x3")
-      );
-    });
-    document.getElementById("restroom").appendChild(
-      pixel("assets/scenes/restroom/scene_restroom.png", "scene_restroom.png · 四隔间+两水池", "room")
-    );
-    ["stall","stall_open","sink","mirror","floor_tile"].forEach(n => {
-      document.getElementById("restroom").appendChild(
-        pixel(`assets/scenes/restroom/${n}.png`, n, "x3")
-      );
+    ROOMS.forEach(r => {
+      document.getElementById("rooms").appendChild(pixel(r.src, r.title + " · " + r.id, "room"));
     });
 
-    const varLabels = {
-      restroom: {a:"A mint pastel", b:"B peach dense+warm", c:"C lilac arcade"},
-      popmart:  {a:"A candy pink×mint", b:"B peach warm dense", c:"C lilac×sky"},
-      hawaii:   {a:"A honey soft", b:"B amber dense", c:"C cream-olive"},
-    };
-    ["restroom","popmart","hawaii"].forEach(scene => {
-      const el = document.getElementById("var-" + scene);
-      ["a","b","c"].forEach(k => {
-        el.appendChild(pixel(
-          `assets/scenes/${scene}/variants/${k}/scene.png`,
-          `${scene} ${k.toUpperCase()} · ${varLabels[scene][k]}`,
-          "room"
-        ));
-      });
+    const beatsEl = document.getElementById("beats");
+    [...ROOMS].sort((a, b) => a.t.localeCompare(b.t)).forEach((b, i) => {
+      const d = document.createElement("article");
+      d.className = "beat";
+      d.innerHTML = `
+        <img class="pixel" src="${b.src}" alt="${b.title}" />
+        <div>
+          <div class="t">${b.t} · 0${i + 1} / 07 · ${b.action}</div>
+          <h3>${b.title}</h3>
+          <p class="note">${b.why}</p>
+          <div class="bubble">${b.line}</div>
+        </div>`;
+      beatsEl.appendChild(d);
     });
+
+    const chips = document.getElementById("room-chips");
+    const canvas = document.getElementById("stage");
+    const ctx = canvas.getContext("2d");
+    ctx.imageSmoothingEnabled = false;
+    const say = document.getElementById("say");
+    const meta = document.getElementById("walk-meta");
+    const walkImgs = { 0: new Image(), 1: new Image(), idle0: new Image(), idle1: new Image() };
+    walkImgs[0].src = "assets/characters/cast_01/walk_side_0.png";
+    walkImgs[1].src = "assets/characters/cast_01/walk_side_1.png";
+    walkImgs.idle0.src = "assets/characters/cast_01/idle_front.png";
+    walkImgs.idle1.src = "assets/characters/cast_01/idle_front_1.png";
+    const bgCache = {};
+    let cur = 0, x = 28, dir = 1, tick = 0, walking = true;
+    function loadBg(src) {
+      if (bgCache[src]) return bgCache[src];
+      const im = new Image();
+      im.src = src;
+      bgCache[src] = im;
+      return im;
+    }
+    ROOMS.forEach(w => loadBg(w.src));
+    function setRoom(i) {
+      cur = i; x = 28; dir = 1; walking = true;
+      say.textContent = ROOMS[i].line;
+      meta.textContent = ROOMS[i].title + " · " + ROOMS[i].src;
+      [...chips.children].forEach((b, j) => b.classList.toggle("on", j === i));
+    }
+    ROOMS.forEach((w, i) => {
+      const b = document.createElement("button");
+      b.textContent = w.title;
+      b.addEventListener("click", () => setRoom(i));
+      chips.appendChild(b);
+    });
+    setRoom(0);
+    function loop() {
+      const room = ROOMS[cur];
+      const bg = bgCache[room.src];
+      ctx.clearRect(0, 0, 256, 192);
+      if (bg && bg.complete) ctx.drawImage(bg, 0, 0, 256, 192);
+      else { ctx.fillStyle = "#101218"; ctx.fillRect(0, 0, 256, 192); }
+      tick++;
+      if (walking) {
+        x += dir * 0.65;
+        if (x > 200) dir = -1;
+        if (x < 28) { dir = 1; walking = false; }
+      }
+      if (!walking && tick % 180 === 0) walking = true;
+      const spr = walking ? walkImgs[(tick >> 3) % 2]
+        : walkImgs[(tick >> 4) % 2 ? "idle1" : "idle0"];
+      if (spr && spr.complete) {
+        ctx.save();
+        if (walking && dir < 0) {
+          ctx.translate(x + 32, 0);
+          ctx.scale(-1, 1);
+          ctx.drawImage(spr, 0, room.y);
+        } else ctx.drawImage(spr, x, room.y);
+        ctx.restore();
+      }
+      requestAnimationFrame(loop);
+    }
+    requestAnimationFrame(loop);
+
+    const panels = {
+      gallery: document.getElementById("gallery"),
+      day: document.getElementById("day"),
+      walk: document.getElementById("walk"),
+    };
+    const navs = [...document.querySelectorAll("nav a")];
+    function showTab(name) {
+      const id = panels[name] ? name : "gallery";
+      Object.entries(panels).forEach(([k, el]) => el.classList.toggle("active", k === id));
+      navs.forEach(a => a.classList.toggle("active", a.dataset.tab === id));
+    }
+    function fromHash() { showTab((location.hash || "#gallery").slice(1)); }
+    window.addEventListener("hashchange", fromHash);
+    fromHash();
+
+    const lb = document.getElementById("lb");
+    document.addEventListener("click", (e) => {
+      const img = e.target.closest("img.pixel");
+      if (!img || img.closest("#lb")) {
+        if (e.target === lb) lb.classList.remove("on");
+        return;
+      }
+      lb.querySelector("img").src = img.src;
+      lb.classList.add("on");
+    });
+    document.addEventListener("keydown", (e) => { if (e.key === "Escape") lb.classList.remove("on"); });
   </script>
 </body>
 </html>

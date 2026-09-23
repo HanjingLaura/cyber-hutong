@@ -1,109 +1,81 @@
 # 赛博胡同 Cyber Hutong
 
-Soul Knight 风格的 **2.5D 斜俯视** 像素探索小品。当前仓库为 **Phase-1：像素资源 only**。
+精致像素 · **2.5D 可读** · 小地图高密度。当前仓库为素材 + 静态预览，无 Agent / 登录 / 数据库。
 
-> 北京胡同 × 赛博霓虹 —— 先把地砖、角色 idle、道具和房间 / 命名场景 mock 画出来。
+Laura 过夜纠正后的范围：**只做她点名的 7 个场景**，八人 cast 按照片线索重画，桌椅留出放杯子 / 笔记本 / 盲盒的空位。
 
-## 本阶段范围
+产品主循环（见 [`design/parallel-universe.md`](design/parallel-universe.md)）：**本人在线操控** → 离线由 agent 驱动同一小人 → agent **学习在线操作轨迹**。蒸馏 Q&A 只做冷启动。
 
-| 做 | 不做 |
-|----|------|
-| 32×32 像素资产（PNG） | Agent / LLM |
-| 中文设计简报 | 登录 / 鉴权 |
-| 命名场景「夏威夷 / 泡泡玛特 / 厕所」 | 数据库 / 存档 |
-| 静态预览画廊 | 完整游戏循环 |
-
-详见 [`design/art-brief.md`](design/art-brief.md)。
-
-## 命名场景
-
-| ID | 中文 | 说明 | 路径 |
-|----|------|------|------|
-| `hawaii` | 夏威夷 | 靠窗长桌 + **三座位纵向排列**；卷帘、笔记本、保温杯、绿植、文件夹 | [`design/scenes/hawaii.md`](design/scenes/hawaii.md) → `public/assets/scenes/hawaii/` |
-| `popmart` | 泡泡玛特店 | 室内店 · **拆盲盒**；货架、柜台、未开/已开盒、手办 | [`design/scenes/popmart.md`](design/scenes/popmart.md) → `public/assets/scenes/popmart/` |
-| `restroom` | 厕所 | **四隔间** + 隔间外 **两个水池** | [`design/scenes/restroom.md`](design/scenes/restroom.md) → `public/assets/scenes/restroom/` |
-
-## 快速预览
+## 本地预览
 
 ```bash
 # 重新生成像素图（需 Python3 + Pillow）
+python3 -m pip install Pillow
 python3 scripts/generate_assets.py
 
-# 场景 A/B/C 变体（Soul Knight 选型，不碰 cast）
-python3 scripts/generate_scene_variants.py
+# 分步
+python3 scripts/generate_cast.py
+python3 scripts/generate_rooms.py
 
 # 本地打开画廊
 npx --yes serve public -p 4173
-# 或直接用浏览器打开 public/index.html
 ```
 
-浏览器访问：`http://localhost:4173/`  
-资源目录：`public/assets/`
+浏览器：
 
-## 目录结构
+| 页 | URL | 看什么 |
+|----|-----|--------|
+| 画廊 | http://localhost:4173/ | 八人 sheet + 7 个保留场景 |
+| 一天故事板 | http://localhost:4173/#day | 只链保留房 |
+| 房间漫游 | http://localhost:4173/#walk | 点房间切换，cast_01 走一个往返 |
+| 放大图 | `public/preview/zoomed/` | 各房 3× nearest |
+
+也可直接打开 `public/index.html`。
+
+## 保留场景
+
+| ID | 中文 | 要点 | 路径 |
+|----|------|------|------|
+| `hutong` | 胡同工位区 | **朝里拍**，一边四座，里侧朝墙，桌面留空 | `public/assets/scenes/hutong/` |
+| `elevator` | 电梯间 | 米黄石材、开门、雕塑台座、屏与按钮 | `public/assets/scenes/elevator/` |
+| `hawaii` | 夏威夷 | 窗边，座位留物位 | `public/assets/scenes/hawaii/` |
+| `popmart` | 泡泡玛特店 | 细格盲盒墙，柜台留空 | `public/assets/scenes/popmart/` |
+| `restroom` | 厕所 | 四隔间 + 两水池 | `public/assets/scenes/restroom/` |
+| `office` | 普通工位 | 岛式桌，空垫 | `public/assets/scenes/office/` |
+| `meeting` | 会议室 | 长桌中央留空 | `public/assets/scenes/meeting/` |
+
+已下架（画廊 / 一天 / 漫游均不链）：茶水间、打印区、楼梯过道、天台、老板办公室、快递门口、旧胡同口牌楼。
+
+画布统一 **256×192**。角色 32×32。
+
+## 八人 cast
+
+见 [`design/cast.md`](design/cast.md)。预览 `public/assets/characters/cast_sheet.png`。
+
+真人参考照片 **不入库**。
+
+## 目录
 
 ```
 cyber-hutong/
-├── README.md
-├── design/
-│   ├── art-brief.md              # 调色板、2.5D、瓦片规格
-│   └── scenes/
-│       ├── hawaii.md / popmart.md / restroom.md
-│       └── variants.md           # A/B/C 选型 trait 矩阵
+├── design/                 # 美术简报、cast、一天、各场景
 ├── scripts/
-│   ├── generate_assets.py        # Pillow 生成全部 PNG
-│   ├── generate_cast.py          # 8 chibi cast（勿删）
-│   └── generate_scene_variants.py # 场景 A/B/C 变体
+│   ├── pxlib.py            # 1px 描边 / 2.5D 盒
+│   ├── generate_cast.py
+│   ├── generate_rooms.py   # 仅 7 房
+│   └── generate_assets.py  # 总入口
 └── public/
-    ├── index.html                # 像素预览画廊
-    └── assets/
-        ├── characters/           # 角色 idle 四帧
-        ├── tiles/                # 32×32 地砖条带
-        ├── props/                # 桌椅、霓虹牌、灯笼等
-        ├── rooms/                # 工位 / 会议室 / 胡同口
-        ├── scenes/hawaii/        # 夏威夷合成 + 局部道具
-        ├── scenes/popmart/       # 泡泡玛特店 + 盲盒道具
-        ├── scenes/restroom/      # 厕所四隔间 + 水池
-        │     └── variants/{a,b,c}/
-        └── ui/                   # 对话框边框
+    ├── index.html
+    ├── assets/{characters,rooms,scenes,props,tiles,ui}/
+    └── preview/{zoomed,cast_sheet.png,room_sheet.png}
 ```
-
-## 场景变体（选型）
-
-每场景 A/B/C：palette / denser props / warmer light。详见 [`design/scenes/variants.md`](design/scenes/variants.md)。  
-当前主图 `scene_*.png` = **变体 B**（dense + warmer）。
-
-
-## 场景差异化（v2）
-
-每个命名场景是独立世界（地板 / 墙 / 光色），禁止共用深蓝网格再换道具：
-
-| 场景 | 地板 | 光色 |
-|------|------|------|
-| 夏威夷 | 暖木地板 | 窗缝暖日光 |
-| 泡泡玛特 | 粉×薄荷糖果格 | 粉/青霓虹 |
-| 厕所 | pastel 瓷（非泥灰） | 舒适暖白/粉 |
-| 工位 / 会议室 / 胡同口 | 暗青绿 / 深紫霓虹 / 夜石板 | 各自独立 |
-
-风格对标 Soul Knight：chunky 轮廓、强剪影、斜俯视 2.5D。
 
 ## 技术约定
 
-- **瓦片**：32×32，有限调色板，最近邻友好
-- **视角**：斜俯视 2.5D（侧墙 + 顶面暗示体积）
-- **预览**：CSS `image-rendering: pixelated`，整数倍放大
+- 瓦片 32×32，场景 256×192，最近邻放大
+- 干净 1px 描边，统一调色，比过夜粗块更细
+- 预览 `image-rendering: pixelated`
 
 ## 许可证
 
 私有仓库。资产与代码归项目所有者。
-
-## Cast (8 chibi)
-
-Soul Knight–style pixel avatars (stylized, not photoreal). See `design/cast.md`.
-
-```
-public/assets/characters/cast_XX/{idle_front,idle_side,walk_0,walk_1}.png
-```
-
-Regenerate: `python3 scripts/generate_cast.py`
-

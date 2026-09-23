@@ -1,44 +1,12 @@
-# 场景：厕所（Restroom）
+# 场景：厕所（`restroom`）
 
-> Phase-1 命名场景。赛博胡同公共洗手间内景，2.5D 斜俯视像素。
+> 精致像素 · 256×192 · 2.5D · 桌面留物位
 
-## 场景身份（必须与其它场景一眼可辨）
+四隔间体积 + 两水池
 
-| 维度 | 本场景 |
-|------|--------|
-| 地板 | **pastel 瓷砖**（mint / peach / lilac 见变体）— 禁止泥灰脏厕 / 深蓝网格 |
-| 墙面 | 干净地铁砖 + 可爱灯带 |
-| 光照 | 舒适暖白/粉光 — 非冷惨白 |
-| 情绪 | **游戏风 dungeon-shop toilet**：干净可爱，不是写实公厕 |
+四间 2.5D 隔间（一间半开见马桶）+ 两个盆。
 
-## 布局要点
+- `public/assets/scenes/restroom/scene_restroom.png`
+- `public/preview/zoomed/restroom.png`
 
-- **四个隔间（stalls）**：沿后墙横排四间；第三间门半开露出马桶剪影
-- **隔间外：两个水池**：洗手台区在右侧，**两个水池** + 上方镜面灯带
-- 瓷砖地面（冷瓷 + 灰缝），湿滑警示条，积水点
-- 左侧出口冷光条，与洗手区用竖向缝线分区
-
-## 道具清单
-
-| 资源 | 说明 |
-|------|------|
-| `stall.png` | 关闭的隔间门 |
-| `stall_open.png` | 半开隔间（可见马桶） |
-| `sink.png` | 瓷质水池 + 龙头 |
-| `mirror.png` | 洗手台上方镜 |
-| `floor_tile.png` / `wall_subway.png` | 本场景专用地/墙 |
-| `scene_restroom.png` | 整间合成 mock（四隔间 + 两水池） |
-
-## 像素约定
-
-- 瓦片 32×32；场景合成约 320×240
-- 调色：pastel 瓷（mint/peach/lilac）+ 干净描边；见 `variants.md`
-- Soul Knight：隔间门厚轮廓、门下留空隙；水池可见盆口积水
-
-## 非目标
-
-不做污秽写实、不做性别分区 UI、不做互动逻辑。
-
-## 变体
-
-见 [`variants.md`](variants.md) — A mint / B peach dense / C lilac。
+不描摹真人，不提交 refs。
