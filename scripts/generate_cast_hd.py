@@ -42,6 +42,13 @@ CARAMEL = (196, 148, 96, 255)
 CARAMEL2 = (168, 118, 72, 255)
 WHITE = (246, 244, 240, 255)
 BLUE = (164, 196, 226, 255)
+GOLD = (220, 176, 64, 255)
+GOLD_D = (168, 124, 36, 255)
+KNIT = (72, 72, 78, 255)
+SWEATER = (32, 32, 36, 255)
+BELT = (40, 32, 28, 255)
+LENS = (198, 220, 232, 255)
+RIM_W = 8  # 2 concept-art px (sheet block = 4)
 
 POSE_NAMES = ("side", "front", "back", "walk", "sitF", "sitB")
 
@@ -77,57 +84,74 @@ def _luma(c):
     return 0.299 * int(c[0]) + 0.587 * int(c[1]) + 0.114 * int(c[2])
 
 
-def clean_alpha(crop: np.ndarray, bg, thr: int = 32) -> np.ndarray:
-    """Flood-fill from the border; drop halo; keep dark outline."""
+def _is_sheet_grey(r, g, b, bg, thr):
+    if abs(int(r) - int(g)) < 18 and abs(int(g) - int(b)) < 18 and 175 < r < 232:
+        return True
+    return abs(int(r) - int(bg[0])) + abs(int(g) - int(bg[1])) + abs(int(b) - int(bg[2])) <= thr
+
+
+def clean_alpha(crop: np.ndarray, bg, thr: int = 28) -> np.ndarray:
+    """Flood from the border and interior pockets; drop halo; keep the ink outline."""
     h, w = crop.shape[:2]
-    bg = bg.astype(np.int16)
-    diff = np.abs(crop.astype(np.int16) - bg).sum(axis=2)
+    bgv = bg.astype(np.int16)
+    diff = np.abs(crop.astype(np.int16) - bgv).sum(axis=2)
     luma = crop.astype(np.int16) @ np.array([30, 59, 11]) // 100
 
     def is_bg_px(y, x):
-        if luma[y, x] < 72:
-            return False  # black outline stays
-        return diff[y, x] <= thr
+        if luma[y, x] < 70:
+            return False
+        r, g, b = int(crop[y, x, 0]), int(crop[y, x, 1]), int(crop[y, x, 2])
+        if r > 234 and g > 230 and b > 220:
+            return False
+        if r > 190 and r > g + 10 and r > b + 20:
+            return False
+        return _is_sheet_grey(r, g, b, bgv, thr) or diff[y, x] <= thr
 
     seen = np.zeros((h, w), bool)
     q = deque()
+
+    def try_push(x, y):
+        if 0 <= y < h and 0 <= x < w and not seen[y, x] and is_bg_px(y, x):
+            seen[y, x] = True
+            q.append((x, y))
+
     for x in range(w):
-        for y in (0, h - 1):
-            if is_bg_px(y, x) and not seen[y, x]:
-                seen[y, x] = True
-                q.append((x, y))
+        try_push(x, 0)
+        try_push(x, h - 1)
     for y in range(h):
-        for x in (0, w - 1):
-            if is_bg_px(y, x) and not seen[y, x]:
-                seen[y, x] = True
-                q.append((x, y))
+        try_push(0, y)
+        try_push(w - 1, y)
     while q:
         x, y = q.popleft()
-        for dx, dy in ((-1, 0), (1, 0), (0, -1), (0, 1)):
-            nx, ny = x + dx, y + dy
-            if 0 <= ny < h and 0 <= nx < w and not seen[ny, nx] and is_bg_px(ny, nx):
-                seen[ny, nx] = True
-                q.append((nx, ny))
+        for dx, dy in ((-1, 0), (1, 0), (0, -1), (0, 1), (-1, -1), (1, 1), (-1, 1), (1, -1)):
+            try_push(x + dx, y + dy)
+
+    # trapped sheet-bg pockets (armpit, inseam, hair gaps) — exact sheet only
+    for y in range(h):
+        for x in range(w):
+            if seen[y, x] or luma[y, x] < 70:
+                continue
+            if diff[y, x] <= 18:
+                seen[y, x] = True
 
     rgba = np.zeros((h, w, 4), np.uint8)
     rgba[..., :3] = crop
     rgba[..., 3] = np.where(seen, 0, 255)
 
-    # halo: near-bg fringe next to transparent, unless it's the dark outline
     for y in range(h):
         for x in range(w):
-            if rgba[y, x, 3] < 80 or luma[y, x] < 72:
+            if rgba[y, x, 3] < 80 or luma[y, x] < 70:
                 continue
-            if diff[y, x] > thr + 18:
-                continue
-            halo = False
-            for dx, dy in ((-1, 0), (1, 0), (0, -1), (0, 1)):
+            r, g, b = int(rgba[y, x, 0]), int(rgba[y, x, 1]), int(rgba[y, x, 2])
+            air = False
+            for dx, dy in ((-1, 0), (1, 0), (0, -1), (0, 1), (-1, -1), (1, 1)):
                 nx, ny = x + dx, y + dy
                 if not (0 <= ny < h and 0 <= nx < w) or rgba[ny, nx, 3] < 80:
-                    halo = True
+                    air = True
                     break
-            if halo:
-                rgba[y, x, 3] = 0
+            if air and (_is_sheet_grey(r, g, b, bgv, thr + 24) or diff[y, x] <= thr + 28):
+                rgba[y, x] = (0, 0, 0, 0)
+    rgba[..., 3] = np.where(rgba[..., 3] > 80, 255, 0)
     return rgba
 
 
@@ -286,12 +310,16 @@ def strip_chair(arr: np.ndarray, back: bool = False) -> np.ndarray:
     return arr
 
 
-def sit_from_back(arr: np.ndarray) -> np.ndarray:
-    """Head + shoulders + upper back from the standing back crop."""
+def sit_from_back(arr: np.ndarray, tall: bool = False) -> np.ndarray:
+    """Head + shoulders + upper back from the standing back crop.
+
+    Long-hair 08 needs extra depth so the nape collar stays in the sit_back frame.
+    """
     out = arr.copy()
     h, w = out.shape[:2]
     top = next((y for y in range(h) if any(out[y, x, 3] > 80 for x in range(w))), 0)
-    out[min(h, top + 148):] = 0
+    depth = 208 if tall else 148
+    out[min(h, top + depth):] = 0
     return out
 
 
@@ -361,73 +389,286 @@ def patch_02(arr: np.ndarray) -> None:
                     put(arr, x, y, (*BLUE[:3], 255) if abs(x - cx) <= 6 and y < cy + 36 else arr[y, x])
 
 
-def recolor_glasses(arr: np.ndarray) -> None:
-    """Paint existing concept rims black. Do not touch eyes / skin / hair."""
-    h, w = arr.shape[:2]
-    cx, cy = face_center(arr)
-    for y in range(max(0, cy - 28), min(h, cy + 16)):
-        for x in range(max(0, cx - 40), min(w, cx + 41)):
-            r, g, b, a = arr[y, x]
-            if a < 80 or _is_skin(arr[y, x]) or _is_dark(arr[y, x]):
-                continue
-            # hair / bangs
-            if max(r, g, b) < 90:
-                continue
-            # white hoodie
-            if r > 200 and g > 195 and b > 190:
-                continue
-            grey = abs(int(r) - int(g)) < 28 and abs(int(g) - int(b)) < 28
-            metal = grey and 90 < r < 230
-            if metal:
-                arr[y, x] = INK
+def _is_eye_white(c):
+    r, g, b, a = int(c[0]), int(c[1]), int(c[2]), int(c[3] if len(c) > 3 else 255)
+    return a > 80 and r > 230 and g > 230 and b > 220
 
 
-def shave_head(arr: np.ndarray) -> None:
-    """Smooth skin dome. Keep the existing outline. Soft stubble wash, no ring."""
+def _is_blush(c):
+    r, g, b, a = int(c[0]), int(c[1]), int(c[2]), int(c[3] if len(c) > 3 else 255)
+    return a > 80 and r > 220 and 120 < g < 190 and 120 < b < 190 and r > g + 30
+
+
+def _find_eyes(arr: np.ndarray):
+    """White-of-eye centroids in the face band."""
     h, w = arr.shape[:2]
     cx, cy = face_center(arr)
-    top = next((y for y in range(h) if any(arr[y, x, 3] > 80 for x in range(w))), 0)
-    # head ends around the brow / ears
-    scalp_end = min(h, max(cy + 4, top + 90))
-    for y in range(top, scalp_end):
-        for x in range(w):
-            if arr[y, x, 3] < 80 or _is_skin(arr[y, x]):
+    # 06's face_center drifts up into the scalp — prefer the eye-white band
+    ys, xs = np.where(
+        (arr[:, :, 3] > 80) & (arr[:, :, 0] > 230) & (arr[:, :, 1] > 230) & (arr[:, :, 2] > 220)
+    )
+    if len(xs) < 6:
+        return []
+    # keep whites near the mid-face, not hoodie highlights
+    keep = (ys > 70) & (ys < 140) & (xs > 20) & (xs < w - 20)
+    xs, ys = xs[keep], ys[keep]
+    if len(xs) < 6:
+        return []
+    # split left/right of median x
+    mid = int(np.median(xs))
+    clusters = []
+    for mask in (xs < mid - 4, xs > mid + 4):
+        if mask.sum() >= 4:
+            clusters.append((int(round(xs[mask].mean())), int(round(ys[mask].mean()))))
+    if not clusters:
+        clusters.append((int(round(xs.mean())), int(round(ys.mean()))))
+    clusters.sort()
+    return clusters
+
+
+def _ring(arr, cx, cy, r_out, r_in, color, clip=False):
+    r_out2, r_in2 = r_out * r_out, r_in * r_in
+    for y in range(int(cy - r_out), int(cy + r_out) + 1):
+        for x in range(int(cx - r_out), int(cx + r_out) + 1):
+            d2 = (x - cx) ** 2 + (y - cy) ** 2
+            if not (r_in2 <= d2 <= r_out2 + 2):
                 continue
-            r, g, b = int(arr[y, x, 0]), int(arr[y, x, 1]), int(arr[y, x, 2])
-            # keep true outline (very dark on the silhouette)
-            edge = False
-            for dx, dy in ((-1, 0), (1, 0), (0, -1), (0, 1)):
-                nx, ny = x + dx, y + dy
-                if not (0 <= ny < h and 0 <= nx < w) or arr[ny, nx, 3] < 80:
-                    edge = True
-                    break
-            if edge and max(r, g, b) < 55:
+            if clip and not (0 <= y < arr.shape[0] and 0 <= x < arr.shape[1] and arr[y, x, 3] > 80):
                 continue
-            # keep pupils (dark touching lots of skin)
-            if max(r, g, b) < 50:
-                skin_n = sum(
-                    1 for dx, dy in ((-1, 0), (1, 0), (0, -1), (0, 1), (-1, -1), (1, 1), (-1, 1), (1, -1))
-                    if 0 <= y + dy < h and 0 <= x + dx < w and _is_skin(arr[y + dy, x + dx])
-                )
-                if skin_n >= 3:
-                    continue
-            # hair / leftover stubble → solid skin
-            if max(r, g, b) < 200:
-                arr[y, x] = SKIN
-    # soft crown wash (wide, low contrast — not a 1px ring)
-    for y in range(top + 3, min(top + 22, scalp_end)):
-        t = 1.0 - (y - top - 3) / 20.0
-        mix = 0.22 * t
-        for x in range(w):
-            if not _is_skin(arr[y, x]):
+            put(arr, x, y, color)
+
+
+def _fill_lens(arr, cx, cy, r_in):
+    r2 = r_in * r_in
+    for y in range(int(cy - r_in), int(cy + r_in) + 1):
+        for x in range(int(cx - r_in), int(cx + r_in) + 1):
+            if (x - cx) ** 2 + (y - cy) ** 2 > r2:
+                continue
+            if not (0 <= y < arr.shape[0] and 0 <= x < arr.shape[1]):
+                continue
+            if arr[y, x, 3] < 80:
+                continue
+            if _is_eye_white(arr[y, x]) or _is_dark(arr[y, x]) or _is_blush(arr[y, x]):
+                continue
+            if max(arr[y, x, :3]) < 90:
                 continue
             r, g, b, a = arr[y, x]
             arr[y, x] = (
-                int(r * (1 - mix) + SKIN_S[0] * mix),
-                int(g * (1 - mix) + SKIN_S[1] * mix),
-                int(b * (1 - mix) + SKIN_S[2] * mix),
+                int(r * 0.55 + LENS[0] * 0.45),
+                int(g * 0.55 + LENS[1] * 0.45),
+                int(b * 0.55 + LENS[2] * 0.45),
                 255,
             )
+
+
+def _restore_old_rims(arr, box):
+    """Turn leftover metal / thin black rims back into skin so new rims sit clean."""
+    x0, y0, x1, y1 = box
+    h, w = arr.shape[:2]
+    for y in range(max(0, y0), min(h, y1)):
+        for x in range(max(0, x0), min(w, x1)):
+            if arr[y, x, 3] < 80 or _is_eye_white(arr[y, x]) or _is_blush(arr[y, x]) or _is_skin(arr[y, x]):
+                continue
+            r, g, b = int(arr[y, x, 0]), int(arr[y, x, 1]), int(arr[y, x, 2])
+            grey = abs(r - g) < 28 and abs(g - b) < 28 and 70 < r < 230
+            # old thin rim sitting on the face (not hair, not outline-of-head)
+            if grey or (max(r, g, b) < 80 and _is_skin(arr[min(h - 1, y + 1), x])):
+                arr[y, x] = SKIN
+
+
+def bold_glasses(arr: np.ndarray, side: bool = False) -> None:
+    """2-art-px (8 native) solid black round rims, bridge, temples, faint lenses."""
+    cx, fcy = face_center(arr)
+    eyes = _find_eyes(arr)
+    if side:
+        if not eyes:
+            eyes = [(cx + 18, fcy + 10)]
+        ex, ey = max(eyes, key=lambda p: p[0])
+        r_out, r_in = 14, 8
+        _restore_old_rims(arr, (ex - 28, ey - 24, ex + 28, ey + 24))
+        _fill_lens(arr, ex, ey, r_in)
+        _ring(arr, ex, ey, r_out, r_in, INK, clip=True)
+        # temple along the face into the hair
+        for i in range(16):
+            for t in range(6):
+                x, y = ex - r_out + 2 - i, ey - 1 + t // 2
+                if 0 <= y < arr.shape[0] and 0 <= x < arr.shape[1] and arr[y, x, 3] > 80:
+                    put(arr, x, y, INK)
+        return
+    if len(eyes) < 2:
+        ly = ry = (eyes[0][1] if eyes else fcy + 12)
+        eyes = [(cx - 26, ly), (cx + 26, ry)]
+    (lx, ly), (rx, ry) = eyes[0], eyes[-1]
+    if rx - lx < 30:
+        lx, rx = cx - 26, cx + 26
+    r_out, r_in = 20, 12
+    _restore_old_rims(arr, (lx - 28, min(ly, ry) - 24, rx + 28, max(ly, ry) + 24))
+    _fill_lens(arr, lx, ly, r_in)
+    _fill_lens(arr, rx, ry, r_in)
+    _ring(arr, lx, ly, r_out, r_in, INK)
+    _ring(arr, rx, ry, r_out, r_in, INK)
+    by0 = (ly + ry) // 2 - RIM_W // 2
+    for x in range(lx + r_in - 1, rx - r_in + 2):
+        for t in range(RIM_W):
+            put(arr, x, by0 + t, INK)
+    for i in range(10):
+        for t in range(RIM_W):
+            put(arr, lx - r_out - i, ly - 1 + t // 2, INK)
+            put(arr, rx + r_out + i, ry - 1 + t // 2, INK)
+
+
+def _cloth_y(arr, top):
+    """Jacket / sweater row — neutral dark, not brownish hair."""
+    h, w = arr.shape[:2]
+    for y in range(top + 88, min(h, top + 170)):
+        jacket = 0
+        skins = 0
+        for x in range(w):
+            r, g, b, a = int(arr[y, x, 0]), int(arr[y, x, 1]), int(arr[y, x, 2]), int(arr[y, x, 3])
+            if a < 80:
+                continue
+            if _is_skin(arr[y, x]):
+                skins += 1
+                continue
+            if max(r, g, b) < 90 and abs(r - g) < 14 and abs(g - b) < 14:
+                jacket += 1
+        if jacket >= 24 and jacket >= skins:
+            return y
+    return min(h, top + 130)
+
+
+def shave_head(arr: np.ndarray, back: bool = False) -> None:
+    """Smaller round skull, face-matched skin, highlight, side shade, clean outline."""
+    h, w = arr.shape[:2]
+    top = next((y for y in range(h) if any(arr[y, x, 3] > 80 for x in range(w))), 0)
+    cloth = _cloth_y(arr, top)
+    # sample real face skin (cheeks / lower face), not leftover hair
+    samples = []
+    for y in range(max(top + 50, cloth - 50), cloth):
+        for x in range(w):
+            if _is_skin(arr[y, x]) and not _is_blush(arr[y, x]):
+                samples.append(arr[y, x, :3])
+    face = tuple(int(v) for v in np.median(np.stack(samples), 0)) + (255,) if samples else SKIN
+    hi = SKIN_H
+    shade = SKIN_S
+
+    # original head occupancy
+    head = np.zeros((h, w), bool)
+    for y in range(top, cloth):
+        for x in range(w):
+            if arr[y, x, 3] < 80:
+                continue
+            if _is_eye_white(arr[y, x]) or _is_blush(arr[y, x]):
+                head[y, x] = True
+                continue
+            # skip jacket
+            if max(arr[y, x, :3]) < 90 and y > cloth - 12:
+                continue
+            head[y, x] = True
+
+    brow = cloth - 8 if back else cloth - 42
+    if not back:
+        eyes = _find_eyes(arr)
+        if eyes:
+            brow = min(p[1] for p in eyes) - 10
+    brow = max(top + 36, min(brow, cloth - 8))
+
+    # inset the dome (above the brow) by 6 px — smaller than the hair volume
+    inset = 6
+    new = head.copy()
+    for y in range(top, brow + 4):
+        xs = np.where(head[y])[0]
+        if len(xs) == 0:
+            continue
+        extra = inset + max(0, (inset + 2) - (y - top))  # rounder crown
+        lo, hi_x = int(xs.min()) + extra, int(xs.max()) - extra
+        new[y, :] = False
+        if lo <= hi_x:
+            new[y, lo: hi_x + 1] = True
+    for y in range(top, top + inset + 2):
+        new[y] = False
+
+    # apply: every hair-coloured pixel in the skull becomes face skin
+    for y in range(top, cloth):
+        for x in range(w):
+            if _is_eye_white(arr[y, x]) or _is_blush(arr[y, x]):
+                continue
+            # keep pupils / brows / mouth (dark on the face, touching skin)
+            if y >= brow and _is_dark(arr[y, x]) and not back:
+                skin_n = sum(
+                    1 for dx, dy in ((-1, 0), (1, 0), (0, -1), (0, 1), (-1, -1), (1, 1))
+                    if 0 <= y + dy < h and 0 <= x + dx < w and _is_skin(arr[y + dy, x + dx])
+                )
+                if skin_n >= 2:
+                    continue
+            if y >= brow and _is_skin(arr[y, x]) and not back:
+                continue
+            if new[y, x]:
+                arr[y, x] = face
+            elif head[y, x]:
+                arr[y, x] = (0, 0, 0, 0)
+
+    # highlight on the crown + darker sides / back
+    xs_all = np.where(new.any(axis=0))[0]
+    ys_all = np.where(new.any(axis=1))[0]
+    if len(xs_all) and len(ys_all):
+        hx0, hx1 = int(xs_all.min()), int(xs_all.max())
+        hy0, hy1 = int(ys_all.min()), min(int(ys_all.max()), brow + 8)
+        mx = (hx0 + hx1) // 2
+        mw = max(8, (hx1 - hx0) // 2)
+        mh = max(6, (hy1 - hy0) // 2)
+        for y in range(hy0, hy1 + 1):
+            for x in range(hx0, hx1 + 1):
+                if not new[y, x]:
+                    continue
+                if _is_eye_white(arr[y, x]) or _is_blush(arr[y, x]) or _is_dark(arr[y, x]):
+                    continue
+                # top highlight oval
+                t = 1.0 - ((y - (hy0 + 8)) / max(1, mh))
+                side = abs(x - mx) / max(1, mw)
+                if t > 0.35 and side < 0.55:
+                    mix = 0.55 * min(1.0, t)
+                    arr[y, x] = (
+                        int(face[0] * (1 - mix) + hi[0] * mix),
+                        int(face[1] * (1 - mix) + hi[1] * mix),
+                        int(face[2] * (1 - mix) + hi[2] * mix),
+                        255,
+                    )
+                elif side > 0.62 or (back and t < 0.15):
+                    mix = (0.42 if back else 0.32) * min(1.0, max(side, 0.55 if back else side))
+                    arr[y, x] = (
+                        int(face[0] * (1 - mix) + shade[0] * mix),
+                        int(face[1] * (1 - mix) + shade[1] * mix),
+                        int(face[2] * (1 - mix) + shade[2] * mix),
+                        255,
+                    )
+
+    # continuous dark outline on the new skull
+    for y in range(top, cloth):
+        for x in range(w):
+            if not new[y, x]:
+                continue
+            if _is_eye_white(arr[y, x]) or _is_blush(arr[y, x]):
+                continue
+            edge = False
+            for dx, dy in ((-1, 0), (1, 0), (0, -1), (0, 1)):
+                nx, ny = x + dx, y + dy
+                if not (0 <= ny < h and 0 <= nx < w) or arr[ny, nx, 3] < 80 or not new[ny, nx]:
+                    edge = True
+                    break
+            if edge:
+                arr[y, x] = INK
+
+    # leftover brown/grey hair (nape, sides) above the jacket → face skin
+    for y in range(top, min(h, cloth + 8)):
+        for x in range(w):
+            if arr[y, x, 3] < 80 or _is_skin(arr[y, x]) or _is_eye_white(arr[y, x]) or _is_blush(arr[y, x]):
+                continue
+            r, g, b = int(arr[y, x, 0]), int(arr[y, x, 1]), int(arr[y, x, 2])
+            brown_hair = 40 < max(r, g, b) < 170 and r >= g - 4 and g >= b - 6 and (r - b) > 6
+            grey_hair = 40 < max(r, g, b) < 140 and abs(r - g) < 20 and abs(g - b) < 20 and y < cloth
+            if brown_hair or grey_hair:
+                arr[y, x] = face
 
 
 def _is_brown_hair(c):
@@ -456,35 +697,160 @@ def caramel_tips(arr: np.ndarray) -> None:
             arr[y, x] = CARAMEL if t > 0.50 else CARAMEL2
 
 
-def patch_08(arr: np.ndarray, back: bool) -> None:
+def _is_sweater(c):
+    r, g, b, a = int(c[0]), int(c[1]), int(c[2]), int(c[3] if len(c) > 3 else 255)
+    return a > 80 and max(r, g, b) < 80 and abs(r - g) < 18 and abs(g - b) < 18
+
+
+def _neckline(arr, cx, cy):
+    h, w = arr.shape[:2]
+    for y in range(cy + 16, min(cy + 80, h)):
+        if _is_sweater(arr[y, cx]) and _is_sweater(arr[y, max(0, cx - 8)]) and _is_sweater(arr[y, min(w - 1, cx + 8)]):
+            return y
+    return cy + 40
+
+
+def _collar_point(arr, x0, y0, x1, y1, x_tip, y_tip):
+    """Filled triangle collar point in white with a 1px ink edge."""
+    xs = (x0, x1, x_tip)
+    ys = (y0, y1, y_tip)
+    minx, maxx = min(xs), max(xs)
+    miny, maxy = min(ys), max(ys)
+    for y in range(miny, maxy + 1):
+        for x in range(minx, maxx + 1):
+            # barycentric
+            den = (ys[1] - ys[2]) * (xs[0] - xs[2]) + (xs[2] - xs[1]) * (ys[0] - ys[2])
+            if den == 0:
+                continue
+            a = ((ys[1] - ys[2]) * (x - xs[2]) + (xs[2] - xs[1]) * (y - ys[2])) / den
+            b = ((ys[2] - ys[0]) * (x - xs[2]) + (xs[0] - xs[2]) * (y - ys[2])) / den
+            c = 1 - a - b
+            if a >= -0.02 and b >= -0.02 and c >= -0.02:
+                put(arr, x, y, WHITE)
+    for x, y in ((x0, y0), (x1, y1), (x_tip, y_tip)):
+        put(arr, x, y, INK)
+
+
+def dress_08(arr: np.ndarray, back: bool = False, side: bool = False) -> None:
+    """Dressier black knit: white shirt collar + cuffs, gold pendant, knit, belt."""
     h, w = arr.shape[:2]
     cx, cy = face_center(arr)
-    if not back:
-        # 1px center part on the front only — a short skin line at the crown
-        top = next((y for y in range(h) if _is_dark(arr[y, cx]) or max(arr[y, cx, :3]) < 80), 8)
-        for y in range(top + 2, min(top + 22, cy - 28)):
+    if back:
+        # collar edge at the nape: where hair width drops onto the sweater
+        nape = None
+        prev_w = 0
+        for y in range(max(80, h // 3), h - 16):
+            xs = [x for x in range(w) if arr[y, x, 3] > 80]
+            if not xs:
+                continue
+            span = max(xs) - min(xs)
+            if prev_w > 90 and span < prev_w - 12:
+                nape = y
+                break
+            prev_w = span
+        if nape is None:
+            nape = min(h - 20, 180)
+        # only on torso-narrow rows (not the hair mass). sit_back may still be
+        # hair-wide — then stamp a short white nape band on the last opaque rows.
+        painted = 0
+        for y in range(nape, min(h, nape + 6)):
+            xs = [x for x in range(w) if arr[y, x, 3] > 80]
+            if not xs or max(xs) - min(xs) > 96:
+                continue
+            for x in range(cx - 16, cx + 17):
+                if _is_sweater(arr[y, x]) or _is_dark(arr[y, x]):
+                    put(arr, x, y, WHITE)
+                    painted += 1
+        if painted < 8:
+            last = next((y for y in range(h - 1, 40, -1) if any(arr[y, x, 3] > 80 for x in range(w))), nape)
+            for y in range(max(40, last - 5), last + 1):
+                for x in range(cx - 16, cx + 17):
+                    if 0 <= x < w and arr[y, x, 3] > 80 and not _is_skin(arr[y, x]):
+                        put(arr, x, y, WHITE)
+        for y in range(nape + 10, min(h - 8, nape + 56), 6):
+            for x in range(cx - 24, cx + 25):
+                if _is_sweater(arr[y, x]):
+                    put(arr, x, y, KNIT)
+        return
+
+    neck = _neckline(arr, cx, cy)
+    # shirt band under the chin
+    for y in range(neck - 6, neck + 3):
+        for x in range(cx - 20, cx + 21):
+            if 0 <= x < w and 0 <= y < h and arr[y, x, 3] > 80:
+                if _is_sweater(arr[y, x]) or _is_skin(arr[y, x]) or _is_dark(arr[y, x]):
+                    put(arr, x, y, WHITE)
+    # two collar points
+    if side:
+        # collar wrap sitting on the neck (not a floating triangle)
+        for y in range(neck - 8, neck + 8):
+            for x in range(cx - 6, cx + 22):
+                if 0 <= x < w and 0 <= y < h and arr[y, x, 3] > 80:
+                    if _is_sweater(arr[y, x]) or _is_skin(arr[y, x]) or _is_dark(arr[y, x]):
+                        # keep the face: only the neck band
+                        if y >= neck - 4 or _is_sweater(arr[y, x]):
+                            put(arr, x, y, WHITE)
+        # one collar point on the chest
+        _collar_point(arr, cx + 2, neck + 4, cx + 16, neck + 4, cx + 10, neck + 18)
+        for i in range(8):
+            put(arr, cx + 4, neck + 10 + i, GOLD)
+            put(arr, cx + 5, neck + 10 + i, GOLD)
+        put(arr, cx + 5, neck + 18, GOLD_D)
+    else:
+        _collar_point(arr, cx - 20, neck - 1, cx - 2, neck - 1, cx - 12, neck + 18)
+        _collar_point(arr, cx + 2, neck - 1, cx + 20, neck - 1, cx + 12, neck + 18)
+        # gold chain + pendant
+        for i in range(14):
+            put(arr, cx - 10 + i, neck + 10 + abs(i - 7), GOLD)
+            put(arr, cx - 10 + i, neck + 11 + abs(i - 7), GOLD)
+        for dx, dy in ((0, 0), (-1, 1), (1, 1), (0, 1), (0, 2), (-1, 2), (1, 2), (0, 3)):
+            put(arr, cx + dx, neck + 18 + dy, GOLD if dy < 3 else GOLD_D)
+        # front part stays (short, obvious)
+        top = next((y for y in range(h) if arr[y, cx, 3] > 80), 8)
+        for y in range(top + 2, min(top + 20, cy - 24)):
             if arr[y, cx, 3] > 80 and not _is_skin(arr[y, cx]):
                 put(arr, cx, y, SKIN_S)
-        # white collar: first sweater row under the chin
-        neck = None
-        for y in range(cy + 18, min(cy + 70, h)):
-            if _is_dark(arr[y, cx]) and _is_dark(arr[y, cx - 6]) and _is_dark(arr[y, cx + 6]):
-                neck = y
-                break
-        if neck is not None:
-            for x in range(cx - 16, cx + 17):
-                if 0 <= x < w and arr[neck, x, 3] > 80 and (_is_dark(arr[neck, x]) or _is_skin(arr[neck, x])):
-                    put(arr, x, neck, WHITE)
-            # thin V necklace on the sweater
-            for i, half in enumerate(range(1, 11)):
-                y = neck + 2 + i
-                put(arr, cx - half, y, WHITE)
-                put(arr, cx + half, y, WHITE)
-            put(arr, cx, neck + 12, WHITE)
-    else:
-        for y in range(min(90, h)):
-            if _is_skin(arr[y, cx]):
-                arr[y, cx] = HAIR_K
+
+    # knit texture on the torso (center, not the hanging hair)
+    waist = neck + 66
+    for y in range(h - 1, neck, -1):
+        xs = [x for x in range(cx - 36, cx + 37) if 0 <= x < w and _is_sweater(arr[y, x])]
+        if len(xs) >= 20:
+            waist = y
+            break
+    x_lo, x_hi = cx - (14 if side else 28), cx + (22 if side else 28)
+    for y in range(neck + 8, waist):
+        if (y - neck) % 6 == 0:
+            for x in range(x_lo, x_hi + 1):
+                if 0 <= x < w and _is_sweater(arr[y, x]):
+                    put(arr, x, y, KNIT)
+
+    # slim belt
+    for y in range(waist - 1, min(h, waist + 4)):
+        for x in range(x_lo - 4, x_hi + 5):
+            if 0 <= x < w and _is_sweater(arr[y, x]):
+                put(arr, x, y, BELT if y != waist + 1 else GOLD_D)
+    if not side:
+        for x in range(cx - 4, cx + 5):
+            put(arr, x, waist + 1, GOLD)
+
+    # white cuffs at the wrists (skin hands meeting dark sleeves)
+    for y in range(neck + 40, min(h - 8, neck + 90)):
+        skins = [x for x in range(w) if _is_skin(arr[y, x])]
+        if len(skins) < 4:
+            continue
+        # left / right clusters
+        left = [x for x in skins if x < cx - 16]
+        right = [x for x in skins if x > cx + 16]
+        for cluster in (left, right):
+            if len(cluster) < 3:
+                continue
+            hx = int(sum(cluster) / len(cluster))
+            # cuff just above the hand
+            for yy in range(y - 8, y - 1):
+                for x in range(hx - 7, hx + 8):
+                    if 0 <= x < w and 0 <= yy < h and (_is_sweater(arr[yy, x]) or _is_dark(arr[yy, x])):
+                        put(arr, x, yy, WHITE)
 
 
 def apply_laura(n: int, frames: dict) -> None:
@@ -493,18 +859,19 @@ def apply_laura(n: int, frames: dict) -> None:
             if k in frames:
                 patch_02(frames[k])
     if n == 4:
-        for k in ("front", "walk", "sitF", "side"):
-            if k in frames:
-                recolor_glasses(frames[k])
+        for k in frames:
+            if k in ("back", "sitB"):
+                continue
+            bold_glasses(frames[k], side=k in ("side", "walk"))
     if n == 6:
         for k in frames:
-            shave_head(frames[k])
+            shave_head(frames[k], back=k in ("back", "sitB"))
     if n == 7:
         for k in frames:
             caramel_tips(frames[k])
     if n == 8:
         for k in frames:
-            patch_08(frames[k], back=k in ("back", "sitB"))
+            dress_08(frames[k], back=k in ("back", "sitB"), side=k in ("side", "walk"))
 
 
 def flip_h(arr: np.ndarray) -> np.ndarray:
@@ -523,7 +890,7 @@ def process_one(n: int, figs: list[np.ndarray]) -> dict[str, Image.Image]:
     raw["sitF"] = strip_chair(raw["sitF"], back=False)
     # concept sit_back is almost all chair; keep the person's back crop
     # from crown through upper back so seating can show head+shoulders.
-    raw["sitB"] = sit_from_back(raw["back"])
+    raw["sitB"] = sit_from_back(raw["back"], tall=(n == 8))
     for name in list(raw):
         raw[name] = pad_canvas(raw[name])
     apply_laura(n, raw)
@@ -553,7 +920,7 @@ def make_lineup(fronts: list[Image.Image], concepts: list[Image.Image]) -> Image
     H = title + cell_h + 28 + cell_h + 36
     out = Image.new("RGBA", (W, H), (220, 216, 210, 255))
     d = ImageDraw.Draw(out)
-    d.text((pad, 10), "cast HD v3  ·  concept crop  |  our crop (same pixels + Laura edits)",
+    d.text((pad, 10), "cast HD v4  ·  concept crop  |  ours (same pixels + bold Laura edits)",
            fill=(50, 40, 38, 255), font=_font(16))
     for i, (ours, con) in enumerate(zip(fronts, concepts)):
         x = pad + i * (cell_w + pad)
@@ -590,7 +957,7 @@ def make_frames(all_frames: list[dict]) -> Image.Image:
     H = title + 8 * ch + 8
     out = Image.new("RGBA", (W, H), (220, 216, 210, 255))
     d = ImageDraw.Draw(out)
-    d.text((pad, 6), "cast HD v3 frames  ·  native crops", fill=(50, 40, 38, 255), font=_font(14))
+    d.text((pad, 6), "cast HD v4 frames  ·  native crops + bold 04/06/08", fill=(50, 40, 38, 255), font=_font(14))
     for r, frames in enumerate(all_frames):
         for c, k in enumerate(keys):
             im = frames[k]
@@ -601,24 +968,52 @@ def make_frames(all_frames: list[dict]) -> Image.Image:
     return out
 
 
-def head_x4(im: Image.Image) -> Image.Image:
+def head_x4(im: Image.Image, body: bool = False) -> Image.Image:
     bb = im.getbbox() or (0, 0, im.size[0], im.size[1])
-    # head is the top ~45% of the opaque box
+    # head is the top ~45% of the opaque box; 08 needs torso for the outfit
     x0, y0, x1, y1 = bb
-    y1 = y0 + max(80, int((y1 - y0) * 0.48))
+    frac = 0.78 if body else 0.48
+    y1 = y0 + max(80, int((y1 - y0) * frac))
     x0 = max(0, x0 - 8)
     x1 = min(im.size[0], x1 + 8)
     crop = im.crop((x0, y0, x1, y1))
     return zoom(crop, 4)
 
 
+def make_cutout_check(all_frames: list[dict]) -> Image.Image:
+    """All 8 idle_front + sit_front + sit_back on #222 and #fff."""
+    keys = ("idle_front", "sit_front", "sit_back")
+    cell_w, cell_h = 170, 290
+    pad, title = 12, 36
+    W = pad + 8 * (cell_w + 8)
+    H = title + 2 * (3 * (cell_h + 8)) + 20
+    out = Image.new("RGBA", (W, H), (160, 160, 160, 255))
+    d = ImageDraw.Draw(out)
+    d.text((pad, 8), "cast cutout check  ·  top #222  ·  bottom #fff  ·  idle / sitF / sitB",
+           fill=(30, 30, 30, 255), font=_font(14))
+    for row, bg in enumerate(((34, 34, 34, 255), (255, 255, 255, 255))):
+        for i, frames in enumerate(all_frames):
+            for c, k in enumerate(keys):
+                im = frames[k]
+                bb = im.getbbox()
+                body = im.crop(bb) if bb else im
+                cell = Image.new("RGBA", (cell_w, cell_h), bg)
+                ox = (cell_w - body.size[0]) // 2
+                oy = 8
+                cell.paste(body, (ox, oy), body)
+                x = pad + i * (cell_w + 8)
+                y = title + row * (3 * (cell_h + 8)) + c * (cell_h + 8)
+                out.paste(cell, (x, y))
+    return out
+
+
 def write_cast_md():
-    text = """# Cast · 8 Soul Knight chibi（HD v3, concept crops）
+    text = """# Cast · 8 Soul Knight chibi（HD v4, concept crops）
 
 > Native crops from the 16:9 concept sheets · shared 168×272 canvas · no 4px crush.
 > Concept sheets are **not** in git.
 
-Laura edits only: 04 black rims, 06 shaved scalp, 07 caramel tips, 08 front part + collar + necklace.
+Laura edits (obvious at 1×): 04 bold 2-art-px black glasses, 06 shaved smaller skull, 07 caramel tips, 08 dress shirt collar / cuffs / gold pendant / knit.
 
 | ID | 像素辨认点 |
 |----|------------|
@@ -666,23 +1061,24 @@ def main():
 
     lineup = make_lineup(fronts, concepts)
     frames_sheet = make_frames(all_frames)
+    cutout = make_cutout_check(all_frames)
     for dest in (PREVIEW, ARTIFACT, REVIEW):
         dest.mkdir(parents=True, exist_ok=True)
         lineup.save(dest / "cast_hd_lineup.png")
-        lineup.save(dest / "cast_hd_lineup_v3.png")
+        lineup.save(dest / "cast_hd_lineup_v4.png")
         frames_sheet.save(dest / "cast_hd_frames.png")
+        cutout.save(dest / "cast_cutout_check.png")
 
-    # 4× head crops of 04 and 06
-    for n, tag in ((4, "04"), (6, "06")):
+    for n, tag in ((4, "04"), (6, "06"), (8, "08")):
         fr = all_frames[n - 1]
         for view, key in (("front", "idle_front"), ("back", "idle_back")):
-            big = head_x4(fr[key])
+            big = head_x4(fr[key], body=(n == 8))
             name = f"cast_{tag}_{view}_x4.png"
             for dest in (PREVIEW, ARTIFACT, REVIEW):
                 big.save(dest / name)
 
     write_cast_md()
-    print("Done HD cast v3 (native concept crops).")
+    print("Done HD cast v4 (bold 04/06/08).")
 
 
 if __name__ == "__main__":

@@ -1,9 +1,9 @@
-# Cast · 8 Soul Knight chibi（HD v3, concept crops）
+# Cast · 8 Soul Knight chibi（HD v4, concept crops）
 
 > Native crops from the 16:9 concept sheets · shared 168×272 canvas · no 4px crush.
 > Concept sheets are **not** in git.
 
-Laura edits only: 04 black rims, 06 shaved scalp, 07 caramel tips, 08 front part + collar + necklace.
+Laura edits (obvious at 1×): 04 bold 2-art-px black glasses, 06 shaved smaller skull, 07 caramel tips, 08 dress shirt collar / cuffs / gold pendant / knit.
 
 | ID | 像素辨认点 |
 |----|------------|
