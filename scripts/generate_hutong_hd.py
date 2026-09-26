@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Hutong office at the same art-pixel size as the HD cast (block = 4).
 
-Art canvas 320×240. Previews are 4× NN so the room is 1280×960
+Art canvas 320×320. Previews are 4× NN so the room is 1280×1280
 (1 art pixel = 4 screen pixels). Matches uploads/hutong_bg_concept.png:
 white wall, baseboard, side walls, ttc + TRUE/TALENT/CENTER, two rows of
 7 frames, thick light-wood desks, 2-drawer cabinets, HD office chairs.
@@ -39,21 +39,21 @@ from pxlib import (  # noqa: E402
 ARTIFACT = Path("/opt/cursor/artifacts/screenshots")
 HD_DIR = ASSETS / "characters_hd"
 
-HUT_W, HUT_H = 320, 288
-VIEW_ZOOM = 4  # 1280×1152 display
+HUT_W, HUT_H = 320, 320
+VIEW_ZOOM = 4  # 1280×1280 display
 HUTONG_NORTH = ("cast_01", "cast_02", "cast_03", "cast_04")
 HUTONG_SOUTH = ("cast_05", "cast_06", "cast_07", "cast_08")
 SEATS_X = (48, 117, 186, 255)
 
 WALL_H = 54
 FAR_DESK_Y = 50
-FAR_TOP, FAR_FRONT = 18, 16
-FAR_CHAIR_Y = 118
-WALK_Y = 176
-BOT_CHAIR_Y = 220
-BOT_DESK_Y = 242
-NEAR_TOP, NEAR_FRONT = 24, 18
-V2_WALK_Y = 156
+FAR_TOP, FAR_FRONT = 18, 20
+FAR_CHAIR_Y = 122
+WALK_Y = 216
+BOT_CHAIR_Y = 248
+BOT_DESK_Y = 272
+NEAR_TOP, NEAR_FRONT = 22, 22
+V2_WALK_Y = 176
 
 # sit: ~70% of a 68px canvas is torso+head ≈ 48. Keep ~32px above backrest.
 SIT_ABOVE_BACK = 34
@@ -104,15 +104,19 @@ def hutong_cast(cid, view):
 
 
 def _star_base(d, cx, cy):
+    """Five-caster base — concept has a hub + 5 legs ending in round feet."""
     md = shade(C["chair"], 18)
     rect(d, [cx - 1, cy - 1, cx + 1, cy + 1], C["chair_h"])
-    legs = ((0, -6), (6, -2), (4, 6), (-4, 6), (-6, -2))
+    d.point((cx, cy), fill=C["mesh_hi"])
+    legs = ((0, -7), (7, -2), (5, 6), (-5, 6), (-7, -2))
     for dx, dy in legs:
         steps = max(abs(dx), abs(dy), 1)
         for i in range(1, steps + 1):
             d.point((cx + int(round(dx * i / steps)), cy + int(round(dy * i / steps))), fill=C["chair"])
-        d.point((cx + dx, cy + dy), fill=INK)
+        # caster dot
+        d.point((cx + dx, cy + dy), fill=C["chair_h"])
         d.point((cx + dx + 1, cy + dy), fill=md)
+        d.point((cx + dx, cy + dy + 1), fill=INK)
 
 
 def _arm_pad(d, cx, cy):
@@ -122,59 +126,73 @@ def _arm_pad(d, cx, cy):
 
 
 def chair_north() -> Image.Image:
-    """From behind: short mesh (lower back), arms, seat highlight, 5-star."""
-    img = new(28, 30)
+    """From behind: mesh back, arms, seat highlight, 5-star — concept far chairs."""
+    img = new(30, 34)
     d = ImageDraw.Draw(img)
-    for i, (x0, x1, y) in enumerate(((8, 19, 29), (7, 20, 28))):
+    for i, (x0, x1, y) in enumerate(((8, 21, 33), (7, 22, 32))):
         hline(d, x0, x1, y, (22, 20, 24, 70 - i * 18))
-    _star_base(d, 13, 23)
-    vline(d, 12, 17, 22, C["chair"])
-    vline(d, 13, 17, 22, C["chair_h"])
-    vline(d, 14, 17, 22, C["chair"])
-    rect(d, [7, 15, 20, 18], C["chair_h"])
-    hline(d, 7, 20, 15, shade(C["chair_h"], 28))
-    hline(d, 8, 19, 16, C["mesh_hi"])
-    box1(d, 2, 13, 6, 18, C["chair"], C["chair_h"])
-    box1(d, 21, 13, 25, 18, C["chair"], C["chair_h"])
-    _arm_pad(d, 4, 12)
-    _arm_pad(d, 23, 12)
-    # short mesh — lower back only
-    rect(d, [7, 1, 20, 14], C["mesh_d"])
-    rect(d, [8, 2, 19, 13], C["mesh"])
-    for y in range(3, 13):
-        for x in range(9, 19):
-            hi = (x + y) % 2 == 0 or (10 <= x <= 16 and 5 <= y <= 8)
+    _star_base(d, 14, 26)
+    vline(d, 13, 20, 25, C["chair"])
+    vline(d, 14, 20, 25, C["chair_h"])
+    vline(d, 15, 20, 25, C["chair"])
+    # seat + cushion
+    rect(d, [7, 18, 22, 21], C["chair_h"])
+    hline(d, 7, 22, 18, shade(C["chair_h"], 28))
+    hline(d, 8, 21, 19, C["mesh_hi"])
+    hline(d, 7, 22, 21, C["chair"])
+    # arms
+    box1(d, 2, 15, 6, 21, C["chair"], C["chair_h"])
+    box1(d, 23, 15, 27, 21, C["chair"], C["chair_h"])
+    _arm_pad(d, 4, 14)
+    _arm_pad(d, 25, 14)
+    # mesh backrest — short enough that seated heads sit above it
+    rect(d, [7, 1, 22, 17], C["mesh_d"])
+    rect(d, [8, 2, 21, 16], C["mesh"])
+    for y in range(3, 16):
+        for x in range(9, 21):
+            hi = (x + y) % 2 == 0 or (11 <= x <= 18 and 6 <= y <= 10)
             d.point((x, y), fill=C["mesh_hi"] if hi else C["mesh"])
-    hline(d, 10, 17, 5, shade(C["mesh_hi"], 18))
-    hline(d, 8, 19, 2, C["chair_h"])
-    hline(d, 8, 19, 13, C["chair"])
-    vline(d, 8, 2, 13, C["chair_h"])
-    vline(d, 19, 2, 13, C["chair"])
+    hline(d, 10, 19, 5, shade(C["mesh_hi"], 22))
+    hline(d, 9, 20, 2, C["chair_h"])
+    hline(d, 8, 21, 16, C["chair"])
+    vline(d, 8, 2, 16, C["chair_h"])
+    vline(d, 21, 2, 16, C["chair"])
     return outline_sprite(img)
 
 
 def chair_south() -> Image.Image:
-    """From the front: short solid back peeks at shoulders, no star."""
-    img = new(30, 22)
+    """From the front: tall solid back + arms (concept near chairs, not a sofa)."""
+    img = new(32, 36)
     d = ImageDraw.Draw(img)
-    rect(d, [7, 15, 22, 19], C["chair_h"])
-    hline(d, 8, 21, 16, C["mesh_hi"])
-    rect(d, [6, 3, 23, 14], C["chair"])
-    rect(d, [7, 4, 22, 13], C["chair_h"])
-    hline(d, 8, 21, 5, shade(C["chair_h"], 24))
-    hline(d, 9, 20, 6, C["mesh_hi"])
-    rect(d, [3, 2, 7, 8], C["chair"])
-    rect(d, [22, 2, 26, 8], C["chair"])
-    rect(d, [4, 3, 6, 7], C["chair_h"])
-    rect(d, [23, 3, 25, 7], C["chair_h"])
-    box1(d, 1, 10, 5, 18, C["chair"], C["chair_h"])
-    box1(d, 24, 10, 28, 18, C["chair"], C["chair_h"])
-    _arm_pad(d, 3, 9)
-    _arm_pad(d, 26, 9)
+    # 3/4 top of the backrest
+    hline(d, 9, 22, 1, C["chair_h"])
+    hline(d, 8, 23, 2, shade(C["chair_h"], 16))
+    # tall rounded solid back
+    rect(d, [7, 3, 24, 22], C["chair"])
+    rect(d, [8, 4, 23, 21], C["chair_h"])
+    hline(d, 10, 21, 5, shade(C["chair_h"], 28))
+    hline(d, 11, 20, 6, C["mesh_hi"])
+    vline(d, 8, 4, 21, shade(C["chair_h"], 18))
+    vline(d, 23, 4, 21, C["chair"])
+    # flared top corners
+    rect(d, [5, 3, 8, 10], C["chair"])
+    rect(d, [23, 3, 26, 10], C["chair"])
+    rect(d, [6, 4, 7, 9], C["chair_h"])
+    rect(d, [24, 4, 25, 9], C["chair_h"])
+    # seat
+    rect(d, [8, 23, 23, 27], C["chair_h"])
+    hline(d, 9, 22, 24, C["mesh_hi"])
+    hline(d, 8, 23, 27, C["chair"])
+    # arms + pads
+    box1(d, 1, 16, 6, 27, C["chair"], C["chair_h"])
+    box1(d, 25, 16, 30, 27, C["chair"], C["chair_h"])
+    _arm_pad(d, 3, 15)
+    _arm_pad(d, 28, 15)
     return outline_sprite(img)
 
 
-def _drawer(d, x0, y0, w=22, h=12):
+def _drawer(d, x0, y0, w=24, h=18):
+    """Two stacked drawers, each with a handle."""
     face, dark = C["drawer"], C["drawer_d"]
     rect(d, [x0, y0, x0 + w - 1, y0 + h - 1], face)
     hline(d, x0, x0 + w - 1, y0, INK)
@@ -184,10 +202,13 @@ def _drawer(d, x0, y0, w=22, h=12):
     mid = y0 + h // 2
     hline(d, x0 + 1, x0 + w - 2, mid, dark)
     hline(d, x0 + 1, x0 + w - 2, y0 + 1, shade(face, 22))
-    hx0, hx1 = x0 + w // 2 - 3, x0 + w // 2 + 2
+    hline(d, x0 + 1, x0 + w - 2, mid + 1, shade(face, 16))
+    hx0, hx1 = x0 + w // 2 - 4, x0 + w // 2 + 3
     for hy in (y0 + h // 4, y0 + (3 * h) // 4):
         hline(d, hx0, hx1, hy, dark)
         hline(d, hx0, hx1, hy + 1, INK)
+        d.point((hx0, hy), fill=INK)
+        d.point((hx1, hy), fill=INK)
 
 
 def desk_sprite(w, top_h, front_h, drawers, legs=True) -> Image.Image:
@@ -208,9 +229,9 @@ def desk_sprite(w, top_h, front_h, drawers, legs=True) -> Image.Image:
     hline(d, 1, w - 2, top_h, shade(C["desk_f"], 26))
     dither(d, 2, top_h + 3, w - 3, top_h + front_h - 2, shade(C["desk_f"], -14), 4)
     rect(d, [w, 1, w + 2, top_h + front_h - 1], C["desk_e"])
-    cab_h = min(front_h - 2, 14)
+    cab_h = min(front_h - 2, 18)
     for cx in drawers:
-        dw = 22
+        dw = 24
         x0 = max(4, min(w - dw - 3, cx - dw // 2))
         _drawer(d, x0, top_h + front_h - cab_h, dw, cab_h)
     if legs:
@@ -286,30 +307,35 @@ def draw_ttc(d, x, y):
 
 def _plaque(d, x, y, s=12):
     box1(d, x, y, x + s - 1, y + s - 1, C["mat"], C["frame"])
+    hline(d, x, x + s - 1, y, shade(C["frame"], -18))
+    vline(d, x, y, y + s - 1, shade(C["frame"], -18))
     hline(d, x + 1, x + s - 2, y + 1, shade(C["frame"], 16))
     vline(d, x + 1, y + 1, y + s - 2, shade(C["frame"], 16))
-    rect(d, [x + 3, y + 3, x + s - 4, y + s - 4], shade(C["mat"], -4))
+    rect(d, [x + 3, y + 3, x + s - 4, y + s - 4], shade(C["mat"], -8))
 
 
 def wall(d):
-    # side walls in perspective (darker receding planes)
-    rect(d, [0, 0, 7, WALL_H - 1], C["side"])
-    rect(d, [HUT_W - 8, 0, HUT_W - 1, WALL_H - 1], C["side"])
-    vline(d, 7, 0, WALL_H - 1, C["side_d"])
-    vline(d, HUT_W - 8, 0, WALL_H - 1, C["side_d"])
+    # side walls in perspective — receding planes that widen toward the camera
+    for x in range(0, 14):
+        t = x / 13
+        col = shade(C["side"], int(-22 + 22 * t))
+        vline(d, x, 0, WALL_H - 1, col)
+        vline(d, HUT_W - 1 - x, 0, WALL_H - 1, col)
+    vline(d, 13, 0, WALL_H - 1, C["side_d"])
+    vline(d, HUT_W - 14, 0, WALL_H - 1, C["side_d"])
     # back wall
-    rect(d, [8, 0, HUT_W - 9, WALL_H - 1], C["wall"])
-    hline(d, 8, HUT_W - 9, 0, shade(C["wall"], -8))
-    # subtle ceiling wash
-    dither(d, 8, 0, HUT_W - 9, 6, C["wall_s"], 4)
+    rect(d, [14, 0, HUT_W - 15, WALL_H - 1], C["wall"])
+    hline(d, 14, HUT_W - 15, 0, shade(C["wall"], -8))
+    dither(d, 14, 0, HUT_W - 15, 6, C["wall_s"], 4)
     # baseboard
-    rect(d, [8, WALL_H - 5, HUT_W - 9, WALL_H - 2], C["base"])
-    hline(d, 8, HUT_W - 9, WALL_H - 5, C["base_d"])
+    rect(d, [14, WALL_H - 6, HUT_W - 15, WALL_H - 2], C["base"])
+    hline(d, 14, HUT_W - 15, WALL_H - 6, C["base_d"])
+    hline(d, 14, HUT_W - 15, WALL_H - 3, shade(C["base"], 16))
     hline(d, 0, HUT_W - 1, WALL_H - 1, INK)
     hline(d, 0, HUT_W - 1, WALL_H - 2, C["lip"])
-    draw_ttc(d, 14, 10)
-    size, pitch, col0 = 11, 16, 168
-    for r, fy in enumerate((8, 26)):
+    draw_ttc(d, 18, 10)
+    size, pitch, col0 = 11, 16, 172
+    for fy in (7, 24):
         for c in range(7):
             _plaque(d, col0 + c * pitch, fy, size)
 
@@ -366,7 +392,8 @@ def row(room, desk_y, chair_y, who, facing):
     for i, cx in enumerate(SEATS_X):
         chx = cx - chair.size[0] // 2
         if not who[i]:
-            ey = chair_y - (12 if not north else 0)
+            # empty south chairs sit fully above the desk so the tall back reads
+            ey = chair_y - (16 if not north else 0)
             blit(room, chair, chx, ey)
             continue
         if north:
@@ -411,15 +438,15 @@ def crops(v1):
     art.mkdir(parents=True, exist_ok=True)
     top = SEATS_X[2]
     bot = SEATS_X[1]
-    save(zoom(v1.crop((top - 28, FAR_CHAIR_Y - 40, top + 28, FAR_CHAIR_Y + 34)), 2),
+    save(zoom(v1.crop((top - 28, FAR_CHAIR_Y - 44, top + 28, FAR_CHAIR_Y + 36)), 2),
          art / "hutong_hd_seat_top_x2.png")
-    save(zoom(v1.crop((bot - 30, BOT_DESK_Y - 44, bot + 30, BOT_DESK_Y + 22)), 2),
+    save(zoom(v1.crop((bot - 30, BOT_DESK_Y - 48, bot + 30, BOT_DESK_Y + 24)), 2),
          PREVIEW / "hutong_hd_seat_top_x2.png")
-    save(zoom(v1.crop((top - 28, FAR_CHAIR_Y - 40, top + 28, FAR_CHAIR_Y + 34)), 2),
+    save(zoom(v1.crop((top - 28, FAR_CHAIR_Y - 44, top + 28, FAR_CHAIR_Y + 36)), 2),
          PREVIEW / "hutong_hd_seat_top_x2.png")
-    save(zoom(v1.crop((bot - 30, BOT_DESK_Y - 44, bot + 30, BOT_DESK_Y + 22)), 2),
+    save(zoom(v1.crop((bot - 30, BOT_DESK_Y - 48, bot + 30, BOT_DESK_Y + 24)), 2),
          art / "hutong_hd_seat_bot_x2.png")
-    save(zoom(v1.crop((bot - 30, BOT_DESK_Y - 44, bot + 30, BOT_DESK_Y + 22)), 2),
+    save(zoom(v1.crop((bot - 30, BOT_DESK_Y - 48, bot + 30, BOT_DESK_Y + 24)), 2),
          PREVIEW / "hutong_hd_seat_bot_x2.png")
 
 

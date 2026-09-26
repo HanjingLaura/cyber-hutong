@@ -8,7 +8,7 @@
       "id": "hutong",
       "title": "胡同工位区",
       "src": "assets/scenes/hutong/scene_hutong.png",
-      "walk_y": 176,
+      "walk_y": 216,
       "line": "这边还能放杯子。",
       "beat_t": "09:20",
       "action": "sit_aisle",
@@ -80,14 +80,14 @@
       ],
       "canvas": [
         320,
-        288
+        320
       ]
     },
     {
       "id": "hutong_reverse",
       "title": "胡同 · 反打",
       "src": "assets/scenes/hutong_reverse/scene_hutong_reverse.png",
-      "walk_y": 156,
+      "walk_y": 176,
       "line": "从这边看是正脸。",
       "beat_t": "09:21",
       "action": "look_back",
@@ -160,7 +160,7 @@
       "camera_only": true,
       "canvas": [
         320,
-        288
+        320
       ]
     },
     {

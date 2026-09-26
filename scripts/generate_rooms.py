@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 """11 Laura-named scenes — 2.5D refined pixel.
 
-Most rooms stay 256×192. Hutong / hutong_reverse are 640×640 3/4 oblique
-offices (desk tops + front faces, drawers, mesh/front chairs). All 8
-are seated. People and chairs are 3×, with a walkable aisle.
+Most rooms stay 256×192. Hutong / hutong_reverse are 320×288 HD 3/4
+offices (same art-pixel size as the HD cast). All 8 are seated.
 """
 from __future__ import annotations
 

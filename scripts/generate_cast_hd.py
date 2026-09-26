@@ -448,42 +448,32 @@ def patch_03(frames: dict) -> None:
     put(a, min(a.shape[1] - 2, cx + 8), cy + 2, GOLD)
 
 
+def _is_glass_metal(c) -> bool:
+    r, g, b, a = (c[0], c[1], c[2], c[3] if len(c) > 3 else 255)
+    if a < 80:
+        return False
+    pale = r > 150 and g > 150 and b > 150 and abs(int(r) - int(g)) < 45
+    grey = abs(int(r) - int(g)) < 32 and abs(int(g) - int(b)) < 32 and 60 < r < 220
+    return pale or grey
+
+
 def _recolor_glasses(arr: np.ndarray) -> None:
-    """Solid black round frames over the concept glasses. Face band only."""
+    """Keep the concept's thin 1px rounds; paint the existing rims black."""
     h, w = arr.shape[:2]
     cx, cy = face_center(arr)
-    ey = cy
-    # wipe pale/grey frame pixels in the eye band back to skin first
-    for y in range(max(0, ey - 5), min(h, ey + 6)):
-        for x in range(max(0, cx - 11), min(w, cx + 12)):
-            r, g, b, a = arr[y, x]
-            if a < 80 or _is_skin(arr[y, x]):
+    for y in range(max(0, cy - 6), min(h, cy + 6)):
+        for x in range(max(0, cx - 12), min(w, cx + 13)):
+            if _is_skin(arr[y, x]) or arr[y, x, 3] < 80:
                 continue
-            pale = r > 170 and g > 170 and b > 170
-            grey = abs(int(r) - int(g)) < 18 and abs(int(g) - int(b)) < 18 and 90 < r < 200
-            if pale or grey:
-                arr[y, x] = SKIN
-    # 15×5 round black frames, two lenses
-    stamp = [
-        "  ####   ####  ",
-        " #    # #    # ",
-        " # .. #=# .. # ",
-        " #    # #    # ",
-        "  ####   ####  ",
-    ]
-    x0 = cx - len(stamp[0]) // 2
-    y0 = ey - 2
-    for dy, row in enumerate(stamp):
-        for dx, ch in enumerate(row):
-            x, y = x0 + dx, y0 + dy
-            if ch == "#":
-                put(arr, x, y, INK)
-            elif ch == "=":
-                put(arr, x, y, INK)
-            elif ch == ".":
-                put(arr, x, y, SKIN)
-    put(arr, cx - 3, ey + 4, BLUSH)
-    put(arr, cx + 3, ey + 4, BLUSH)
+            if _is_dark(arr[y, x]):
+                continue
+            if _is_glass_metal(arr[y, x]):
+                arr[y, x] = INK
+    # 1px bridge if the concept rim does not already cross the nose
+    if _is_skin(arr[cy, cx]):
+        put(arr, cx, cy, INK)
+    put(arr, cx - 3, cy + 4, BLUSH)
+    put(arr, cx + 3, cy + 4, BLUSH)
 
 
 def patch_04(frames: dict) -> None:
@@ -491,18 +481,16 @@ def patch_04(frames: dict) -> None:
         _recolor_glasses(frames[key])
     a = frames["side"]
     cx, cy = face_center(a)
-    for y, xs in (
-        (cy - 2, (cx + 1, cx + 2, cx + 3)),
-        (cy - 1, (cx, cx + 1, cx + 3, cx + 4)),
-        (cy,     (cx, cx + 1, cx + 3, cx + 4)),
-        (cy + 1, (cx + 1, cx + 2, cx + 3)),
-    ):
-        for x in xs:
-            put(a, x, y, INK)
-    put(a, cx + 2, cy - 1, SKIN)
-    put(a, cx + 2, cy, INK)
-    for x in range(cx + 5, min(a.shape[1] - 1, cx + 9)):
-        put(a, x, cy, INK)
+    for y in range(cy - 4, cy + 5):
+        for x in range(max(0, cx - 2), min(a.shape[1] - 1, cx + 11)):
+            if a[y, x, 3] < 80 or _is_skin(a[y, x]) or _is_dark(a[y, x]):
+                continue
+            if _is_glass_metal(a[y, x]):
+                a[y, x] = INK
+    # thin temple along the existing side-lens if the concept left a gap
+    if _is_skin(a[cy, min(a.shape[1] - 2, cx + 6)]):
+        put(a, min(a.shape[1] - 2, cx + 6), cy, INK)
+        put(a, min(a.shape[1] - 2, cx + 7), cy, INK)
 
 
 def patch_05(frames: dict) -> None:
@@ -569,24 +557,34 @@ def patch_08(frames: dict) -> None:
         h, w = a.shape[:2]
         cx, cy = face_center(a)
         if key in ("front", "sitF", "walk", "back", "sitB"):
-            put(a, cx, 6, SKIN)
-            put(a, cx, 7, SKIN_S)
-            put(a, cx, 8, HAIR_K2)
+            top = next((y for y in range(h) if a[y, cx, 3] > 80), 4)
+            for y in range(top + 1, min(top + 5, cy - 6)):
+                if a[y, cx, 3] > 80 and not _is_skin(a[y, cx]):
+                    put(a, cx, y, SKIN)
         if key in ("front", "sitF", "walk"):
             neck = cy + 9
-            for x in range(cx - 4, cx + 5):
-                put(a, x, neck, WHITE)
-            for x in range(cx - 4, cx + 5):
-                if 0 <= neck + 1 < h and _is_dark(a[neck + 1, x]):
-                    put(a, x, neck + 1, KNIT if x % 2 == 0 else SHIRT_BLK)
+            for y in range(cy + 6, min(cy + 16, h)):
+                darks = [
+                    x for x in range(max(0, cx - 6), min(w, cx + 7))
+                    if _is_dark(a[y, x])
+                ]
+                if len(darks) >= 6:
+                    neck = y
+                    break
+            for x in range(cx - 5, cx + 6):
+                if 0 <= neck < h and (_is_dark(a[neck, x]) or _is_skin(a[neck, x])):
+                    put(a, x, neck, WHITE)
+            put(a, cx - 5, neck + 1, WHITE)
+            put(a, cx + 5, neck + 1, WHITE)
             put(a, cx - 2, neck + 3, WHITE)
             put(a, cx + 2, neck + 3, WHITE)
-            put(a, cx, neck + 4, WHITE)
+            put(a, cx - 1, neck + 4, WHITE)
+            put(a, cx + 1, neck + 4, WHITE)
+            put(a, cx, neck + 5, WHITE)
         if key in ("back", "sitB"):
-            put(a, cx, 7, SKIN)
-            put(a, cx - 1, cy + 9, WHITE)
-            put(a, cx, cy + 9, WHITE)
-            put(a, cx + 1, cy + 9, WHITE)
+            for x in range(cx - 3, cx + 4):
+                if 0 <= cy + 9 < h and _is_dark(a[cy + 9, x]):
+                    put(a, x, cy + 9, WHITE)
 
 
 PATCH = {
