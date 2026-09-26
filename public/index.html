@@ -73,6 +73,7 @@
     }
     .x4 { width: calc(32px * 4); height: auto; }
     .room { width: 384px; max-width: 100%; height: auto; }
+    .room.hutong-lg { width: 768px; }
     .sheet { width: min(100%, 720px); height: auto; }
     .beat {
       display: grid;
@@ -86,6 +87,8 @@
     }
     @media (max-width: 720px) { .beat { grid-template-columns: 1fr; } }
     .beat img { width: 100%; max-width: 320px; height: auto; }
+    .beat:has(.hutong-lg) { grid-template-columns: 480px 1fr; }
+    .beat img.hutong-lg { max-width: 480px; }
     .beat .t { color: var(--gold); font-size: .8rem; }
     .beat h3 { margin: .2rem 0; color: var(--neon); }
     .bubble {
@@ -108,6 +111,10 @@
       border: 1px solid #2a3148;
       background: #101218;
       overflow: hidden;
+    }
+    #stage-wrap.wide {
+      width: min(100%, 960px);
+      aspect-ratio: 512 / 480;
     }
     #stage { width: 100%; height: 100%; image-rendering: pixelated; display: block; }
     #say {
@@ -134,7 +141,7 @@
 <body>
   <header>
     <h1>赛博胡同 Cyber Hutong</h1>
-      <p class="sub">精致像素 v3 · 256×192 · 11 房 · 八人 p1–p8 一版 · Online-control / Offline-agent / Behavior-learning · 蒸馏只冷启动 · 无后端</p>
+      <p class="sub">精致像素 v4 · 胡同 512×480 · 其他房 256×192 · 11 房 · 八人 p1–p8 一版 · Online-control / Offline-agent / Behavior-learning · 蒸馏只冷启动 · 无后端</p>
     <nav>
       <a href="#gallery" data-tab="gallery">画廊</a>
       <a href="#day" data-tab="day">一天故事板</a>
@@ -181,7 +188,7 @@
     <div id="walk" class="panel">
       <section>
         <h2>房间漫游</h2>
-        <p class="note">点房间切换。cast_01 走一个往返。画布 256×192。</p>
+        <p class="note">点房间切换。cast_01 走一个往返。胡同画布 512×480（角色整数 2×），其他房 256×192。</p>
         <div class="chips" id="room-chips"></div>
         <div id="stage-wrap">
           <canvas id="stage" width="256" height="192"></canvas>
@@ -204,11 +211,11 @@
   <script>
     const ROOMS = [
       { id:"hutong", title:"胡同工位区", src:"assets/scenes/hutong/scene_hutong.png",
-        line:"这边还能放杯子。", y:108, t:"09:20", action:"sit_aisle",
-        why:"正打：墙上 ttc + 镜框。上排后脑勺，下排正脸。只要地板、8 空桌、8 椅、人。" },
+        line:"这边还能放杯子。", y:310, t:"09:20", action:"sit_aisle",
+        why:"正打 512×480：白墙立体 ttc + 细灰框密铺。每排一张通长空桌，上排后脑勺，下排正脸。" },
       { id:"hutong_reverse", title:"胡同 · 反打", src:"assets/scenes/hutong_reverse/scene_hutong_reverse.png",
-        line:"从这边看是正脸。", y:96, t:"09:21", action:"look_back", cameraOnly:true,
-        why:"同一房间转 180°。无墙。原先后脑勺变正脸，正脸变后脑勺，左右对调。" },
+        line:"从这边看是正脸。", y:286, t:"09:21", action:"look_back", cameraOnly:true,
+        why:"同一房间转 180°，512×480。无墙。原先后脑勺变正脸，正脸变后脑勺，左右对调。" },
       { id:"elevator", title:"电梯间", src:"assets/scenes/elevator/scene_elevator.png",
         line:"先等这梯。", y:140, t:"09:12", action:"wait_lift",
         why:"米黄石材、开门、雕塑台座、屏与按钮。" },
@@ -257,7 +264,8 @@
       });
     }
     ROOMS.forEach(r => {
-      document.getElementById("rooms").appendChild(pixel(r.src, r.title + " · " + r.id, "room"));
+      const cls = r.id.startsWith("hutong") ? "room hutong-lg" : "room";
+      document.getElementById("rooms").appendChild(pixel(r.src, r.title + " · " + r.id, cls));
     });
 
     const beatsEl = document.getElementById("beats");
@@ -265,8 +273,9 @@
     [...DAY].sort((a, b) => a.t.localeCompare(b.t)).forEach((b, i) => {
       const d = document.createElement("article");
       d.className = "beat";
+      const imgCls = b.id.startsWith("hutong") ? "pixel hutong-lg" : "pixel";
       d.innerHTML = `
-        <img class="pixel" src="${b.src}" alt="${b.title}" />
+        <img class="${imgCls}" src="${b.src}" alt="${b.title}" />
         <div>
           <div class="t">${b.t} · ${String(i + 1).padStart(2, "0")} / ${String(DAY.length).padStart(2, "0")} · ${b.action}</div>
           <h3>${b.title}</h3>
@@ -288,7 +297,11 @@
     walkImgs.idle0.src = "assets/characters/cast_01/idle_front.png";
     walkImgs.idle1.src = "assets/characters/cast_01/idle_front_1.png";
     const bgCache = {};
-    let cur = 0, x = 28, dir = 1, tick = 0, walking = true;
+    let cur = 0, x = 56, dir = 1, tick = 0, walking = true;
+    const wrap = document.getElementById("stage-wrap");
+    function roomScale(room) {
+      return room.id.startsWith("hutong") ? 2 : 1;
+    }
     function loadBg(src) {
       if (bgCache[src]) return bgCache[src];
       const im = new Image();
@@ -297,11 +310,25 @@
       return im;
     }
     ROOMS.forEach(w => loadBg(w.src));
+    function syncCanvas(bg) {
+      const rw = (bg && bg.naturalWidth) || (roomScale(ROOMS[cur]) === 2 ? 512 : 256);
+      const rh = (bg && bg.naturalHeight) || (roomScale(ROOMS[cur]) === 2 ? 480 : 192);
+      if (canvas.width !== rw || canvas.height !== rh) {
+        canvas.width = rw;
+        canvas.height = rh;
+        ctx.imageSmoothingEnabled = false;
+      }
+      wrap.classList.toggle("wide", rw >= 400);
+      wrap.style.aspectRatio = rw + " / " + rh;
+    }
     function setRoom(i) {
-      cur = i; x = 28; dir = 1; walking = true;
+      cur = i;
+      const scale = roomScale(ROOMS[i]);
+      x = 28 * scale; dir = 1; walking = true;
       say.textContent = ROOMS[i].line;
-      meta.textContent = ROOMS[i].title + " · " + ROOMS[i].src;
+      meta.textContent = ROOMS[i].title + " · " + ROOMS[i].src + " · " + (scale === 2 ? "512×480" : "256×192");
       [...chips.children].forEach((b, j) => b.classList.toggle("on", j === i));
+      syncCanvas(bgCache[ROOMS[i].src]);
     }
     ROOMS.forEach((w, i) => {
       const b = document.createElement("button");
@@ -313,26 +340,32 @@
     function loop() {
       const room = ROOMS[cur];
       const bg = bgCache[room.src];
-      ctx.clearRect(0, 0, 256, 192);
-      if (bg && bg.complete) ctx.drawImage(bg, 0, 0, 256, 192);
-      else { ctx.fillStyle = "#101218"; ctx.fillRect(0, 0, 256, 192); }
+      if (bg && bg.complete && bg.naturalWidth) syncCanvas(bg);
+      const rw = canvas.width, rh = canvas.height;
+      const scale = roomScale(room);
+      ctx.clearRect(0, 0, rw, rh);
+      if (bg && bg.complete) ctx.drawImage(bg, 0, 0, rw, rh);
+      else { ctx.fillStyle = "#101218"; ctx.fillRect(0, 0, rw, rh); }
       tick++;
+      const xMin = 28 * scale, xMax = rw - 56 * scale;
       if (walking) {
-        x += dir * 0.65;
-        if (x > 200) dir = -1;
-        if (x < 28) { dir = 1; walking = false; }
+        x += dir * 0.65 * scale;
+        if (x > xMax) dir = -1;
+        if (x < xMin) { dir = 1; walking = false; }
       }
       if (!walking && tick % 180 === 0) walking = true;
       const spr = walking ? walkImgs[(tick >> 3) % 2]
         : walkImgs[(tick >> 4) % 2 ? "idle1" : "idle0"];
       if (spr && spr.complete) {
         ctx.save();
-        const dy = room.y - Math.max(0, (spr.naturalHeight || 40) - 32);
+        const sw = spr.naturalWidth || 32, sh = spr.naturalHeight || 40;
+        const dw = sw * scale, dh = sh * scale;
+        const dy = room.y - Math.max(0, dh - 32 * scale);
         if (walking && dir < 0) {
-          ctx.translate(x + (spr.naturalWidth || 32), 0);
+          ctx.translate(x + dw, 0);
           ctx.scale(-1, 1);
-          ctx.drawImage(spr, 0, dy);
-        } else ctx.drawImage(spr, x, dy);
+          ctx.drawImage(spr, 0, 0, sw, sh, 0, dy, dw, dh);
+        } else ctx.drawImage(spr, 0, 0, sw, sh, x, dy, dw, dh);
         ctx.restore();
       }
       requestAnimationFrame(loop);
