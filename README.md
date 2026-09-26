@@ -2,7 +2,7 @@
 
 精致像素 · **2.5D 可读** · 小地图高密度。v2 画质轮次见 [`design/iteration-rounds-v2.md`](design/iteration-rounds-v2.md)。当前仓库为素材 + 静态预览，无 Agent / 登录 / 数据库。
 
-Laura 当前范围：**11 个场景**（原 7 + concert / cafe / gym / mixian），八人 cast 按证件照 + 胡同合影重画并出 A/B/C，桌椅留出放杯子 / 笔记本 / 盲盒的空位。
+Laura 当前范围：**11 个场景**（原 7 + concert / cafe / gym / mixian），八人 cast 按 p1–p8 证件照各画一版（无 A/B/C），桌椅留出放杯子 / 笔记本 / 盲盒的空位。
 
 ## 产品主循环（高于画风）
 
@@ -33,12 +33,11 @@ npx --yes serve public -p 4173
 
 | 页 | URL | 看什么 |
 |----|-----|--------|
-| 画廊 | http://localhost:4173/ | 八人 sheet + A/B/C + 照片对照 + 11 房 |
+| 画廊 | http://localhost:4173/ | 八人 sheet + lineup + 11 房 |
 | 一天故事板 | http://localhost:4173/#day | 只链保留房 |
 | 房间漫游 | http://localhost:4173/#walk | 点房间切换，cast_01 走一个往返 |
 | 放大图 | `public/preview/zoomed/` | 各房 3× nearest |
-| 对照 | `public/preview/cast_photo_map.png` | 左栏像素 cue（不是真人照片）/ 右栏 A B C |
-| 多版 | `public/preview/cast_variants_sheet.png` | 八人 × A/B/C |
+| 并排 | `public/preview/cast_lineup.png` | 八人 idle_front 并排 |
 
 也可直接打开 `public/index.html`。
 
@@ -81,7 +80,7 @@ cyber-hutong/
 └── public/
     ├── index.html
     ├── assets/{characters,rooms,scenes,props,tiles,ui}/
-    └── preview/{zoomed,cast_sheet,cast_variants_sheet,cast_photo_map,room_sheet}
+    └── preview/{zoomed,cast_sheet,cast_lineup,cast_frames,room_sheet}
 ```
 
 ## 技术约定

@@ -380,7 +380,7 @@ def chair_back(jacket=False) -> Image.Image:
 def seated_facing_wall(cid) -> Image.Image:
     """Sitting back-of-head + shoulders, facing the far wall."""
     spec = next(s for s in gc.CAST if s["id"] == cid)
-    hair = (92, 62, 42, 255) if spec["id"] == "cast_06" else (28, 22, 24, 255)
+    hair = spec.get("hair_c", (28, 22, 24, 255))
     img = new(20, 22)
     d = ImageDraw.Draw(img)
     solid_shadow(d, 10, 20, 7, 2)
@@ -392,17 +392,12 @@ def seated_facing_wall(cid) -> Image.Image:
     rect(d, [4, 1, 15, 11], INK)
     rect(d, [5, 2, 14, 10], hair)
     d.point((6, 3), fill=shade(hair, 22))
-    if spec["id"] == "cast_01":
-        rect(d, [3, 14, 5, 19], (210, 168, 110, 255))
-        rect(d, [15, 14, 17, 19], (186, 140, 88, 255))
-    if spec["id"] == "cast_06":
-        rect(d, [2, 8, 5, 18], hair)
-        rect(d, [14, 8, 18, 18], hair)
-    if spec["id"] == "cast_02":
-        rect(d, [14, 8, 18, 18], hair)  # low pony
-    if spec["id"] == "cast_08":
+    if spec.get("hair_len") in ("long", "shoulder"):
         rect(d, [2, 8, 4, 18], hair)
         rect(d, [15, 8, 18, 18], hair)
+    if spec.get("hair_tip"):
+        rect(d, [3, 14, 5, 19], spec["hair_tip"])
+        rect(d, [15, 14, 17, 19], spec["hair_tip"])
     return outline_sprite(img)
 
 

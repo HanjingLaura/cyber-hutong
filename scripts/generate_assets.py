@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """赛博胡同 refined-pixel pipeline.
 
-Generates shared tiles / props / UI, then the 8-person cast (A/B/C
-variants + photo map) and the 11 Laura-named scenes.
+Generates shared tiles / props / UI, then the 8-person cast (one
+version each from p1–p8 photos) and the 11 Laura-named scenes.
 """
 from __future__ import annotations
 
