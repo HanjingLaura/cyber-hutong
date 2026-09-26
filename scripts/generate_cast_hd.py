@@ -392,50 +392,57 @@ def strip_concept_shadow(arr: np.ndarray) -> np.ndarray:
 def clean_ankles(arr: np.ndarray) -> np.ndarray:
     """Drop grey sole-bars and dangling specks; leave shoes, then the ellipse."""
     h, w = arr.shape[:2]
-
-    def tall_shoe(x, y0):
-        run = 0
-        for y in range(y0, max(0, y0 - 28), -1):
-            if arr[y, x, 3] < 80:
-                break
-            if max(arr[y, x, :3]) < 70 or _is_skin(arr[y, x]):
-                run += 1
-            else:
-                break
-        return run >= 10
-
     rows = [y for y in range(h) if (arr[y, :, 3] > 80).any()]
     if not rows:
         return arr
     bottom = rows[-1]
-    band0 = max(0, bottom - 20)
+    band0 = max(0, bottom - 24)
+
+    foot_skin = []
+    wide_sole = None
+    for y in range(band0, bottom + 1):
+        run = 0
+        best = 0
+        for x in range(w):
+            if arr[y, x, 3] > 80 and max(arr[y, x, :3]) < 70:
+                run += 1
+                best = max(best, run)
+            else:
+                run = 0
+            if _is_skin(arr[y, x]) and y > int(h * 0.70):
+                foot_skin.append(y)
+        if best >= 8:
+            wide_sole = y
+
+    if foot_skin:
+        sole_y = max(foot_skin)
+    elif wide_sole is not None:
+        sole_y = wide_sole
+    else:
+        sole_y = bottom
 
     for y in range(band0, bottom + 1):
         for x in range(w):
             if arr[y, x, 3] < 80:
                 continue
-            if _is_skin(arr[y, x]):
+            if _is_skin(arr[y, x]) and y <= sole_y:
                 continue
             r, g, b = int(arr[y, x, 0]), int(arr[y, x, 1]), int(arr[y, x, 2])
             mx = max(r, g, b)
             grey = abs(r - g) < 28 and abs(g - b) < 28 and 45 <= mx <= 200
-            if grey and not (mx < 70 and tall_shoe(x, y)):
-                arr[y, x] = 0
-
-    # drips hanging below a visible sole / shoe opening
-    for x in range(w):
-        ys = [y for y in range(band0, bottom + 1) if arr[y, x, 3] > 80]
-        if not ys:
-            continue
-        skins = [y for y in ys if _is_skin(arr[y, x])]
-        darks = [y for y in ys if max(arr[y, x, :3]) < 80]
-        if skins:
-            lo = max(skins)
-            for y in darks:
-                if y > lo:
+            if grey:
+                dark_n = 0
+                air = False
+                for dx, dy in ((-1, 0), (1, 0), (0, -1), (0, 1)):
+                    nx, ny = x + dx, y + dy
+                    if not (0 <= nx < w and 0 <= ny < h) or arr[ny, nx, 3] < 80:
+                        air = True
+                    elif max(arr[ny, nx, :3]) < 70:
+                        dark_n += 1
+                # leftover shadow sits on the silhouette; shoe leather is boxed in by ink
+                if air and dark_n < 3:
                     arr[y, x] = 0
-        for y in list(darks):
-            if arr[y, x, 3] > 80 and max(arr[y, x, :3]) < 80 and not tall_shoe(x, y):
+            elif y > sole_y and mx < 90:
                 arr[y, x] = 0
     return arr
 
@@ -676,22 +683,22 @@ def _is_blush(c):
 
 
 def _find_eyes(arr: np.ndarray):
-    """White-of-eye centroids in the face band (not hoodie / sheet)."""
+    """White-of-eye centroids, split by face center (not hoodie / one-eye median)."""
     h, w = arr.shape[:2]
+    cx, cy = face_center(arr)
     top = next((y for y in range(h) if (arr[y, :, 3] > 80).any()), 0)
     ys, xs = np.where(
         (arr[:, :, 3] > 80) & (arr[:, :, 0] > 230) & (arr[:, :, 1] > 230) & (arr[:, :, 2] > 220)
     )
-    if len(xs) < 6:
+    if len(xs) < 4:
         return []
-    keep = (ys > top + 28) & (ys < top + 88) & (xs > 20) & (xs < w - 20)
+    keep = (ys > top + 24) & (ys < min(top + 110, cy + 28)) & (xs > 16) & (xs < w - 16)
     xs, ys = xs[keep], ys[keep]
-    if len(xs) < 6:
+    if len(xs) < 4:
         return []
-    mid = int(np.median(xs))
     clusters = []
-    for mask in (xs < mid - 4, xs > mid + 4):
-        if mask.sum() >= 4:
+    for mask in (xs < cx - 4, xs > cx + 4):
+        if mask.sum() >= 3:
             clusters.append((int(round(xs[mask].mean())), int(round(ys[mask].mean()))))
     if not clusters:
         clusters.append((int(round(xs.mean())), int(round(ys.mean()))))
@@ -715,12 +722,13 @@ def _is_metal_rim(c):
     r, g, b, a = int(c[0]), int(c[1]), int(c[2]), int(c[3] if len(c) > 3 else 255)
     if a < 80:
         return False
-    # silver / sheet-metal only — not brown hair, not ink
-    if abs(r - g) >= 20 or abs(g - b) >= 20:
+    if _is_eye_white(c) or _is_blush(c) or _is_skin(c) or _is_dark(c):
         return False
-    if r <= 100 or r >= 210:
+    if abs(r - g) >= 28 or abs(g - b) >= 28:
         return False
-    if r > g + 10:
+    if r <= 70 or r >= 210:
+        return False
+    if r > g + 16:
         return False
     return True
 
@@ -731,16 +739,19 @@ def black_rims(arr: np.ndarray, side: bool = False) -> None:
     cx, fcy = face_center(arr)
     eyes = _find_eyes(arr)
     if not eyes:
-        eyes = [(cx - 16, fcy + 8), (cx + 16, fcy + 8)] if not side else [(cx + 14, fcy + 8)]
+        eyes = [(cx - 18, fcy + 6), (cx + 18, fcy + 6)] if not side else [(cx + 14, fcy + 6)]
+    elif (not side) and len(eyes) == 1:
+        ex, ey = eyes[0]
+        eyes = [(cx - abs(ex - cx), ey), (cx + abs(ex - cx), ey)]
 
     def near_eye(x, y):
-        return any(abs(x - ex) <= 20 and abs(y - ey) <= 16 for ex, ey in eyes)
+        return any(abs(x - ex) <= 22 and abs(y - ey) <= 18 for ex, ey in eyes)
 
     metal = np.zeros((h, w), bool)
-    y0 = max(0, min(p[1] for p in eyes) - 18)
-    y1 = min(h, max(p[1] for p in eyes) + 18)
-    x0 = max(0, min(p[0] for p in eyes) - 28)
-    x1 = min(w, max(p[0] for p in eyes) + 28)
+    y0 = max(0, min(p[1] for p in eyes) - 20)
+    y1 = min(h, max(p[1] for p in eyes) + 20)
+    x0 = max(0, min(p[0] for p in eyes) - 30)
+    x1 = min(w, max(p[0] for p in eyes) + 30)
     if side:
         x0, x1 = max(0, cx - 8), w
     for y in range(y0, y1):
@@ -749,29 +760,37 @@ def black_rims(arr: np.ndarray, side: bool = False) -> None:
                 continue
             if not _is_metal_rim(arr[y, x]):
                 continue
-            if _is_eye_white(arr[y, x]) or _is_blush(arr[y, x]):
+            metal[y, x] = True
+            continue
+        # also grab grey that touches an eye-white even if the centroid missed
+    for y in range(y0, y1):
+        for x in range(x0, x1):
+            if metal[y, x] or not _is_metal_rim(arr[y, x]):
                 continue
-            metal[y, x] = True
+            if any(
+                0 <= y + dy < h and 0 <= x + dx < w and _is_eye_white(arr[y + dy, x + dx])
+                for dx, dy in ((-1, 0), (1, 0), (0, -1), (0, 1), (-1, -1), (1, 1), (-1, 1), (1, -1))
+            ):
+                metal[y, x] = True
 
-    # two 1px dilates onto skin only — ~1 art-px rim, never into the lens / eye
-    for _ in range(2):
-        extra = []
-        for y in range(y0, y1):
-            for x in range(x0, x1):
-                if not metal[y, x]:
+    # one 1px dilate onto skin only — keeps diameter at the concept frames
+    extra = []
+    for y in range(y0, y1):
+        for x in range(x0, x1):
+            if not metal[y, x]:
+                continue
+            for dx, dy in ((-1, 0), (1, 0), (0, -1), (0, 1)):
+                nx, ny = x + dx, y + dy
+                if not (0 <= ny < h and 0 <= nx < w):
                     continue
-                for dx, dy in ((-1, 0), (1, 0), (0, -1), (0, 1)):
-                    nx, ny = x + dx, y + dy
-                    if not (0 <= ny < h and 0 <= nx < w):
-                        continue
-                    if metal[ny, nx] or arr[ny, nx, 3] < 80:
-                        continue
-                    if _is_eye_white(arr[ny, nx]) or _is_dark(arr[ny, nx]) or _is_blush(arr[ny, nx]):
-                        continue
-                    if _is_skin(arr[ny, nx]) or _is_metal_rim(arr[ny, nx]):
-                        extra.append((nx, ny))
-        for x, y in extra:
-            metal[y, x] = True
+                if metal[ny, nx] or arr[ny, nx, 3] < 80:
+                    continue
+                if _is_eye_white(arr[ny, nx]) or _is_dark(arr[ny, nx]) or _is_blush(arr[ny, nx]):
+                    continue
+                if _is_skin(arr[ny, nx]) or _is_metal_rim(arr[ny, nx]):
+                    extra.append((nx, ny))
+    for x, y in extra:
+        metal[y, x] = True
 
     for y in range(h):
         for x in range(w):
@@ -1003,54 +1022,51 @@ def dress_08(arr: np.ndarray, back: bool = False, side: bool = False) -> None:
     h, w = arr.shape[:2]
     cx, cy = face_center(arr)
     if back:
+        top = next((y for y in range(h) if any(arr[y, x, 3] > 80 for x in range(w))), 0)
+        # nape is under the head, never the waist / hem
+        y_lo, y_hi = top + 70, min(int(h * 0.48), top + 130)
         nape = None
         prev_w = 0
-        for y in range(max(80, h // 3), h - 16):
+        for y in range(y_lo, y_hi):
             xs = [x for x in range(w) if arr[y, x, 3] > 80]
             if not xs:
                 continue
             span = max(xs) - min(xs)
-            if prev_w > 90 and span < prev_w - 12:
+            if 28 <= span <= 56 and prev_w > 70:
                 nape = y
                 break
             prev_w = span
         if nape is None:
-            nape = min(h - 20, 180)
-        painted = 0
-        for y in range(nape, min(h, nape + 6)):
+            return
+        for y in range(nape, min(y_hi, nape + 3)):
             xs = [x for x in range(w) if arr[y, x, 3] > 80]
-            if not xs or max(xs) - min(xs) > 96:
+            if not xs or not (24 <= max(xs) - min(xs) <= 64):
                 continue
-            for x in range(cx - 16, cx + 17):
+            for x in range(cx - 12, cx + 13):
                 if _is_sweater(arr[y, x]) or _is_dark(arr[y, x]):
                     put(arr, x, y, WHITE)
-                    painted += 1
-        if painted < 8:
-            last = next((y for y in range(h - 1, 40, -1) if any(arr[y, x, 3] > 80 for x in range(w))), nape)
-            for y in range(max(40, last - 5), last + 1):
-                for x in range(cx - 16, cx + 17):
-                    if 0 <= x < w and arr[y, x, 3] > 80 and not _is_skin(arr[y, x]):
-                        put(arr, x, y, WHITE)
         return
 
     neck = _neckline(arr, cx, cy)
-    for y in range(neck - 6, neck + 3):
-        for x in range(cx - 20, cx + 21):
-            if 0 <= x < w and 0 <= y < h and arr[y, x, 3] > 80:
-                if _is_sweater(arr[y, x]) or _is_skin(arr[y, x]) or _is_dark(arr[y, x]):
-                    put(arr, x, y, WHITE)
-    if side:
-        for y in range(neck - 8, neck + 8):
-            for x in range(cx - 6, cx + 22):
+    if not side:
+        for y in range(neck - 6, neck + 3):
+            for x in range(cx - 20, cx + 21):
                 if 0 <= x < w and 0 <= y < h and arr[y, x, 3] > 80:
                     if _is_sweater(arr[y, x]) or _is_skin(arr[y, x]) or _is_dark(arr[y, x]):
-                        if y >= neck - 4 or _is_sweater(arr[y, x]):
-                            put(arr, x, y, WHITE)
-        _collar_point(arr, cx + 2, neck + 4, cx + 16, neck + 4, cx + 10, neck + 18)
-        for i in range(8):
-            put(arr, cx + 4, neck + 10 + i, GOLD)
-            put(arr, cx + 5, neck + 10 + i, GOLD)
-        put(arr, cx + 5, neck + 18, GOLD_D)
+                        put(arr, x, y, WHITE)
+    if side:
+        # small collar edge just under the chin — not a chest bar
+        chin = cy + 18
+        for y in range(0, min(h, int(h * 0.42))):
+            if any(_is_skin(arr[y, x]) and abs(x - cx) < 22 for x in range(w)):
+                chin = y
+        for y in range(chin + 1, chin + 5):
+            for x in range(cx + 4, cx + 12):
+                if 0 <= x < w and 0 <= y < h and arr[y, x, 3] > 80:
+                    if _is_sweater(arr[y, x]) or _is_dark(arr[y, x]):
+                        put(arr, x, y, WHITE)
+        put(arr, cx + 8, chin + 7, GOLD)
+        put(arr, cx + 8, chin + 8, GOLD_D)
     else:
         _collar_point(arr, cx - 20, neck - 1, cx - 2, neck - 1, cx - 12, neck + 18)
         _collar_point(arr, cx + 2, neck - 1, cx + 20, neck - 1, cx + 12, neck + 18)
@@ -1074,8 +1090,9 @@ def dress_08(arr: np.ndarray, back: bool = False, side: bool = False) -> None:
             if 0 <= x < w and 0 <= y < h and _is_sweater(arr[y, x]):
                 put(arr, x, y, KNIT)
 
-    # white cuffs + 2 rib lines just above them
-    for y in range(neck + 40, min(h - 8, neck + 90)):
+    # white cuffs + 2 rib lines just above them — never the feet
+    cuff_hi = min(h - 40, neck + 88, hem - 10)
+    for y in range(neck + 40, cuff_hi):
         skins = [x for x in range(w) if _is_skin(arr[y, x])]
         if len(skins) < 4:
             continue
