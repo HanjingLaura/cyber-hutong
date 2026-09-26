@@ -7,7 +7,7 @@
 上排 01–04 `sit_back`：头肩上背露在椅背上沿。下排 05–08 `sit_front`：整张脸到肩在桌沿之上。
 
 - `public/assets/scenes/hutong/scene_hutong.png`（1280×1280）
-- `public/preview/hutong_view1_hd_v3.png`
+- `public/preview/hutong_view1_hd_v6.png`
 - View 2 `hutong_reverse`：无墙、底沿一条，朝向对调，`walk_y=704`。
 
 不描摹真人，不提交 refs。

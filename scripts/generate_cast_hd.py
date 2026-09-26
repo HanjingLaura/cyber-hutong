@@ -51,10 +51,20 @@ PART = (214, 192, 176, 255)  # 1px centre part — skin-light, not orange
 RIM_W = 4  # 1 concept-art px (sheet block = 4)
 
 POSE_NAMES = ("side", "front", "back", "walk", "sitF", "sitB")
+REPLACE_IDS = {2, 4, 6, 8}
+KEEP_IDS = {1, 3, 5, 7}
+TARGET_STAND_H = 240  # match kept 01/03/05/07 standing body height
 
 
 def find_sheet(n: int) -> Path:
     stem = f"cast0{n}_sk"
+    if n in REPLACE_IDS:
+        for d in REF_DIRS:
+            if not d.exists():
+                continue
+            hits = sorted(d.glob(f"{stem}_v3*.png"))
+            if hits:
+                return hits[0]
     for d in REF_DIRS:
         if not d.exists():
             continue
@@ -97,21 +107,36 @@ def clean_alpha(crop: np.ndarray, bg, thr: int = 28) -> np.ndarray:
     diff = np.abs(crop.astype(np.int16) - bgv).sum(axis=2)
     luma = crop.astype(np.int16) @ np.array([30, 59, 11]) // 100
 
-    def is_bg_px(y, x):
-        if luma[y, x] < 70:
-            return False
-        r, g, b = int(crop[y, x, 0]), int(crop[y, x, 1]), int(crop[y, x, 2])
-        if r > 234 and g > 230 and b > 220:
-            return False
-        if r > 190 and r > g + 10 and r > b + 20:
-            return False
-        return _is_sheet_grey(r, g, b, bgv, thr) or diff[y, x] <= thr
+    # Silhouette hole-fill: ink/skin/coloured cloth is the figure wall.
+    # White sheet at the border is exterior. White *inside* the wall (hoodie)
+    # is not reached from the border, so it stays.
+    definite = np.zeros((h, w), bool)
+    for y in range(h):
+        for x in range(w):
+            r, g, b = int(crop[y, x, 0]), int(crop[y, x, 1]), int(crop[y, x, 2])
+            if luma[y, x] < 70:
+                definite[y, x] = True
+            elif r > 190 and 120 < g < 220 and 90 < b < 200 and r > g + 10 and r > b + 20:
+                definite[y, x] = True
+            elif not (_is_sheet_grey(r, g, b, bgv, thr) or diff[y, x] <= thr):
+                definite[y, x] = True
+
+    dil = definite.copy()
+    for y in range(h):
+        for x in range(w):
+            if definite[y, x]:
+                continue
+            for dx, dy in ((-1, 0), (1, 0), (0, -1), (0, 1)):
+                nx, ny = x + dx, y + dy
+                if 0 <= ny < h and 0 <= nx < w and definite[ny, nx]:
+                    dil[y, x] = True
+                    break
 
     seen = np.zeros((h, w), bool)
     q = deque()
 
     def try_push(x, y):
-        if 0 <= y < h and 0 <= x < w and not seen[y, x] and is_bg_px(y, x):
+        if 0 <= y < h and 0 <= x < w and not seen[y, x] and not dil[y, x]:
             seen[y, x] = True
             q.append((x, y))
 
@@ -126,27 +151,54 @@ def clean_alpha(crop: np.ndarray, bg, thr: int = 28) -> np.ndarray:
         for dx, dy in ((-1, 0), (1, 0), (0, -1), (0, 1), (-1, -1), (1, 1), (-1, 1), (1, -1)):
             try_push(x + dx, y + dy)
 
-    # trapped sheet-bg pockets (armpit, inseam, hair gaps) — exact sheet only
+    # small interior sheet pockets (armpit / inseam), not the hoodie
+    leftover = np.zeros((h, w), bool)
     for y in range(h):
         for x in range(w):
             if seen[y, x] or luma[y, x] < 70:
                 continue
+            r, g, b = int(crop[y, x, 0]), int(crop[y, x, 1]), int(crop[y, x, 2])
+            if r > 220 and g > 214 and b > 200:
+                continue
             if diff[y, x] <= 18:
-                seen[y, x] = True
+                leftover[y, x] = True
+    vis = np.zeros((h, w), bool)
+    for y0 in range(h):
+        for x0 in range(w):
+            if not leftover[y0, x0] or vis[y0, x0]:
+                continue
+            q = deque([(x0, y0)])
+            vis[y0, x0] = True
+            cells = [(x0, y0)]
+            while q:
+                x, y = q.popleft()
+                for dx, dy in ((-1, 0), (1, 0), (0, -1), (0, 1)):
+                    nx, ny = x + dx, y + dy
+                    if 0 <= ny < h and 0 <= nx < w and leftover[ny, nx] and not vis[ny, nx]:
+                        vis[ny, nx] = True
+                        q.append((nx, ny))
+                        cells.append((nx, ny))
+            if len(cells) <= 140:
+                for x, y in cells:
+                    seen[y, x] = True
 
     rgba = np.zeros((h, w, 4), np.uint8)
     rgba[..., :3] = crop
     rgba[..., 3] = np.where(seen, 0, 255)
+    # snapshot alpha so the halo pass cannot eat a white hoodie inward
+    alpha0 = rgba[..., 3].copy()
 
     for y in range(h):
         for x in range(w):
-            if rgba[y, x, 3] < 80 or luma[y, x] < 70:
+            if alpha0[y, x] < 80 or luma[y, x] < 70:
                 continue
             r, g, b = int(rgba[y, x, 0]), int(rgba[y, x, 1]), int(rgba[y, x, 2])
+            if r > 220 and g > 214 and b > 200:
+                continue
             air = False
             for dx, dy in ((-1, 0), (1, 0), (0, -1), (0, 1), (-1, -1), (1, 1)):
                 nx, ny = x + dx, y + dy
-                if not (0 <= ny < h and 0 <= nx < w) or rgba[ny, nx, 3] < 80:
+                if not (0 <= ny < h and 0 <= nx < w) or alpha0[ny, nx] < 80:
                     air = True
                     break
             if air and (_is_sheet_grey(r, g, b, bgv, thr + 24) or diff[y, x] <= thr + 28):
@@ -590,7 +642,62 @@ def strip_chair(arr: np.ndarray, back: bool = False) -> np.ndarray:
                 continue
             if max(r, g, b) < 70 or (abs(int(r) - int(g)) < 24 and abs(int(g) - int(b)) < 24 and 70 < r < 210):
                 arr[y, x] = (0, 0, 0, 0)
+    # lap cut: drop leftover office-chair seat / stem under the hands.
+    # Never use the face — after BOX-downscale the hands can fail a 4-px skin test.
+    last_skin = None
+    for y in range(h - 1, top, -1):
+        if sum(1 for x in range(w) if _is_skin(arr[y, x])) >= 2:
+            last_skin = y
+            break
+    if last_skin is not None and last_skin > top + 90:
+        arr[min(h, last_skin + 12):] = 0
+    return strip_chair_wings(arr)
+
+
+def strip_chair_wings(arr: np.ndarray) -> np.ndarray:
+    """Drop office-chair back / arms beside the sitter. Never trim the hair band."""
+    h, w = arr.shape[:2]
+    rows = [y for y in range(h) if (arr[y, :, 3] > 80).any()]
+    if not rows:
+        return arr
+    top, bot = rows[0], rows[-1]
+    head_end = top + max(28, int((bot - top) * 0.32))
+    body_lo = body_hi = None
+    for y in range(head_end, bot + 1):
+        light = [
+            x for x in range(w)
+            if arr[y, x, 3] > 80 and not _is_dark(arr[y, x])
+        ]
+        if len(light) >= 6:
+            lo, hi = min(light), max(light)
+            body_lo, body_hi = lo, hi
+            for x in range(w):
+                if arr[y, x, 3] < 80 or not _is_dark(arr[y, x]):
+                    continue
+                if x < lo - 2 or x > hi + 2:
+                    arr[y, x] = 0
+        elif body_lo is not None:
+            for x in range(w):
+                if arr[y, x, 3] < 80:
+                    continue
+                if x < body_lo - 6 or x > body_hi + 6:
+                    arr[y, x] = 0
     return arr
+
+
+def clip_sit_width(sit: np.ndarray, stand: np.ndarray, pad: int = 8) -> np.ndarray:
+    """Keep sit_front no wider than the standing crop, so sheet chairs don't double."""
+    ys, xs = np.where(stand[:, :, 3] > 80)
+    iy, ix = np.where(sit[:, :, 3] > 80)
+    if len(xs) < 20 or len(ix) < 20:
+        return sit
+    half = int(xs.max() - xs.min() + 1) // 2 + pad
+    cx = (int(ix.min()) + int(ix.max())) // 2
+    if cx - half > 0:
+        sit[:, : cx - half] = 0
+    if cx + half + 1 < sit.shape[1]:
+        sit[:, cx + half + 1 :] = 0
+    return sit
 
 
 def sit_from_back(arr: np.ndarray, tall: bool = False) -> np.ndarray:
@@ -1113,31 +1220,54 @@ def dress_08(arr: np.ndarray, back: bool = False, side: bool = False) -> None:
 
 
 def apply_laura(n: int, frames: dict) -> None:
-    if n == 2:
-        for k in ("front", "walk", "back", "sitF"):
-            if k in frames:
-                patch_02(frames[k])
-    if n == 4:
-        for k in frames:
-            if k in ("back", "sitB"):
-                continue
-            black_rims(frames[k], side=k in ("side", "walk"))
-    if n == 6:
-        for k in frames:
-            shave_head(frames[k], back=k in ("back", "sitB"))
+    # 02/04/06/08 v3 sheets already include identity — do not recolor.
     if n == 7:
         for k in frames:
             caramel_tips(frames[k])
-    if n == 8:
-        for k in frames:
-            dress_08(frames[k], back=k in ("back", "sitB"), side=k in ("side", "walk"))
 
 
 def flip_h(arr: np.ndarray) -> np.ndarray:
     return arr[:, ::-1].copy()
 
 
+def scale_to_height(figs: list[np.ndarray], target_h: int = TARGET_STAND_H) -> list[np.ndarray]:
+    """Downscale a character's poses together so standing height matches the kept cast."""
+    front = figs[1]
+    ys, xs = np.where(front[:, :, 3] > 80)
+    if len(ys) < 20:
+        return figs
+    bh = int(ys.max() - ys.min() + 1)
+    if bh <= target_h + 6:
+        print(f"    height {bh} already matches target {target_h}")
+        return figs
+    scale = target_h / bh
+    print(f"    scale standing {bh}→{target_h}  factor={scale:.3f} (BOX, no 4px grid)")
+    out = []
+    for fig in figs:
+        nh = max(1, int(round(fig.shape[0] * scale)))
+        nw = max(1, int(round(fig.shape[1] * scale)))
+        im = Image.fromarray(fig, "RGBA").resize((nw, nh), Image.Resampling.BOX)
+        a = np.array(im)
+        # Native crop is already polished. Re-polish after BOX eats white cloth
+        # (hoodie reads as sheet). Harden alpha only — drop the semi-transparent halo.
+        a[..., 3] = np.where(a[..., 3] > 100, 255, 0)
+        out.append(a)
+    return out
+
+
+def load_existing(n: int) -> dict[str, Image.Image]:
+    dest = HD_DIR / f"cast_0{n}"
+    frames = {}
+    for p in sorted(dest.glob("*.png")):
+        frames[p.stem] = Image.open(p).convert("RGBA")
+    if "idle_front" not in frames:
+        raise FileNotFoundError(f"missing existing {dest}/idle_front.png")
+    return frames
+
+
 def process_one(n: int, figs: list[np.ndarray]) -> dict[str, Image.Image]:
+    if n in REPLACE_IDS:
+        figs = scale_to_height(figs, TARGET_STAND_H)
     raw = {}
     for name, fig in zip(POSE_NAMES, figs):
         # 4px snap is measured for the record, but any MAD is visible on faces
@@ -1147,18 +1277,19 @@ def process_one(n: int, figs: list[np.ndarray]) -> dict[str, Image.Image]:
         raw[name] = fig
     # strip chairs on the native sit crops, then pad so we never clip a head
     raw["sitF"] = strip_chair(raw["sitF"], back=False)
+    raw["sitF"] = clip_sit_width(raw["sitF"], raw["front"])
     # concept sit_back is almost all chair; keep the person's back crop
     # from crown through upper back so seating can show head+shoulders.
     raw["sitB"] = sit_from_back(raw["back"], tall=(n == 8))
+    # Do not polish sit after the chair strip — white hoodies get eaten as sheet.
+    # Scale already ran polish_cutout on the native crop.
     for name in list(raw):
         raw[name] = pad_canvas(raw[name], foot_pad=(0 if name in ("sitF", "sitB") else FOOT_PAD))
     apply_laura(n, raw)
     for name in ("front", "side", "back", "walk"):
         strip_concept_shadow(raw[name])
-        polish_cutout(raw[name])
+        # no polish_cutout after pad — it treats a white hoodie as sheet
         clean_ankles(raw[name])
-    polish_cutout(raw["sitF"])
-    polish_cutout(raw["sitB"])
     frames = {
         "idle_front": raw["front"],
         "idle_front_1": bob(raw["front"], 2),
@@ -1181,35 +1312,60 @@ def process_one(n: int, figs: list[np.ndarray]) -> dict[str, Image.Image]:
     return {k: Image.fromarray(v, "RGBA") for k, v in frames.items()}
 
 
-def make_lineup(fronts: list[Image.Image], concepts: list[Image.Image]) -> Image.Image:
-    pad, title = 20, 44
-    cell_w = 180
-    cell_h = 300
-    W = pad + 8 * (cell_w + pad)
-    H = title + cell_h + 28 + cell_h + 36
+def make_fronts_lineup(fronts: list[Image.Image], x4s: list[tuple[str, Image.Image]]) -> Image.Image:
+    """All 8 idle_front at 1×, plus 4× crops of the four replaced casts."""
+    pad, title = 16, 40
+    cell_w, cell_h = CW + 12, CH + 24
+    x4_w = pad + sum(im.size[0] + 16 for _, im in x4s)
+    W = max(pad + 8 * (cell_w + 8), x4_w)
+    x4_h = max((im.size[1] for _, im in x4s), default=200) + 36
+    H = title + cell_h + 20 + x4_h + 16
     out = Image.new("RGBA", (W, H), (220, 216, 210, 255))
     d = ImageDraw.Draw(out)
-    d.text((pad, 10), "cast HD v5  ·  concept crop  |  ours (same pixels + restrained Laura edits)",
+    d.text((pad, 10), "cast HD v6  ·  8 fronts at 1×  ·  02/04/06/08 are new v3 cutouts  ·  01/03/05/07 kept",
            fill=(50, 40, 38, 255), font=_font(16))
-    for i, (ours, con) in enumerate(zip(fronts, concepts)):
-        x = pad + i * (cell_w + pad)
-        cw = min(cell_w, con.size[0])
-        ch = min(cell_h - 8, con.size[1])
-        cx0 = (con.size[0] - cw) // 2
-        cy0 = max(0, con.size[1] - ch)
-        crop = con.crop((cx0, cy0, cx0 + cw, cy0 + ch))
-        out.paste(crop, (x + (cell_w - crop.size[0]) // 2, title), crop)
-        d.text((x, title + cell_h - 2), f"0{i+1} concept", fill=(90, 60, 56, 255), font=_font(12))
-        # ours is already native — show at 1:1, same display size
+    for i, ours in enumerate(fronts):
+        x = pad + i * (cell_w + 8)
         bb = ours.getbbox()
         body = ours.crop(bb) if bb else ours
-        if body.size[1] > cell_h - 8:
-            # only if canvas padding is huge; should not scale
-            pass
         ox = x + (cell_w - body.size[0]) // 2
-        oy = title + cell_h + 20 + (cell_h - 8 - body.size[1])
+        oy = title + (cell_h - 16 - body.size[1])
         out.paste(body, (ox, oy), body)
-        d.text((x, title + cell_h + 20 + cell_h - 8), f"0{i+1} ours", fill=(90, 60, 56, 255), font=_font(12))
+        tag = "new" if (i + 1) in REPLACE_IDS else "keep"
+        d.text((x, title + cell_h - 14), f"0{i+1} {tag}", fill=(90, 60, 56, 255), font=_font(12))
+    y0 = title + cell_h + 8
+    d.text((pad, y0), "4× crops  ·  02 / 04 / 06 / 08", fill=(50, 40, 38, 255), font=_font(14))
+    x = pad
+    for tag, im in x4s:
+        out.paste(im, (x, y0 + 22), im)
+        d.text((x, y0 + 22 + im.size[1] + 2), tag, fill=(90, 60, 56, 255), font=_font(12))
+        x += im.size[0] + 16
+    return out
+
+
+def make_v3_compare(pairs: list[tuple[int, Image.Image, Image.Image]]) -> Image.Image:
+    """Side-by-side concept crop vs our cutout for the four replaced casts."""
+    pad, title, cap = 16, 40, 18
+    cell_w, cell_h = 200, 300
+    W = pad + 4 * (2 * cell_w + 28)
+    H = title + cell_h + cap + 16
+    out = Image.new("RGBA", (W, H), (220, 216, 210, 255))
+    d = ImageDraw.Draw(out)
+    d.text((pad, 10), "cast v3 compare  ·  concept (scaled, no edits)  |  ours (same cutout + shadow)",
+           fill=(50, 40, 38, 255), font=_font(16))
+    for i, (n, con, ours) in enumerate(pairs):
+        x = pad + i * (2 * cell_w + 28)
+        for col, (im, lab) in enumerate(((con, "concept"), (ours, "ours"))):
+            bb = im.getbbox()
+            body = im.crop(bb) if bb else im
+            if body.size[1] > cell_h - 8:
+                ratio = (cell_h - 8) / body.size[1]
+                nw = max(1, int(body.size[0] * ratio))
+                body = body.resize((nw, cell_h - 8), Image.Resampling.NEAREST)
+            ox = x + col * cell_w + (cell_w - body.size[0]) // 2
+            oy = title + (cell_h - 8 - body.size[1])
+            out.paste(body, (ox, oy), body)
+            d.text((x + col * cell_w, title + cell_h), f"0{n} {lab}", fill=(90, 60, 56, 255), font=_font(12))
     return out
 
 
@@ -1226,7 +1382,7 @@ def make_frames(all_frames: list[dict]) -> Image.Image:
     H = title + 8 * ch + 8
     out = Image.new("RGBA", (W, H), (220, 216, 210, 255))
     d = ImageDraw.Draw(out)
-    d.text((pad, 6), "cast HD v5 frames  ·  native crops + restrained 04/06/08", fill=(50, 40, 38, 255), font=_font(14))
+    d.text((pad, 6), "cast HD v6 frames  ·  02/04/06/08 v3 cutouts  ·  01/03/05/07 kept", fill=(50, 40, 38, 255), font=_font(14))
     for r, frames in enumerate(all_frames):
         for c, k in enumerate(keys):
             im = frames[k]
@@ -1353,24 +1509,26 @@ def make_cutout_x4(all_frames: list[dict]) -> Image.Image:
 
 
 def write_cast_md():
-    text = """# Cast · 8 Soul Knight chibi（HD v5, concept crops）
+    text = """# Cast · 8 Soul Knight chibi（HD v6, concept crops）
 
 > Native crops from the 16:9 concept sheets · shared 168×272 canvas · no 4px crush.
-> Concept sheets are **not** in git.
+> 02 / 04 / 06 / 08 are the v3 sheets, scaled to the kept-cast standing height.
+> 01 / 03 / 05 / 07 are unchanged from v5. Concept sheets are **not** in git.
 
-Laura edits (recolor, not redraw): 04 concept-size 1-art-px black rims (transparent lenses), 06 shaved scalp only (concept face kept), 07 caramel tips, 08 white collar / cuffs / gold pendant + 2–3 hem/cuff ribs.
-Cutouts: hard alpha, no sheet halo / trapped gaps, ink outline kept, standing shadow is a separate soft ellipse (no ankle grey bar).
+No hand pixel edits on 02/04/06/08 — glasses, fade, earrings, and outfits come from the sheet.
+07 still has caramel tips. Cutouts: hard alpha, no sheet halo / trapped gaps, ink outline kept,
+standing shadow is a separate soft ellipse (no ankle grey bar).
 
 | ID | 像素辨认点 |
 |----|------------|
 | `cast_01` | 侧分长黑发 · 白露肩 · 白花耳饰 |
-| `cast_02` | 男 · 短刺发 · 黑毛衣 · 浅蓝领 |
+| `cast_02` | 男 · 短刺发 · 黑 V 领毛衣 · 浅蓝衬衫领 |
 | `cast_03` | 齐下巴波浪波波 · 粉针织 · 金圈 |
 | `cast_04` | 直波波刘海 · 黑圆框眼镜 · 白卫衣 |
 | `cast_05` | 齐肩微卷 · 黑西装金扣 · 金圈 |
-| `cast_06` | 男 · 近光头浅茬（肤色头皮）· 深灰西装 |
+| `cast_06` | 男 · 短寸 fade · 深灰西装 · 黑衬衫 |
 | `cast_07` | 褐长发浅焦糖发尾 · 灰西装 |
-| `cast_08` | 中分超长黑直 · 黑毛衣白领边/细项链 · 无耳饰 |
+| `cast_08` | 超长黑直发 · 黑毛衣 · 小耳钉 |
 
 坐姿是人（椅已剥）。胡同椅子由房间画。
 """
@@ -1383,49 +1541,55 @@ def main():
     REVIEW.mkdir(parents=True, exist_ok=True)
     HD_DIR.mkdir(parents=True, exist_ok=True)
 
-    sheets = []
+    all_frames: list[dict] = []
+    fronts: list[Image.Image] = []
+    pairs: list[tuple[int, Image.Image, Image.Image]] = []
     for n in range(1, 9):
-        path = find_sheet(n)
-        print(f"  cast_0{n} from {path.name}")
-        sheets.append(segment_poses(path))
-
-    all_frames = []
-    fronts = []
-    concepts = []
-    for n, figs in enumerate(sheets, 1):
         cid = f"cast_0{n}"
-        frames = process_one(n, figs)
         dest = HD_DIR / cid
         dest.mkdir(parents=True, exist_ok=True)
-        for name, im in frames.items():
-            im.save(dest / f"{name}.png")
+        if n in KEEP_IDS:
+            frames = load_existing(n)
+            print(f"  {cid} KEEP existing ({len(frames)} frames)")
+        else:
+            path = find_sheet(n)
+            print(f"  {cid} REPLACE from {path.name}")
+            figs = segment_poses(path)
+            concept = scale_to_height([f.copy() for f in figs], TARGET_STAND_H)[1]
+            frames = process_one(n, figs)
+            for name, im in frames.items():
+                im.save(dest / f"{name}.png")
+            pairs.append((n, Image.fromarray(concept, "RGBA"), frames["idle_front"]))
         fronts.append(frames["idle_front"])
-        concepts.append(Image.fromarray(figs[1], "RGBA"))
         all_frames.append(frames)
         bb = frames["idle_front"].getbbox()
         print(f"    {cid} idle {frames['idle_front'].size} bbox={bb}")
 
-    lineup = make_lineup(fronts, concepts)
+    x4s = []
+    for n in (2, 4, 6, 8):
+        big = head_x4(all_frames[n - 1]["idle_front"], body=True)
+        x4s.append((f"0{n} ×4", big))
+        name = f"cast_0{n}_front_x4.png"
+        for dest in (PREVIEW, ARTIFACT, REVIEW):
+            dest.mkdir(parents=True, exist_ok=True)
+            big.save(dest / name)
+
+    lineup = make_fronts_lineup(fronts, x4s)
+    compare = make_v3_compare(pairs)
     frames_sheet = make_frames(all_frames)
     cutout = make_cutout_check(all_frames)
     cutout_x4 = make_cutout_x4(all_frames)
     for dest in (PREVIEW, ARTIFACT, REVIEW):
         dest.mkdir(parents=True, exist_ok=True)
         lineup.save(dest / "cast_hd_lineup.png")
-        lineup.save(dest / "cast_hd_lineup_v5.png")
+        lineup.save(dest / "cast_hd_lineup_v6.png")
+        compare.save(dest / "cast_v3_compare.png")
         frames_sheet.save(dest / "cast_hd_frames.png")
         cutout.save(dest / "cast_cutout_check.png")
         cutout_x4.save(dest / "cast_cutout_x4.png")
 
-    for n, tag in ((4, "04"), (6, "06"), (8, "08")):
-        fr = all_frames[n - 1]
-        big = head_x4(fr["idle_front"], body=(n == 8))
-        name = f"cast_{tag}_front_x4.png"
-        for dest in (PREVIEW, ARTIFACT, REVIEW):
-            big.save(dest / name)
-
     write_cast_md()
-    print("Done HD cast v5 (restrained 04/06/08, clean ankles).")
+    print("Done HD cast v6 (02/04/06/08 v3 cutouts, 01/03/05/07 kept).")
 
 
 if __name__ == "__main__":
