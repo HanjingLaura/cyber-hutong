@@ -30,6 +30,7 @@ HD_DIR = ASSETS / "characters_hd"
 
 # Shared canvas: native concept figures are ~125×240–260. Baseline at bottom.
 CW, CH = 168, 272
+FOOT_PAD = 10  # room for a clean ellipse under the shoes
 SNAP = 4
 SHADOW_A = 110
 
@@ -152,7 +153,7 @@ def clean_alpha(crop: np.ndarray, bg, thr: int = 28) -> np.ndarray:
             if air and (_is_sheet_grey(r, g, b, bgv, thr + 24) or diff[y, x] <= thr + 28):
                 rgba[y, x] = (0, 0, 0, 0)
     rgba[..., 3] = np.where(rgba[..., 3] > 80, 255, 0)
-    return rgba
+    return polish_cutout(rgba, bg)
 
 
 def segment_poses(path: Path) -> list[np.ndarray]:
@@ -197,18 +198,243 @@ def segment_poses(path: Path) -> list[np.ndarray]:
     return figs
 
 
-def pad_canvas(src: np.ndarray, w: int = CW, h: int = CH) -> np.ndarray:
+def _neutral(r, g, b, lo=155, hi=232):
+    return abs(r - g) < 16 and abs(g - b) < 16 and lo < r < hi
+
+
+def _white_cloth(r, g, b, a=255):
+    return a > 80 and r > 226 and g > 220 and b > 208
+
+
+def _goldish(r, g, b, a=255):
+    return a > 80 and r > 170 and 90 < g < 200 and b < 140 and r > b + 40
+
+
+def polish_cutout(arr: np.ndarray, bg=None) -> np.ndarray:
+    """Hard alpha, drop specks / sheet pockets / outline halo, restore ink."""
+    h, w = arr.shape[:2]
+    arr[..., 3] = np.where(arr[..., 3] > 80, 255, 0)
+    bgv = None if bg is None else np.asarray(bg, np.int16).reshape(3)
+
+    def dark(c):
+        return c[3] > 80 and max(int(c[0]), int(c[1]), int(c[2])) < 70
+
+    def neigh(x, y):
+        for dx, dy in ((-1, 0), (1, 0), (0, -1), (0, 1), (-1, -1), (1, 1), (-1, 1), (1, -1)):
+            nx, ny = x + dx, y + dy
+            if 0 <= nx < w and 0 <= ny < h:
+                yield nx, ny
+
+    # keep the largest 8-connected body (kills floating sheet specks)
+    seen = np.zeros((h, w), bool)
+    best = None
+    best_n = 0
+    for y0 in range(h):
+        for x0 in range(w):
+            if seen[y0, x0] or arr[y0, x0, 3] < 80:
+                continue
+            q = deque([(x0, y0)])
+            seen[y0, x0] = True
+            cells = [(x0, y0)]
+            while q:
+                x, y = q.popleft()
+                for nx, ny in neigh(x, y):
+                    if not seen[ny, nx] and arr[ny, nx, 3] > 80:
+                        seen[ny, nx] = True
+                        q.append((nx, ny))
+                        cells.append((nx, ny))
+            if len(cells) > best_n:
+                best_n = len(cells)
+                best = cells
+    if best:
+        keep = np.zeros((h, w), bool)
+        for x, y in best:
+            keep[y, x] = True
+        arr[~keep] = 0
+
+    # tiny leftover islands that survived if they were attached by a halo we
+    # are about to delete — also drop 1–5 px specks now.
+    seen[:] = False
+    for y0 in range(h):
+        for x0 in range(w):
+            if seen[y0, x0] or arr[y0, x0, 3] < 80:
+                continue
+            q = deque([(x0, y0)])
+            seen[y0, x0] = True
+            cells = [(x0, y0)]
+            while q:
+                x, y = q.popleft()
+                for nx, ny in neigh(x, y):
+                    if not seen[ny, nx] and arr[ny, nx, 3] > 80:
+                        seen[ny, nx] = True
+                        q.append((nx, ny))
+                        cells.append((nx, ny))
+            if len(cells) <= 5:
+                for x, y in cells:
+                    arr[y, x] = 0
+
+    # sheet-grey pockets (armpit / inseam / hoop / hair gap)
+    for y in range(h):
+        for x in range(w):
+            if arr[y, x, 3] < 80:
+                continue
+            r, g, b = int(arr[y, x, 0]), int(arr[y, x, 1]), int(arr[y, x, 2])
+            if _white_cloth(r, g, b) or _is_skin(arr[y, x]) or _goldish(r, g, b) or dark(arr[y, x]):
+                continue
+            sheetish = _neutral(r, g, b, 188, 230)
+            if bgv is not None:
+                sheetish = sheetish or (
+                    abs(r - int(bgv[0])) + abs(g - int(bgv[1])) + abs(b - int(bgv[2])) <= 24
+                    and abs(r - g) < 20
+                )
+            if not sheetish:
+                continue
+            dark_n = sum(1 for nx, ny in neigh(x, y) if dark(arr[ny, nx]))
+            # hair sheen sits on dark hair — keep. trapped sheet has few dark neighbours.
+            if dark_n >= 3 and r < 186:
+                continue
+            arr[y, x] = 0
+
+    # outline halo: light grey / near-white on the outer ring that is not cloth
+    for y in range(h):
+        for x in range(w):
+            if arr[y, x, 3] < 80:
+                continue
+            r, g, b = int(arr[y, x, 0]), int(arr[y, x, 1]), int(arr[y, x, 2])
+            if _is_skin(arr[y, x]) or _goldish(r, g, b) or dark(arr[y, x]):
+                continue
+            air = any(
+                not (0 <= nx < w and 0 <= ny < h) or arr[ny, nx, 3] < 80
+                for nx, ny in ((x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1))
+            )
+            if not air:
+                continue
+            dark_n = sum(1 for nx, ny in neigh(x, y) if dark(arr[ny, nx]))
+            cloth_n = sum(
+                1 for nx, ny in neigh(x, y) if _white_cloth(int(arr[ny, nx, 0]), int(arr[ny, nx, 1]), int(arr[ny, nx, 2]), int(arr[ny, nx, 3]))
+            )
+            # isolated near-white specks are not a shirt / flower (those cluster)
+            if _white_cloth(r, g, b) and (cloth_n >= 2 or y > int(h * 0.42)):
+                continue
+            # AA between white cloth and hair → ink, not grey
+            if cloth_n and dark_n:
+                arr[y, x] = INK
+                continue
+            if _neutral(r, g, b, 150, 236) or (r > 220 and g > 218 and b > 210):
+                if dark_n >= 3 and r < 186:
+                    continue  # hair highlight on the silhouette
+                arr[y, x] = 0
+
+    # restore a continuous ink outline where halo removal bit into hair / skin
+    for y in range(h):
+        for x in range(w):
+            if arr[y, x, 3] < 80:
+                continue
+            r, g, b = int(arr[y, x, 0]), int(arr[y, x, 1]), int(arr[y, x, 2])
+            if _white_cloth(r, g, b) or _goldish(r, g, b) or dark(arr[y, x]):
+                continue
+            air = any(
+                not (0 <= nx < w and 0 <= ny < h) or arr[ny, nx, 3] < 80
+                for nx, ny in ((x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1))
+            )
+            if air and (_is_skin(arr[y, x]) or max(r, g, b) < 90 or (r < 80 and g < 70 and b < 65)):
+                # skin on the silhouette already has ink in the concept; only
+                # fill if this pixel is hair-dark leftover without an ink neighbour
+                if not _is_skin(arr[y, x]) and not any(dark(arr[ny, nx]) for nx, ny in neigh(x, y) if 0 <= nx < w):
+                    arr[y, x] = INK
+
+    # last pass: 1–2 px near-white islands in the head band (sheet specks)
+    for y in range(h):
+        for x in range(w):
+            if arr[y, x, 3] < 80:
+                continue
+            r, g, b = int(arr[y, x, 0]), int(arr[y, x, 1]), int(arr[y, x, 2])
+            if not (r > 220 and g > 218 and b > 210):
+                continue
+            if y > int(h * 0.52):
+                continue
+            n = sum(1 for nx, ny in neigh(x, y) if arr[ny, nx, 3] > 80)
+            if n <= 2 and not _is_skin(arr[y, x]) and not _goldish(r, g, b):
+                arr[y, x] = 0
+
+    arr[..., 3] = np.where(arr[..., 3] > 80, 255, 0)
+    return arr
+
+
+def strip_concept_shadow(arr: np.ndarray) -> np.ndarray:
+    """Drop the baked sheet oval under the shoes. Standing frames only."""
+    h, w = arr.shape[:2]
+
+    def leg_col(x, y0):
+        run = 0
+        for y in range(y0, max(0, y0 - 22), -1):
+            if arr[y, x, 3] < 80:
+                break
+            if max(arr[y, x, :3]) < 70 or _is_skin(arr[y, x]):
+                run += 1
+            else:
+                break
+        return run >= 8
+
+    rows = [y for y in range(h) if (arr[y, :, 3] > 80).any()]
+    if not rows:
+        return arr
+    bottom = rows[-1]
+    for y in range(max(0, bottom - 14), bottom + 1):
+        for x in range(w):
+            if arr[y, x, 3] < 80:
+                continue
+            if leg_col(x, y):
+                continue
+            arr[y, x] = 0
+    return arr
+
+
+def add_foot_shadow(arr: np.ndarray) -> np.ndarray:
+    """Clean separate soft ellipse strictly below the shoes."""
+    h, w = arr.shape[:2]
+    xs, ys = [], []
+    for y in range(int(h * 0.72), h):
+        for x in range(w):
+            if arr[y, x, 3] > 80 and max(arr[y, x, :3]) < 70:
+                xs.append(x)
+                ys.append(y)
+    if len(xs) < 8:
+        return arr
+    cx = int(round(sum(xs) / len(xs)))
+    foot_y = max(ys)
+    rx, ry = 24, 5
+    cy = min(h - 3, foot_y + 5)
+    for y in range(foot_y + 1, cy + ry + 1):
+        for x in range(cx - rx, cx + rx + 1):
+            if not (0 <= y < h and 0 <= x < w):
+                continue
+            if arr[y, x, 3] > 80:
+                continue
+            t = ((x - cx) / rx) ** 2 + ((y - cy) / ry) ** 2
+            if t <= 1.0:
+                a = int(SHADOW_A * (1.0 - t * 0.35))
+                arr[y, x] = (22, 18, 22, a)
+    return arr
+
+
+def pad_canvas(src: np.ndarray, w: int = CW, h: int = CH, foot_pad: int = 0) -> np.ndarray:
     out = np.zeros((h, w, 4), np.uint8)
     sh, sw = src.shape[:2]
-    if sh > h:
-        src = src[sh - h:]
-        sh = h
+    room = h - foot_pad
+    if sh > room:
+        src = src[sh - room:]
+        sh = src.shape[0]
     if sw > w:
         extra = sw - w
         src = src[:, extra // 2: extra // 2 + w]
         sw = w
     x = (w - sw) // 2
-    y = h - sh
+    y = h - sh - foot_pad
+    if y < 0:
+        src = src[-y:]
+        sh = src.shape[0]
+        y = 0
     out[y:y + sh, x:x + sw] = src
     return out
 
@@ -892,8 +1118,13 @@ def process_one(n: int, figs: list[np.ndarray]) -> dict[str, Image.Image]:
     # from crown through upper back so seating can show head+shoulders.
     raw["sitB"] = sit_from_back(raw["back"], tall=(n == 8))
     for name in list(raw):
-        raw[name] = pad_canvas(raw[name])
+        raw[name] = pad_canvas(raw[name], foot_pad=(0 if name in ("sitF", "sitB") else FOOT_PAD))
     apply_laura(n, raw)
+    for name in ("front", "side", "back", "walk"):
+        strip_concept_shadow(raw[name])
+        polish_cutout(raw[name])
+    polish_cutout(raw["sitF"])
+    polish_cutout(raw["sitB"])
     frames = {
         "idle_front": raw["front"],
         "idle_front_1": bob(raw["front"], 2),
@@ -909,6 +1140,10 @@ def process_one(n: int, figs: list[np.ndarray]) -> dict[str, Image.Image]:
         "sit_front": raw["sitF"],
         "sit_back": raw["sitB"],
     }
+    sit = {"sit_front", "sit_back"}
+    for k, v in frames.items():
+        if k not in sit:
+            add_foot_shadow(v)
     return {k: Image.fromarray(v, "RGBA") for k, v in frames.items()}
 
 
@@ -980,30 +1215,106 @@ def head_x4(im: Image.Image, body: bool = False) -> Image.Image:
     return zoom(crop, 4)
 
 
+def _hutong_floor_tile():
+    path = PREVIEW / "hutong_empty_hd.png"
+    if path.exists():
+        im = np.array(Image.open(path).convert("RGB"))
+        # mid-room floor, not the wall
+        y0 = min(im.shape[0] - 80, max(0, int(im.shape[0] * 0.55)))
+        x0 = min(im.shape[1] - 80, 200)
+        return im[y0:y0 + 80, x0:x0 + 80]
+    return np.full((80, 80, 3), (208, 206, 204), np.uint8)
+
+
+def _fill_bg(cell, bg):
+    if isinstance(bg, np.ndarray):
+        arr = np.array(cell)
+        th, tw = bg.shape[:2]
+        for y in range(0, arr.shape[0], th):
+            for x in range(0, arr.shape[1], tw):
+                h = min(th, arr.shape[0] - y)
+                w = min(tw, arr.shape[1] - x)
+                arr[y:y + h, x:x + w, :3] = bg[:h, :w]
+                arr[y:y + h, x:x + w, 3] = 255
+        return Image.fromarray(arr, "RGBA")
+    return cell
+
+
 def make_cutout_check(all_frames: list[dict]) -> Image.Image:
-    """All 8 idle_front + sit_front + sit_back on #222 and #fff."""
+    """All 8 idle_front + sit_front + sit_back on #222, #fff, and hutong floor."""
     keys = ("idle_front", "sit_front", "sit_back")
     cell_w, cell_h = 170, 290
     pad, title = 12, 36
+    bgs = (
+        ("#222", (34, 34, 34, 255)),
+        ("#fff", (255, 255, 255, 255)),
+        ("hutong floor", _hutong_floor_tile()),
+    )
     W = pad + 8 * (cell_w + 8)
-    H = title + 2 * (3 * (cell_h + 8)) + 20
+    H = title + len(bgs) * (3 * (cell_h + 8)) + 20
     out = Image.new("RGBA", (W, H), (160, 160, 160, 255))
     d = ImageDraw.Draw(out)
-    d.text((pad, 8), "cast cutout check  ·  top #222  ·  bottom #fff  ·  idle / sitF / sitB",
+    d.text((pad, 8), "cast cutout check  ·  #222  ·  #fff  ·  hutong floor  ·  idle / sitF / sitB",
            fill=(30, 30, 30, 255), font=_font(14))
-    for row, bg in enumerate(((34, 34, 34, 255), (255, 255, 255, 255))):
+    for row, (label, bg) in enumerate(bgs):
         for i, frames in enumerate(all_frames):
             for c, k in enumerate(keys):
                 im = frames[k]
                 bb = im.getbbox()
                 body = im.crop(bb) if bb else im
-                cell = Image.new("RGBA", (cell_w, cell_h), bg)
+                if isinstance(bg, np.ndarray):
+                    cell = _fill_bg(Image.new("RGBA", (cell_w, cell_h), (0, 0, 0, 255)), bg)
+                else:
+                    cell = Image.new("RGBA", (cell_w, cell_h), bg)
                 ox = (cell_w - body.size[0]) // 2
                 oy = 8
                 cell.paste(body, (ox, oy), body)
                 x = pad + i * (cell_w + 8)
                 y = title + row * (3 * (cell_h + 8)) + c * (cell_h + 8)
                 out.paste(cell, (x, y))
+    return out
+
+
+def make_cutout_x4(all_frames: list[dict]) -> Image.Image:
+    """4× idle_front of all 8 on #222, #fff, and hutong floor."""
+    floor = _hutong_floor_tile()
+    bgs = ((34, 34, 34), (255, 255, 255), floor)
+    labels = ("#222 ×4", "#fff ×4", "hutong floor ×4")
+    cw, ch = CW * 4 + 12, CH * 4 + 28
+    pad, title = 10, 32
+    W = pad + 8 * cw
+    H = title + 3 * ch + 8
+    out = Image.new("RGBA", (W, H), (140, 140, 140, 255))
+    d = ImageDraw.Draw(out)
+    d.text((pad, 6), "cast cutout ×4  ·  idle_front on #222 / #fff / hutong floor",
+           fill=(20, 20, 20, 255), font=_font(14))
+    for row, (bg, lab) in enumerate(zip(bgs, labels)):
+        d.text((pad, title + row * ch), lab, fill=(30, 30, 30, 255), font=_font(12))
+        for i, frames in enumerate(all_frames):
+            im = frames["idle_front"]
+            big = im.resize((im.size[0] * 4, im.size[1] * 4), Image.Resampling.NEAREST)
+            ba = np.array(big)
+            if isinstance(bg, np.ndarray):
+                canvas = np.zeros((ch - 20, cw - 8, 3), np.uint8)
+                th, tw = bg.shape[:2]
+                for y in range(0, canvas.shape[0], th):
+                    for x in range(0, canvas.shape[1], tw):
+                        hh = min(th, canvas.shape[0] - y)
+                        ww = min(tw, canvas.shape[1] - x)
+                        canvas[y:y + hh, x:x + ww] = bg[:hh, :ww]
+            else:
+                canvas = np.zeros((ch - 20, cw - 8, 3), np.uint8)
+                canvas[:] = bg
+            # center the sprite
+            ox = max(0, (canvas.shape[1] - ba.shape[1]) // 2)
+            oy = max(0, 8)
+            bh = min(ba.shape[0], canvas.shape[0] - oy)
+            bw = min(ba.shape[1], canvas.shape[1] - ox)
+            m = ba[:bh, :bw, 3] > 0
+            canvas[oy:oy + bh, ox:ox + bw][m] = ba[:bh, :bw, :3][m]
+            x = pad + i * cw
+            y = title + row * ch + 16
+            out.paste(Image.fromarray(canvas), (x, y))
     return out
 
 
@@ -1014,6 +1325,7 @@ def write_cast_md():
 > Concept sheets are **not** in git.
 
 Laura edits (obvious at 1×): 04 bold 2-art-px black glasses, 06 shaved smaller skull, 07 caramel tips, 08 dress shirt collar / cuffs / gold pendant / knit.
+Cutouts: hard alpha, no sheet halo / trapped gaps, ink outline kept, standing shadow is a separate soft ellipse.
 
 | ID | 像素辨认点 |
 |----|------------|
@@ -1062,12 +1374,14 @@ def main():
     lineup = make_lineup(fronts, concepts)
     frames_sheet = make_frames(all_frames)
     cutout = make_cutout_check(all_frames)
+    cutout_x4 = make_cutout_x4(all_frames)
     for dest in (PREVIEW, ARTIFACT, REVIEW):
         dest.mkdir(parents=True, exist_ok=True)
         lineup.save(dest / "cast_hd_lineup.png")
         lineup.save(dest / "cast_hd_lineup_v4.png")
         frames_sheet.save(dest / "cast_hd_frames.png")
         cutout.save(dest / "cast_cutout_check.png")
+        cutout_x4.save(dest / "cast_cutout_x4.png")
 
     for n, tag in ((4, "04"), (6, "06"), (8, "08")):
         fr = all_frames[n - 1]

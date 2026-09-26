@@ -4,6 +4,7 @@
 > Concept sheets are **not** in git.
 
 Laura edits (obvious at 1×): 04 bold 2-art-px black glasses, 06 shaved smaller skull, 07 caramel tips, 08 dress shirt collar / cuffs / gold pendant / knit.
+Cutouts: hard alpha, no sheet halo / trapped gaps, ink outline kept, standing shadow is a separate soft ellipse.
 
 | ID | 像素辨认点 |
 |----|------------|
