@@ -1,6 +1,6 @@
 # Cast · 8 Soul Knight chibi（p1–p8 证件照，每人一版）
 
-> 32×40 · 头约占一半身高 · 手绘像素格（不是矩形拼接）· 1px 深色描边（不是纯黑）· 发/肤/衣 3–4 阶。
+> 32×40 · 头约占一半身高 · 手绘像素格（共享底模 + 发型层）· 1px 深褐描边 · 发/肤/衣 3–4 阶。
 > 辨认先看发型剪影。真人照片 **不入库**。
 
 ## 照片映射
@@ -27,6 +27,11 @@
 - `cast_07` 褐长发浅发尾 + 薄刘海（全场唯一褐发）
 - `cast_08` 中分超长黑直（头发最长）
 
+## 画法
+
+共享女/男底模：圆下巴头约 16×14，颈与身体重叠数像素；2×3 眼 + 1px 高光，眼距 4px，2px 嘴，淡腮红；脸中无鼻、无 X、无红点。
+每人 = 底模 + 后发层 + 前发/刘海 + 衣服换色 + 1–2px 饰品。侧脸左向绘制，游戏里镜像为右。
+
 ## Asset paths
 
 ```
@@ -36,4 +41,4 @@ public/assets/characters/cast_XX/{sit_front,sit_back}.png
 public/preview/cast_lineup.png
 ```
 
-`cast_photo_compare.png` 只作 artifact，含真人缩略图，不进仓库。
+`cast_photo_compare.png` / `cast_v3_compare.png` 只作 artifact，含真人缩略图，不进仓库。

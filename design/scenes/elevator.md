@@ -9,4 +9,5 @@
 - `public/assets/scenes/elevator/scene_elevator.png`
 - `public/preview/zoomed/elevator.png`
 
+
 不描摹真人，不提交 refs。

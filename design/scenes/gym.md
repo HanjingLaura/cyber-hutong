@@ -9,4 +9,5 @@
 - `public/assets/scenes/gym/scene_gym.png`
 - `public/preview/zoomed/gym.png`
 
+
 不描摹真人，不提交 refs。

@@ -9,4 +9,5 @@
 - `public/assets/scenes/popmart/scene_popmart.png`
 - `public/preview/zoomed/popmart.png`
 
+
 不描摹真人，不提交 refs。

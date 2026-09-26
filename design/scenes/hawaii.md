@@ -9,4 +9,5 @@
 - `public/assets/scenes/hawaii/scene_hawaii.png`
 - `public/preview/zoomed/hawaii.png`
 
+
 不描摹真人，不提交 refs。

@@ -9,4 +9,5 @@
 - `public/assets/scenes/meeting/scene_meeting.png`
 - `public/preview/zoomed/meeting.png`
 
+
 不描摹真人，不提交 refs。

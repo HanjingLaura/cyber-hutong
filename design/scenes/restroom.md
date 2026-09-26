@@ -9,4 +9,5 @@
 - `public/assets/scenes/restroom/scene_restroom.png`
 - `public/preview/zoomed/restroom.png`
 
+
 不描摹真人，不提交 refs。

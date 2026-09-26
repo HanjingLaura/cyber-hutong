@@ -9,4 +9,5 @@
 - `public/assets/scenes/cafe/scene_cafe.png`
 - `public/preview/zoomed/cafe.png`
 
+
 不描摹真人，不提交 refs。
