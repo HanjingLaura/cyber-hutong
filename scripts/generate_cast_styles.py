@@ -545,7 +545,7 @@ def place_in_room(style_sit, label_text):
         gr.HUTONG_SOUTH = saved
     spr = zoom(style_sit, gr.HUTONG_SCALE)
     x = gr.SEATS_X[0] - spr.size[0] // 2
-    y = gr.V1_BOT_DESK_Y - 58
+    y = gr.V1_BOT_DESK_Y - gr.SIT_ABOVE_DESK
     room.alpha_composite(spr, (max(0, x), max(0, y)))
     desk, xoff = gr._desk_for_row(near=True)
     room.alpha_composite(desk, (xoff, gr.V1_BOT_DESK_Y))

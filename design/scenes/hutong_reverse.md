@@ -8,7 +8,7 @@
 
 - `public/assets/scenes/hutong_reverse/scene_hutong_reverse.png`
 - `public/preview/zoomed/hutong_reverse.png`
-- View 1 `hutong`：3/4 浅木桌 + ttc 墙 + 两排七框，01–04 `sit_back`，05–08 `sit_front`，`walk_y=318`。
-- View 2 `hutong_reverse`：无墙、底沿一条，朝向对调，`walk_y=240`。
+- View 1 `hutong`：3/4 浅木桌 + ttc 墙 + 一排七框，01–04 `sit_back`，05–08 `sit_front`，`walk_y=348`。
+- View 2 `hutong_reverse`：无墙、底沿一条，朝向对调，`walk_y=260`。
 
 不描摹真人，不提交 refs。
