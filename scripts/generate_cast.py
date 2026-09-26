@@ -2810,7 +2810,7 @@ def make_lineup(fronts, scale=6, title="cast_v3 lineup  idle_front"):
         y = pad + 12
         big = zoom(sp, scale)
         sheet.paste(big, (x, y), big)
-        tiny_text(d, x + 8, y + cell_h + 4, CAST[i]["id"].replace("cast_", ""), (70, 60, 54, 255))
+        d.text((x + 6, y + cell_h + 2), CAST[i]["id"], fill=(70, 60, 54, 255))
     return sheet
 
 
