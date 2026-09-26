@@ -466,6 +466,8 @@ def write_scenes(v1, v2, empty):
         save(hd1, dest / "hutong_view1_hd.png")
         save(hd2, dest / "hutong_view2_hd.png")
         save(hde, dest / "hutong_empty_hd.png")
+        save(hd1, dest / "hutong_view1_hd_v2.png")
+        save(hd2, dest / "hutong_view2_hd_v2.png")
     crops(v1)
 
 
