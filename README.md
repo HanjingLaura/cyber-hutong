@@ -45,7 +45,7 @@ npx --yes serve public -p 4173
 
 | ID | 中文 | 要点 | 路径 |
 |----|------|------|------|
-| `hutong` | 胡同工位区 | 正打：素墙 · 上 4 桌下 4 桌 · 中间 8 椅 | `public/assets/scenes/hutong/` |
+| `hutong` | 胡同工位区 | 正打：ttc/镜框 · 上 4 空桌下 4 空桌 · 中间 8 椅 | `public/assets/scenes/hutong/` |
 | `hutong_reverse` | 胡同 · 反打 | 同一房间 180°，无墙，正脸/后脑勺对调 | `public/assets/scenes/hutong_reverse/` |
 | `elevator` | 电梯间 | 米黄石材、开门、雕塑台座、屏与按钮 | `public/assets/scenes/elevator/` |
 | `hawaii` | 夏威夷 | 开窗见蓝天高楼 · 左竖桌 3 椅 · 右竖桌 3 椅 · 约六座 | `public/assets/scenes/hawaii/` |

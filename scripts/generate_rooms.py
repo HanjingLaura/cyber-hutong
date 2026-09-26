@@ -497,6 +497,17 @@ def scene_hutong() -> Image.Image:
     _hutong_floor(d, 40)
     rect(d, [0, 0, W - 1, 10], HT["ceil"])
     wall_face(d, 0, 11, W - 1, 38, HT["wall"], lip=4, lip_c=HT["lip"])
+    draw_ttc(d, 8, 14)
+    frames = (
+        (48, 14, 8, 8), (64, 16, 7, 7), (80, 14, 8, 8),
+        (98, 16, 7, 7), (114, 14, 8, 8), (132, 16, 7, 7),
+        (148, 14, 9, 8), (168, 16, 7, 7), (186, 14, 8, 8),
+        (204, 16, 7, 7), (222, 14, 8, 8), (238, 16, 7, 7),
+    )
+    for i, (fx, fy, fw, fh) in enumerate(frames):
+        prism(d, fx, fy, fw, fh, 2, HT["frame"], HT["wall_d"], HT["lip"])
+        if i % 3 == 0:
+            rect(d, [fx + 2, fy + 2, fx + fw - 3, fy + fh - 3], shade(HT["wall_d"], -6))
 
     top_desk_y, bot_desk_y = 39, 173
     top_chair_y, bot_chair_y = 56, 150
@@ -1185,11 +1196,11 @@ def scene_mixian() -> Image.Image:
 
 SCENES = [
     dict(id="hutong", title="胡同工位区",
-         blurb="正打：素墙 + 上 4 桌下 4 桌 · 中间 8 椅",
+         blurb="正打：墙面 ttc/镜框 + 上 4 桌下 4 桌 · 中间 8 椅",
          fn=scene_hutong, walk_y=108, line="这边还能放杯子。",
          beat_t="09:20", action="sit_aisle",
          seats=hutong_seats_view1(),
-         why="摄像机朝北墙。素墙一条（无 ttc / 镜框）。上排椅朝北墙看后脑勺，下排椅朝下看正脸。只要地板、8 桌、8 椅、坐着的人；桌面空着。"),
+         why="摄像机朝北墙。墙上只留 ttc 和镜框。上排椅朝北墙看后脑勺，下排椅朝下看正脸。只要地板、8 空桌、8 椅、坐着的人；不要电脑/植物/柜/箱。"),
     dict(id="hutong_reverse", title="胡同 · 反打",
          blurb="反打 180°：无墙 · 同一 8 座换朝向",
          fn=scene_hutong_reverse, walk_y=96, line="从这边看是正脸。",
@@ -1264,7 +1275,7 @@ def write_scene_md(spec):
 
 - `public/assets/scenes/{spec['id']}/scene_{spec['id']}.png`
 - `public/preview/zoomed/{spec['id']}.png`
-{("- View 1 `hutong`：素墙，n* `sit_back`，s* `sit_front`，`walk_y=108`。\n- View 2 `hutong_reverse`：无墙，座位 180° 对调，n* 改 `sit_front`，s* 改 `sit_back`，`walk_y=96`。" if spec["id"] in ("hutong", "hutong_reverse") else "")}
+{("- View 1 `hutong`：墙面 ttc + 镜框，n* `sit_back`，s* `sit_front`，`walk_y=108`。\n- View 2 `hutong_reverse`：无墙（所以无牌无框），座位 180° 对调，n* 改 `sit_front`，s* 改 `sit_back`，`walk_y=96`。" if spec["id"] in ("hutong", "hutong_reverse") else "")}
 
 不描摹真人，不提交 refs。
 """,

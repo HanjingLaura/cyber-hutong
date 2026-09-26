@@ -8,7 +8,7 @@
 
 - `public/assets/scenes/hutong_reverse/scene_hutong_reverse.png`
 - `public/preview/zoomed/hutong_reverse.png`
-- View 1 `hutong`：素墙，n* `sit_back`，s* `sit_front`，`walk_y=108`。
-- View 2 `hutong_reverse`：无墙，座位 180° 对调，n* 改 `sit_front`，s* 改 `sit_back`，`walk_y=96`。
+- View 1 `hutong`：墙面 ttc + 镜框，n* `sit_back`，s* `sit_front`，`walk_y=108`。
+- View 2 `hutong_reverse`：无墙（所以无牌无框），座位 180° 对调，n* 改 `sit_front`，s* 改 `sit_back`，`walk_y=96`。
 
 不描摹真人，不提交 refs。
