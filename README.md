@@ -45,8 +45,8 @@ npx --yes serve public -p 4173
 
 | ID | 中文 | 要点 | 路径 |
 |----|------|------|------|
-| `hutong` | 胡同工位区 | 正打 640×640：白墙 ttc + 少而大的灰框 · 每排一张通长空桌 · 人椅 3× · 中间过道 | `public/assets/scenes/hutong/` |
-| `hutong_reverse` | 胡同 · 反打 | 同一房间 180° 640×640，无墙，正脸/后脑勺对调 | `public/assets/scenes/hutong_reverse/` |
+| `hutong` | 胡同工位区 | 正打 640×640：3/4 浅木通长桌 · ttc 墙 · 八人入座 · 过道可走 | `public/assets/scenes/hutong/` |
+| `hutong_reverse` | 胡同 · 反打 | 同一房间 180° 640×640，无墙薄沿，正脸/后脑勺对调 | `public/assets/scenes/hutong_reverse/` |
 | `elevator` | 电梯间 | 米黄石材、开门、雕塑台座、屏与按钮 | `public/assets/scenes/elevator/` |
 | `hawaii` | 夏威夷 | 开窗见蓝天高楼 · 左竖桌 3 椅 · 右竖桌 3 椅 · 约六座 | `public/assets/scenes/hawaii/` |
 | `popmart` | 泡泡玛特店 | 细格盲盒墙，柜台留空 | `public/assets/scenes/popmart/` |

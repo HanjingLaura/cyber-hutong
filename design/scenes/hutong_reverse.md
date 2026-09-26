@@ -2,13 +2,13 @@
 
 > 精致像素 · 640×640 · 2.5D · 桌面留物位
 
-反打 180° 640×640：无墙 · 同一通长桌 8 座换朝向
+反打 180° 640×640：无墙 · 薄房间沿 · 八人朝向对调
 
-同一房间摄像机转 180°。无墙、无装饰。原先看后脑勺的一排现在看正脸，原先看正脸的一排现在看后脑勺。左右对调。还是两张通长空桌、8 椅、同一些人。
+同一房间转 180°。ttc 墙在画面底外，只留一条薄沿。原先正脸的一排改后脑勺，原先后脑勺的一排改正脸，左右对调。桌前脸始终朝下。
 
 - `public/assets/scenes/hutong_reverse/scene_hutong_reverse.png`
 - `public/preview/zoomed/hutong_reverse.png`
-- View 1 `hutong`：白墙 ttc + 少而大的灰框，每排一张通长空桌，n* `sit_back`，s* `sit_front`，`walk_y=300`。
-- View 2 `hutong_reverse`：无墙（所以无牌无框），座位 180° 对调，n* 改 `sit_front`，s* 改 `sit_back`，`walk_y=200`。
+- View 1 `hutong`：3/4 浅木桌 + ttc 墙 + 两排七框，01–04 `sit_back`，05–08 `sit_front`，`walk_y=318`。
+- View 2 `hutong_reverse`：无墙、底沿一条，朝向对调，`walk_y=240`。
 
 不描摹真人，不提交 refs。
