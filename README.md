@@ -45,8 +45,8 @@ npx --yes serve public -p 4173
 
 | ID | 中文 | 要点 | 路径 |
 |----|------|------|------|
-| `hutong` | 胡同工位区 | 正打 512×480：白墙 ttc + 密框 · 每排一张通长空桌 · 中间 8 椅 | `public/assets/scenes/hutong/` |
-| `hutong_reverse` | 胡同 · 反打 | 同一房间 180° 512×480，无墙，正脸/后脑勺对调 | `public/assets/scenes/hutong_reverse/` |
+| `hutong` | 胡同工位区 | 正打 640×640：白墙 ttc + 少而大的灰框 · 每排一张通长空桌 · 人椅 3× · 中间过道 | `public/assets/scenes/hutong/` |
+| `hutong_reverse` | 胡同 · 反打 | 同一房间 180° 640×640，无墙，正脸/后脑勺对调 | `public/assets/scenes/hutong_reverse/` |
 | `elevator` | 电梯间 | 米黄石材、开门、雕塑台座、屏与按钮 | `public/assets/scenes/elevator/` |
 | `hawaii` | 夏威夷 | 开窗见蓝天高楼 · 左竖桌 3 椅 · 右竖桌 3 椅 · 约六座 | `public/assets/scenes/hawaii/` |
 | `popmart` | 泡泡玛特店 | 细格盲盒墙，柜台留空 | `public/assets/scenes/popmart/` |
@@ -60,7 +60,7 @@ npx --yes serve public -p 4173
 
 已下架（画廊 / 一天 / 漫游均不链）：茶水间、打印区、楼梯过道、天台、老板办公室、快递门口、旧胡同口牌楼。
 
-画布：胡同 **512×480**（宽 2×，加高给深桌和过道），其他房 **256×192**。角色 **32×40** Soul Knight chibi（胡同里 nearest 4×，座距 1/4 房宽）。
+画布：胡同 **640×640**，其他房 **256×192**。角色 **32×40** Soul Knight chibi（胡同里 nearest 3×，座距 1/4 房宽，两排椅背之间留一人高过道）。
 
 ## 八人 cast
 
@@ -86,7 +86,7 @@ cyber-hutong/
 
 ## 技术约定
 
-- 瓦片 32×32，胡同 512×480 / 其他场景 256×192，最近邻放大
+- 瓦片 32×32，胡同 640×640 / 其他场景 256×192，最近邻放大
 - 干净 1px 描边，统一调色，比过夜粗块更细
 - 预览 `image-rendering: pixelated`
 

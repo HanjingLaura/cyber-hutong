@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """11 Laura-named scenes — 2.5D refined pixel.
 
-Most rooms stay 256×192. Hutong / hutong_reverse are 512×480 (2× width)
-with one continuous long desk per row. People and chairs are 4× so the
-eight seats fill the room (pitch 1/4 of the width).
+Most rooms stay 256×192. Hutong / hutong_reverse are 640×640 with one
+continuous long desk per row. People and chairs are 3×; seat pitch is
+1/4 of the room width, with a walkable aisle between the two chair rows.
 """
 from __future__ import annotations
 
@@ -471,32 +471,31 @@ def office_floor(d, y0, c1, c2, seam):
 
 # ===========================================================================
 # 1. 胡同 — 两台摄像机：正打（白墙 ttc + 镜框）/ 反打 180°（无墙）
-#    每排一张通长浅木桌 × 4 座，桌面全空。512×480（宽 2×，加高给深桌和过道）。
+#    每排一张通长浅木桌 × 4 座，桌面全空。640×640，人椅 3×，中间留过道。
 # ===========================================================================
 # Physical seats, left→right as seen in view 1.
 # n* face the north (top) wall; s* face the south (bottom) edge.
 HUTONG_NORTH = ("cast_02", None, "cast_05", "cast_08")  # face north
 HUTONG_SOUTH = ("cast_01", "cast_03", "cast_04", None)  # face south
 
-HW, HH = 512, 480
-HUTONG_SCALE = 4
-DESK_X, DESK_W, DESK_D, DESK_Z = 8, 496, 36, 22
-# Four station centers — pitch 128 = 1/4 of the 512 room.
-SEATS_X = (64, 192, 320, 448)
-# People 128×160, chairs ~92×116. Overlap sitters with their desk so
-# two 160px rows + wall + desks still fill 480 without a huge empty floor.
-V1_WALL = 100
-V1_TOP_DESK_Y = 100
-V1_TOP_SIT = 150
-V1_TOP_CHAIR_Y = 186
-V1_WALK_Y = 220
-V1_BOT_CHAIR_Y = 278
-V1_BOT_SIT = 296
-V1_BOT_DESK_Y = 374
-V2_TOP_DESK_Y = 6
-V2_TOP_SIT = 56
-V2_TOP_CHAIR_Y = 92
-V2_WALK_Y = 200
+HW, HH = 640, 640
+HUTONG_SCALE = 3
+DESK_X, DESK_W, DESK_D, DESK_Z = 12, 616, 36, 22
+# Four station centers — pitch 160 = 1/4 of the 640 room.
+SEATS_X = (80, 240, 400, 560)
+# People 96×120, chairs ~96×120. Aisle between chair-backs ≥ one person tall.
+V1_WALL = 108
+V1_TOP_DESK_Y = 108
+V1_TOP_SIT = 118
+V1_TOP_CHAIR_Y = 168
+V1_WALK_Y = 304
+V1_BOT_CHAIR_Y = 408
+V1_BOT_SIT = 388
+V1_BOT_DESK_Y = 508
+V2_TOP_DESK_Y = 8
+V2_TOP_SIT = 18
+V2_TOP_CHAIR_Y = 68
+V2_WALK_Y = 220
 
 HUT = {
     "ceil": (252, 252, 254, 255),
@@ -530,7 +529,7 @@ def hutong_cast(cid, view):
 
 
 def hutong_chair_north() -> Image.Image:
-    """Mesh task chair authored at 46×58, then 2× for the 4× cast."""
+    """Mesh task chair authored at 46×58, then 2× (~96×120, matches 3× cast)."""
     img = new(46, 58)
     d = ImageDraw.Draw(img)
     solid_shadow(d, 23, 55, 17, 3)
@@ -727,7 +726,7 @@ def hutong_wall(d, w=HW):
     hline(d, 0, w - 1, V1_WALL - 1, shade(HUT["lip"], -28))
     draw_ttc_large(d, 6, 18)
     # Fewer, ~2× larger grey-framed squares (photo: neat grid, light interiors)
-    size, pitch, col0 = 32, 42, 164
+    size, pitch, col0 = 32, 42, 210
     rows_y = (16, 54)
     cols = 7
     for r, fy in enumerate(rows_y):
@@ -742,14 +741,12 @@ def hutong_wall(d, w=HW):
 def _hutong_row(room, d, desk_y, chair_y, sit_y, who, facing):
     """One continuous desk + 4 chairs. facing 'north' = backs, 'south' = faces.
 
-    Draw order: far furniture first. North row sits behind the desk (desk
-    then chairs then people). South row sits *behind* a near desk, so the
-    slab is painted last and covers laps. Chair first, then person, so
-    sit_back heads rest on the backrest instead of floating above it.
+    Desk first, then chairs, then people — seated bodies are never cropped
+    by the slab. Front-row people sit in front of their desk edge; back-row
+    heads and shoulders read over the chair back.
     """
     north = facing == "north"
-    if north:
-        long_wood_desk(d, DESK_X, desk_y)
+    long_wood_desk(d, DESK_X, desk_y)
     chair = hutong_chair_north() if north else hutong_chair_south()
     view = "sit_back" if north else "sit_front"
     for i, cx in enumerate(SEATS_X):
@@ -758,8 +755,6 @@ def _hutong_row(room, d, desk_y, chair_y, sit_y, who, facing):
         blit(room, chair, chx, chair_y)
         if spr:
             blit(room, spr, cx - spr.size[0] // 2, sit_y)
-    if not north:
-        long_wood_desk(d, DESK_X, desk_y)
 
 
 def scene_hutong() -> Image.Image:
@@ -1427,13 +1422,13 @@ def scene_mixian() -> Image.Image:
 
 SCENES = [
     dict(id="hutong", title="胡同工位区",
-         blurb="正打 512×480：白墙 ttc + 少而大的灰框 · 每排一张通长空桌 · 人椅 4×",
+         blurb="正打 640×640：白墙 ttc + 少而大的灰框 · 每排一张通长空桌 · 人椅 3× · 中间过道",
          fn=scene_hutong, walk_y=V1_WALK_Y, line="这边还能放杯子。",
          beat_t="09:20", action="sit_aisle",
          seats=hutong_seats_view1(),
-         why="摄像机朝北墙。白墙、立体 ttc、少而大的灰框、几块小铭牌、顶角线。每排 4 座共用一张通长浅木桌，桌面全空。人椅 4×，座距 1/4 房宽。上排椅朝北墙看后脑勺，下排椅朝下看正脸。不要电脑/植物/柜/箱/光斑。"),
+         why="摄像机朝北墙。白墙、立体 ttc、少而大的灰框、几块小铭牌、顶角线。每排 4 座共用一张通长浅木桌，桌面全空。人椅 3×，座距 1/4 房宽，两排椅背之间留出一人高过道。上排椅朝北墙看后脑勺+肩，下排正脸头肩上身不被桌子挡住。不要电脑/植物/柜/箱/光斑。"),
     dict(id="hutong_reverse", title="胡同 · 反打",
-         blurb="反打 180° 512×480：无墙 · 同一通长桌 8 座换朝向",
+         blurb="反打 180° 640×640：无墙 · 同一通长桌 8 座换朝向",
          fn=scene_hutong_reverse, walk_y=V2_WALK_Y, line="从这边看是正脸。",
          beat_t="09:21", action="look_back",
          camera_only=True,
@@ -1496,7 +1491,7 @@ def write_scene_md(spec):
     out = ROOT / "design" / "scenes"
     out.mkdir(parents=True, exist_ok=True)
     hutong = spec["id"] in ("hutong", "hutong_reverse")
-    canvas = "512×480" if hutong else "256×192"
+    canvas = f"{HW}×{HH}" if hutong else "256×192"
     (out / f"{spec['id']}.md").write_text(
         f"""# 场景：{spec['title']}（`{spec['id']}`）
 
@@ -1609,9 +1604,27 @@ def patch_manifest(entries):
     print(f"  wrote {man.relative_to(ROOT)}")
 
 
+def _hutong_layout_check():
+    """Aisle between chair-backs must be ≥ one seated character tall."""
+    ch_n = hutong_chair_north()
+    ch_s = hutong_chair_south()
+    person_h = 40 * HUTONG_SCALE
+    top_end = V1_TOP_CHAIR_Y + ch_n.size[1]
+    bot_start = V1_BOT_CHAIR_Y
+    aisle = bot_start - top_end
+    print(f"  hutong layout: canvas {HW}×{HH} scale {HUTONG_SCALE} "
+          f"person {32 * HUTONG_SCALE}×{person_h} "
+          f"chair_n {ch_n.size} chair_s {ch_s.size} "
+          f"aisle {aisle}px (need ≥ {person_h})")
+    if aisle < person_h:
+        raise SystemExit(f"hutong aisle {aisle}px < person height {person_h}px")
+
+
 def main(only=None):
     print("Generating scenes (11 rooms + hutong reverse camera)…")
     targets = [s for s in SCENES if only is None or s["id"] in only]
+    if only is None or (only and "hutong" in only):
+        _hutong_layout_check()
     painted = []
     if only is None:
         for stale in (

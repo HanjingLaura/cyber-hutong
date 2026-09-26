@@ -73,7 +73,7 @@
     }
     .x4 { width: calc(32px * 4); height: auto; }
     .room { width: 384px; max-width: 100%; height: auto; }
-    .room.hutong-lg { width: min(100%, 720px); }
+    .room.hutong-lg { width: min(100%, 640px); }
     .sheet { width: min(100%, 720px); height: auto; }
     .beat {
       display: grid;
@@ -113,9 +113,8 @@
       overflow: hidden;
     }
     #stage-wrap.wide {
-      /* Keep the full 512×480 room on screen; 960px-wide wrap was clipping the near desk. */
       width: min(100%, 640px);
-      aspect-ratio: 512 / 480;
+      aspect-ratio: 640 / 640;
     }
     #stage { width: 100%; height: 100%; image-rendering: pixelated; display: block; }
     #say {
@@ -142,7 +141,7 @@
 <body>
   <header>
     <h1>赛博胡同 Cyber Hutong</h1>
-      <p class="sub">精致像素 v4 · 胡同 512×480 · 其他房 256×192 · 11 房 · 八人 p1–p8 一版 · Online-control / Offline-agent / Behavior-learning · 蒸馏只冷启动 · 无后端</p>
+      <p class="sub">精致像素 v4 · 胡同 640×640 · 其他房 256×192 · 11 房 · 八人 p1–p8 一版 · Online-control / Offline-agent / Behavior-learning · 蒸馏只冷启动 · 无后端</p>
     <nav>
       <a href="#gallery" data-tab="gallery">画廊</a>
       <a href="#day" data-tab="day">一天故事板</a>
@@ -189,7 +188,7 @@
     <div id="walk" class="panel">
       <section>
         <h2>房间漫游</h2>
-        <p class="note">点房间切换。cast_01 走一个往返。胡同画布 512×480（角色整数 4×），其他房 256×192。</p>
+        <p class="note">点房间切换。cast_01 走一个往返。胡同画布 640×640（角色整数 3×），其他房 256×192。</p>
         <div class="chips" id="room-chips"></div>
         <div id="stage-wrap">
           <canvas id="stage" width="256" height="192"></canvas>
@@ -212,11 +211,11 @@
   <script>
     const ROOMS = [
       { id:"hutong", title:"胡同工位区", src:"assets/scenes/hutong/scene_hutong.png",
-        line:"这边还能放杯子。", y:220, t:"09:20", action:"sit_aisle",
-        why:"正打 512×480：白墙立体 ttc + 少而大的灰框。每排一张通长空桌，上排后脑勺，下排正脸。人椅 4×，座距 1/4 房宽。" },
+        line:"这边还能放杯子。", y:304, t:"09:20", action:"sit_aisle",
+        why:"正打 640×640：白墙立体 ttc + 少而大的灰框。每排一张通长空桌，上排后脑勺+肩，下排正脸头肩上身。人椅 3×，座距 1/4 房宽，中间一人高过道。" },
       { id:"hutong_reverse", title:"胡同 · 反打", src:"assets/scenes/hutong_reverse/scene_hutong_reverse.png",
-        line:"从这边看是正脸。", y:200, t:"09:21", action:"look_back", cameraOnly:true,
-        why:"同一房间转 180°，512×480。无墙。原先后脑勺变正脸，正脸变后脑勺，左右对调。" },
+        line:"从这边看是正脸。", y:220, t:"09:21", action:"look_back", cameraOnly:true,
+        why:"同一房间转 180°，640×640。无墙。原先后脑勺变正脸，正脸变后脑勺，左右对调。" },
       { id:"elevator", title:"电梯间", src:"assets/scenes/elevator/scene_elevator.png",
         line:"先等这梯。", y:140, t:"09:12", action:"wait_lift",
         why:"米黄石材、开门、雕塑台座、屏与按钮。" },
@@ -301,7 +300,7 @@
     let cur = 0, x = 56, dir = 1, tick = 0, walking = true;
     const wrap = document.getElementById("stage-wrap");
     function roomScale(room) {
-      return room.id.startsWith("hutong") ? 4 : 1;
+      return room.id.startsWith("hutong") ? 3 : 1;
     }
     function loadBg(src) {
       if (bgCache[src]) return bgCache[src];
@@ -312,8 +311,8 @@
     }
     ROOMS.forEach(w => loadBg(w.src));
     function syncCanvas(bg) {
-      const rw = (bg && bg.naturalWidth) || (roomScale(ROOMS[cur]) > 1 ? 512 : 256);
-      const rh = (bg && bg.naturalHeight) || (roomScale(ROOMS[cur]) > 1 ? 480 : 192);
+      const rw = (bg && bg.naturalWidth) || (roomScale(ROOMS[cur]) > 1 ? 640 : 256);
+      const rh = (bg && bg.naturalHeight) || (roomScale(ROOMS[cur]) > 1 ? 640 : 192);
       if (canvas.width !== rw || canvas.height !== rh) {
         canvas.width = rw;
         canvas.height = rh;
@@ -327,7 +326,7 @@
       const scale = roomScale(ROOMS[i]);
       x = 28 * scale; dir = 1; walking = true;
       say.textContent = ROOMS[i].line;
-      meta.textContent = ROOMS[i].title + " · " + ROOMS[i].src + " · " + (scale > 1 ? "512×480" : "256×192");
+      meta.textContent = ROOMS[i].title + " · " + ROOMS[i].src + " · " + (scale > 1 ? "640×640" : "256×192");
       [...chips.children].forEach((b, j) => b.classList.toggle("on", j === i));
       syncCanvas(bgCache[ROOMS[i].src]);
     }
