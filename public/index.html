@@ -73,7 +73,7 @@
     }
     .x4 { width: calc(32px * 4); height: auto; }
     .room { width: 384px; max-width: 100%; height: auto; }
-    .room.hutong-lg { width: 768px; }
+    .room.hutong-lg { width: min(100%, 640px); }
     .sheet { width: min(100%, 720px); height: auto; }
     .beat {
       display: grid;
@@ -113,7 +113,8 @@
       overflow: hidden;
     }
     #stage-wrap.wide {
-      width: min(100%, 960px);
+      /* Keep the full 512×480 room on screen; 960px-wide wrap was clipping the near desk. */
+      width: min(100%, 640px);
       aspect-ratio: 512 / 480;
     }
     #stage { width: 100%; height: 100%; image-rendering: pixelated; display: block; }
