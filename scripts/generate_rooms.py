@@ -509,18 +509,18 @@ V1_WALL = 100
 V1_TOP_DESK_Y = 96
 V1_TOP_CHAIR_Y = 252
 V1_WALK_Y = 348
-V1_BOT_CHAIR_Y = 470
-V1_BOT_DESK_Y = 498
+V1_BOT_CHAIR_Y = 502
+V1_BOT_DESK_Y = 530
 
 V2_TOP_DESK_Y = 4
 V2_TOP_CHAIR_Y = 160
 V2_WALK_Y = 260
-V2_BOT_CHAIR_Y = 470
-V2_BOT_DESK_Y = 498
+V2_BOT_CHAIR_Y = 502
+V2_BOT_DESK_Y = 530
 
 # 3/4 desk depths (~2× previous tops) + taller front faces
 FAR_TOP_H, FAR_FRONT_H = 56, 22
-NEAR_TOP_H, NEAR_FRONT_H = 76, 32
+NEAR_TOP_H, NEAR_FRONT_H = 76, 28
 # sit content is 32 rows; head+shoulders+upper back ≈ 26 rows above the backrest
 SIT_ABOVE_BACK = 26 * HUTONG_SCALE
 # sit_front: face/chin/neck/shoulders/upper chest (~28 rows) above the desk
