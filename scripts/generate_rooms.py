@@ -914,17 +914,20 @@ def _paint_hutong(view: str, people: bool = True) -> Image.Image:
 
 
 def scene_hutong() -> Image.Image:
-    """View 1 — camera looks north: ttc wall, n* backs, s* faces."""
-    return _paint_hutong("v1", people=True)
+    """View 1 — HD 320×288, camera looks north."""
+    import generate_hutong_hd as hd
+    return hd.paint("v1", people=True)
 
 
 def scene_hutong_reverse() -> Image.Image:
-    """View 2 — 180°: no wall, thin south edge, faces/backs swapped."""
-    return _paint_hutong("v2", people=True)
+    """View 2 — HD 180°."""
+    import generate_hutong_hd as hd
+    return hd.paint("v2", people=True)
 
 
 def scene_hutong_empty() -> Image.Image:
-    return _paint_hutong("v1", people=False)
+    import generate_hutong_hd as hd
+    return hd.paint("v1", people=False)
 
 
 def hutong_seats_view1():
@@ -1569,14 +1572,14 @@ def scene_mixian() -> Image.Image:
 
 SCENES = [
     dict(id="hutong", title="胡同工位区",
-         blurb="正打 640×640：3/4 浅木通长桌 · ttc 墙 · 八人入座 · 过道可走",
-         fn=scene_hutong, walk_y=V1_WALK_Y, line="这边还能放杯子。",
+         blurb="正打 320×288 HD：3/4 浅木通长桌 · ttc 墙 · 八人入座 · 过道可走",
+         fn=scene_hutong, walk_y=176, line="这边还能放杯子。",
          beat_t="09:20", action="sit_aisle",
          seats=hutong_seats_view1(),
-         why="3/4 俯视：桌面和桌前脸都看见。白墙立体 ttc + TRUE/TALENT/CENTER + 一排七框。上排 01–04 sit_back（头肩上背露在椅背上沿）。下排 05–08 sit_front（整张脸到上胸在桌沿之上）。人椅 3×，中间过道可走。"),
+         why="HD 3/4：桌面和桌前脸都看见。白墙立体 ttc + TRUE/TALENT/CENTER + 两排七框。上排 01–04 sit_back（头肩上背露在椅背上沿）。下排 05–08 sit_front（整张脸到肩在桌沿之上）。"),
     dict(id="hutong_reverse", title="胡同 · 反打",
-         blurb="反打 180° 640×640：无墙 · 薄房间沿 · 八人朝向对调",
-         fn=scene_hutong_reverse, walk_y=V2_WALK_Y, line="从这边看是正脸。",
+         blurb="反打 180° 320×288 HD：无墙 · 薄房间沿 · 八人朝向对调",
+         fn=scene_hutong_reverse, walk_y=156, line="从这边看是正脸。",
          beat_t="09:21", action="look_back",
          camera_only=True,
          seats=hutong_seats_view2(),
@@ -1846,5 +1849,8 @@ def main(only=None):
 
 
 if __name__ == "__main__":
-    only = {"hutong", "hutong_reverse"} if "--hutong" in sys.argv else None
-    main(only=only)
+    if "--hutong" in sys.argv:
+        import generate_hutong_hd
+        generate_hutong_hd.main()
+    else:
+        main(only=None)
