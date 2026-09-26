@@ -59,13 +59,15 @@ GRAY_L = (168, 168, 174, 255)
 SHIRT_BLK = (28, 28, 32, 255)
 PANTS = (24, 24, 28, 255)
 GLASS = (70, 70, 76, 255)
+STUBBLE = (200, 156, 126, 255)
+KNIT = (44, 42, 48, 255)
 MOUTH = (198, 118, 124, 255)
 BLUSH = (236, 150, 154, 255)
 
 LOCKED = [
     INK, SKIN, SKIN_S, SKIN_H, HAIR_K, HAIR_K2, HAIR_BR, HAIR_BR2,
     CARAMEL, CARAMEL2, WHITE, WHITE_S, PINK, PINK_S, GOLD, BLUE,
-    GRAY, GRAY_S, GRAY_L, SHIRT_BLK, PANTS, GLASS, MOUTH, BLUSH,
+    GRAY, GRAY_S, GRAY_L, SHIRT_BLK, PANTS, GLASS, STUBBLE, KNIT, MOUTH, BLUSH,
     (48, 48, 52, 255), (80, 52, 40, 255), (140, 140, 146, 255),
     (40, 36, 32, 255),
 ]
@@ -465,14 +467,49 @@ def patch_03(frames: dict) -> None:
     put(frames["side"], 16, 16, GOLD)
 
 
+def draw_black_glasses(arr: np.ndarray) -> None:
+    """Solid black round frames, readable at 1x. Stamp overwrites the eye band."""
+    cx, cy = face_center(arr)
+    ey = 14 if cy >= 13 else max(13, min(cy, 14))
+    # 13×4 stamp, #=frame/pupil, .=lens skin, -=bridge
+    stamp = [
+        "  ###   ###  ",
+        " #.#.# #.#.# ",
+        " #.#.#-#.#.# ",
+        "  ###   ###  ",
+    ]
+    x0 = cx - len(stamp[0]) // 2
+    for dy, row in enumerate(stamp):
+        for dx, ch in enumerate(row):
+            x, y = x0 + dx, ey - 1 + dy
+            if ch == "#":
+                put(arr, x, y, INK)
+            elif ch in ".-":
+                put(arr, x, y, SKIN)
+    put(arr, cx, ey + 1, INK)  # bridge pixel
+    put(arr, cx - 2, ey + 4, BLUSH)
+    put(arr, cx + 2, ey + 4, BLUSH)
+    put(arr, cx, ey + 5, MOUTH)
+
+
 def patch_04(frames: dict) -> None:
     for key in ("front", "sitF", "walk"):
-        a = frames[key]
-        clean_eyes(a, glasses=True)
+        clean_eyes(frames[key], glasses=False)
+        draw_black_glasses(frames[key])
     a = frames["side"]
     cx, cy = face_center(a)
-    put(a, cx + 3, cy, GLASS)
-    put(a, cx + 4, cy, GLASS)
+    ey = max(12, min(cy, 14))
+    # round black lens + temple stem, readable in profile
+    for y, xs in ((ey - 1, (cx + 1, cx + 2, cx + 3)),
+                  (ey,     (cx, cx + 1, cx + 3, cx + 4)),
+                  (ey + 1, (cx, cx + 1, cx + 3, cx + 4)),
+                  (ey + 2, (cx + 1, cx + 2, cx + 3))):
+        for x in xs:
+            put(a, x, y, INK)
+    put(a, cx + 2, ey, SKIN)
+    put(a, cx + 2, ey + 1, INK)
+    for x in range(cx + 5, cx + 8):
+        put(a, x, ey, INK)
 
 
 def patch_05(frames: dict) -> None:
@@ -487,7 +524,50 @@ def patch_05(frames: dict) -> None:
     put(frames["side"], 16, 16, GOLD)
 
 
+def _is_skin(c):
+    r, g, b, a = (c[0], c[1], c[2], c[3] if len(c) > 3 else 255)
+    return a > 80 and r > 180 and g > 140 and b > 110 and r >= g - 10
+
+
+def _is_stubble(c):
+    return tuple(c)[:3] == STUBBLE[:3]
+
+
+def shave_head(arr: np.ndarray) -> None:
+    """Near-bald: skin-tone scalp, faint stubble, no hair volume.
+
+    Converts the whole head band (not just the crown). Idempotent.
+    """
+    h, w = arr.shape[:2]
+
+    def is_pupil(x, y):
+        if tuple(arr[y, x][:3]) != INK[:3] or arr[y, x, 3] < 80 or y < 8:
+            return False
+        skin_n = 0
+        for dx, dy in ((-1, 0), (1, 0), (0, -1), (0, 1)):
+            nx, ny = x + dx, y + dy
+            if 0 <= ny < h and 0 <= nx < w and _is_skin(arr[ny, nx]):
+                skin_n += 1
+        return skin_n >= 2
+
+    for y in range(0, min(16, h)):
+        for x in range(w):
+            if arr[y, x, 3] < 80:
+                continue
+            if _is_skin(arr[y, x]) or _is_stubble(arr[y, x]):
+                continue
+            if is_pupil(x, y):
+                continue
+            r, g, b = int(arr[y, x, 0]), int(arr[y, x, 1]), int(arr[y, x, 2])
+            mx = max(r, g, b)
+            # gray / brown / dark hair — suit starts ~row 17
+            if mx < 180:
+                arr[y, x] = STUBBLE if y <= 2 else SKIN
+
+
 def patch_06(frames: dict) -> None:
+    for key in frames:
+        shave_head(frames[key])
     for key in ("front", "sitF", "walk"):
         clean_eyes(frames[key])
 
@@ -535,6 +615,73 @@ def patch_08(frames: dict) -> None:
                         put(a, x, y, HAIR_K)
         if key in ("front", "sitF", "walk"):
             clean_eyes(a)
+        refine_08_sweater(a, key)
+
+
+def refine_08_sweater(arr: np.ndarray, key: str) -> None:
+    """White collar edge, ribbed collar/cuffs, thin necklace. Clean at 1x."""
+    h, w = arr.shape[:2]
+    cx = w // 2
+    _, cy = face_center(arr)
+    neck = min(h - 6, cy + 7)
+    front = key in ("front", "sitF", "walk")
+
+    def is_dark(x, y):
+        if not (0 <= y < h and 0 <= x < w):
+            return False
+        r, g, b, a = arr[y, x]
+        return a > 80 and max(r, g, b) < 70
+
+    def already_collared():
+        for y in range(16, 24):
+            whites = sum(
+                1 for x in range(cx - 3, cx + 4)
+                if arr[y, x, 3] > 80 and int(arr[y, x, 0]) > 220 and int(arr[y, x, 1]) > 220
+            )
+            if whites >= 2:
+                return True
+        return False
+
+    if already_collared():
+        return
+
+    if front:
+        collar_y = neck
+        for y in range(neck - 1, min(neck + 4, h)):
+            if sum(1 for x in range(cx - 2, cx + 3) if is_dark(x, y)) >= 3:
+                collar_y = y
+                break
+        for x in range(cx - 2, cx + 3):
+            if is_dark(x, collar_y):
+                put(arr, x, collar_y, WHITE)
+        for x in range(cx - 3, cx + 4):
+            if is_dark(x, collar_y + 1):
+                put(arr, x, collar_y + 1, KNIT if x % 2 == 0 else SHIRT_BLK)
+        put(arr, cx - 1, collar_y + 2, WHITE)
+        put(arr, cx + 1, collar_y + 2, WHITE)
+        put(arr, cx, collar_y + 3, WHITE)
+        for y in range(collar_y + 4, min(28, h)):
+            for x in (cx - 2, cx + 2):
+                if is_dark(x, y):
+                    arr[y, x] = KNIT
+        for y in range(24, min(28, h)):
+            for x in (cx - 5, cx + 5):
+                if is_dark(x, y):
+                    arr[y, x] = KNIT
+        return
+
+    # back / sit-back: tiny white nape (not a belt) + two torso ribs
+    nape = 18 if key in ("back", "sitB") else 17
+    put(arr, cx, nape, WHITE)
+    put(arr, cx - 1, nape, WHITE)
+    put(arr, cx + 1, nape, WHITE)
+    for x in range(cx - 2, cx + 3):
+        if is_dark(x, nape + 1):
+            put(arr, x, nape + 1, KNIT if x % 2 == 0 else SHIRT_BLK)
+    for y in range(nape + 3, min(27, h)):
+        for x in (cx - 2, cx + 2):
+            if is_dark(x, y):
+                arr[y, x] = KNIT
 
 
 PATCH = {
@@ -639,11 +786,11 @@ def write_cast_md():
 | `cast_01` | 侧分长黑发 · 白露肩 · 白花耳饰 |
 | `cast_02` | 男 · 短刺发 · 黑毛衣 · 浅蓝领 |
 | `cast_03` | 齐下巴波浪波波 · 粉针织 · 金圈 |
-| `cast_04` | 直波波刘海 · 圆框眼镜 · 白卫衣 |
+| `cast_04` | 直波波刘海 · 黑圆框眼镜 · 白卫衣 |
 | `cast_05` | 齐肩微卷 · 黑西装金扣 · 金圈 |
-| `cast_06` | 男 · 寸头 · 深灰西装 · 黑衬衫 |
+| `cast_06` | 男 · 近光头浅茬（肤色头皮）· 深灰西装 · 黑衬衫 |
 | `cast_07` | 褐长发浅焦糖发尾 · 灰西装 |
-| `cast_08` | 中分超长黑直（及膝）· 黑圆领 · 无耳饰 |
+| `cast_08` | 中分超长黑直（及膝）· 黑毛衣罗纹领/细项链 · 无耳饰 |
 
 坐姿是人（不带椅）。胡同椅子由房间画。
 """
