@@ -373,8 +373,10 @@
         ctx.save();
         const sw = spr.naturalWidth || 24, sh = spr.naturalHeight || 40;
         const dw = sw * scale, dh = sh * scale;
+        // HD sit sprites are ~68 tall; feet sit ~8px above the canvas bottom.
+        // dy is the sprite top: walk_y minus (height-to-feet).
         const foot = isHutong(room) ? Math.max(8, sh - 8) : 32 * scale;
-        const dy = room.y - Math.max(0, dh - foot);
+        const dy = isHutong(room) ? room.y - foot : room.y - Math.max(0, dh - foot);
         if (walking && dir < 0) {
           ctx.translate(x + dw, 0);
           ctx.scale(-1, 1);
