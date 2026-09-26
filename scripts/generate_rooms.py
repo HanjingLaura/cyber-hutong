@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """11 Laura-named scenes — 2.5D refined pixel.
 
-Most rooms stay 256×192. Hutong / hutong_reverse are 512×480 (2× width,
-extra height for deep desks + aisle) with one continuous long desk per row.
+Most rooms stay 256×192. Hutong / hutong_reverse are 512×480 (2× width)
+with one continuous long desk per row. People and chairs are 4× so the
+eight seats fill the room (pitch 1/4 of the width).
 """
 from __future__ import annotations
 
@@ -478,23 +479,24 @@ HUTONG_NORTH = ("cast_02", None, "cast_05", "cast_08")  # face north
 HUTONG_SOUTH = ("cast_01", "cast_03", "cast_04", None)  # face south
 
 HW, HH = 512, 480
-HUTONG_SCALE = 2
-DESK_X, DESK_W, DESK_D, DESK_Z = 8, 496, 46, 14
-# Four station centers along the ONE continuous desk.
-SEATS_X = (70, 194, 318, 442)
-# Shared row geometry (view 1). View 2 only moves the top desk/chairs.
+HUTONG_SCALE = 4
+DESK_X, DESK_W, DESK_D, DESK_Z = 8, 496, 36, 22
+# Four station centers — pitch 128 = 1/4 of the 512 room.
+SEATS_X = (64, 192, 320, 448)
+# People 128×160, chairs ~92×116. Overlap sitters with their desk so
+# two 160px rows + wall + desks still fill 480 without a huge empty floor.
 V1_WALL = 100
-V1_TOP_DESK_Y = 102
-V1_TOP_SIT = 164
-V1_TOP_CHAIR_Y = 196
-V1_BOT_CHAIR_Y = 372
-V1_BOT_SIT = 342
-V1_BOT_DESK_Y = 420
-V1_WALK_Y = 310
-V2_TOP_DESK_Y = 8
-V2_TOP_SIT = 70
-V2_TOP_CHAIR_Y = 102
-V2_WALK_Y = 286
+V1_TOP_DESK_Y = 100
+V1_TOP_SIT = 150
+V1_TOP_CHAIR_Y = 186
+V1_WALK_Y = 220
+V1_BOT_CHAIR_Y = 278
+V1_BOT_SIT = 296
+V1_BOT_DESK_Y = 374
+V2_TOP_DESK_Y = 6
+V2_TOP_SIT = 56
+V2_TOP_CHAIR_Y = 92
+V2_WALK_Y = 200
 
 HUT = {
     "ceil": (252, 252, 254, 255),
@@ -506,18 +508,18 @@ HUT = {
     "floor": (214, 212, 208, 255),
     "floor2": (202, 200, 196, 255),
     "seam": (188, 186, 182, 255),
-    "desk": (238, 222, 194, 255),
-    "desk_hi": (252, 242, 222, 255),
-    "desk_g": (224, 206, 176, 255),
-    "desk_e": (154, 130, 98, 255),
+    "desk": (232, 210, 176, 255),
+    "desk_hi": (248, 236, 210, 255),
+    "desk_g": (198, 172, 132, 255),
+    "desk_e": (128, 98, 68, 255),
     "chair": (32, 32, 36, 255),
     "mesh": (58, 58, 66, 255),
     "mesh_hi": (88, 88, 96, 255),
     "ttc": (36, 34, 40, 255),
     "ttc_d": (14, 12, 16, 255),
     "ttc_hi": (78, 76, 82, 255),
-    "frame": (164, 164, 168, 255),
-    "mat": (240, 238, 234, 255),
+    "frame": (118, 118, 124, 255),
+    "mat": (236, 234, 230, 255),
     "plate": (40, 38, 42, 255),
     "sub": (130, 130, 136, 255),
 }
@@ -528,7 +530,7 @@ def hutong_cast(cid, view):
 
 
 def hutong_chair_north() -> Image.Image:
-    """Larger mesh task chair — BACK toward the aisle, facing the far wall."""
+    """Mesh task chair authored at 46×58, then 2× for the 4× cast."""
     img = new(46, 58)
     d = ImageDraw.Draw(img)
     solid_shadow(d, 23, 55, 17, 3)
@@ -555,14 +557,17 @@ def hutong_chair_north() -> Image.Image:
                 d.point((x, y), fill=HUT["mesh"])
             elif (x + y) % 4 == 0:
                 d.point((x, y), fill=HUT["mesh_hi"])
-    hline(d, 11, 33, 6, HUT["mesh_hi"])
-    hline(d, 11, 33, 29, shade(HUT["chair"], 20))
-    hline(d, 12, 32, 20, shade(HUT["mesh"], 16))
+    hline(d, 11, 33, 6, shade(HUT["mesh_hi"], 24))
+    hline(d, 11, 33, 7, HUT["mesh_hi"])
+    hline(d, 11, 33, 29, shade(HUT["chair"], 28))
+    hline(d, 12, 32, 20, shade(HUT["mesh"], 22))
+    vline(d, 10, 8, 28, shade(HUT["chair"], 18))
+    vline(d, 33, 8, 28, shade(HUT["chair"], -10))
     box1(d, 4, 30, 9, 42, PAL["metal_d"], PAL["metal"])
     box1(d, 35, 30, 40, 42, PAL["metal_d"], PAL["metal"])
     hline(d, 4, 9, 30, PAL["metal_hi"])
     hline(d, 35, 40, 30, PAL["metal_hi"])
-    return outline_sprite(img)
+    return zoom(outline_sprite(img), 2)
 
 
 def hutong_chair_south() -> Image.Image:
@@ -577,10 +582,13 @@ def hutong_chair_south() -> Image.Image:
                 d.point((x, y), fill=HUT["mesh"])
             elif (x * 3 + y) % 5 == 0:
                 d.point((x, y), fill=HUT["mesh_hi"])
-    hline(d, 13, 33, 3, HUT["mesh_hi"])
+    hline(d, 13, 33, 3, shade(HUT["mesh_hi"], 24))
+    hline(d, 13, 33, 4, HUT["mesh_hi"])
     prism(d, 8, 16, 28, 12, 6, HUT["mesh_hi"], HUT["chair"])
-    hline(d, 10, 33, 17, shade(HUT["mesh_hi"], 22))
+    hline(d, 10, 33, 17, shade(HUT["mesh_hi"], 28))
+    hline(d, 10, 33, 18, shade(HUT["mesh_hi"], 12))
     dither(d, 10, 19, 33, 26, HUT["mesh"], 3)
+    vline(d, 9, 17, 26, shade(HUT["mesh_hi"], 16))
     vline(d, 22, 34, 45, PAL["metal"])
     vline(d, 23, 34, 45, PAL["metal_d"])
     hline(d, 7, 38, 45, PAL["metal_d"])
@@ -592,7 +600,9 @@ def hutong_chair_south() -> Image.Image:
     d.point((22, 47), fill=PAL["metal_hi"])
     box1(d, 4, 18, 9, 32, PAL["metal_d"], PAL["metal"])
     box1(d, 35, 18, 40, 32, PAL["metal_d"], PAL["metal"])
-    return outline_sprite(img)
+    hline(d, 4, 9, 18, PAL["metal_hi"])
+    hline(d, 35, 40, 18, PAL["metal_hi"])
+    return zoom(outline_sprite(img), 2)
 
 
 def long_wood_desk(d, x, y, w=DESK_W, h=DESK_D, z=DESK_Z):
@@ -602,35 +612,44 @@ def long_wood_desk(d, x, y, w=DESK_W, h=DESK_D, z=DESK_Z):
     # wide plank bands along the length — one joined slab, not four desks
     plank = 6
     for i, gy in enumerate(range(y + 3, y + h - 3, plank)):
-        base = top if i % 2 == 0 else shade(top, -10)
+        base = top if i % 2 == 0 else shade(top, -16)
         rect(d, [x + 3, gy, x + w - 4, min(gy + plank - 2, y + h - 3)], base)
         hline(d, x + 3, x + w - 4, min(gy + plank - 2, y + h - 3), grain)
+        if i % 3 == 1:
+            hline(d, x + 8, x + w - 9, gy + 1, shade(grain, 18))
         # rare end-to-end seams so it still reads as one board run
         if i % 2 == 0:
             sx = x + 40 + (i * 37) % max(20, w - 80)
             vline(d, sx, gy, min(gy + plank - 3, y + h - 4), shade(grain, -8))
     hline(d, x + 2, x + w - 3, y + 1, hi)
     hline(d, x + 2, x + w - 3, y + 2, shade(hi, -8))
-    # thick front bevel so the volume reads
-    hline(d, x + 1, x + w - 2, y + h, shade(edge, 36))
-    hline(d, x + 1, x + w - 2, y + h + 1, shade(edge, 18))
+    hline(d, x + 4, x + w - 5, y + 3, shade(hi, -16))
+    # thick front face + highlight so the slab has real volume
+    hline(d, x + 1, x + w - 2, y + h, shade(edge, 56))
+    hline(d, x + 1, x + w - 2, y + h + 1, shade(edge, 40))
+    hline(d, x + 1, x + w - 2, y + h + 2, shade(edge, 22))
+    hline(d, x + 1, x + w - 2, y + h + 3, shade(edge, 8))
     if z > 4:
-        dither(d, x + 2, y + h + 3, x + w - 3, y + h + z - 2, shade(edge, -16), 4)
+        dither(d, x + 2, y + h + 5, x + w - 3, y + h + z - 2, shade(edge, -18), 4)
+        vline(d, x + 2, y + h + 4, y + h + z - 3, shade(edge, 16))
+        vline(d, x + w - 3, y + h + 4, y + h + z - 3, shade(edge, -22))
+    # soft contact shadow on the floor (south of the riser)
+    drop_shadow(d, x + 4, y + h + z - 2, w - 4, 10, ox=4, oy=4)
 
 
 def hutong_floor(d, y0, w=HW, h=HH):
-    """Pale office slab — large quiet seams, no hatch, no light pools."""
+    """Pale office carpet tiles — subtle 32px grid, no light pools."""
     c1, c2, seam = HUT["floor"], HUT["floor2"], HUT["seam"]
-    rect(d, [0, y0, w - 1, h - 1], c1)
-    for y in range(y0 + 48, h, 64):
-        hline(d, 0, w - 1, y, seam)
-        if y + 1 < h:
-            hline(d, 0, w - 1, y + 1, shade(c1, 8))
-    for x in range(80, w, 128):
-        vline(d, x, y0, h - 1, seam)
-        if x + 1 < w:
-            vline(d, x + 1, y0, h - 1, shade(c1, 6))
-    noise(d, 0, y0, w - 1, h - 1, c2, every=23)
+    tile = 32
+    for ty in range(y0, h, tile):
+        for tx in range(0, w, tile):
+            base = c1 if ((tx // tile) + (ty // tile)) % 2 == 0 else shade(c1, -6)
+            rect(d, [tx, ty, min(tx + tile - 1, w - 1), min(ty + tile - 1, h - 1)], base)
+            hline(d, tx, min(tx + tile - 1, w - 1), ty, seam)
+            vline(d, tx, ty, min(ty + tile - 1, h - 1), seam)
+            if ty + 1 < h:
+                hline(d, tx + 1, min(tx + tile - 2, w - 1), ty + 1, shade(base, 8))
+    noise(d, 0, y0, w - 1, h - 1, c2, every=29)
 
 
 def _blk3d(d, sx, sy, w, h, face, dep, hi):
@@ -692,53 +711,55 @@ def _nameplate(d, x, y, w=22, h=6):
 
 
 def hutong_wall(d, w=HW):
-    """White wall: molding, big ttc, dense plaque grid, a few nameplates."""
-    rect(d, [0, 0, w - 1, 16], HUT["ceil"])
-    hline(d, 0, w - 1, 13, HUT["mold_d"])
-    hline(d, 0, w - 1, 14, HUT["mold"])
-    hline(d, 0, w - 1, 15, shade(HUT["mold"], 18))
-    rect(d, [0, 16, w - 1, 94], HUT["wall"])
+    """White wall: molding, ttc, fewer larger plaques, a few nameplates."""
+    lip_y = V1_WALL - 6
+    rect(d, [0, 0, w - 1, 12], HUT["ceil"])
+    hline(d, 0, w - 1, 10, HUT["mold_d"])
+    hline(d, 0, w - 1, 11, HUT["mold"])
+    hline(d, 0, w - 1, 12, shade(HUT["mold"], 18))
+    rect(d, [0, 13, w - 1, lip_y - 1], HUT["wall"])
     for i in range(6):
-        vline(d, i, 16, 94, mix(HUT["wall"], HUT["wall_s"], 0.18 * (6 - i) / 6))
-        vline(d, w - 1 - i, 16, 94, mix(HUT["wall"], HUT["wall_s"], 0.18 * (6 - i) / 6))
-    # south lip (wall thickness)
-    rect(d, [0, 95, w - 1, 99], HUT["lip"])
-    hline(d, 0, w - 1, 94, INK)
-    hline(d, 0, w - 1, 99, INK)
-    hline(d, 0, w - 1, 100, shade(HUT["lip"], -28))
-    draw_ttc_large(d, 8, 22)
-    # four tight rows of thin square frames (photo grid)
-    tones = (0, -10, 8, -22, 2, -14, 6, -28, -4, -16, 10, -20)
-    col0, pitch, size = 148, 18, 15
-    rows_y = (20, 38, 56, 74)
-    cols = (w - 8 - col0) // pitch
-    n = 0
-    for fy in rows_y:
+        vline(d, i, 13, lip_y - 1, mix(HUT["wall"], HUT["wall_s"], 0.18 * (6 - i) / 6))
+        vline(d, w - 1 - i, 13, lip_y - 1, mix(HUT["wall"], HUT["wall_s"], 0.18 * (6 - i) / 6))
+    rect(d, [0, lip_y, w - 1, V1_WALL - 2], HUT["lip"])
+    hline(d, 0, w - 1, lip_y - 1, INK)
+    hline(d, 0, w - 1, V1_WALL - 2, INK)
+    hline(d, 0, w - 1, V1_WALL - 1, shade(HUT["lip"], -28))
+    draw_ttc_large(d, 6, 18)
+    # Fewer, ~2× larger grey-framed squares (photo: neat grid, light interiors)
+    size, pitch, col0 = 32, 42, 164
+    rows_y = (16, 54)
+    cols = 7
+    for r, fy in enumerate(rows_y):
         for c in range(cols):
-            _plaque(d, col0 + c * pitch, fy, size, tones[n % len(tones)])
-            n += 1
-    _nameplate(d, 12, 78, 30, 7)
-    _nameplate(d, 48, 78, 24, 7)
-    _nameplate(d, 86, 78, 20, 7)
-    _nameplate(d, 220, 86, 26, 6)
-    _nameplate(d, 360, 86, 22, 6)
-    _nameplate(d, 470, 86, 28, 6)
+            _plaque(d, col0 + c * pitch, fy, size, 0)
+            if r == 1 and c in (1, 3, 5):
+                _nameplate(d, col0 + c * pitch + 4, fy + size + 2, 24, 6)
+    _nameplate(d, 10, 72, 28, 6)
+    _nameplate(d, 48, 72, 22, 6)
 
 
 def _hutong_row(room, d, desk_y, chair_y, sit_y, who, facing):
-    """One continuous desk + 4 chairs. facing 'north' = backs, 'south' = faces."""
-    long_wood_desk(d, DESK_X, desk_y)
+    """One continuous desk + 4 chairs. facing 'north' = backs, 'south' = faces.
+
+    Draw order: far furniture first. North row sits behind the desk (desk
+    then chairs then people). South row sits *behind* a near desk, so the
+    slab is painted last and covers laps. Chair first, then person, so
+    sit_back heads rest on the backrest instead of floating above it.
+    """
     north = facing == "north"
+    if north:
+        long_wood_desk(d, DESK_X, desk_y)
     chair = hutong_chair_north() if north else hutong_chair_south()
     view = "sit_back" if north else "sit_front"
     for i, cx in enumerate(SEATS_X):
         chx = cx - chair.size[0] // 2
         spr = hutong_cast(who[i], view) if who[i] else None
-        if spr and north:
-            blit(room, spr, cx - spr.size[0] // 2, sit_y)
         blit(room, chair, chx, chair_y)
-        if spr and not north:
+        if spr:
             blit(room, spr, cx - spr.size[0] // 2, sit_y)
+    if not north:
+        long_wood_desk(d, DESK_X, desk_y)
 
 
 def scene_hutong() -> Image.Image:
@@ -1406,11 +1427,11 @@ def scene_mixian() -> Image.Image:
 
 SCENES = [
     dict(id="hutong", title="胡同工位区",
-         blurb="正打 512×480：白墙 ttc + 密框 · 每排一张通长空桌 · 中间 8 椅",
+         blurb="正打 512×480：白墙 ttc + 少而大的灰框 · 每排一张通长空桌 · 人椅 4×",
          fn=scene_hutong, walk_y=V1_WALK_Y, line="这边还能放杯子。",
          beat_t="09:20", action="sit_aisle",
          seats=hutong_seats_view1(),
-         why="摄像机朝北墙。白墙、立体 ttc、细灰框密铺、几块小铭牌、顶角线。每排 4 座共用一张通长浅木桌，桌面全空。上排椅朝北墙看后脑勺，下排椅朝下看正脸。不要电脑/植物/柜/箱/光斑。"),
+         why="摄像机朝北墙。白墙、立体 ttc、少而大的灰框、几块小铭牌、顶角线。每排 4 座共用一张通长浅木桌，桌面全空。人椅 4×，座距 1/4 房宽。上排椅朝北墙看后脑勺，下排椅朝下看正脸。不要电脑/植物/柜/箱/光斑。"),
     dict(id="hutong_reverse", title="胡同 · 反打",
          blurb="反打 180° 512×480：无墙 · 同一通长桌 8 座换朝向",
          fn=scene_hutong_reverse, walk_y=V2_WALK_Y, line="从这边看是正脸。",
@@ -1487,7 +1508,7 @@ def write_scene_md(spec):
 
 - `public/assets/scenes/{spec['id']}/scene_{spec['id']}.png`
 - `public/preview/zoomed/{spec['id']}.png`
-{("- View 1 `hutong`：白墙 ttc + 密框，每排一张通长空桌，n* `sit_back`，s* `sit_front`，`walk_y=310`。\n- View 2 `hutong_reverse`：无墙（所以无牌无框），座位 180° 对调，n* 改 `sit_front`，s* 改 `sit_back`，`walk_y=286`。" if hutong else "")}
+{("- View 1 `hutong`：白墙 ttc + 少而大的灰框，每排一张通长空桌，n* `sit_back`，s* `sit_front`，`walk_y=" + str(V1_WALK_Y) + "`。\n- View 2 `hutong_reverse`：无墙（所以无牌无框），座位 180° 对调，n* 改 `sit_front`，s* 改 `sit_back`，`walk_y=" + str(V2_WALK_Y) + "`。" if hutong else "")}
 
 不描摹真人，不提交 refs。
 """,

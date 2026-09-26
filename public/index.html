@@ -73,7 +73,7 @@
     }
     .x4 { width: calc(32px * 4); height: auto; }
     .room { width: 384px; max-width: 100%; height: auto; }
-    .room.hutong-lg { width: min(100%, 640px); }
+    .room.hutong-lg { width: min(100%, 720px); }
     .sheet { width: min(100%, 720px); height: auto; }
     .beat {
       display: grid;
@@ -189,7 +189,7 @@
     <div id="walk" class="panel">
       <section>
         <h2>房间漫游</h2>
-        <p class="note">点房间切换。cast_01 走一个往返。胡同画布 512×480（角色整数 2×），其他房 256×192。</p>
+        <p class="note">点房间切换。cast_01 走一个往返。胡同画布 512×480（角色整数 4×），其他房 256×192。</p>
         <div class="chips" id="room-chips"></div>
         <div id="stage-wrap">
           <canvas id="stage" width="256" height="192"></canvas>
@@ -212,10 +212,10 @@
   <script>
     const ROOMS = [
       { id:"hutong", title:"胡同工位区", src:"assets/scenes/hutong/scene_hutong.png",
-        line:"这边还能放杯子。", y:310, t:"09:20", action:"sit_aisle",
-        why:"正打 512×480：白墙立体 ttc + 细灰框密铺。每排一张通长空桌，上排后脑勺，下排正脸。" },
+        line:"这边还能放杯子。", y:220, t:"09:20", action:"sit_aisle",
+        why:"正打 512×480：白墙立体 ttc + 少而大的灰框。每排一张通长空桌，上排后脑勺，下排正脸。人椅 4×，座距 1/4 房宽。" },
       { id:"hutong_reverse", title:"胡同 · 反打", src:"assets/scenes/hutong_reverse/scene_hutong_reverse.png",
-        line:"从这边看是正脸。", y:286, t:"09:21", action:"look_back", cameraOnly:true,
+        line:"从这边看是正脸。", y:200, t:"09:21", action:"look_back", cameraOnly:true,
         why:"同一房间转 180°，512×480。无墙。原先后脑勺变正脸，正脸变后脑勺，左右对调。" },
       { id:"elevator", title:"电梯间", src:"assets/scenes/elevator/scene_elevator.png",
         line:"先等这梯。", y:140, t:"09:12", action:"wait_lift",
@@ -301,7 +301,7 @@
     let cur = 0, x = 56, dir = 1, tick = 0, walking = true;
     const wrap = document.getElementById("stage-wrap");
     function roomScale(room) {
-      return room.id.startsWith("hutong") ? 2 : 1;
+      return room.id.startsWith("hutong") ? 4 : 1;
     }
     function loadBg(src) {
       if (bgCache[src]) return bgCache[src];
@@ -312,8 +312,8 @@
     }
     ROOMS.forEach(w => loadBg(w.src));
     function syncCanvas(bg) {
-      const rw = (bg && bg.naturalWidth) || (roomScale(ROOMS[cur]) === 2 ? 512 : 256);
-      const rh = (bg && bg.naturalHeight) || (roomScale(ROOMS[cur]) === 2 ? 480 : 192);
+      const rw = (bg && bg.naturalWidth) || (roomScale(ROOMS[cur]) > 1 ? 512 : 256);
+      const rh = (bg && bg.naturalHeight) || (roomScale(ROOMS[cur]) > 1 ? 480 : 192);
       if (canvas.width !== rw || canvas.height !== rh) {
         canvas.width = rw;
         canvas.height = rh;
@@ -327,7 +327,7 @@
       const scale = roomScale(ROOMS[i]);
       x = 28 * scale; dir = 1; walking = true;
       say.textContent = ROOMS[i].line;
-      meta.textContent = ROOMS[i].title + " · " + ROOMS[i].src + " · " + (scale === 2 ? "512×480" : "256×192");
+      meta.textContent = ROOMS[i].title + " · " + ROOMS[i].src + " · " + (scale > 1 ? "512×480" : "256×192");
       [...chips.children].forEach((b, j) => b.classList.toggle("on", j === i));
       syncCanvas(bgCache[ROOMS[i].src]);
     }
