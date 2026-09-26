@@ -157,8 +157,8 @@
         <div class="grid" id="cast"></div>
       </section>
       <section>
-        <h2>保留场景 · 11</h2>
-        <p class="note">胡同（上墙 4 桌 · 下墙 4 桌 · 中间 8 椅背靠背）/ 电梯间 / 夏威夷（开窗见蓝天高楼 · 左3椅 · 右3椅 · 约六座）/ 泡泡玛特 / 厕所 / 普通工位 / 会议室 / 演唱会 / 咖啡店 / 健身房 / 米线店。</p>
+        <h2>保留场景 · 11 + 胡同反打</h2>
+        <p class="note">胡同正打 / 胡同反打（同一房间 180°）/ 电梯间 / 夏威夷（开窗见蓝天高楼 · 左3椅 · 右3椅 · 约六座）/ 泡泡玛特 / 厕所 / 普通工位 / 会议室 / 演唱会 / 咖啡店 / 健身房 / 米线店。</p>
         <div class="grid" id="rooms"></div>
       </section>
       <section>
@@ -205,7 +205,10 @@
     const ROOMS = [
       { id:"hutong", title:"胡同工位区", src:"assets/scenes/hutong/scene_hutong.png",
         line:"这边还能放杯子。", y:108, t:"09:20", action:"sit_aisle",
-        why:"上墙 4 桌、下墙 4 桌；8 椅在中间背靠背（上排后脑勺、下排正脸），中间走道。每桌空 pad。" },
+        why:"正打：素墙。上排后脑勺，下排正脸。只要地板、8 桌、8 椅、人。" },
+      { id:"hutong_reverse", title:"胡同 · 反打", src:"assets/scenes/hutong_reverse/scene_hutong_reverse.png",
+        line:"从这边看是正脸。", y:96, t:"09:21", action:"look_back", cameraOnly:true,
+        why:"同一房间转 180°。无墙。原先后脑勺变正脸，正脸变后脑勺，左右对调。" },
       { id:"elevator", title:"电梯间", src:"assets/scenes/elevator/scene_elevator.png",
         line:"先等这梯。", y:140, t:"09:12", action:"wait_lift",
         why:"米黄石材、开门、雕塑台座、屏与按钮。" },
@@ -258,13 +261,14 @@
     });
 
     const beatsEl = document.getElementById("beats");
-    [...ROOMS].sort((a, b) => a.t.localeCompare(b.t)).forEach((b, i) => {
+    const DAY = ROOMS.filter(r => !r.cameraOnly);
+    [...DAY].sort((a, b) => a.t.localeCompare(b.t)).forEach((b, i) => {
       const d = document.createElement("article");
       d.className = "beat";
       d.innerHTML = `
         <img class="pixel" src="${b.src}" alt="${b.title}" />
         <div>
-          <div class="t">${b.t} · ${String(i + 1).padStart(2, "0")} / ${String(ROOMS.length).padStart(2, "0")} · ${b.action}</div>
+          <div class="t">${b.t} · ${String(i + 1).padStart(2, "0")} / ${String(DAY.length).padStart(2, "0")} · ${b.action}</div>
           <h3>${b.title}</h3>
           <p class="note">${b.why}</p>
           <div class="bubble">${b.line}</div>

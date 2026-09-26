@@ -18,58 +18,142 @@
           "x": 27,
           "y": 56,
           "face": "up",
-          "view": "sit_back"
+          "view": "sit_back",
+          "who": "cast_02"
         },
         {
           "id": "n1",
           "x": 89,
           "y": 56,
           "face": "up",
-          "view": "sit_back"
+          "view": "sit_back",
+          "who": null
         },
         {
           "id": "n2",
           "x": 151,
           "y": 56,
           "face": "up",
-          "view": "sit_back"
+          "view": "sit_back",
+          "who": "cast_05"
         },
         {
           "id": "n3",
           "x": 213,
           "y": 56,
           "face": "up",
-          "view": "sit_back"
+          "view": "sit_back",
+          "who": "cast_08"
         },
         {
           "id": "s0",
           "x": 27,
           "y": 150,
           "face": "down",
-          "view": "sit_front"
+          "view": "sit_front",
+          "who": "cast_01"
         },
         {
           "id": "s1",
           "x": 89,
           "y": 150,
           "face": "down",
-          "view": "sit_front"
+          "view": "sit_front",
+          "who": "cast_03"
         },
         {
           "id": "s2",
           "x": 151,
           "y": 150,
           "face": "down",
-          "view": "sit_front"
+          "view": "sit_front",
+          "who": "cast_04"
         },
         {
           "id": "s3",
           "x": 213,
           "y": 150,
           "face": "down",
-          "view": "sit_front"
+          "view": "sit_front",
+          "who": null
         }
       ]
+    },
+    {
+      "id": "hutong_reverse",
+      "title": "胡同 · 反打",
+      "src": "assets/scenes/hutong_reverse/scene_hutong_reverse.png",
+      "walk_y": 96,
+      "line": "从这边看是正脸。",
+      "beat_t": "09:21",
+      "action": "look_back",
+      "seats": [
+        {
+          "id": "s3",
+          "x": 27,
+          "y": 22,
+          "face": "up",
+          "view": "sit_back",
+          "who": null
+        },
+        {
+          "id": "s2",
+          "x": 89,
+          "y": 22,
+          "face": "up",
+          "view": "sit_back",
+          "who": "cast_04"
+        },
+        {
+          "id": "s1",
+          "x": 151,
+          "y": 22,
+          "face": "up",
+          "view": "sit_back",
+          "who": "cast_03"
+        },
+        {
+          "id": "s0",
+          "x": 213,
+          "y": 22,
+          "face": "up",
+          "view": "sit_back",
+          "who": "cast_01"
+        },
+        {
+          "id": "n3",
+          "x": 27,
+          "y": 150,
+          "face": "down",
+          "view": "sit_front",
+          "who": "cast_08"
+        },
+        {
+          "id": "n2",
+          "x": 89,
+          "y": 150,
+          "face": "down",
+          "view": "sit_front",
+          "who": "cast_05"
+        },
+        {
+          "id": "n1",
+          "x": 151,
+          "y": 150,
+          "face": "down",
+          "view": "sit_front",
+          "who": null
+        },
+        {
+          "id": "n0",
+          "x": 213,
+          "y": 150,
+          "face": "down",
+          "view": "sit_front",
+          "who": "cast_02"
+        }
+      ],
+      "camera_only": true
     },
     {
       "id": "elevator",

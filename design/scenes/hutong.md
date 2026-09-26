@@ -2,12 +2,13 @@
 
 > 精致像素 · 256×192 · 2.5D · 桌面留物位
 
-上墙 4 桌 · 下墙 4 桌 · 中间 8 椅背靠背
+正打：素墙 + 上 4 桌下 4 桌 · 中间 8 椅
 
-上墙齐排 4 张工位桌，下墙齐排 4 张；8 把椅子全在房间中间：上排椅朝上墙（看见后脑勺），下排椅朝下墙（看见正脸），两排椅背对背，中间留走道。每桌一块空 pad。墙上只留 ttc 和镜框。空地用植物/喷壶/包补密度，不加座位。
+摄像机朝北墙。素墙一条（无 ttc / 镜框）。上排椅朝北墙看后脑勺，下排椅朝下看正脸。只要地板、8 桌、8 椅、坐着的人；桌面空着。
 
 - `public/assets/scenes/hutong/scene_hutong.png`
 - `public/preview/zoomed/hutong.png`
-- 8 seat anchors: top n0–n3 face up (`sit_back`); bottom s0–s3 face down (`sit_front`). Walk aisle `walk_y=108`.
+- View 1 `hutong`：素墙，n* `sit_back`，s* `sit_front`，`walk_y=108`。
+- View 2 `hutong_reverse`：无墙，座位 180° 对调，n* 改 `sit_front`，s* 改 `sit_back`，`walk_y=96`。
 
 不描摹真人，不提交 refs。

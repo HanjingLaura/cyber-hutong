@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """11 Laura-named scenes — 2.5D refined pixel, 256×192, empty desk pads.
 
-v4: hawaii open window + 6 seats; hutong 4 top-wall desks + 4 bottom-wall desks, 8 mid chairs;
+v5: hutong two cameras (front + 180 reverse); desks/chairs/people only;
 concert / cafe / gym / mixian added. Same 1px ink + wall-FACE language.
 """
 from __future__ import annotations
@@ -469,73 +469,101 @@ def office_floor(d, y0, c1, c2, seam):
 
 
 # ===========================================================================
-# 1. 胡同 — 上墙 4 桌 + 下墙 4 桌，8 椅在中间背靠背
+# 1. 胡同 — 两台摄像机：正打（有素墙）/ 反打 180°（无墙）
+#    只要地板 + 8 桌 + 8 椅 + 坐着的人。桌面空着。
 # ===========================================================================
-def scene_hutong() -> Image.Image:
-    room = new(W, H, HT["floor"])
-    d = ImageDraw.Draw(room)
-    office_floor(d, 40, HT["floor"], HT["floor2"], HT["gap"])
+# Physical seats, left→right as seen in view 1.
+# n* face the north (top) wall; s* face the south (bottom) edge.
+HUTONG_NORTH = ("cast_02", None, "cast_05", "cast_08")  # face north
+HUTONG_SOUTH = ("cast_01", "cast_03", "cast_04", None)  # face south
+HUTONG_DESK_XS = (8, 70, 132, 194)
+HUTONG_DESK_W, HUTONG_DESK_H, HUTONG_DESK_Z = 54, 12, 7
+
+
+def _hutong_desk(d, x, y):
+    prism(d, x, y, HUTONG_DESK_W, HUTONG_DESK_H, HUTONG_DESK_Z, HT["desk"], HT["desk_e"])
+
+
+def _hutong_floor(d, y0):
+    office_floor(d, y0, HT["floor"], HT["floor2"], HT["gap"])
     light_pool(d, 80, 108, 36, 8, HT["sun"], 3)
     light_pool(d, 176, 108, 36, 8, HT["sun"], 3)
 
+
+def scene_hutong() -> Image.Image:
+    """View 1 — camera looks north: plain wall, n* show backs, s* show faces."""
+    room = new(W, H, HT["floor"])
+    d = ImageDraw.Draw(room)
+    _hutong_floor(d, 40)
     rect(d, [0, 0, W - 1, 10], HT["ceil"])
-    fluorescent(d, 18, 1, 220, HT["sun"])
     wall_face(d, 0, 11, W - 1, 38, HT["wall"], lip=4, lip_c=HT["lip"])
-    draw_ttc(d, 8, 14)
-    frames = (
-        (48, 14, 8, 8), (64, 16, 7, 7), (80, 14, 8, 8),
-        (98, 16, 7, 7), (114, 14, 8, 8), (132, 16, 7, 7),
-        (148, 14, 9, 8), (168, 16, 7, 7), (186, 14, 8, 8),
-        (204, 16, 7, 7), (222, 14, 8, 8), (238, 16, 7, 7),
-    )
-    for i, (fx, fy, fw, fh) in enumerate(frames):
-        prism(d, fx, fy, fw, fh, 2, HT["frame"], HT["wall_d"], HT["lip"])
-        if i % 3 == 0:
-            rect(d, [fx + 2, fy + 2, fx + fw - 3, fy + fh - 3], shade(HT["wall_d"], -6))
-    dither(d, 220, 12, 254, 36, HT["sun"], 5)
 
-    # four desks flush to the TOP wall, four flush to the BOTTOM edge
-    desk_xs = (8, 70, 132, 194)
-    desk_w, desk_h, desk_z = 54, 12, 7
-    top_items = (prop_laptop(), None, prop_cup((40, 40, 46, 255)), None)
-    bot_items = (None, prop_notebook(), None, prop_cup((80, 48, 40, 255)))
-    # top-row sit_back (face the wall); bottom-row sit_front (face us)
-    top_sit = ("cast_02", None, "cast_05", "cast_08")
-    bot_sit = ("cast_01", "cast_03", "cast_04", None)
-
-    top_desk_y = 39
-    bot_desk_y = 173
-    top_chair_y = 56
-    bot_chair_y = 150
-
-    for i, x in enumerate(desk_xs):
-        prism(d, x, top_desk_y, desk_w, desk_h, desk_z, HT["desk"], HT["desk_e"])
-        empty_pad(d, x + 12, top_desk_y + 2, 30, 8, HT["pad"], shade(HT["desk_e"], 16))
-        if top_items[i]:
-            blit(room, top_items[i], x + 16, top_desk_y)
-        prism(d, x, bot_desk_y, desk_w, desk_h, desk_z, HT["desk"], HT["desk_e"])
-        empty_pad(d, x + 12, bot_desk_y + 2, 30, 8, HT["pad"], shade(HT["desk_e"], 16))
-        if bot_items[i]:
-            blit(room, bot_items[i], x + 16, bot_desk_y)
-
-        # top: person faces the wall (back of head), then chair back toward the aisle
-        if top_sit[i]:
-            blit(room, cast_sprite(top_sit[i], "sit_back"), x + 11, top_chair_y - 12)
-        blit(room, chair_north(jacket=(i == 3)), x + 16, top_chair_y)
-        # bottom: chair behind (toward aisle), person faces the bottom wall
-        blit(room, chair_south(jacket=(i == 1)), x + 16, bot_chair_y)
-        if bot_sit[i]:
-            blit(room, cast_sprite(bot_sit[i], "sit_front"), x + 11, bot_chair_y - 14)
-
-    # leftover floor = small props only, no extra seats
-    blit(room, prop_plant(), 2, 118)
-    blit(room, prop_plant(), 238, 118)
-    blit(room, prop_spray(), 2, 96)
-    blit(room, prop_bottle(), 244, 150)
-    prism(d, 238, 88, 14, 6, 16, HT["chair"], shade(HT["chair"], -16))
-    prism(d, 118, 112, 12, 5, 10, (46, 72, 120, 255), (28, 44, 78, 255))
-    d.point((124, 114), fill=(210, 168, 80, 255))
+    top_desk_y, bot_desk_y = 39, 173
+    top_chair_y, bot_chair_y = 56, 150
+    for i, x in enumerate(HUTONG_DESK_XS):
+        _hutong_desk(d, x, top_desk_y)
+        _hutong_desk(d, x, bot_desk_y)
+        if HUTONG_NORTH[i]:
+            blit(room, cast_sprite(HUTONG_NORTH[i], "sit_back"), x + 11, top_chair_y - 12)
+        blit(room, chair_north(), x + 16, top_chair_y)
+        blit(room, chair_south(), x + 16, bot_chair_y)
+        if HUTONG_SOUTH[i]:
+            blit(room, cast_sprite(HUTONG_SOUTH[i], "sit_front"), x + 11, bot_chair_y - 14)
     return room
+
+
+def scene_hutong_reverse() -> Image.Image:
+    """View 2 — camera rotated 180°: no wall. Rows and X flip; faces/backs swap."""
+    room = new(W, H, HT["floor"])
+    d = ImageDraw.Draw(room)
+    _hutong_floor(d, 0)
+
+    # Physical south row is now at the TOP of the screen (X flipped).
+    # Physical north row is now at the BOTTOM (X flipped).
+    top_desk_y, bot_desk_y = 4, 173
+    top_chair_y, bot_chair_y = 22, 150
+    xs = HUTONG_DESK_XS  # screen left → right
+    south_ltr = tuple(reversed(HUTONG_SOUTH))  # screen-left = physical s3
+    north_ltr = tuple(reversed(HUTONG_NORTH))  # screen-left = physical n3
+    for i, x in enumerate(xs):
+        _hutong_desk(d, x, top_desk_y)
+        _hutong_desk(d, x, bot_desk_y)
+        # top of screen: physical south people, now we see their BACKS
+        if south_ltr[i]:
+            blit(room, cast_sprite(south_ltr[i], "sit_back"), x + 11, top_chair_y - 12)
+        blit(room, chair_north(), x + 16, top_chair_y)
+        # bottom of screen: physical north people, now we see their FACES
+        blit(room, chair_south(), x + 16, bot_chair_y)
+        if north_ltr[i]:
+            blit(room, cast_sprite(north_ltr[i], "sit_front"), x + 11, bot_chair_y - 14)
+    return room
+
+
+def hutong_seats_view1():
+    return [
+        {"id": "n0", "x": 27, "y": 56, "face": "up", "view": "sit_back", "who": "cast_02"},
+        {"id": "n1", "x": 89, "y": 56, "face": "up", "view": "sit_back", "who": None},
+        {"id": "n2", "x": 151, "y": 56, "face": "up", "view": "sit_back", "who": "cast_05"},
+        {"id": "n3", "x": 213, "y": 56, "face": "up", "view": "sit_back", "who": "cast_08"},
+        {"id": "s0", "x": 27, "y": 150, "face": "down", "view": "sit_front", "who": "cast_01"},
+        {"id": "s1", "x": 89, "y": 150, "face": "down", "view": "sit_front", "who": "cast_03"},
+        {"id": "s2", "x": 151, "y": 150, "face": "down", "view": "sit_front", "who": "cast_04"},
+        {"id": "s3", "x": 213, "y": 150, "face": "down", "view": "sit_front", "who": None},
+    ]
+
+
+def hutong_seats_view2():
+    """Same physical seats after a 180° camera rotate (X flip + row swap)."""
+    return [
+        {"id": "s3", "x": 27, "y": 22, "face": "up", "view": "sit_back", "who": None},
+        {"id": "s2", "x": 89, "y": 22, "face": "up", "view": "sit_back", "who": "cast_04"},
+        {"id": "s1", "x": 151, "y": 22, "face": "up", "view": "sit_back", "who": "cast_03"},
+        {"id": "s0", "x": 213, "y": 22, "face": "up", "view": "sit_back", "who": "cast_01"},
+        {"id": "n3", "x": 27, "y": 150, "face": "down", "view": "sit_front", "who": "cast_08"},
+        {"id": "n2", "x": 89, "y": 150, "face": "down", "view": "sit_front", "who": "cast_05"},
+        {"id": "n1", "x": 151, "y": 150, "face": "down", "view": "sit_front", "who": None},
+        {"id": "n0", "x": 213, "y": 150, "face": "down", "view": "sit_front", "who": "cast_02"},
+    ]
 
 
 # ===========================================================================
@@ -1157,20 +1185,18 @@ def scene_mixian() -> Image.Image:
 
 SCENES = [
     dict(id="hutong", title="胡同工位区",
-         blurb="上墙 4 桌 · 下墙 4 桌 · 中间 8 椅背靠背",
+         blurb="正打：素墙 + 上 4 桌下 4 桌 · 中间 8 椅",
          fn=scene_hutong, walk_y=108, line="这边还能放杯子。",
          beat_t="09:20", action="sit_aisle",
-         seats=[
-             {"id": "n0", "x": 27, "y": 56, "face": "up", "view": "sit_back"},
-             {"id": "n1", "x": 89, "y": 56, "face": "up", "view": "sit_back"},
-             {"id": "n2", "x": 151, "y": 56, "face": "up", "view": "sit_back"},
-             {"id": "n3", "x": 213, "y": 56, "face": "up", "view": "sit_back"},
-             {"id": "s0", "x": 27, "y": 150, "face": "down", "view": "sit_front"},
-             {"id": "s1", "x": 89, "y": 150, "face": "down", "view": "sit_front"},
-             {"id": "s2", "x": 151, "y": 150, "face": "down", "view": "sit_front"},
-             {"id": "s3", "x": 213, "y": 150, "face": "down", "view": "sit_front"},
-         ],
-         why="上墙齐排 4 张工位桌，下墙齐排 4 张；8 把椅子全在房间中间：上排椅朝上墙（看见后脑勺），下排椅朝下墙（看见正脸），两排椅背对背，中间留走道。每桌一块空 pad。墙上只留 ttc 和镜框。空地用植物/喷壶/包补密度，不加座位。"),
+         seats=hutong_seats_view1(),
+         why="摄像机朝北墙。素墙一条（无 ttc / 镜框）。上排椅朝北墙看后脑勺，下排椅朝下看正脸。只要地板、8 桌、8 椅、坐着的人；桌面空着。"),
+    dict(id="hutong_reverse", title="胡同 · 反打",
+         blurb="反打 180°：无墙 · 同一 8 座换朝向",
+         fn=scene_hutong_reverse, walk_y=96, line="从这边看是正脸。",
+         beat_t="09:21", action="look_back",
+         camera_only=True,
+         seats=hutong_seats_view2(),
+         why="同一房间摄像机转 180°。无墙、无装饰。原先看后脑勺的一排现在看正脸，原先看正脸的一排现在看后脑勺。左右对调。还是那 8 桌 8 椅同一些人。"),
     dict(id="elevator", title="电梯间",
          blurb="米黄石材 · 开门体积 · 雕塑台座 · 屏与按钮",
          fn=scene_elevator, walk_y=140, line="先等这梯。",
@@ -1238,7 +1264,7 @@ def write_scene_md(spec):
 
 - `public/assets/scenes/{spec['id']}/scene_{spec['id']}.png`
 - `public/preview/zoomed/{spec['id']}.png`
-{("- 8 seat anchors: top n0–n3 face up (`sit_back`); bottom s0–s3 face down (`sit_front`). Walk aisle `walk_y=108`." if spec["id"] == "hutong" else "")}
+{("- View 1 `hutong`：素墙，n* `sit_back`，s* `sit_front`，`walk_y=108`。\n- View 2 `hutong_reverse`：无墙，座位 180° 对调，n* 改 `sit_front`，s* 改 `sit_back`，`walk_y=96`。" if spec["id"] in ("hutong", "hutong_reverse") else "")}
 
 不描摹真人，不提交 refs。
 """,
@@ -1258,10 +1284,11 @@ def write_day_md():
         "",
         "```",
     ]
-    for s in sorted(SCENES, key=lambda x: x["beat_t"]):
+    day_scenes = [s for s in SCENES if not s.get("camera_only")]
+    for s in sorted(day_scenes, key=lambda x: x["beat_t"]):
         lines.append(f"{s['beat_t']}  {s['title']:8}  {s['action']}")
     lines += ["```", "", "## 分镜", ""]
-    for i, s in enumerate(sorted(SCENES, key=lambda x: x["beat_t"]), 1):
+    for i, s in enumerate(sorted(day_scenes, key=lambda x: x["beat_t"]), 1):
         lines += [
             f"### {i} · {s['beat_t']} · {s['title']}",
             f"- `{s['action']}` 「{s['line']}」",
@@ -1287,7 +1314,7 @@ def make_room_sheet(images):
 
 
 def main():
-    print("Generating 11 2.5D scenes…")
+    print("Generating scenes (11 rooms + hutong reverse camera)…")
     manifest = {"canvas": [W, H], "scenes": []}
     painted = []
     for stale in (
@@ -1315,6 +1342,8 @@ def main():
         }
         if spec.get("seats"):
             entry["seats"] = spec["seats"]
+        if spec.get("camera_only"):
+            entry["camera_only"] = True
         manifest["scenes"].append(entry)
     save(make_room_sheet(painted), PREVIEW / "room_sheet.png")
     write_day_md()
