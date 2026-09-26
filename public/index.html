@@ -114,7 +114,7 @@
     }
     #stage-wrap.wide {
       width: min(100%, 1280px);
-      aspect-ratio: 320 / 320;
+      aspect-ratio: 1280 / 1280;
     }
     #stage { width: 100%; height: 100%; image-rendering: pixelated; display: block; }
     #say {
@@ -141,7 +141,7 @@
 <body>
   <header>
     <h1>赛博胡同 Cyber Hutong</h1>
-      <p class="sub">精致像素 HD · 胡同 320×320 ×4 NN · 其他房 256×192 · 11 房 · 八人 p1–p8 一版 · Online-control / Offline-agent / Behavior-learning · 蒸馏只冷启动 · 无后端</p>
+      <p class="sub">精致像素 HD · 胡同 1280×1280（概念原裁） · 其他房 256×192 · 11 房 · 八人 p1–p8 一版 · Online-control / Offline-agent / Behavior-learning · 蒸馏只冷启动 · 无后端</p>
     <nav>
       <a href="#gallery" data-tab="gallery">画廊</a>
       <a href="#day" data-tab="day">一天故事板</a>
@@ -158,8 +158,8 @@
           <figcaption>cast_sheet.png · idle_front × 8 · 6× nearest</figcaption>
         </div>
         <div class="card">
-          <img class="pixel sheet" src="preview/cast_hd_lineup_v2.png" alt="cast HD lineup v2" />
-          <figcaption>cast_hd_lineup_v2.png · 概念裁切 | 我们的 ×4 NN（同一显示尺寸）</figcaption>
+          <img class="pixel sheet" src="preview/cast_hd_lineup_v3.png" alt="cast HD lineup v3" />
+          <figcaption>cast_hd_lineup_v3.png · 概念原裁 | 我们的原裁 + Laura 局部改色（同一像素）</figcaption>
         </div>
         <div class="card">
           <img class="pixel sheet" src="preview/cast_lineup.png" alt="cast lineup" />
@@ -192,7 +192,7 @@
     <div id="walk" class="panel">
       <section>
         <h2>房间漫游</h2>
-        <p class="note">点房间切换。cast_01 走一个往返。胡同画布 320×320（1 艺术像素 = 整数屏像素），其他房 256×192。</p>
+        <p class="note">点房间切换。cast_01 走一个往返。胡同画布 1280×1280（家具 4× NN，人是概念原裁 1:1），其他房 256×192。</p>
         <div class="chips" id="room-chips"></div>
         <div id="stage-wrap">
           <canvas id="stage" width="256" height="192"></canvas>
@@ -215,10 +215,10 @@
   <script>
     const ROOMS = [
       { id:"hutong", title:"胡同工位区", src:"assets/scenes/hutong/scene_hutong.png",
-        line:"这边还能放杯子。", y:216, t:"09:20", action:"sit_aisle",
+        line:"这边还能放杯子。", y:864, t:"09:20", action:"sit_aisle",
         why:"HD 3/4：桌面和桌前脸都看见。白墙 ttc + TRUE/TALENT/CENTER + 两排七框。上排 01–04 后脑勺在椅背上沿之上，下排 05–08 整张脸到肩在桌沿之上。" },
       { id:"hutong_reverse", title:"胡同 · 反打", src:"assets/scenes/hutong_reverse/scene_hutong_reverse.png",
-        line:"从这边看是正脸。", y:176, t:"09:21", action:"look_back", cameraOnly:true,
+        line:"从这边看是正脸。", y:704, t:"09:21", action:"look_back", cameraOnly:true,
         why:"同一房间转 180°。无墙，底沿一条。正脸/后脑勺对调，左右对调。" },
       { id:"elevator", title:"电梯间", src:"assets/scenes/elevator/scene_elevator.png",
         line:"先等这梯。", y:140, t:"09:12", action:"wait_lift",
@@ -323,8 +323,8 @@
     ROOMS.forEach(w => loadBg(w.src));
     function syncCanvas(bg) {
       const hutong = isHutong(ROOMS[cur]);
-      const rw = (bg && bg.naturalWidth) || (hutong ? 320 : 256);
-      const rh = (bg && bg.naturalHeight) || (hutong ? 320 : 192);
+      const rw = (bg && bg.naturalWidth) || (hutong ? 1280 : 256);
+      const rh = (bg && bg.naturalHeight) || (hutong ? 1280 : 192);
       if (canvas.width !== rw || canvas.height !== rh) {
         canvas.width = rw;
         canvas.height = rh;
@@ -336,10 +336,10 @@
     function setRoom(i) {
       cur = i;
       const scale = roomScale(ROOMS[i]);
-      x = 28 * scale; dir = 1; walking = true;
+      x = isHutong(ROOMS[i]) ? 112 : 28 * scale; dir = 1; walking = true;
       say.textContent = ROOMS[i].line;
       loadWalkSprites(isHutong(ROOMS[i]));
-      meta.textContent = ROOMS[i].title + " · " + ROOMS[i].src + " · " + (isHutong(ROOMS[i]) ? "320×320 HD" : "256×192");
+      meta.textContent = ROOMS[i].title + " · " + ROOMS[i].src + " · " + (isHutong(ROOMS[i]) ? "1280×1280 HD" : "256×192");
       [...chips.children].forEach((b, j) => b.classList.toggle("on", j === i));
       syncCanvas(bgCache[ROOMS[i].src]);
     }
@@ -360,9 +360,10 @@
       if (bg && bg.complete) ctx.drawImage(bg, 0, 0, rw, rh);
       else { ctx.fillStyle = "#101218"; ctx.fillRect(0, 0, rw, rh); }
       tick++;
-      const xMin = 28 * scale, xMax = rw - 56 * scale;
+      const hutong = isHutong(room);
+      const xMin = hutong ? 112 : 28 * scale, xMax = hutong ? rw - 224 : rw - 56 * scale;
       if (walking) {
-        x += dir * 0.65 * scale;
+        x += dir * (hutong ? 2.6 : 0.65 * scale);
         if (x > xMax) dir = -1;
         if (x < xMin) { dir = 1; walking = false; }
       }
@@ -375,7 +376,7 @@
         const dw = sw * scale, dh = sh * scale;
         // HD sit sprites are ~68 tall; feet sit ~8px above the canvas bottom.
         // dy is the sprite top: walk_y minus (height-to-feet).
-        const foot = isHutong(room) ? Math.max(8, sh - 8) : 32 * scale;
+        const foot = isHutong(room) ? Math.max(16, sh - 8) : 32 * scale;
         const dy = isHutong(room) ? room.y - foot : room.y - Math.max(0, dh - foot);
         if (walking && dir < 0) {
           ctx.translate(x + dw, 0);

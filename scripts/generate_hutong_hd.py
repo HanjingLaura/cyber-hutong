@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
-"""Hutong office at the same art-pixel size as the HD cast (block = 4).
+"""Hutong office: accepted 320 furniture, 4× NN, native concept people.
 
-Art canvas 320×320. Previews are 4× NN so the room is 1280×1280
-(1 art pixel = 4 screen pixels). Matches uploads/hutong_bg_concept.png:
-white wall, baseboard, side walls, ttc + TRUE/TALENT/CENTER, two rows of
-7 frames, thick light-wood desks, 2-drawer cabinets, HD office chairs.
+Furniture is still drawn at the accepted 320×320 art and nearest-scaled
+to 1280×1280 (1 furniture art pixel = 4 screen pixels). People are the
+native concept crops (already ~240 px tall) seated 1:1 on that canvas.
+Matches uploads/hutong_bg_concept.png: white wall, baseboard, side walls,
+ttc + TRUE/TALENT/CENTER, two rows of 7 frames, thick light-wood desks,
+2-drawer cabinets, HD office chairs.
 """
 from __future__ import annotations
 
@@ -39,25 +41,45 @@ from pxlib import (  # noqa: E402
 ARTIFACT = Path("/opt/cursor/artifacts/screenshots")
 HD_DIR = ASSETS / "characters_hd"
 
-HUT_W, HUT_H = 320, 320
-VIEW_ZOOM = 4  # 1280×1280 display
+ART = 4  # accepted 320 furniture → 1280 display
+BASE_W, BASE_H = 320, 320
+HUT_W, HUT_H = BASE_W * ART, BASE_H * ART
+VIEW_ZOOM = 1  # scene already equals the 1280 preview
 HUTONG_NORTH = ("cast_01", "cast_02", "cast_03", "cast_04")
 HUTONG_SOUTH = ("cast_05", "cast_06", "cast_07", "cast_08")
-SEATS_X = (48, 117, 186, 255)
 
-WALL_H = 54
-FAR_DESK_Y = 50
+# accepted 320 layout (do not redesign)
+B_SEATS_X = (48, 117, 186, 255)
+B_WALL_H = 54
+B_FAR_DESK_Y = 50
 FAR_TOP, FAR_FRONT = 18, 20
-FAR_CHAIR_Y = 122
-WALK_Y = 216
-BOT_CHAIR_Y = 248
-BOT_DESK_Y = 272
+B_FAR_CHAIR_Y = 122
+B_WALK_Y = 216
+B_BOT_CHAIR_Y = 248
+B_BOT_DESK_Y = 272
 NEAR_TOP, NEAR_FRONT = 22, 22
-V2_WALK_Y = 176
+B_V2_WALK_Y = 176
+B_V2_DESK_Y = 2
+B_V2_CHAIR_Y = 72
+B_SIT_ABOVE_BACK = 34
+B_SIT_ABOVE_DESK = 40
+B_EMPTY_SOUTH_LIFT = 16
+B_ROOM_EDGE = 8
 
-# sit: ~70% of a 68px canvas is torso+head ≈ 48. Keep ~32px above backrest.
-SIT_ABOVE_BACK = 34
-SIT_ABOVE_DESK = 40
+SEATS_X = tuple(x * ART for x in B_SEATS_X)
+WALL_H = B_WALL_H * ART
+FAR_DESK_Y = B_FAR_DESK_Y * ART
+FAR_CHAIR_Y = B_FAR_CHAIR_Y * ART
+WALK_Y = B_WALK_Y * ART
+BOT_CHAIR_Y = B_BOT_CHAIR_Y * ART
+BOT_DESK_Y = B_BOT_DESK_Y * ART
+V2_WALK_Y = B_V2_WALK_Y * ART
+V2_DESK_Y = B_V2_DESK_Y * ART
+V2_CHAIR_Y = B_V2_CHAIR_Y * ART
+SIT_ABOVE_BACK = B_SIT_ABOVE_BACK * ART
+SIT_ABOVE_DESK = B_SIT_ABOVE_DESK * ART
+EMPTY_SOUTH_LIFT = B_EMPTY_SOUTH_LIFT * ART
+ROOM_EDGE = B_ROOM_EDGE * ART
 
 C = {
     "wall": (248, 246, 242, 255),
@@ -249,18 +271,17 @@ def desk_sprite(w, top_h, front_h, drawers, legs=True) -> Image.Image:
 
 def floor(d, y0):
     tile = 20
-    rect(d, [0, y0, HUT_W - 1, HUT_H - 1], C["floor"])
-    for ty in range(y0, HUT_H, tile):
-        hline(d, 0, HUT_W - 1, ty, C["grout"])
-        if ty + 1 < HUT_H:
-            hline(d, 0, HUT_W - 1, ty + 1, shade(C["floor"], 8))
-    for tx in range(0, HUT_W, tile):
-        vline(d, tx, y0, HUT_H - 1, C["grout"])
-        if tx + 1 < HUT_W:
-            vline(d, tx + 1, y0, HUT_H - 1, shade(C["floor"], 8))
-    noise(d, 0, y0, HUT_W - 1, HUT_H - 1, C["floor2"], every=29)
-    # soft south wash
-    dither(d, 0, HUT_H - 18, HUT_W - 1, HUT_H - 1, shade(C["floor"], -10), 5)
+    rect(d, [0, y0, BASE_W - 1, BASE_H - 1], C["floor"])
+    for ty in range(y0, BASE_H, tile):
+        hline(d, 0, BASE_W - 1, ty, C["grout"])
+        if ty + 1 < BASE_H:
+            hline(d, 0, BASE_W - 1, ty + 1, shade(C["floor"], 8))
+    for tx in range(0, BASE_W, tile):
+        vline(d, tx, y0, BASE_H - 1, C["grout"])
+        if tx + 1 < BASE_H:
+            vline(d, tx + 1, y0, BASE_H - 1, shade(C["floor"], 8))
+    noise(d, 0, y0, BASE_W - 1, BASE_H - 1, C["floor2"], every=29)
+    dither(d, 0, BASE_H - 18, BASE_W - 1, BASE_H - 1, shade(C["floor"], -10), 5)
 
 
 def _blk(d, sx, sy, w, h, face, dep, hi):
@@ -319,20 +340,20 @@ def wall(d):
     for x in range(0, 14):
         t = x / 13
         col = shade(C["side"], int(-22 + 22 * t))
-        vline(d, x, 0, WALL_H - 1, col)
-        vline(d, HUT_W - 1 - x, 0, WALL_H - 1, col)
-    vline(d, 13, 0, WALL_H - 1, C["side_d"])
-    vline(d, HUT_W - 14, 0, WALL_H - 1, C["side_d"])
+        vline(d, x, 0, B_WALL_H - 1, col)
+        vline(d, BASE_W - 1 - x, 0, B_WALL_H - 1, col)
+    vline(d, 13, 0, B_WALL_H - 1, C["side_d"])
+    vline(d, BASE_W - 14, 0, B_WALL_H - 1, C["side_d"])
     # back wall
-    rect(d, [14, 0, HUT_W - 15, WALL_H - 1], C["wall"])
-    hline(d, 14, HUT_W - 15, 0, shade(C["wall"], -8))
-    dither(d, 14, 0, HUT_W - 15, 6, C["wall_s"], 4)
+    rect(d, [14, 0, BASE_W - 15, B_WALL_H - 1], C["wall"])
+    hline(d, 14, BASE_W - 15, 0, shade(C["wall"], -8))
+    dither(d, 14, 0, BASE_W - 15, 6, C["wall_s"], 4)
     # baseboard
-    rect(d, [14, WALL_H - 6, HUT_W - 15, WALL_H - 2], C["base"])
-    hline(d, 14, HUT_W - 15, WALL_H - 6, C["base_d"])
-    hline(d, 14, HUT_W - 15, WALL_H - 3, shade(C["base"], 16))
-    hline(d, 0, HUT_W - 1, WALL_H - 1, INK)
-    hline(d, 0, HUT_W - 1, WALL_H - 2, C["lip"])
+    rect(d, [14, B_WALL_H - 6, BASE_W - 15, B_WALL_H - 2], C["base"])
+    hline(d, 14, BASE_W - 15, B_WALL_H - 6, C["base_d"])
+    hline(d, 14, BASE_W - 15, B_WALL_H - 3, shade(C["base"], 16))
+    hline(d, 0, BASE_W - 1, B_WALL_H - 1, INK)
+    hline(d, 0, BASE_W - 1, B_WALL_H - 2, C["lip"])
     draw_ttc(d, 18, 10)
     size, pitch, col0 = 11, 16, 172
     for fy in (7, 24):
@@ -341,9 +362,9 @@ def wall(d):
 
 
 def room_edge(d, y):
-    hline(d, 0, HUT_W - 1, y, C["edge"])
-    hline(d, 0, HUT_W - 1, y + 1, INK)
-    rect(d, [0, y + 2, HUT_W - 1, HUT_H - 1], shade(C["floor"], -12))
+    hline(d, 0, BASE_W - 1, y, C["edge"])
+    hline(d, 0, BASE_W - 1, y + 1, INK)
+    rect(d, [0, y + 2, BASE_W - 1, BASE_H - 1], shade(C["floor"], -12))
 
 
 def _desk_for(near: bool):
@@ -366,6 +387,15 @@ def _opaque_top(im: Image.Image) -> int:
     return 0
 
 
+def _furn_desk(near: bool):
+    desk, xoff, top, front = _desk_for(near)
+    return zoom(desk, ART), xoff * ART, top * ART, front * ART
+
+
+def _furn_chair(north: bool):
+    return zoom(chair_north() if north else chair_south(), ART)
+
+
 def _seat_back(room, cid, cx, chair, chx, chy, desk_end):
     spr = hutong_cast(cid, "sit_back")
     br_top = chy + _opaque_top(chair)
@@ -384,16 +414,15 @@ def _seat_front(room, cid, cx, chair, chx, chy, desk_y):
 
 def row(room, desk_y, chair_y, who, facing):
     north = facing == "north"
-    chair = chair_north() if north else chair_south()
-    desk, xoff, top, front = _desk_for(near=not north)
+    chair = _furn_chair(north)
+    desk, xoff, top, front = _furn_desk(near=not north)
     desk_end = desk_y + top + front
     if north:
         blit(room, desk, xoff, desk_y)
     for i, cx in enumerate(SEATS_X):
         chx = cx - chair.size[0] // 2
         if not who[i]:
-            # empty south chairs sit fully above the desk so the tall back reads
-            ey = chair_y - (16 if not north else 0)
+            ey = chair_y - (EMPTY_SOUTH_LIFT if not north else 0)
             blit(room, chair, chx, ey)
             continue
         if north:
@@ -404,30 +433,38 @@ def row(room, desk_y, chair_y, who, facing):
         blit(room, desk, xoff, desk_y)
 
 
-def paint(view: str, people: bool = True) -> Image.Image:
-    room = new(HUT_W, HUT_H, C["floor"])
+def paint_base(view: str) -> Image.Image:
+    """Accepted 320 furniture only — people are composited after the 4× zoom."""
+    room = new(BASE_W, BASE_H, C["floor"])
     d = ImageDraw.Draw(room)
     if view == "v1":
-        floor(d, WALL_H)
+        floor(d, B_WALL_H)
         wall(d)
+    else:
+        floor(d, 0)
+        room_edge(d, BASE_H - B_ROOM_EDGE)
+    return room
+
+
+def paint(view: str, people: bool = True) -> Image.Image:
+    room = zoom(paint_base(view), ART)
+    if view == "v1":
         north = HUTONG_NORTH if people else (None,) * 4
         south = HUTONG_SOUTH if people else (None,) * 4
         row(room, FAR_DESK_Y, FAR_CHAIR_Y, north, "north")
         row(room, BOT_DESK_Y, BOT_CHAIR_Y, south, "south")
     else:
-        floor(d, 0)
         south = tuple(reversed(HUTONG_SOUTH)) if people else (None,) * 4
         north = tuple(reversed(HUTONG_NORTH)) if people else (None,) * 4
-        row(room, 2, 72, south, "north")
+        row(room, V2_DESK_Y, V2_CHAIR_Y, south, "north")
         row(room, BOT_DESK_Y, BOT_CHAIR_Y, north, "south")
-        room_edge(d, HUT_H - 8)
     return room
 
 
 def layout_check():
-    ch = chair_north()
+    ch = _furn_chair(True)
     aisle = BOT_CHAIR_Y - (FAR_CHAIR_Y + ch.size[1])
-    stand = 64
+    stand = 272
     print(f"  hutong HD {HUT_W}×{HUT_H} chair {ch.size} aisle {aisle}px (need ≥ {stand})")
     if aisle < stand:
         raise SystemExit(f"aisle {aisle} < standing {stand}")
@@ -438,16 +475,12 @@ def crops(v1):
     art.mkdir(parents=True, exist_ok=True)
     top = SEATS_X[2]
     bot = SEATS_X[1]
-    save(zoom(v1.crop((top - 28, FAR_CHAIR_Y - 44, top + 28, FAR_CHAIR_Y + 36)), 2),
-         art / "hutong_hd_seat_top_x2.png")
-    save(zoom(v1.crop((bot - 30, BOT_DESK_Y - 48, bot + 30, BOT_DESK_Y + 24)), 2),
-         PREVIEW / "hutong_hd_seat_top_x2.png")
-    save(zoom(v1.crop((top - 28, FAR_CHAIR_Y - 44, top + 28, FAR_CHAIR_Y + 36)), 2),
-         PREVIEW / "hutong_hd_seat_top_x2.png")
-    save(zoom(v1.crop((bot - 30, BOT_DESK_Y - 48, bot + 30, BOT_DESK_Y + 24)), 2),
-         art / "hutong_hd_seat_bot_x2.png")
-    save(zoom(v1.crop((bot - 30, BOT_DESK_Y - 48, bot + 30, BOT_DESK_Y + 24)), 2),
-         PREVIEW / "hutong_hd_seat_bot_x2.png")
+    top_box = (top - 28 * ART, FAR_CHAIR_Y - 44 * ART, top + 28 * ART, FAR_CHAIR_Y + 36 * ART)
+    bot_box = (bot - 30 * ART, BOT_DESK_Y - 48 * ART, bot + 30 * ART, BOT_DESK_Y + 24 * ART)
+    for dest in (art, PREVIEW):
+        dest.mkdir(parents=True, exist_ok=True)
+        save(v1.crop(top_box), dest / "hutong_hd_seat_top_x2.png")
+        save(v1.crop(bot_box), dest / "hutong_hd_seat_bot_x2.png")
 
 
 def write_scenes(v1, v2, empty):
@@ -460,14 +493,13 @@ def write_scenes(v1, v2, empty):
         save(img.resize((img.size[0] // 2, img.size[1] // 2), Image.Resampling.NEAREST),
              ASSETS / "rooms" / "thumbs" / f"room_{spec}.png")
         save(zoom(img, VIEW_ZOOM), PREVIEW / "zoomed" / f"{spec}.png")
-    hd1, hd2, hde = zoom(v1, VIEW_ZOOM), zoom(v2, VIEW_ZOOM), zoom(empty, VIEW_ZOOM)
     for dest in (PREVIEW, ARTIFACT):
         dest.mkdir(parents=True, exist_ok=True)
-        save(hd1, dest / "hutong_view1_hd.png")
-        save(hd2, dest / "hutong_view2_hd.png")
-        save(hde, dest / "hutong_empty_hd.png")
-        save(hd1, dest / "hutong_view1_hd_v2.png")
-        save(hd2, dest / "hutong_view2_hd_v2.png")
+        save(v1, dest / "hutong_view1_hd.png")
+        save(v2, dest / "hutong_view2_hd.png")
+        save(empty, dest / "hutong_empty_hd.png")
+        save(v1, dest / "hutong_view1_hd_v3.png")
+        save(v2, dest / "hutong_view2_hd_v3.png")
     crops(v1)
 
 

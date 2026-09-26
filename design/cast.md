@@ -1,11 +1,9 @@
-# Cast · 8 Soul Knight chibi（HD, concept block = 4px）
+# Cast · 8 Soul Knight chibi（HD v3, concept crops）
 
-> Shared ~40×68 canvas · downsample ×4 from 16:9 concept sheets · ~48-color palette.
+> Native crops from the 16:9 concept sheets · shared 168×272 canvas · no 4px crush.
 > Concept sheets are **not** in git.
 
-Standing sprites are ~32×60 art pixels (the concept's real grid), not 16–20.
-
-## 辨认点
+Laura edits only: 04 black rims, 06 shaved scalp, 07 caramel tips, 08 front part + collar + necklace.
 
 | ID | 像素辨认点 |
 |----|------------|
@@ -18,4 +16,4 @@ Standing sprites are ~32×60 art pixels (the concept's real grid), not 16–20.
 | `cast_07` | 褐长发浅焦糖发尾 · 灰西装 |
 | `cast_08` | 中分超长黑直 · 黑毛衣白领边/细项链 · 无耳饰 |
 
-坐姿是人（不带椅）。胡同椅子由房间画。
+坐姿是人（椅已剥）。胡同椅子由房间画。

@@ -1,25 +1,17 @@
 #!/usr/bin/env python3
-"""HD Soul Knight cast — sample the concept at its native pixel block.
+"""HD cast from the concept sheets — keep the artwork, do not resample.
 
-Concept sheets are AI-upscaled 1280×720 six-pose strips. Autocorr peaks at
-4 screen px per art pixel, so a standing figure is ~32×60, not 16–20.
-
-Pipeline:
-  1. Segment the six poses.
-  2. Mode-downsample at the detected block (SCALE=4) so every concept pixel
-     survives.
-  3. Snap to a shared ~48-color palette. Clean stray / AA specks only.
-  4. Keep the concept's faces, hair, blush, outline, shading.
-  5. Apply Laura's identity edits (04 black glasses, 06 shaved scalp,
-     07 caramel tips, 08 center-part + white collar + necklace).
-  6. Sit frames are person-only (chair stripped).
+Each pose is cropped from uploads/cast0X_sk.png with a clean flood-fill
+alpha. All eight share one canvas / baseline. A 4px-grid snap is tried
+and discarded if it degrades the crop. Laura's edits are local recolors
+only. Missing frames (bob, second walk, left) are derived by offset/mirror.
 
 Do not write the concept PNGs into the repo.
 """
 from __future__ import annotations
 
 import sys
-from collections import Counter
+from collections import Counter, deque
 from pathlib import Path
 
 import numpy as np
@@ -36,8 +28,9 @@ REF_DIRS = (
 )
 HD_DIR = ASSETS / "characters_hd"
 
-SCALE = 4
-CW, CH = 40, 68
+# Shared canvas: native concept figures are ~125×240–260. Baseline at bottom.
+CW, CH = 168, 272
+SNAP = 4
 SHADOW_A = 110
 
 INK = (16, 14, 18, 255)
@@ -45,37 +38,12 @@ SKIN = (246, 208, 180, 255)
 SKIN_S = (222, 168, 136, 255)
 SKIN_H = (255, 232, 210, 255)
 HAIR_K = (20, 18, 20, 255)
-HAIR_K2 = (40, 36, 40, 255)
-HAIR_BR = (96, 66, 44, 255)
-HAIR_BR2 = (128, 88, 58, 255)
 CARAMEL = (196, 148, 96, 255)
 CARAMEL2 = (168, 118, 72, 255)
 WHITE = (246, 244, 240, 255)
-WHITE_S = (214, 208, 200, 255)
-PINK = (236, 176, 184, 255)
-PINK_S = (210, 140, 150, 255)
-GOLD = (220, 176, 72, 255)
 BLUE = (164, 196, 226, 255)
-GRAY = (118, 118, 124, 255)
-GRAY_S = (86, 86, 92, 255)
-GRAY_L = (168, 168, 174, 255)
-SHIRT_BLK = (28, 28, 32, 255)
-PANTS = (24, 24, 28, 255)
-GLASS = (18, 16, 20, 255)
-STUBBLE = (200, 156, 126, 255)
-KNIT = (44, 42, 48, 255)
-MOUTH = (198, 118, 124, 255)
-BLUSH = (236, 150, 154, 255)
 
-SEED = [
-    INK, SKIN, SKIN_S, SKIN_H, HAIR_K, HAIR_K2, HAIR_BR, HAIR_BR2,
-    CARAMEL, CARAMEL2, WHITE, WHITE_S, PINK, PINK_S, GOLD, BLUE,
-    GRAY, GRAY_S, GRAY_L, SHIRT_BLK, PANTS, GLASS, STUBBLE, KNIT, MOUTH, BLUSH,
-]
-
-CAST_IDS = [f"cast_0{i}" for i in range(1, 9)]
 POSE_NAMES = ("side", "front", "back", "walk", "sitF", "sitB")
-PALETTE: list[tuple] = []
 
 
 def find_sheet(n: int) -> Path:
@@ -92,16 +60,82 @@ def find_sheet(n: int) -> Path:
     raise FileNotFoundError(f"missing concept sheet for cast_0{n}")
 
 
-def fg_mask(rgb: np.ndarray, thr: int = 22) -> np.ndarray:
-    corners = [rgb[2, 2], rgb[2, -3], rgb[8, 8]]
-    bg = np.median(np.stack(corners), axis=0)
-    diff = np.abs(rgb.astype(np.int16) - bg.astype(np.int16)).sum(axis=2)
-    return diff > thr
+def _font(size=13):
+    path = Path("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf")
+    try:
+        return ImageFont.truetype(str(path), size) if path.exists() else ImageFont.load_default()
+    except Exception:
+        return ImageFont.load_default()
+
+
+def sheet_bg(rgb: np.ndarray) -> np.ndarray:
+    corners = [rgb[2, 2], rgb[2, -3], rgb[8, 8], rgb[-3, 2], rgb[-3, -3]]
+    return np.median(np.stack(corners), axis=0)
+
+
+def _luma(c):
+    return 0.299 * int(c[0]) + 0.587 * int(c[1]) + 0.114 * int(c[2])
+
+
+def clean_alpha(crop: np.ndarray, bg, thr: int = 32) -> np.ndarray:
+    """Flood-fill from the border; drop halo; keep dark outline."""
+    h, w = crop.shape[:2]
+    bg = bg.astype(np.int16)
+    diff = np.abs(crop.astype(np.int16) - bg).sum(axis=2)
+    luma = crop.astype(np.int16) @ np.array([30, 59, 11]) // 100
+
+    def is_bg_px(y, x):
+        if luma[y, x] < 72:
+            return False  # black outline stays
+        return diff[y, x] <= thr
+
+    seen = np.zeros((h, w), bool)
+    q = deque()
+    for x in range(w):
+        for y in (0, h - 1):
+            if is_bg_px(y, x) and not seen[y, x]:
+                seen[y, x] = True
+                q.append((x, y))
+    for y in range(h):
+        for x in (0, w - 1):
+            if is_bg_px(y, x) and not seen[y, x]:
+                seen[y, x] = True
+                q.append((x, y))
+    while q:
+        x, y = q.popleft()
+        for dx, dy in ((-1, 0), (1, 0), (0, -1), (0, 1)):
+            nx, ny = x + dx, y + dy
+            if 0 <= ny < h and 0 <= nx < w and not seen[ny, nx] and is_bg_px(ny, nx):
+                seen[ny, nx] = True
+                q.append((nx, ny))
+
+    rgba = np.zeros((h, w, 4), np.uint8)
+    rgba[..., :3] = crop
+    rgba[..., 3] = np.where(seen, 0, 255)
+
+    # halo: near-bg fringe next to transparent, unless it's the dark outline
+    for y in range(h):
+        for x in range(w):
+            if rgba[y, x, 3] < 80 or luma[y, x] < 72:
+                continue
+            if diff[y, x] > thr + 18:
+                continue
+            halo = False
+            for dx, dy in ((-1, 0), (1, 0), (0, -1), (0, 1)):
+                nx, ny = x + dx, y + dy
+                if not (0 <= ny < h and 0 <= nx < w) or rgba[ny, nx, 3] < 80:
+                    halo = True
+                    break
+            if halo:
+                rgba[y, x, 3] = 0
+    return rgba
 
 
 def segment_poses(path: Path) -> list[np.ndarray]:
     rgb = np.array(Image.open(path).convert("RGB"))[:520]
-    mask = fg_mask(rgb)
+    bg = sheet_bg(rgb)
+    diff = np.abs(rgb.astype(np.int16) - bg.astype(np.int16)).sum(axis=2)
+    mask = diff > 22
     col = mask.any(axis=0)
     runs, on, s = [], False, 0
     for i, v in enumerate(col):
@@ -129,38 +163,14 @@ def segment_poses(path: Path) -> list[np.ndarray]:
             continue
         x0, x1 = a + int(xs2.min()), a + int(xs2.max())
         yy0, yy1 = y0 + int(ys2.min()), y0 + int(ys2.max())
+        # 2px pad so the flood has a bg border
+        x0, x1 = max(0, x0 - 2), min(rgb.shape[1] - 1, x1 + 2)
+        yy0, yy1 = max(0, yy0 - 2), min(rgb.shape[0] - 1, yy1 + 2)
         crop = rgb[yy0:yy1 + 1, x0:x1 + 1]
-        m = mask[yy0:yy1 + 1, x0:x1 + 1]
-        rgba = np.zeros((crop.shape[0], crop.shape[1], 4), np.uint8)
-        rgba[..., :3] = crop
-        rgba[..., 3] = np.where(m, 255, 0)
-        figs.append(rgba)
+        figs.append(clean_alpha(crop, bg))
     if len(figs) != 6:
         raise RuntimeError(f"{path.name}: expected 6 poses, got {len(figs)}")
     return figs
-
-
-def mode_down(rgba: np.ndarray, scale: int = SCALE) -> np.ndarray:
-    h, w = rgba.shape[:2]
-    nh, nw = max(1, h // scale), max(1, w // scale)
-    out = np.zeros((nh, nw, 4), np.uint8)
-    need = (scale * scale) // 4
-    full = scale * scale
-    for y in range(nh):
-        for x in range(nw):
-            block = rgba[y * scale:(y + 1) * scale, x * scale:(x + 1) * scale].reshape(-1, 4)
-            opaque = block[block[:, 3] > 80]
-            if len(opaque) < need:
-                continue
-            q = (opaque[:, :3] // 8) * 8
-            # silhouette blocks: keep the concept's dark outline if it's present
-            if len(opaque) < int(full * 0.72):
-                darks = q[np.max(q, axis=1) < 56]
-                if len(darks) >= max(2, len(opaque) // 6):
-                    q = darks
-            rgb, _ = Counter(map(tuple, q)).most_common(1)[0]
-            out[y, x] = (*rgb, 255)
-    return out
 
 
 def pad_canvas(src: np.ndarray, w: int = CW, h: int = CH) -> np.ndarray:
@@ -179,288 +189,124 @@ def pad_canvas(src: np.ndarray, w: int = CW, h: int = CH) -> np.ndarray:
     return out
 
 
-def dist(a, b):
-    return abs(int(a[0]) - b[0]) + abs(int(a[1]) - b[1]) + abs(int(a[2]) - b[2])
-
-
-def build_palette(arrays: list[np.ndarray], n: int = 48) -> list[tuple]:
-    """Merge near colors; keep the most-used plus identity seeds."""
-    counts: Counter = Counter()
-    for arr in arrays:
-        for px in arr.reshape(-1, 4):
-            if px[3] > 80:
-                counts[(int(px[0]), int(px[1]), int(px[2]))] += 1
-    # merge buckets within distance 16
-    merged: list[tuple[tuple, int]] = []
-    for col, c in counts.most_common():
-        placed = False
-        for i, (mc, n_) in enumerate(merged):
-            if dist(col, mc) <= 16:
-                tot = n_ + c
-                merged[i] = (
-                    tuple(int((mc[k] * n_ + col[k] * c) / tot) for k in range(3)),
-                    tot,
-                )
-                placed = True
-                break
-        if not placed:
-            merged.append((col, c))
-    merged.sort(key=lambda t: -t[1])
-    pal = [(*c, 255) for c, _ in merged[: n - len(SEED)]]
-    for s in SEED:
-        if all(dist(s, p) > 10 for p in pal):
-            pal.append(s)
-    return pal[:n]
-
-
-def snap_palette(c):
-    if c[3] < 80:
-        return (0, 0, 0, 0)
-    best, bd = PALETTE[0], 10**9
-    for p in PALETTE:
-        d = dist(c, p)
-        if d < bd:
-            best, bd = p, d
-    return best
-
-
-def quantize(arr: np.ndarray) -> np.ndarray:
-    h, w = arr.shape[:2]
-    out = np.zeros_like(arr)
-    for y in range(h):
-        for x in range(w):
-            out[y, x] = snap_palette(tuple(arr[y, x]))
+def mode_down(rgba: np.ndarray, scale: int) -> np.ndarray:
+    h, w = rgba.shape[:2]
+    nh, nw = max(1, h // scale), max(1, w // scale)
+    out = np.zeros((nh, nw, 4), np.uint8)
+    need = (scale * scale) // 4
+    for y in range(nh):
+        for x in range(nw):
+            block = rgba[y * scale:(y + 1) * scale, x * scale:(x + 1) * scale].reshape(-1, 4)
+            opaque = block[block[:, 3] > 80]
+            if len(opaque) < need:
+                continue
+            q = (opaque[:, :3] // 8) * 8
+            rgb, _ = Counter(map(tuple, q)).most_common(1)[0]
+            out[y, x] = (*rgb, 255)
     return out
 
 
-def is_opaque(arr, x, y):
-    return 0 <= y < arr.shape[0] and 0 <= x < arr.shape[1] and arr[y, x, 3] > 80
+def snap_degrades(src: np.ndarray, scale: int = SNAP, limit: float = 12.0) -> bool:
+    """True if 4px mode-down + NN up looks worse than the crop."""
+    d = mode_down(src, scale)
+    up = np.array(
+        Image.fromarray(d, "RGBA").resize((d.shape[1] * scale, d.shape[0] * scale), Image.Resampling.NEAREST)
+    )
+    h = min(src.shape[0], up.shape[0])
+    w = min(src.shape[1], up.shape[1])
+    a, b = src[:h, :w], up[:h, :w]
+    keep = a[:, :, 3] > 80
+    if keep.sum() < 20:
+        return True
+    mad = np.abs(a[keep, :3].astype(np.int16) - b[keep, :3].astype(np.int16)).mean()
+    print(f"    snap{scale} MAD={mad:.2f} ({'degrades' if mad > limit else 'ok'})")
+    return mad > limit
 
 
-def drop_stray(arr: np.ndarray, min_size: int = 6) -> np.ndarray:
+def _row_span(arr, y):
+    xs = [x for x in range(arr.shape[1]) if arr[y, x, 3] > 80]
+    if not xs:
+        return 0, 0.0
+    dark = sum(1 for x in xs if max(arr[y, x, :3]) < 60)
+    return max(xs) - min(xs) + 1, dark / len(xs)
+
+
+def strip_chair(arr: np.ndarray, back: bool = False) -> np.ndarray:
+    """Person-only sit: drop star / stem / seat / chair back."""
     h, w = arr.shape[:2]
-    seen = np.zeros((h, w), bool)
-    keep = set()
-    for y in range(h):
-        for x in range(w):
-            if seen[y, x] or arr[y, x, 3] < 80:
+    top = next((y for y in range(h) if any(arr[y, x, 3] > 80 for x in range(w))), 0)
+
+    if back:
+        last_skin = None
+        for y in range(top, min(h, top + 150)):
+            if sum(1 for x in range(w) if _is_skin(arr[y, x])) >= 8:
+                last_skin = y
+        if last_skin is not None and last_skin < top + 115:
+            cut = min(h, last_skin + 18)
+        else:
+            cut = min(h, top + 112)
+        arr[cut:] = 0
+        return arr
+
+    # sit front: walk up from the 5-star stem through the seat, stop at the body
+    stem_y = None
+    for y in range(h - 1, int(h * 0.55), -1):
+        span, dark = _row_span(arr, y)
+        if 8 <= span <= 52 and dark > 0.55:
+            stem_y = y
+            break
+    cut = int(h * 0.78)
+    if stem_y is not None:
+        cut = stem_y
+        for y in range(stem_y, max(top + 80, int(h * 0.40)), -1):
+            span, dark = _row_span(arr, y)
+            body = sum(
+                1 for x in range(w)
+                if arr[y, x, 3] > 80 and (not _is_dark(arr[y, x])) and max(arr[y, x, :3]) > 80
+            )
+            # seat: mid-wide, mostly black. body: wider, or cloth/skin.
+            if body >= 10 or span >= 108:
+                cut = y + 4
+                break
+            if 60 <= span <= 104 and dark > 0.65:
+                cut = y
                 continue
-            stack = [(x, y)]
-            seen[y, x] = True
-            comp = []
-            while stack:
-                cx, cy = stack.pop()
-                comp.append((cx, cy))
-                for dx, dy in ((-1, 0), (1, 0), (0, -1), (0, 1)):
-                    nx, ny = cx + dx, cy + dy
-                    if 0 <= ny < h and 0 <= nx < w and not seen[ny, nx] and arr[ny, nx, 3] > 80:
-                        seen[ny, nx] = True
-                        stack.append((nx, ny))
-            if len(comp) >= min_size:
-                keep.update(comp)
-    for y in range(h):
-        for x in range(w):
-            if arr[y, x, 3] > 80 and (x, y) not in keep:
-                arr[y, x] = (0, 0, 0, 0)
-    return arr
-
-
-def fill_holes(arr: np.ndarray) -> np.ndarray:
-    h, w = arr.shape[:2]
-    trans = arr[:, :, 3] < 80
-    seen = np.zeros((h, w), bool)
-    q = []
-    for x in range(w):
-        for y in (0, h - 1):
-            if trans[y, x] and not seen[y, x]:
-                seen[y, x] = True
-                q.append((x, y))
-    for y in range(h):
-        for x in (0, w - 1):
-            if trans[y, x] and not seen[y, x]:
-                seen[y, x] = True
-                q.append((x, y))
-    i = 0
-    while i < len(q):
-        x, y = q[i]
-        i += 1
-        for dx, dy in ((-1, 0), (1, 0), (0, -1), (0, 1)):
-            nx, ny = x + dx, y + dy
-            if 0 <= ny < h and 0 <= nx < w and trans[ny, nx] and not seen[ny, nx]:
-                seen[ny, nx] = True
-                q.append((nx, ny))
-    for y in range(h):
-        for x in range(w):
-            if trans[y, x] and not seen[y, x]:
-                for dx, dy in ((-1, 0), (1, 0), (0, -1), (0, 1)):
-                    if is_opaque(arr, x + dx, y + dy):
-                        arr[y, x] = arr[y + dy, x + dx]
-                        break
-    return arr
-
-
-def _is_shadow(c):
-    r, g, b, a = c
-    if a < 80:
-        return False
-    return abs(int(r) - int(g)) < 28 and abs(int(g) - int(b)) < 28 and 70 < r < 210
-
-
-def fade_shadow(arr: np.ndarray) -> np.ndarray:
-    h, w = arr.shape[:2]
-    for y in range(max(0, h - 8), h):
-        for x in range(w):
-            if _is_shadow(arr[y, x]):
-                arr[y, x] = (22, 18, 22, SHADOW_A)
-    return arr
-
-
-def clear_shadow(arr: np.ndarray) -> np.ndarray:
-    h, w = arr.shape[:2]
-    for y in range(h):
+            if span < 56:
+                continue
+            cut = y + 4
+            break
+    arr[cut:] = 0
+    for y in range(max(0, cut - 4), h):
         for x in range(w):
             r, g, b, a = arr[y, x]
-            if a == SHADOW_A or (y > h - 10 and _is_shadow(arr[y, x])):
+            if a < 80:
+                continue
+            if max(r, g, b) < 70 or (abs(int(r) - int(g)) < 24 and abs(int(g) - int(b)) < 24 and 70 < r < 210):
                 arr[y, x] = (0, 0, 0, 0)
     return arr
+
+
+def sit_from_back(arr: np.ndarray) -> np.ndarray:
+    """Head + shoulders + upper back from the standing back crop."""
+    out = arr.copy()
+    h, w = out.shape[:2]
+    top = next((y for y in range(h) if any(out[y, x, 3] > 80 for x in range(w))), 0)
+    out[min(h, top + 148):] = 0
+    return out
 
 
 def _is_skin(c):
     r, g, b, a = (c[0], c[1], c[2], c[3] if len(c) > 3 else 255)
-    # skin is warm — white shirts/hoodies must not count
     return a > 80 and r > 190 and 120 < g < 220 and 90 < b < 200 and r > g + 10 and r > b + 20
 
 
 def _is_dark(c):
-    r, g, b, a = (c[0], c[1], c[2], c[3] if len(c) > 3 else 255)
-    return a > 80 and max(r, g, b) < 70
-
-
-def _is_inkish(c):
-    r, g, b, a = (c[0], c[1], c[2], c[3] if len(c) > 3 else 255)
-    return a > 80 and max(r, g, b) < 55
-
-
-def _is_white(c):
-    r, g, b, a = (c[0], c[1], c[2], c[3] if len(c) > 3 else 255)
-    return a > 80 and r > 210 and g > 200 and b > 185
-
-
-def _is_near_white(c):
-    r, g, b, a = (c[0], c[1], c[2], c[3] if len(c) > 3 else 255)
-    return a > 80 and r > 188 and g > 178 and b > 165 and not _is_skin(c)
-
-
-def _is_blush(c):
-    return dist(c, BLUSH) <= 36 or dist(c, MOUTH) <= 36
-
-
-def _is_edge(arr, x, y):
-    if arr[y, x, 3] < 80:
-        return False
-    h, w = arr.shape[:2]
-    for dx, dy in ((-1, 0), (1, 0), (0, -1), (0, 1)):
-        nx, ny = x + dx, y + dy
-        if not (0 <= ny < h and 0 <= nx < w) or arr[ny, nx, 3] < 80:
-            return True
-    return False
-
-
-def _is_feature(arr, x, y):
-    """Eyes / blush / mouth / earrings — never majority-filter these away."""
-    c = arr[y, x]
-    if _is_blush(c) or dist(c, GOLD) <= 28:
-        return True
-    if _is_inkish(c) or _is_dark(c):
-        skin_n = 0
-        for dx, dy in ((-1, 0), (1, 0), (0, -1), (0, 1), (-1, -1), (1, -1), (-1, 1), (1, 1)):
-            if is_opaque(arr, x + dx, y + dy) and _is_skin(arr[y + dy, x + dx]):
-                skin_n += 1
-        if skin_n >= 2:
-            return True
-    return False
-
-
-def majority_smooth(arr: np.ndarray) -> np.ndarray:
-    """Kill checkerboard / stray interior pixels. Leave face features alone."""
-    h, w = arr.shape[:2]
-    src = arr.copy()
-    for y in range(h):
-        for x in range(w):
-            if src[y, x, 3] < 80 or _is_feature(src, x, y):
-                continue
-            neigh = []
-            for dy in (-1, 0, 1):
-                for dx in (-1, 0, 1):
-                    if dx == 0 and dy == 0:
-                        continue
-                    nx, ny = x + dx, y + dy
-                    if 0 <= ny < h and 0 <= nx < w and src[ny, nx, 3] > 80:
-                        neigh.append((int(src[ny, nx, 0]), int(src[ny, nx, 1]), int(src[ny, nx, 2])))
-            if len(neigh) < 5:
-                continue
-            col, n = Counter(neigh).most_common(1)[0]
-            me = (int(src[y, x, 0]), int(src[y, x, 1]), int(src[y, x, 2]))
-            if n >= 5 and dist(me, col) > 18:
-                # never let hair/outline swallow skin, white, or blush
-                if _is_skin(src[y, x]) or _is_white(src[y, x]) or _is_blush(src[y, x]):
-                    if max(col) < 90 or _is_inkish((*col, 255)):
-                        continue
-                arr[y, x] = (*col, 255)
-    return arr
-
-
-def silhouette_ink(arr: np.ndarray) -> np.ndarray:
-    """Continuous 1-art-px dark outline on the silhouette. No dotted rim."""
-    h, w = arr.shape[:2]
-    edges = []
-    for y in range(h):
-        for x in range(w):
-            if _is_edge(arr, x, y):
-                edges.append((x, y))
-    for x, y in edges:
-        if _is_feature(arr, x, y) and not _is_skin(arr[y, x]):
-            arr[y, x] = INK
-            continue
-        arr[y, x] = INK
-    return arr
-
-
-def reconnect_outline(arr: np.ndarray) -> np.ndarray:
-    """Fill 1px gaps so the outline is a continuous dark line."""
-    h, w = arr.shape[:2]
-    for y in range(h):
-        for x in range(w):
-            if arr[y, x, 3] < 80 or not _is_edge(arr, x, y):
-                continue
-            if _is_inkish(arr[y, x]):
-                continue
-            if _is_feature(arr, x, y) and not _is_skin(arr[y, x]):
-                continue
-            ink_n = 0
-            for dx, dy in ((-1, 0), (1, 0), (0, -1), (0, 1), (-1, -1), (1, -1), (-1, 1), (1, 1)):
-                nx, ny = x + dx, y + dy
-                if 0 <= ny < h and 0 <= nx < w and _is_inkish(arr[ny, nx]):
-                    ink_n += 1
-            if ink_n >= 2:
-                arr[y, x] = INK
-    return arr
-
-
-def clean_pass(arr: np.ndarray, outline: bool = True) -> np.ndarray:
-    drop_stray(arr, min_size=5)
-    fill_holes(arr)
-    majority_smooth(arr)
-    if outline:
-        silhouette_ink(arr)
-        reconnect_outline(arr)
-    return arr
+    return (c[3] if len(c) > 3 else 255) > 80 and max(c[0], c[1], c[2]) < 70
 
 
 def face_center(arr: np.ndarray):
-    """Skin centroid of the HEAD only — ignore hands / chest / off-shoulder."""
     h, w = arr.shape[:2]
-    y_hi = min(h, max(28, int(h * 0.42)))
+    y_hi = min(h, max(90, int(h * 0.42)))
     ys, xs = [], []
     for y in range(y_hi):
         for x in range(w):
@@ -468,7 +314,7 @@ def face_center(arr: np.ndarray):
                 xs.append(x)
                 ys.append(y)
     if not xs:
-        return w // 2, 22
+        return w // 2, 90
     return int(round(sum(xs) / len(xs))), int(round(sum(ys) / len(ys)))
 
 
@@ -477,338 +323,220 @@ def put(arr, x, y, c):
         arr[y, x] = c
 
 
-def strip_chair(arr: np.ndarray) -> np.ndarray:
-    """Drop stem / star / seat / shadow under the hips. Keep the person."""
-    h, w = arr.shape[:2]
-    # hip: last row with a wide torso (not a thin stem)
-    hip = h - 1
-    for y in range(h - 1, h // 2, -1):
-        xs = [x for x in range(w) if arr[y, x, 3] > 80]
-        if len(xs) >= 8:
-            hip = y
-            break
-    # clear everything below a short hip
-    cut = min(h, hip + 3)
-    for y in range(cut, h):
-        arr[y] = 0
-    clear_shadow(arr)
-    # thin vertical stem leftovers
-    for y in range(max(0, hip - 2), cut):
-        xs = [x for x in range(w) if arr[y, x, 3] > 80]
-        if xs and max(xs) - min(xs) <= 6 and all(_is_dark(arr[y, x]) or _is_shadow(arr[y, x]) for x in xs):
-            for x in xs:
-                arr[y, x] = (0, 0, 0, 0)
-    return arr
-
-
-def make_sit_from_idle(idle: np.ndarray) -> np.ndarray:
-    sit = idle.copy()
-    h, w = sit.shape[:2]
-    cut = int(h * 0.72)
-    for y in range(cut, h):
-        sit[y] = 0
-    for y in range(cut, min(cut + 3, h)):
-        for x in range(w):
-            if idle[min(y, h - 6), x, 3] > 80 and max(idle[min(y, h - 6), x, :3]) < 80:
-                sit[y, x] = PANTS
-    clear_shadow(sit)
-    return sit
-
-
-def bob(arr: np.ndarray) -> np.ndarray:
+def bob(arr: np.ndarray, dy: int = 2) -> np.ndarray:
     out = np.zeros_like(arr)
-    out[1:] = arr[:-1]
+    if dy > 0:
+        out[dy:] = arr[:-dy]
+    else:
+        out[: arr.shape[0] + dy] = arr[-dy:]
     return out
 
 
 def walk_front(idle: np.ndarray, frame: int) -> np.ndarray:
     wlk = idle.copy()
     h, w = wlk.shape[:2]
-    dy = 1 if frame == 0 else 0
     mid = w // 2
     if frame == 0:
-        x0, x1 = mid - 6, mid - 1
+        x0, x1 = mid - 22, mid - 4
     else:
-        x0, x1 = mid + 1, mid + 6
-    y0, y1 = int(h * 0.72), int(h * 0.92)
+        x0, x1 = mid + 4, mid + 22
+    y0, y1 = int(h * 0.72), int(h * 0.94)
     band = wlk[y0:y1, x0:x1].copy()
     wlk[y0:y1, x0:x1] = 0
-    wlk[y0 - 1 + dy:y1 - 1 + dy, x0:x1] = band
+    dest = y0 - 2
+    wlk[dest: dest + (y1 - y0), x0:x1] = band
     return wlk
 
 
 # ---------------------------------------------------------------------------
-# Laura identity edits — scaled to the HD grid. Do not stamp crude 1×2 eyes.
+# Laura edits — recolor only, never redraw a face.
 # ---------------------------------------------------------------------------
-def patch_01(frames: dict) -> None:
-    """Solid white off-shoulder top + clean outline. No patchy fill."""
-    for key in ("front", "walk"):
-        if key not in frames:
-            continue
-        a = frames[key]
-        cx, cy = face_center(a)
-        y0, y1 = cy + 8, int(a.shape[0] * 0.70)
-        for y in range(y0, y1):
-            for x in range(a.shape[1]):
-                if a[y, x, 3] < 80:
-                    continue
-                if _is_near_white(a[y, x]) or _is_white(a[y, x]):
-                    a[y, x] = WHITE
-        # off-shoulder: upper sides of the top become skin, neckline stays clean
-        for y in range(y0, min(y0 + 3, y1)):
-            for x in range(a.shape[1]):
-                if not _is_white(a[y, x]) and not _is_near_white(a[y, x]):
-                    continue
-                if x <= cx - 4 or x >= cx + 4:
-                    a[y, x] = SKIN if y < y0 + 2 else SKIN_S
-        put(a, cx + 9, cy + 3, WHITE)
-        put(a, cx + 10, cy + 4, WHITE)
-        put(a, cx + 9, cy + 4, WHITE)
-    if "side" in frames:
-        a = frames["side"]
-        cx, cy = face_center(a)
-        put(a, min(a.shape[1] - 2, cx + 8), cy + 2, WHITE)
+def patch_02(arr: np.ndarray) -> None:
+    cx, cy = face_center(arr)
+    for x in range(cx - 8, cx + 9):
+        for y in range(cy + 28, cy + 40):
+            if _is_dark(arr[y, x]) or (arr[y, x, 3] > 80 and max(arr[y, x, :3]) < 90):
+                # only the collar band
+                if abs(x - cx) <= 8:
+                    put(arr, x, y, (*BLUE[:3], 255) if abs(x - cx) <= 6 and y < cy + 36 else arr[y, x])
 
 
-def patch_02(frames: dict) -> None:
-    for key in ("front", "walk", "back"):
-        if key not in frames:
-            continue
-        a = frames[key]
-        cx, cy = face_center(a)
-        for x in range(cx - 2, cx + 3):
-            put(a, x, cy + 10, BLUE)
-
-
-def patch_03(frames: dict) -> None:
-    for key in ("front", "walk"):
-        if key not in frames:
-            continue
-        a = frames[key]
-        cx, cy = face_center(a)
-        put(a, cx - 9, cy + 3, GOLD)
-        put(a, cx + 9, cy + 3, GOLD)
-    if "side" in frames:
-        a = frames["side"]
-        cx, cy = face_center(a)
-        put(a, min(a.shape[1] - 2, cx + 8), cy + 2, GOLD)
-
-
-def _paint_round_glasses(arr: np.ndarray) -> None:
-    """Thin tidy black rounds like the concept, no stray cheek pixels."""
+def recolor_glasses(arr: np.ndarray) -> None:
+    """Paint existing concept rims black. Do not touch eyes / skin / hair."""
     h, w = arr.shape[:2]
     cx, cy = face_center(arr)
-    pupils = set()
-    for y in range(max(0, cy - 3), min(h, cy + 3)):
-        for x in range(max(0, cx - 8), min(w, cx + 9)):
-            if _is_feature(arr, x, y) and (_is_inkish(arr[y, x]) or _is_dark(arr[y, x])):
-                pupils.add((x, y))
-    # wipe metal / stray dark on cheeks back to skin; keep bangs and pupils
-    for y in range(max(0, cy - 4), min(h, cy + 6)):
-        for x in range(max(0, cx - 11), min(w, cx + 12)):
-            if (x, y) in pupils or arr[y, x, 3] < 80:
+    for y in range(max(0, cy - 28), min(h, cy + 16)):
+        for x in range(max(0, cx - 40), min(w, cx + 41)):
+            r, g, b, a = arr[y, x]
+            if a < 80 or _is_skin(arr[y, x]) or _is_dark(arr[y, x]):
                 continue
-            if y <= cy - 3 and _is_dark(arr[y, x]):
+            # hair / bangs
+            if max(r, g, b) < 90:
                 continue
-            if _is_skin(arr[y, x]):
+            # white hoodie
+            if r > 200 and g > 195 and b > 190:
                 continue
-            r, g, b = int(arr[y, x, 0]), int(arr[y, x, 1]), int(arr[y, x, 2])
-            grey = abs(r - g) < 36 and abs(g - b) < 36
-            if grey or (r > 150 and g > 150) or (y >= cy + 1 and _is_dark(arr[y, x])):
-                arr[y, x] = SKIN
-    stamp = [
-        "  ###     ###  ",
-        " #   #   #   # ",
-        "  ###  #  ###  ",
-    ]
-    x0 = cx - len(stamp[0]) // 2
-    y0 = cy - 1
-    for dy, row in enumerate(stamp):
-        for dx, ch in enumerate(row):
-            x, y = x0 + dx, y0 + dy
-            if ch == "#":
-                put(arr, x, y, INK)
-            elif ch == " " and (x, y) not in pupils:
-                if 0 <= y < h and 0 <= x < w and dy == 1:
-                    if _is_inkish(arr[y, x]) or _is_dark(arr[y, x]):
-                        arr[y, x] = SKIN
-    put(arr, cx - 3, cy + 4, BLUSH)
-    put(arr, cx + 3, cy + 4, BLUSH)
-
-
-def patch_04(frames: dict) -> None:
-    for key in ("front", "walk"):
-        if key in frames:
-            _paint_round_glasses(frames[key])
-    if "side" in frames:
-        a = frames["side"]
-        cx, cy = face_center(a)
-        for y in range(cy - 3, cy + 3):
-            for x in range(cx - 1, min(a.shape[1] - 1, cx + 8)):
-                if a[y, x, 3] < 80 or _is_skin(a[y, x]):
-                    continue
-                r, g, b = int(a[y, x, 0]), int(a[y, x, 1]), int(a[y, x, 2])
-                if abs(r - g) < 36 and abs(g - b) < 36 and 70 < r < 220:
-                    a[y, x] = INK
-        put(a, min(a.shape[1] - 2, cx + 6), cy, INK)
-        put(a, min(a.shape[1] - 2, cx + 7), cy, INK)
-
-
-def patch_05(frames: dict) -> None:
-    for key in ("front", "walk"):
-        if key not in frames:
-            continue
-        a = frames[key]
-        cx, cy = face_center(a)
-        put(a, cx - 9, cy + 3, GOLD)
-        put(a, cx + 9, cy + 3, GOLD)
+            grey = abs(int(r) - int(g)) < 28 and abs(int(g) - int(b)) < 28
+            metal = grey and 90 < r < 230
+            if metal:
+                arr[y, x] = INK
 
 
 def shave_head(arr: np.ndarray) -> None:
-    """Smooth skin-tone dome, continuous outline, one darker stubble band."""
+    """Smooth skin dome. Keep the existing outline. Soft stubble wash, no ring."""
     h, w = arr.shape[:2]
     cx, cy = face_center(arr)
     top = next((y for y in range(h) if any(arr[y, x, 3] > 80 for x in range(w))), 0)
-    # back views have almost no skin — treat the upper third as scalp
-    scalp_end = cy + 1 if any(_is_skin(arr[y, x]) for y in range(h) for x in range(w)) else top + 14
-    for y in range(top, min(scalp_end, h)):
+    # head ends around the brow / ears
+    scalp_end = min(h, max(cy + 4, top + 90))
+    for y in range(top, scalp_end):
         for x in range(w):
             if arr[y, x, 3] < 80 or _is_skin(arr[y, x]):
                 continue
-            # only protect eyes/brows in the face band — scalp INK leftovers are not features
-            if y >= cy - 4 and _is_feature(arr, x, y):
+            r, g, b = int(arr[y, x, 0]), int(arr[y, x, 1]), int(arr[y, x, 2])
+            # keep true outline (very dark on the silhouette)
+            edge = False
+            for dx, dy in ((-1, 0), (1, 0), (0, -1), (0, 1)):
+                nx, ny = x + dx, y + dy
+                if not (0 <= ny < h and 0 <= nx < w) or arr[ny, nx, 3] < 80:
+                    edge = True
+                    break
+            if edge and max(r, g, b) < 55:
                 continue
-            arr[y, x] = SKIN
-    # continuous dome outline
-    for y in range(top, min(scalp_end + 1, h)):
+            # keep pupils (dark touching lots of skin)
+            if max(r, g, b) < 50:
+                skin_n = sum(
+                    1 for dx, dy in ((-1, 0), (1, 0), (0, -1), (0, 1), (-1, -1), (1, 1), (-1, 1), (1, -1))
+                    if 0 <= y + dy < h and 0 <= x + dx < w and _is_skin(arr[y + dy, x + dx])
+                )
+                if skin_n >= 3:
+                    continue
+            # hair / leftover stubble → solid skin
+            if max(r, g, b) < 200:
+                arr[y, x] = SKIN
+    # soft crown wash (wide, low contrast — not a 1px ring)
+    for y in range(top + 3, min(top + 22, scalp_end)):
+        t = 1.0 - (y - top - 3) / 20.0
+        mix = 0.22 * t
         for x in range(w):
-            if _is_edge(arr, x, y) and not _is_feature(arr, x, y):
-                arr[y, x] = INK
-    # one continuous 1-tone darker band just inside the crown
-    for x in range(w):
-        if _is_inkish(arr[top, x]) and top + 1 < h and _is_skin(arr[top + 1, x]):
-            arr[top + 1, x] = SKIN_S
+            if not _is_skin(arr[y, x]):
+                continue
+            r, g, b, a = arr[y, x]
+            arr[y, x] = (
+                int(r * (1 - mix) + SKIN_S[0] * mix),
+                int(g * (1 - mix) + SKIN_S[1] * mix),
+                int(b * (1 - mix) + SKIN_S[2] * mix),
+                255,
+            )
 
 
-def patch_06(frames: dict) -> None:
-    for key in frames:
-        shave_head(frames[key])
-
-
-def _is_brown_hair(c) -> bool:
-    r, g, b, a = (c[0], c[1], c[2], c[3] if len(c) > 3 else 255)
-    if a < 80 or _is_skin(c) or _is_inkish(c):
+def _is_brown_hair(c):
+    r, g, b, a = int(c[0]), int(c[1]), int(c[2]), int(c[3] if len(c) > 3 else 255)
+    if a < 80 or _is_skin(c):
         return False
-    return r < 180 and g < 150 and b < 120 and r >= g - 8 and g >= b - 8 and max(r, g, b) < 190
+    return 35 < r < 175 and g < r + 4 and b < g + 8 and r >= g >= b - 6
 
 
-def patch_07(frames: dict) -> None:
-    """Caramel only on the last rows of hanging locks — not side bars."""
-    for key, a in frames.items():
-        h, w = a.shape[:2]
-        cx, cy = face_center(a)
-        lock_y0 = cy + 6
-        lock_y1 = int(h * 0.62)
-        for x in range(w):
-            if abs(x - cx) < 5:
+def caramel_tips(arr: np.ndarray) -> None:
+    h, w = arr.shape[:2]
+    cx, cy = face_center(arr)
+    lock_y0, lock_y1 = cy + 8, min(h - 8, int(h * 0.72))
+    for x in range(w):
+        if abs(x - cx) < 16:
+            continue
+        ys = [y for y in range(lock_y0, lock_y1) if _is_brown_hair(arr[y, x])]
+        if len(ys) < 6:
+            continue
+        tip = max(ys)
+        span = 16
+        for y in range(max(lock_y0, tip - span), tip + 1):
+            if not _is_brown_hair(arr[y, x]):
                 continue
-            ys = [y for y in range(lock_y0, lock_y1) if _is_brown_hair(a[y, x])]
-            if len(ys) < 2:
-                continue
-            tip = max(ys)
-            for i, y in enumerate(range(max(lock_y0, tip - 3), tip + 1)):
-                if _is_brown_hair(a[y, x]) or (_is_inkish(a[y, x]) and y >= tip - 1 and not _is_edge(a, x, y)):
-                    a[y, x] = CARAMEL if i >= 2 else CARAMEL2
+            t = (y - (tip - span)) / span
+            arr[y, x] = CARAMEL if t > 0.50 else CARAMEL2
 
 
-def patch_08(frames: dict) -> None:
-    """Front-only 1px part. No white stripe on the back of the head."""
-    for key, a in frames.items():
-        h, w = a.shape[:2]
-        cx, cy = face_center(a)
-        if key in ("front", "walk"):
-            top = next((y for y in range(h) if a[y, cx, 3] > 80), 4)
-            # single skin pixel at the hairline — not a stripe
-            for y in range(top + 1, min(top + 4, cy - 8)):
-                if _is_dark(a[y, cx]) or _is_inkish(a[y, cx]):
-                    put(a, cx, y, SKIN_S)
-                    break
-            neck = cy + 9
-            for y in range(cy + 6, min(cy + 16, h)):
-                darks = [
-                    x for x in range(max(0, cx - 6), min(w, cx + 7))
-                    if _is_dark(a[y, x])
-                ]
-                if len(darks) >= 6:
-                    neck = y
-                    break
-            for x in range(cx - 5, cx + 6):
-                if 0 <= neck < h and (_is_dark(a[neck, x]) or _is_skin(a[neck, x])):
-                    put(a, x, neck, WHITE)
-            put(a, cx - 5, neck + 1, WHITE)
-            put(a, cx + 5, neck + 1, WHITE)
-            put(a, cx - 2, neck + 3, WHITE)
-            put(a, cx + 2, neck + 3, WHITE)
-            put(a, cx - 1, neck + 4, WHITE)
-            put(a, cx + 1, neck + 4, WHITE)
-            put(a, cx, neck + 5, WHITE)
-        if key == "back":
-            # collar only — never a part line on the crown
-            for y in range(h):
-                if _is_skin(a[y, cx]) and y < cy:
-                    a[y, cx] = HAIR_K
-            neck = None
-            for y in range(h - 1, h // 2, -1):
-                xs = [x for x in range(w) if a[y, x, 3] > 80]
-                if len(xs) >= 8:
-                    neck = y
-                    break
-            if neck is not None:
-                for x in range(cx - 3, cx + 4):
-                    if _is_dark(a[neck, x]) or _is_inkish(a[neck, x]):
-                        put(a, x, neck, WHITE)
+def patch_08(arr: np.ndarray, back: bool) -> None:
+    h, w = arr.shape[:2]
+    cx, cy = face_center(arr)
+    if not back:
+        # 1px center part on the front only — a short skin line at the crown
+        top = next((y for y in range(h) if _is_dark(arr[y, cx]) or max(arr[y, cx, :3]) < 80), 8)
+        for y in range(top + 2, min(top + 22, cy - 28)):
+            if arr[y, cx, 3] > 80 and not _is_skin(arr[y, cx]):
+                put(arr, cx, y, SKIN_S)
+        # white collar: first sweater row under the chin
+        neck = None
+        for y in range(cy + 18, min(cy + 70, h)):
+            if _is_dark(arr[y, cx]) and _is_dark(arr[y, cx - 6]) and _is_dark(arr[y, cx + 6]):
+                neck = y
+                break
+        if neck is not None:
+            for x in range(cx - 16, cx + 17):
+                if 0 <= x < w and arr[neck, x, 3] > 80 and (_is_dark(arr[neck, x]) or _is_skin(arr[neck, x])):
+                    put(arr, x, neck, WHITE)
+            # thin V necklace on the sweater
+            for i, half in enumerate(range(1, 11)):
+                y = neck + 2 + i
+                put(arr, cx - half, y, WHITE)
+                put(arr, cx + half, y, WHITE)
+            put(arr, cx, neck + 12, WHITE)
+    else:
+        for y in range(min(90, h)):
+            if _is_skin(arr[y, cx]):
+                arr[y, cx] = HAIR_K
 
 
-PATCH = {
-    1: patch_01, 2: patch_02, 3: patch_03, 4: patch_04,
-    5: patch_05, 6: patch_06, 7: patch_07, 8: patch_08,
-}
+def apply_laura(n: int, frames: dict) -> None:
+    if n == 2:
+        for k in ("front", "walk", "back", "sitF"):
+            if k in frames:
+                patch_02(frames[k])
+    if n == 4:
+        for k in ("front", "walk", "sitF", "side"):
+            if k in frames:
+                recolor_glasses(frames[k])
+    if n == 6:
+        for k in frames:
+            shave_head(frames[k])
+    if n == 7:
+        for k in frames:
+            caramel_tips(frames[k])
+    if n == 8:
+        for k in frames:
+            patch_08(frames[k], back=k in ("back", "sitB"))
+
+
+def flip_h(arr: np.ndarray) -> np.ndarray:
+    return arr[:, ::-1].copy()
 
 
 def process_one(n: int, figs: list[np.ndarray]) -> dict[str, Image.Image]:
-    raw = {name: pad_canvas(mode_down(fig)) for name, fig in zip(POSE_NAMES, figs)}
-    for k in list(raw):
-        raw[k] = quantize(raw[k])
-        fade_shadow(raw[k])
-        clean_pass(raw[k])
-    # sit on the sheets includes chairs — derive from the cleaned idle after patches
-    stand = {k: raw[k] for k in ("side", "front", "back", "walk")}
-    PATCH[n](stand)
-    raw.update(stand)
-    raw["sitF"] = make_sit_from_idle(raw["front"])
-    raw["sitB"] = make_sit_from_idle(raw["back"])
-    for k in raw:
-        drop_stray(raw[k], min_size=5)
-        fill_holes(raw[k])
-        silhouette_ink(raw[k])
-        reconnect_outline(raw[k])
-    # glasses / caramel tips after outline so they are not swallowed
-    if n == 4:
-        for k in ("front", "walk", "sitF"):
-            _paint_round_glasses(raw[k])
-        if "side" in raw:
-            patch_04({"side": raw["side"]})
-    if n == 7:
-        patch_07(raw)
-    clear_shadow(raw["sitF"])
-    clear_shadow(raw["sitB"])
+    raw = {}
+    for name, fig in zip(POSE_NAMES, figs):
+        # 4px snap is measured for the record, but any MAD is visible on faces
+        # and sweaters — keep the native crop and render nearest at 1:1.
+        snap_degrades(fig)
+        print(f"    {name}: keeping native crop")
+        raw[name] = fig
+    # strip chairs on the native sit crops, then pad so we never clip a head
+    raw["sitF"] = strip_chair(raw["sitF"], back=False)
+    # concept sit_back is almost all chair; keep the person's back crop
+    # from crown through upper back so seating can show head+shoulders.
+    raw["sitB"] = sit_from_back(raw["back"])
+    for name in list(raw):
+        raw[name] = pad_canvas(raw[name])
+    apply_laura(n, raw)
     frames = {
         "idle_front": raw["front"],
-        "idle_front_1": bob(raw["front"]),
+        "idle_front_1": bob(raw["front"], 2),
         "idle_side": raw["side"],
+        "idle_side_l": flip_h(raw["side"]),
         "idle_back": raw["back"],
         "walk_side_0": raw["walk"],
-        "walk_side_1": bob(raw["walk"]),
+        "walk_side_1": bob(raw["walk"], 2),
+        "walk_side_l_0": flip_h(raw["walk"]),
+        "walk_side_l_1": flip_h(bob(raw["walk"], 2)),
         "walk_0": walk_front(raw["front"], 0),
         "walk_1": walk_front(raw["front"], 1),
         "sit_front": raw["sitF"],
@@ -817,34 +545,18 @@ def process_one(n: int, figs: list[np.ndarray]) -> dict[str, Image.Image]:
     return {k: Image.fromarray(v, "RGBA") for k, v in frames.items()}
 
 
-def _font(size=13):
-    path = Path("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf")
-    try:
-        return ImageFont.truetype(str(path), size) if path.exists() else ImageFont.load_default()
-    except Exception:
-        return ImageFont.load_default()
-
-
-def concept_front_crop(n: int) -> Image.Image:
-    figs = segment_poses(find_sheet(n))
-    rgba = figs[1]  # front
-    return Image.fromarray(rgba, "RGBA")
-
-
 def make_lineup(fronts: list[Image.Image], concepts: list[Image.Image]) -> Image.Image:
-    """Concept crop (native) beside our sprite at 4× — same display size."""
-    pad, title, gap = 16, 40, 10
-    cell_w = 150
-    cell_h = 260
+    pad, title = 20, 44
+    cell_w = 180
+    cell_h = 300
     W = pad + 8 * (cell_w + pad)
     H = title + cell_h + 28 + cell_h + 36
     out = Image.new("RGBA", (W, H), (220, 216, 210, 255))
     d = ImageDraw.Draw(out)
-    d.text((pad, 10), "cast HD v2  ·  concept crop  |  our sprite ×4 NN  ·  same display size",
+    d.text((pad, 10), "cast HD v3  ·  concept crop  |  our crop (same pixels + Laura edits)",
            fill=(50, 40, 38, 255), font=_font(16))
     for i, (ours, con) in enumerate(zip(fronts, concepts)):
         x = pad + i * (cell_w + pad)
-        # concept already ~4× our art pixel
         cw = min(cell_w, con.size[0])
         ch = min(cell_h - 8, con.size[1])
         cx0 = (con.size[0] - cw) // 2
@@ -852,9 +564,16 @@ def make_lineup(fronts: list[Image.Image], concepts: list[Image.Image]) -> Image
         crop = con.crop((cx0, cy0, cx0 + cw, cy0 + ch))
         out.paste(crop, (x + (cell_w - crop.size[0]) // 2, title), crop)
         d.text((x, title + cell_h - 2), f"0{i+1} concept", fill=(90, 60, 56, 255), font=_font(12))
-        big = zoom(ours, 4)
-        out.paste(big, (x + (cell_w - big.size[0]) // 2, title + cell_h + 20), big)
-        d.text((x, title + cell_h + 20 + cell_h - 8), f"0{i+1} ours ×4", fill=(90, 60, 56, 255), font=_font(12))
+        # ours is already native — show at 1:1, same display size
+        bb = ours.getbbox()
+        body = ours.crop(bb) if bb else ours
+        if body.size[1] > cell_h - 8:
+            # only if canvas padding is huge; should not scale
+            pass
+        ox = x + (cell_w - body.size[0]) // 2
+        oy = title + cell_h + 20 + (cell_h - 8 - body.size[1])
+        out.paste(body, (ox, oy), body)
+        d.text((x, title + cell_h + 20 + cell_h - 8), f"0{i+1} ours", fill=(90, 60, 56, 255), font=_font(12))
     return out
 
 
@@ -864,33 +583,42 @@ def make_frames(all_frames: list[dict]) -> Image.Image:
         "walk_0", "walk_1", "walk_side_0", "walk_side_1",
         "sit_front", "sit_back",
     ]
-    scale = 3
-    pad, title, cap = 10, 28, 14
-    cw, ch = CW * scale + 8, CH * scale + cap
+    # show at 1:1 (already ~168×272)
+    pad, title, cap = 8, 28, 14
+    cw, ch = CW + 8, CH + cap
     W = pad + len(keys) * cw
     H = title + 8 * ch + 8
     out = Image.new("RGBA", (W, H), (220, 216, 210, 255))
     d = ImageDraw.Draw(out)
-    d.text((pad, 6), "cast HD frames  ×3", fill=(50, 40, 38, 255), font=_font(14))
+    d.text((pad, 6), "cast HD v3 frames  ·  native crops", fill=(50, 40, 38, 255), font=_font(14))
     for r, frames in enumerate(all_frames):
         for c, k in enumerate(keys):
-            big = zoom(frames[k], scale)
+            im = frames[k]
             x, y = pad + c * cw, title + r * ch
-            out.paste(big, (x, y), big)
+            out.paste(im, (x, y), im)
             if r == 0:
-                d.text((x, y + CH * scale + 1), k.replace("_", " "), fill=(90, 80, 74, 255), font=_font(10))
+                d.text((x, y + CH + 1), k.replace("_", " "), fill=(90, 80, 74, 255), font=_font(10))
     return out
 
 
-def write_cast_md():
-    text = """# Cast · 8 Soul Knight chibi（HD, concept block = 4px）
+def head_x4(im: Image.Image) -> Image.Image:
+    bb = im.getbbox() or (0, 0, im.size[0], im.size[1])
+    # head is the top ~45% of the opaque box
+    x0, y0, x1, y1 = bb
+    y1 = y0 + max(80, int((y1 - y0) * 0.48))
+    x0 = max(0, x0 - 8)
+    x1 = min(im.size[0], x1 + 8)
+    crop = im.crop((x0, y0, x1, y1))
+    return zoom(crop, 4)
 
-> Shared ~40×68 canvas · downsample ×4 from 16:9 concept sheets · ~48-color palette.
+
+def write_cast_md():
+    text = """# Cast · 8 Soul Knight chibi（HD v3, concept crops）
+
+> Native crops from the 16:9 concept sheets · shared 168×272 canvas · no 4px crush.
 > Concept sheets are **not** in git.
 
-Standing sprites are ~32×60 art pixels (the concept's real grid), not 16–20.
-
-## 辨认点
+Laura edits only: 04 black rims, 06 shaved scalp, 07 caramel tips, 08 front part + collar + necklace.
 
 | ID | 像素辨认点 |
 |----|------------|
@@ -903,13 +631,12 @@ Standing sprites are ~32×60 art pixels (the concept's real grid), not 16–20.
 | `cast_07` | 褐长发浅焦糖发尾 · 灰西装 |
 | `cast_08` | 中分超长黑直 · 黑毛衣白领边/细项链 · 无耳饰 |
 
-坐姿是人（不带椅）。胡同椅子由房间画。
+坐姿是人（椅已剥）。胡同椅子由房间画。
 """
     (ROOT / "design" / "cast.md").write_text(text, encoding="utf-8")
 
 
 def main():
-    global PALETTE
     PREVIEW.mkdir(parents=True, exist_ok=True)
     ARTIFACT.mkdir(parents=True, exist_ok=True)
     REVIEW.mkdir(parents=True, exist_ok=True)
@@ -920,13 +647,6 @@ def main():
         path = find_sheet(n)
         print(f"  cast_0{n} from {path.name}")
         sheets.append(segment_poses(path))
-
-    downs = []
-    for figs in sheets:
-        for fig in figs:
-            downs.append(mode_down(fig))
-    PALETTE = build_palette(downs, 48)
-    print(f"  palette {len(PALETTE)} colors, canvas {CW}×{CH}, block {SCALE}")
 
     all_frames = []
     fronts = []
@@ -949,10 +669,20 @@ def main():
     for dest in (PREVIEW, ARTIFACT, REVIEW):
         dest.mkdir(parents=True, exist_ok=True)
         lineup.save(dest / "cast_hd_lineup.png")
-        lineup.save(dest / "cast_hd_lineup_v2.png")
+        lineup.save(dest / "cast_hd_lineup_v3.png")
         frames_sheet.save(dest / "cast_hd_frames.png")
+
+    # 4× head crops of 04 and 06
+    for n, tag in ((4, "04"), (6, "06")):
+        fr = all_frames[n - 1]
+        for view, key in (("front", "idle_front"), ("back", "idle_back")):
+            big = head_x4(fr[key])
+            name = f"cast_{tag}_{view}_x4.png"
+            for dest in (PREVIEW, ARTIFACT, REVIEW):
+                big.save(dest / name)
+
     write_cast_md()
-    print("Done HD cast v2 (concept sheets not written).")
+    print("Done HD cast v3 (native concept crops).")
 
 
 if __name__ == "__main__":

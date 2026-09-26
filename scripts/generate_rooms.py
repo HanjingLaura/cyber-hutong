@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """11 Laura-named scenes — 2.5D refined pixel.
 
-Most rooms stay 256×192. Hutong / hutong_reverse are 320×288 HD 3/4
-offices (same art-pixel size as the HD cast). All 8 are seated.
+Most rooms stay 256×192. Hutong / hutong_reverse are 1280×1280 HD 3/4
+offices (accepted 320 furniture ×4 NN + native concept people). All 8 are seated.
 """
 from __future__ import annotations
 
@@ -913,7 +913,7 @@ def _paint_hutong(view: str, people: bool = True) -> Image.Image:
 
 
 def scene_hutong() -> Image.Image:
-    """View 1 — HD 320×288, camera looks north."""
+    """View 1 — HD 1280×1280, camera looks north."""
     import generate_hutong_hd as hd
     return hd.paint("v1", people=True)
 
@@ -1571,14 +1571,14 @@ def scene_mixian() -> Image.Image:
 
 SCENES = [
     dict(id="hutong", title="胡同工位区",
-         blurb="正打 320×288 HD：3/4 浅木通长桌 · ttc 墙 · 八人入座 · 过道可走",
-         fn=scene_hutong, walk_y=176, line="这边还能放杯子。",
+         blurb="正打 1280×1280 HD：3/4 浅木通长桌 · ttc 墙 · 八人入座 · 过道可走",
+         fn=scene_hutong, walk_y=864, line="这边还能放杯子。",
          beat_t="09:20", action="sit_aisle",
          seats=hutong_seats_view1(),
          why="HD 3/4：桌面和桌前脸都看见。白墙立体 ttc + TRUE/TALENT/CENTER + 两排七框。上排 01–04 sit_back（头肩上背露在椅背上沿）。下排 05–08 sit_front（整张脸到肩在桌沿之上）。"),
     dict(id="hutong_reverse", title="胡同 · 反打",
-         blurb="反打 180° 320×288 HD：无墙 · 薄房间沿 · 八人朝向对调",
-         fn=scene_hutong_reverse, walk_y=156, line="从这边看是正脸。",
+         blurb="反打 180° 1280×1280 HD：无墙 · 薄房间沿 · 八人朝向对调",
+         fn=scene_hutong_reverse, walk_y=704, line="从这边看是正脸。",
          beat_t="09:21", action="look_back",
          camera_only=True,
          seats=hutong_seats_view2(),
@@ -1755,20 +1755,8 @@ def patch_manifest(entries):
 
 def _hutong_layout_check():
     """Aisle between chair-backs must be ≥ one standing character tall."""
-    ch_n = hutong_chair_north()
-    ch_s = hutong_chair_south()
-    person_h = 40 * HUTONG_SCALE
-    top_end = V1_TOP_CHAIR_Y + ch_n.size[1]
-    bot_start = V1_BOT_CHAIR_Y
-    aisle = bot_start - top_end
-    print(f"  hutong layout: canvas {HUT_W}×{HUT_H} scale {HUTONG_SCALE} "
-          f"person {24 * HUTONG_SCALE}×{person_h} "
-          f"chair_n {ch_n.size} chair_s {ch_s.size} "
-          f"aisle {aisle}px (need ≥ {person_h})")
-    if aisle < 120:
-        raise SystemExit(f"hutong aisle {aisle}px < 120px")
-    if aisle < person_h:
-        raise SystemExit(f"hutong aisle {aisle}px < person height {person_h}px")
+    import generate_hutong_hd as hd
+    hd.layout_check()
 
 
 def _crop3x(img, box, dest):
