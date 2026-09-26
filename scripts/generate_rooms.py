@@ -480,22 +480,23 @@ HUTONG_SOUTH = ("cast_01", "cast_03", "cast_04", None)  # face south
 
 HW, HH = 640, 640
 HUTONG_SCALE = 3
-DESK_X, DESK_W, DESK_D, DESK_Z = 12, 616, 36, 22
+# Full-width slab, ~1.5× the previous 36px depth.
+DESK_X, DESK_W, DESK_D, DESK_Z = 0, 640, 54, 30
 # Four station centers — pitch 160 = 1/4 of the 640 room.
 SEATS_X = (80, 240, 400, 560)
-# People 96×120, chairs ~96×120. Aisle between chair-backs ≥ one person tall.
+# People 96×120. Aisle between the two chair-back rows ≥ one person tall.
 V1_WALL = 108
 V1_TOP_DESK_Y = 108
-V1_TOP_SIT = 118
-V1_TOP_CHAIR_Y = 168
-V1_WALK_Y = 304
-V1_BOT_CHAIR_Y = 408
-V1_BOT_SIT = 388
-V1_BOT_DESK_Y = 508
-V2_TOP_DESK_Y = 8
-V2_TOP_SIT = 18
-V2_TOP_CHAIR_Y = 68
-V2_WALK_Y = 220
+V1_TOP_SIT = 142
+V1_TOP_CHAIR_Y = 182
+V1_WALK_Y = 300
+V1_BOT_CHAIR_Y = 412
+V1_BOT_SIT = 396
+V1_BOT_DESK_Y = 466
+V2_TOP_DESK_Y = 4
+V2_TOP_SIT = 36
+V2_TOP_CHAIR_Y = 76
+V2_WALK_Y = 200
 
 HUT = {
     "ceil": (252, 252, 254, 255),
@@ -529,43 +530,41 @@ def hutong_cast(cid, view):
 
 
 def hutong_chair_north() -> Image.Image:
-    """Mesh task chair authored at 46×58, then 2× (~96×120, matches 3× cast)."""
-    img = new(46, 58)
+    """Sit-back chair: seat toward the desk (top), BACKREST on the aisle
+    (bottom, toward the camera). Drawn in front of the person so the
+    backrest covers the lower back; head + shoulders read above it."""
+    img = new(46, 54)
     d = ImageDraw.Draw(img)
-    solid_shadow(d, 23, 55, 17, 3)
-    # five-star caster base
-    hline(d, 5, 40, 53, PAL["metal_d"])
-    hline(d, 7, 38, 52, PAL["metal"])
-    vline(d, 14, 50, 54, PAL["metal_d"])
-    vline(d, 31, 50, 54, PAL["metal_d"])
-    vline(d, 22, 42, 53, PAL["metal"])
-    vline(d, 23, 42, 53, PAL["metal_hi"])
-    d.point((5, 54), fill=PAL["metal"])
-    d.point((40, 54), fill=PAL["metal"])
-    d.point((14, 55), fill=PAL["metal_d"])
-    d.point((31, 55), fill=PAL["metal_d"])
-    d.point((22, 55), fill=PAL["metal_hi"])
-    # seat cushion
-    prism(d, 9, 38, 26, 6, 5, HUT["mesh_hi"], HUT["chair"])
-    hline(d, 11, 32, 39, shade(HUT["mesh_hi"], 18))
-    # mesh back (shorter than before so heads read above it)
-    prism(d, 8, 4, 28, 28, 5, HUT["chair"], shade(HUT["chair"], -14), HUT["mesh"])
-    for y in range(7, 30):
+    # seat + casters toward the desk (far from camera)
+    hline(d, 8, 37, 8, PAL["metal_d"])
+    hline(d, 10, 35, 7, PAL["metal"])
+    vline(d, 14, 4, 10, PAL["metal_d"])
+    vline(d, 31, 4, 10, PAL["metal_d"])
+    d.point((10, 4), fill=PAL["metal"])
+    d.point((35, 4), fill=PAL["metal"])
+    prism(d, 9, 2, 26, 8, 4, HUT["mesh_hi"], HUT["chair"])
+    hline(d, 11, 32, 3, shade(HUT["mesh_hi"], 22))
+    # armrests
+    box1(d, 4, 10, 9, 24, PAL["metal_d"], PAL["metal"])
+    box1(d, 35, 10, 40, 24, PAL["metal_d"], PAL["metal"])
+    hline(d, 4, 9, 10, PAL["metal_hi"])
+    hline(d, 35, 40, 10, PAL["metal_hi"])
+    # large mesh backrest on the AISLE / camera side (lower on screen)
+    prism(d, 8, 22, 28, 22, 4, HUT["chair"], shade(HUT["chair"], -14), HUT["mesh"])
+    for y in range(25, 42):
         for x in range(11, 33):
             if (x + y * 2) % 3 == 0:
                 d.point((x, y), fill=HUT["mesh"])
             elif (x + y) % 4 == 0:
                 d.point((x, y), fill=HUT["mesh_hi"])
-    hline(d, 11, 33, 6, shade(HUT["mesh_hi"], 24))
-    hline(d, 11, 33, 7, HUT["mesh_hi"])
-    hline(d, 11, 33, 29, shade(HUT["chair"], 28))
-    hline(d, 12, 32, 20, shade(HUT["mesh"], 22))
-    vline(d, 10, 8, 28, shade(HUT["chair"], 18))
-    vline(d, 33, 8, 28, shade(HUT["chair"], -10))
-    box1(d, 4, 30, 9, 42, PAL["metal_d"], PAL["metal"])
-    box1(d, 35, 30, 40, 42, PAL["metal_d"], PAL["metal"])
-    hline(d, 4, 9, 30, PAL["metal_hi"])
-    hline(d, 35, 40, 30, PAL["metal_hi"])
+    hline(d, 11, 33, 23, shade(HUT["mesh_hi"], 28))
+    hline(d, 11, 33, 24, HUT["mesh_hi"])
+    hline(d, 10, 34, 43, shade(HUT["chair"], 20))
+    hline(d, 11, 33, 44, shade(HUT["chair"], -8))
+    vline(d, 10, 24, 42, shade(HUT["chair"], 18))
+    vline(d, 33, 24, 42, shade(HUT["chair"], -10))
+    # contact shadow under the backrest lip — no caster feet on the aisle side
+    hline(d, 12, 32, 47, shade(HUT["chair"], -20))
     return zoom(outline_sprite(img), 2)
 
 
@@ -741,20 +740,32 @@ def hutong_wall(d, w=HW):
 def _hutong_row(room, d, desk_y, chair_y, sit_y, who, facing):
     """One continuous desk + 4 chairs. facing 'north' = backs, 'south' = faces.
 
-    Desk first, then chairs, then people — seated bodies are never cropped
-    by the slab. Front-row people sit in front of their desk edge; back-row
-    heads and shoulders read over the chair back.
+    A person faces their desk; the chair back is behind them.
+    Top/north row (desk at top): seat toward the desk, backrest on the
+    aisle (toward camera). Person first, then chair, so the backrest
+    covers the lower back and head + shoulders show above it.
+    Bottom/south row (desk at bottom): faces visible, backrest toward the
+    aisle (up). Desk is drawn last so it sits between them and the camera
+    and hides the lower body.
     """
     north = facing == "north"
-    long_wood_desk(d, DESK_X, desk_y)
     chair = hutong_chair_north() if north else hutong_chair_south()
     view = "sit_back" if north else "sit_front"
+    if north:
+        long_wood_desk(d, DESK_X, desk_y)
     for i, cx in enumerate(SEATS_X):
         chx = cx - chair.size[0] // 2
         spr = hutong_cast(who[i], view) if who[i] else None
-        blit(room, chair, chx, chair_y)
-        if spr:
-            blit(room, spr, cx - spr.size[0] // 2, sit_y)
+        if north:
+            if spr:
+                blit(room, spr, cx - spr.size[0] // 2, sit_y)
+            blit(room, chair, chx, chair_y)
+        else:
+            blit(room, chair, chx, chair_y)
+            if spr:
+                blit(room, spr, cx - spr.size[0] // 2, sit_y)
+    if not north:
+        long_wood_desk(d, DESK_X, desk_y)
 
 
 def scene_hutong() -> Image.Image:
@@ -1426,7 +1437,7 @@ SCENES = [
          fn=scene_hutong, walk_y=V1_WALK_Y, line="这边还能放杯子。",
          beat_t="09:20", action="sit_aisle",
          seats=hutong_seats_view1(),
-         why="摄像机朝北墙。白墙、立体 ttc、少而大的灰框、几块小铭牌、顶角线。每排 4 座共用一张通长浅木桌，桌面全空。人椅 3×，座距 1/4 房宽，两排椅背之间留出一人高过道。上排椅朝北墙看后脑勺+肩，下排正脸头肩上身不被桌子挡住。不要电脑/植物/柜/箱/光斑。"),
+         why="摄像机朝北墙。白墙、立体 ttc、少而大的灰框、几块小铭牌、顶角线。每排 4 座共用一张通长浅木桌，桌面全空。人椅 3×，座距 1/4 房宽，两排椅背之间留出一人高过道。上排面向顶桌（后脑勺），椅背在过道一侧、挡住后腰、头肩露在椅背上沿。下排面向底桌（正脸），桌子在身前挡住下半身，头肩上胸可见。不要电脑/植物/柜/箱/光斑。"),
     dict(id="hutong_reverse", title="胡同 · 反打",
          blurb="反打 180° 640×640：无墙 · 同一通长桌 8 座换朝向",
          fn=scene_hutong_reverse, walk_y=V2_WALK_Y, line="从这边看是正脸。",
