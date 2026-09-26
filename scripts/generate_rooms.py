@@ -660,7 +660,10 @@ def _blk3d(d, sx, sy, w, h, face, dep, hi):
 
 
 def draw_ttc_large(d, x, y):
-    """Wall-mounted 3D ttc — chunky dark lowercase, C open on the right."""
+    """Wall-mounted 3D ttc — chunky dark lowercase, C open on the right.
+
+    Stacked subtitle is TRUE / TALENT / CENTER (first t = TRUE).
+    """
     face, dep, hi = HUT["ttc"], HUT["ttc_d"], HUT["ttc_hi"]
 
     def blk(sx, sy, w, h):
@@ -681,8 +684,8 @@ def draw_ttc_large(d, x, y):
     blk(x + 76, y + 4, 10, 40)
     blk(x + 76, y + 4, 28, 10)
     blk(x + 76, y + 34, 28, 10)
-    # small subtitle stacked beside the logo, like the photo
-    tiny_text(d, x + 108, y + 6, "THE", HUT["sub"])
+    # first t = TRUE (not THE)
+    tiny_text(d, x + 108, y + 6, "TRUE", HUT["sub"])
     tiny_text(d, x + 108, y + 14, "TALENT", HUT["sub"])
     tiny_text(d, x + 108, y + 22, "CENTER", HUT["sub"])
 
