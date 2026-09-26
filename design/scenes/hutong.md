@@ -8,5 +8,6 @@
 
 - `public/assets/scenes/hutong/scene_hutong.png`
 - `public/preview/zoomed/hutong.png`
+- 8 seat anchors: top n0–n3 face up (`sit_back`); bottom s0–s3 face down (`sit_front`). Walk aisle `walk_y=108`.
 
 不描摹真人，不提交 refs。

@@ -503,10 +503,10 @@ def scene_hutong() -> Image.Image:
     top_sit = ("cast_02", None, "cast_05", "cast_08")
     bot_sit = ("cast_01", "cast_03", "cast_04", None)
 
-    top_desk_y = 40
-    bot_desk_y = 168
-    top_chair_y = 58
-    bot_chair_y = 138
+    top_desk_y = 39
+    bot_desk_y = 173
+    top_chair_y = 56
+    bot_chair_y = 150
 
     for i, x in enumerate(desk_xs):
         prism(d, x, top_desk_y, desk_w, desk_h, desk_z, HT["desk"], HT["desk_e"])
@@ -518,12 +518,14 @@ def scene_hutong() -> Image.Image:
         if bot_items[i]:
             blit(room, bot_items[i], x + 16, bot_desk_y)
 
-        blit(room, chair_north(jacket=(i == 3)), x + 16, top_chair_y)
+        # top: person faces the wall (back of head), then chair back toward the aisle
         if top_sit[i]:
-            blit_cast(room, cast_sprite(top_sit[i], "sit_back"), x + 11, top_chair_y + 2)
+            blit(room, cast_sprite(top_sit[i], "sit_back"), x + 11, top_chair_y - 12)
+        blit(room, chair_north(jacket=(i == 3)), x + 16, top_chair_y)
+        # bottom: chair behind (toward aisle), person faces the bottom wall
         blit(room, chair_south(jacket=(i == 1)), x + 16, bot_chair_y)
         if bot_sit[i]:
-            blit_cast(room, cast_sprite(bot_sit[i], "sit_front"), x + 11, bot_chair_y - 4)
+            blit(room, cast_sprite(bot_sit[i], "sit_front"), x + 11, bot_chair_y - 14)
 
     # leftover floor = small props only, no extra seats
     blit(room, prop_plant(), 2, 118)
@@ -1156,8 +1158,18 @@ def scene_mixian() -> Image.Image:
 SCENES = [
     dict(id="hutong", title="胡同工位区",
          blurb="上墙 4 桌 · 下墙 4 桌 · 中间 8 椅背靠背",
-         fn=scene_hutong, walk_y=100, line="这边还能放杯子。",
+         fn=scene_hutong, walk_y=108, line="这边还能放杯子。",
          beat_t="09:20", action="sit_aisle",
+         seats=[
+             {"id": "n0", "x": 27, "y": 56, "face": "up", "view": "sit_back"},
+             {"id": "n1", "x": 89, "y": 56, "face": "up", "view": "sit_back"},
+             {"id": "n2", "x": 151, "y": 56, "face": "up", "view": "sit_back"},
+             {"id": "n3", "x": 213, "y": 56, "face": "up", "view": "sit_back"},
+             {"id": "s0", "x": 27, "y": 150, "face": "down", "view": "sit_front"},
+             {"id": "s1", "x": 89, "y": 150, "face": "down", "view": "sit_front"},
+             {"id": "s2", "x": 151, "y": 150, "face": "down", "view": "sit_front"},
+             {"id": "s3", "x": 213, "y": 150, "face": "down", "view": "sit_front"},
+         ],
          why="上墙齐排 4 张工位桌，下墙齐排 4 张；8 把椅子全在房间中间：上排椅朝上墙（看见后脑勺），下排椅朝下墙（看见正脸），两排椅背对背，中间留走道。每桌一块空 pad。墙上只留 ttc 和镜框。空地用植物/喷壶/包补密度，不加座位。"),
     dict(id="elevator", title="电梯间",
          blurb="米黄石材 · 开门体积 · 雕塑台座 · 屏与按钮",
@@ -1226,6 +1238,7 @@ def write_scene_md(spec):
 
 - `public/assets/scenes/{spec['id']}/scene_{spec['id']}.png`
 - `public/preview/zoomed/{spec['id']}.png`
+{("- 8 seat anchors: top n0–n3 face up (`sit_back`); bottom s0–s3 face down (`sit_front`). Walk aisle `walk_y=108`." if spec["id"] == "hutong" else "")}
 
 不描摹真人，不提交 refs。
 """,
@@ -1294,12 +1307,15 @@ def main():
              ASSETS / "rooms" / "thumbs" / f"room_{spec['id']}.png")
         save(zoom(img, 3), PREVIEW / "zoomed" / f"{spec['id']}.png")
         write_scene_md(spec)
-        manifest["scenes"].append({
+        entry = {
             "id": spec["id"], "title": spec["title"],
             "src": f"assets/scenes/{spec['id']}/scene_{spec['id']}.png",
             "walk_y": spec["walk_y"], "line": spec["line"],
             "beat_t": spec["beat_t"], "action": spec["action"],
-        })
+        }
+        if spec.get("seats"):
+            entry["seats"] = spec["seats"]
+        manifest["scenes"].append(entry)
     save(make_room_sheet(painted), PREVIEW / "room_sheet.png")
     write_day_md()
     man = ASSETS / "manifest.json"
