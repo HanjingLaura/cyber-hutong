@@ -2999,6 +2999,11 @@ def save_review(img, name):
 
 
 def main():
+    print("Delegating to generate_cast_sk.py (concept-sheet SK cast).")
+    import generate_cast_sk as sk
+    sk.main()
+    return
+
     print("Generating Soul Knight chibi cast from authored pixel grids…")
     REVIEW.mkdir(parents=True, exist_ok=True)
     ARTIFACT.mkdir(parents=True, exist_ok=True)

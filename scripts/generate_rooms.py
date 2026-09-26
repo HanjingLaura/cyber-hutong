@@ -445,16 +445,36 @@ def draw_ttc(d, x, y):
     blk(x + 22, y + 9, 7, 3)
 
 
+_CAST_FILE = {
+    "front": "idle_front.png",
+    "back": "idle_back.png",
+    "side": "idle_side.png",
+    "sit_front": "sit_front.png",
+    "sit": "sit_front.png",
+    "sit_back": "sit_back.png",
+    "walk": "walk_0.png",
+}
+
+
 def cast_sprite(cid="cast_01", view="front", frame=0):
-    spec = next(s for s in gc.CAST if s["id"] == cid)
-    return gc.draw_cast(spec, view, frame)
+    """Load the committed SK sprites (24×40)."""
+    if view == "front" and frame:
+        name = "idle_front_1.png"
+    elif view == "walk":
+        name = f"walk_{frame % 2}.png"
+    elif view == "side" and frame:
+        name = "walk_side_1.png"
+    else:
+        name = _CAST_FILE.get(view, "idle_front.png")
+    path = ASSETS / "characters" / cid / name
+    return Image.open(path).convert("RGBA")
 
 
 FOOT = 32
 
 
 def blit_cast(room, spr, x, y):
-    """Keep feet on the old 32px foot line when sprites are 32×40."""
+    """Keep feet on the 32px foot line used by the 256×192 rooms."""
     blit(room, spr, x, y - (spr.size[1] - FOOT))
 
 
@@ -478,7 +498,7 @@ def office_floor(d, y0, c1, c2, seam):
 HUTONG_NORTH = ("cast_02", None, "cast_05", "cast_08")  # face north
 HUTONG_SOUTH = ("cast_01", "cast_03", "cast_04", None)  # face south
 
-HW, HH = 640, 640
+HUT_W, HUT_H = 640, 640
 HUTONG_SCALE = 3
 # Full-width slab, ~1.5× the previous 36px depth.
 DESK_X, DESK_W, DESK_D, DESK_Z = 0, 640, 54, 30
@@ -635,7 +655,7 @@ def long_wood_desk(d, x, y, w=DESK_W, h=DESK_D, z=DESK_Z):
     drop_shadow(d, x + 4, y + h + z - 2, w - 4, 10, ox=4, oy=4)
 
 
-def hutong_floor(d, y0, w=HW, h=HH):
+def hutong_floor(d, y0, w=HUT_W, h=HUT_H):
     """Pale office carpet tiles — subtle 32px grid, no light pools."""
     c1, c2, seam = HUT["floor"], HUT["floor2"], HUT["seam"]
     tile = 32
@@ -711,7 +731,7 @@ def _nameplate(d, x, y, w=22, h=6):
     vline(d, x, y, y + h - 1, shade(HUT["plate"], 16))
 
 
-def hutong_wall(d, w=HW):
+def hutong_wall(d, w=HUT_W):
     """White wall: molding, ttc, fewer larger plaques, a few nameplates."""
     lip_y = V1_WALL - 6
     rect(d, [0, 0, w - 1, 12], HUT["ceil"])
@@ -773,7 +793,7 @@ def _hutong_row(room, d, desk_y, chair_y, sit_y, who, facing):
 
 def scene_hutong() -> Image.Image:
     """View 1 — camera looks north: white ttc wall, n* backs, s* faces."""
-    room = new(HW, HH, HUT["floor"])
+    room = new(HUT_W, HUT_H, HUT["floor"])
     d = ImageDraw.Draw(room)
     hutong_floor(d, V1_WALL)
     hutong_wall(d)
@@ -784,7 +804,7 @@ def scene_hutong() -> Image.Image:
 
 def scene_hutong_reverse() -> Image.Image:
     """View 2 — camera rotated 180°: no wall. Rows and X flip; faces/backs swap."""
-    room = new(HW, HH, HUT["floor"])
+    room = new(HUT_W, HUT_H, HUT["floor"])
     d = ImageDraw.Draw(room)
     hutong_floor(d, 0)
     south_ltr = tuple(reversed(HUTONG_SOUTH))
@@ -1505,7 +1525,7 @@ def write_scene_md(spec):
     out = ROOT / "design" / "scenes"
     out.mkdir(parents=True, exist_ok=True)
     hutong = spec["id"] in ("hutong", "hutong_reverse")
-    canvas = f"{HW}×{HH}" if hutong else "256×192"
+    canvas = f"{HUT_W}×{HUT_H}" if hutong else "256×192"
     (out / f"{spec['id']}.md").write_text(
         f"""# 场景：{spec['title']}（`{spec['id']}`）
 
@@ -1578,7 +1598,7 @@ def scene_entry(spec):
     if spec.get("camera_only"):
         entry["camera_only"] = True
     if spec["id"] in ("hutong", "hutong_reverse"):
-        entry["canvas"] = [HW, HH]
+        entry["canvas"] = [HUT_W, HUT_H]
     return entry
 
 
@@ -1626,8 +1646,8 @@ def _hutong_layout_check():
     top_end = V1_TOP_CHAIR_Y + ch_n.size[1]
     bot_start = V1_BOT_CHAIR_Y
     aisle = bot_start - top_end
-    print(f"  hutong layout: canvas {HW}×{HH} scale {HUTONG_SCALE} "
-          f"person {32 * HUTONG_SCALE}×{person_h} "
+    print(f"  hutong layout: canvas {HUT_W}×{HUT_H} scale {HUTONG_SCALE} "
+          f"person {24 * HUTONG_SCALE}×{person_h} "
           f"chair_n {ch_n.size} chair_s {ch_s.size} "
           f"aisle {aisle}px (need ≥ {person_h})")
     if aisle < person_h:

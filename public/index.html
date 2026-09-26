@@ -71,7 +71,7 @@
       border: 1px solid #2a3148;
       cursor: zoom-in;
     }
-    .x4 { width: calc(32px * 4); height: auto; }
+    .x4 { width: calc(24px * 6); height: auto; }
     .room { width: 384px; max-width: 100%; height: auto; }
     .room.hutong-lg { width: min(100%, 640px); }
     .sheet { width: min(100%, 720px); height: auto; }
@@ -358,7 +358,7 @@
         : walkImgs[(tick >> 4) % 2 ? "idle1" : "idle0"];
       if (spr && spr.complete) {
         ctx.save();
-        const sw = spr.naturalWidth || 32, sh = spr.naturalHeight || 40;
+        const sw = spr.naturalWidth || 24, sh = spr.naturalHeight || 40;
         const dw = sw * scale, dh = sh * scale;
         const dy = room.y - Math.max(0, dh - 32 * scale);
         if (walking && dir < 0) {

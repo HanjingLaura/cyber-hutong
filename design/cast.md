@@ -1,44 +1,19 @@
-# Cast · 8 Soul Knight chibi（p1–p8 证件照，每人一版）
+# Cast · 8 Soul Knight chibi（concept sheets → true low-res）
 
-> 32×40 · 头约占一半身高 · 手绘像素格（共享底模 + 发型层）· 1px 深褐描边 · 发/肤/衣 3–4 阶。
-> 辨认先看发型剪影。真人照片 **不入库**。
+> 24×40 shared canvas · integer downsample ×6 from 16:9 concept sheets · ~28-color palette · 1px black outline.
+> Concept sheets are **not** in git (same as photo refs).
 
-## 照片映射
+## 辨认点
 
-| ID | 照片 | 照片描述 | 像素辨认点 |
-|----|------|----------|------------|
-| `cast_01` | p1 | 长黑发浅侧分，白露肩荷叶上衣，白花耳饰 | 侧分长黑发 · 白露肩 · 白花耳饰 |
-| `cast_02` | p2 | 短黑刺发，黑圆领毛衣套浅蓝衬衫领 | 短刺发露耳 · 黑毛衣 · 浅蓝领 |
-| `cast_03` | p3 | 齐下巴波浪短黑波波，粉针织衫，小圈耳饰与戒指 | 波浪短波波 · 粉针织 · 圈耳饰 |
-| `cast_04` | p4 | 直黑波波，圆框眼镜，白卫衣（只用她） | 直波波 · 圆框眼镜 · 白卫衣 |
-| `cast_05` | p5 | 齐肩微卷黑发，黑西装金扣，金圈耳饰 | 齐肩微卷 · 黑西装金扣 · 金圈 |
-| `cast_06` | p6 | 极短寸头，深灰西装套黑衬衫 | 寸头露额露耳 · 深灰西装 · 黑衬衫 |
-| `cast_07` | p7 | 褐长发浅发尾，薄透刘海，灰西装黑内搭 | 褐长发浅发尾 · 薄刘海 · 浅灰开衫 |
-| `cast_08` | p8 | 中分超长黑直发，黑圆领毛衣，小耳钉 | 中分超长黑直 · 黑毛衣 · 小耳钉 |
+| ID | 像素辨认点 |
+|----|------------|
+| `cast_01` | 侧分长黑发 · 白露肩 · 白花耳饰 |
+| `cast_02` | 男 · 短刺发 · 黑毛衣 · 浅蓝领 |
+| `cast_03` | 齐下巴波浪波波 · 粉针织 · 金圈 |
+| `cast_04` | 直波波刘海 · 圆框眼镜 · 白卫衣 |
+| `cast_05` | 齐肩微卷 · 黑西装金扣 · 金圈 |
+| `cast_06` | 男 · 寸头 · 深灰西装 · 黑衬衫 |
+| `cast_07` | 褐长发浅焦糖发尾 · 灰西装 |
+| `cast_08` | 中分超长黑直（及膝）· 黑圆领 · 无耳饰 |
 
-## 发型剪影（先看这个）
-
-- `cast_01` 侧分长黑发，无刘海，白露肩 + 白花耳饰
-- `cast_02` **男** 短刺发，露耳露颈，黑毛衣浅蓝领
-- `cast_03` 齐下巴波浪波波，粉衣
-- `cast_04` 直波波 + 圆框眼镜 + 白卫衣
-- `cast_05` 齐肩微卷（短于 01/07/08），黑西装金扣
-- `cast_06` **男** 寸头贴颅，露额露耳，深灰西装
-- `cast_07` 褐长发浅发尾 + 薄刘海（全场唯一褐发）
-- `cast_08` 中分超长黑直（头发最长）
-
-## 画法
-
-共享女/男底模：圆下巴头约 16×14，颈与身体重叠数像素；2×3 眼 + 1px 高光，眼距 4px，2px 嘴，淡腮红；脸中无鼻、无 X、无红点。
-每人 = 底模 + 后发层 + 前发/刘海 + 衣服换色 + 1–2px 饰品。侧脸左向绘制，游戏里镜像为右。
-
-## Asset paths
-
-```
-public/assets/characters/cast_XX/{idle_front,idle_front_1,idle_side,idle_back}.png
-public/assets/characters/cast_XX/{walk_0,walk_1,walk_side_0,walk_side_1}.png
-public/assets/characters/cast_XX/{sit_front,sit_back}.png
-public/preview/cast_lineup.png
-```
-
-`cast_photo_compare.png` / `cast_v3_compare.png` 只作 artifact，含真人缩略图，不进仓库。
+坐姿是人（不带椅）。胡同椅子由房间画。

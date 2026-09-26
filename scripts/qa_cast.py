@@ -51,15 +51,19 @@ def check_frame(img: Image.Image) -> list[str]:
 
 def check_all() -> list[str]:
     notes: list[str] = []
-    views = (
-        ("front", 0), ("front", 1), ("back", 0), ("side", 0), ("side", 1),
-        ("sit_front", 0), ("sit_back", 0), ("walk", 0), ("walk", 1),
+    names = (
+        "idle_front", "idle_front_1", "idle_back", "idle_side",
+        "walk_0", "walk_1", "walk_side_0", "walk_side_1",
+        "sit_front", "sit_back",
     )
-    for spec in gc.CAST:
-        for view, frame in views:
-            img = gc.draw_cast(spec, view, frame)
+    root = gc.ASSETS
+    for i in range(1, 9):
+        cid = f"cast_0{i}"
+        for name in names:
+            path = root / cid / f"{name}.png"
+            img = Image.open(path).convert("RGBA")
             for n in check_frame(img):
-                notes.append(f"{spec['id']} {view}:{frame}: {n}")
+                notes.append(f"{cid} {name}: {n}")
     return notes
 
 
