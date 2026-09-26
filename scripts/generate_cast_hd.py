@@ -182,9 +182,25 @@ def clean_alpha(crop: np.ndarray, bg, thr: int = 28) -> np.ndarray:
                 for x, y in cells:
                     seen[y, x] = True
 
+    # undo the 1px dilate on sheet-white: that ring is the white halo
+    for y in range(h):
+        for x in range(w):
+            if seen[y, x] or definite[y, x] or not dil[y, x]:
+                continue
+            r, g, b = int(crop[y, x, 0]), int(crop[y, x, 1]), int(crop[y, x, 2])
+            if r < 190 or g < 185 or b < 175:
+                continue
+            for dx, dy in ((-1, 0), (1, 0), (0, -1), (0, 1)):
+                nx, ny = x + dx, y + dy
+                if 0 <= ny < h and 0 <= nx < w and seen[ny, nx]:
+                    seen[y, x] = True
+                    break
+
     rgba = np.zeros((h, w, 4), np.uint8)
     rgba[..., :3] = crop
     rgba[..., 3] = np.where(seen, 0, 255)
+    punch_limb_gaps(rgba)
+    harden_outline(rgba, skip_shadow=False)
     # snapshot alpha so the halo pass cannot eat a white hoodie inward
     alpha0 = rgba[..., 3].copy()
 
@@ -204,7 +220,10 @@ def clean_alpha(crop: np.ndarray, bg, thr: int = 28) -> np.ndarray:
             if air and (_is_sheet_grey(r, g, b, bgv, thr + 24) or diff[y, x] <= thr + 28):
                 rgba[y, x] = (0, 0, 0, 0)
     rgba[..., 3] = np.where(rgba[..., 3] > 80, 255, 0)
-    return polish_cutout(rgba, bg)
+    out = polish_cutout(rgba, bg)
+    punch_limb_gaps(out)
+    harden_outline(out, skip_shadow=False)
+    return out
 
 
 def segment_poses(path: Path) -> list[np.ndarray]:
@@ -412,6 +431,215 @@ def polish_cutout(arr: np.ndarray, bg=None) -> np.ndarray:
     return arr
 
 
+def _is_gap_white(r, g, b, a=255):
+    """Sheet / cream trapped between limbs — not skin, not a white hoodie cluster check."""
+    if a < 80:
+        return False
+    if r > 190 and 120 < g < 220 and 90 < b < 200 and r > g + 10 and r > b + 20:
+        return False
+    return abs(r - g) < 22 and abs(g - b) < 22 and r > 175
+
+
+def punch_limb_gaps(arr: np.ndarray) -> np.ndarray:
+    """Make inseam / armpit sheet-white transparent. Never touch a white hoodie."""
+    h, w = arr.shape[:2]
+    rows = [y for y in range(h) if (arr[y, :, 3] > 80).any()]
+    if not rows:
+        return arr
+    top, bot = rows[0], rows[-1]
+    bh = bot - top + 1
+
+    def flood_band(y0, y1):
+        seed = np.zeros((h, w), bool)
+        for y in range(y0, y1 + 1):
+            for x in range(w):
+                r, g, b, a = (int(arr[y, x, 0]), int(arr[y, x, 1]), int(arr[y, x, 2]), int(arr[y, x, 3]))
+                if not _is_gap_white(r, g, b, a):
+                    continue
+                air = False
+                for dx, dy in ((-1, 0), (1, 0), (0, -1), (0, 1)):
+                    nx, ny = x + dx, y + dy
+                    if not (0 <= ny < h and 0 <= nx < w) or arr[ny, nx, 3] < 80:
+                        air = True
+                        break
+                if air:
+                    seed[y, x] = True
+        q = deque((x, y) for y in range(h) for x in range(w) if seed[y, x])
+        seen = seed.copy()
+        while q:
+            x, y = q.popleft()
+            for dx, dy in ((-1, 0), (1, 0), (0, -1), (0, 1)):
+                nx, ny = x + dx, y + dy
+                if not (0 <= ny < h and 0 <= nx < w) or seen[ny, nx]:
+                    continue
+                if ny < y0 or ny > y1:
+                    continue
+                r, g, b, a = (int(arr[ny, nx, 0]), int(arr[ny, nx, 1]), int(arr[ny, nx, 2]), int(arr[ny, nx, 3]))
+                if _is_gap_white(r, g, b, a):
+                    seen[ny, nx] = True
+                    q.append((nx, ny))
+        return seen
+
+    # inseam: lower 32% (legs only — hoodie hem stays)
+    y_in = top + int(bh * 0.68)
+    for y, x in zip(*np.where(flood_band(y_in, bot))):
+        arr[y, x] = 0
+
+    # armpits: mid band, small white pockets that already touch air
+    y_a0, y_a1 = top + int(bh * 0.32), top + int(bh * 0.68)
+    vis = np.zeros((h, w), bool)
+    for y0 in range(y_a0, y_a1 + 1):
+        for x0 in range(w):
+            if vis[y0, x0] or arr[y0, x0, 3] < 80:
+                continue
+            r, g, b = int(arr[y0, x0, 0]), int(arr[y0, x0, 1]), int(arr[y0, x0, 2])
+            if not _is_gap_white(r, g, b, int(arr[y0, x0, 3])):
+                continue
+            q = deque([(x0, y0)])
+            vis[y0, x0] = True
+            cells = [(x0, y0)]
+            touches_air = False
+            while q:
+                x, y = q.popleft()
+                for dx, dy in ((-1, 0), (1, 0), (0, -1), (0, 1)):
+                    nx, ny = x + dx, y + dy
+                    if not (0 <= ny < h and 0 <= nx < w):
+                        touches_air = True
+                        continue
+                    if arr[ny, nx, 3] < 80:
+                        touches_air = True
+                        continue
+                    if vis[ny, nx] or ny < y_a0 or ny > y_a1:
+                        continue
+                    rr, gg, bb = int(arr[ny, nx, 0]), int(arr[ny, nx, 1]), int(arr[ny, nx, 2])
+                    if _is_gap_white(rr, gg, bb, int(arr[ny, nx, 3])):
+                        vis[ny, nx] = True
+                        q.append((nx, ny))
+                        cells.append((nx, ny))
+            if touches_air and len(cells) <= 90:
+                for x, y in cells:
+                    arr[y, x] = 0
+    return arr
+
+
+def harden_outline(arr: np.ndarray, skip_shadow: bool = True) -> np.ndarray:
+    """Outermost visible pixel is ink. Kill white fringe; recolor mixed edges."""
+    h, w = arr.shape[:2]
+    for y in range(h):
+        for x in range(w):
+            a = int(arr[y, x, 3])
+            if a == 0:
+                continue
+            r, g, b = int(arr[y, x, 0]), int(arr[y, x, 1]), int(arr[y, x, 2])
+            if skip_shadow and a < 200 and max(r, g, b) < 45:
+                continue
+            light = abs(r - g) < 24 and abs(g - b) < 24 and r > 150
+            if a < 90 or (a < 240 and light and not (r > 226 and g > 220 and b > 208 and a > 200)):
+                if a < 160 or light:
+                    arr[y, x] = (0, 0, 0, 0)
+                    continue
+            arr[y, x, 3] = 255
+
+    # one ring only — never walk inward over a white hoodie
+    alpha = arr[:, :, 3].copy()
+    for y in range(h):
+        for x in range(w):
+            if alpha[y, x] < 80:
+                continue
+            if _is_skin(arr[y, x]):
+                continue
+            r, g, b = int(arr[y, x, 0]), int(arr[y, x, 1]), int(arr[y, x, 2])
+            air = False
+            dark_n = 0
+            white_n = 0
+            for dx, dy in ((-1, 0), (1, 0), (0, -1), (0, 1), (-1, -1), (1, 1), (-1, 1), (1, -1)):
+                nx, ny = x + dx, y + dy
+                if not (0 <= ny < h and 0 <= nx < w) or alpha[ny, nx] < 80:
+                    air = True
+                    continue
+                rr, gg, bb = int(arr[ny, nx, 0]), int(arr[ny, nx, 1]), int(arr[ny, nx, 2])
+                if max(rr, gg, bb) < 70:
+                    dark_n += 1
+                if _white_cloth(rr, gg, bb, int(arr[ny, nx, 3])):
+                    white_n += 1
+            if not air:
+                continue
+            if max(r, g, b) < 70:
+                continue
+            near_white = r > 200 and g > 194 and b > 184
+            light = near_white or (r > 155 and g > 148 and b > 138) or (
+                abs(r - g) < 22 and abs(g - b) < 22 and r > 140
+            )
+            if not light:
+                # BOX-mixed outline (mid grey / brown) on the silhouette → ink
+                if max(r, g, b) >= 70 and not _goldish(r, g, b):
+                    arr[y, x] = INK
+                continue
+            # isolated / sheet-white halo: erase. fringe next to the figure: ink.
+            if near_white and white_n < 2 and dark_n == 0:
+                arr[y, x] = (0, 0, 0, 0)
+            else:
+                arr[y, x] = INK
+    return arr
+
+
+def fill_interior_holes(arr: np.ndarray, limit: int = 80) -> np.ndarray:
+    """Fill small holes left after chair strip with neighbouring cloth."""
+    h, w = arr.shape[:2]
+    ext = np.zeros((h, w), bool)
+    q = deque()
+
+    def push(x, y):
+        if 0 <= y < h and 0 <= x < w and not ext[y, x] and arr[y, x, 3] < 80:
+            ext[y, x] = True
+            q.append((x, y))
+
+    for x in range(w):
+        push(x, 0)
+        push(x, h - 1)
+    for y in range(h):
+        push(0, y)
+        push(w - 1, y)
+    while q:
+        x, y = q.popleft()
+        for dx, dy in ((-1, 0), (1, 0), (0, -1), (0, 1)):
+            push(x + dx, y + dy)
+
+    vis = np.zeros((h, w), bool)
+    for y0 in range(h):
+        for x0 in range(w):
+            if vis[y0, x0] or ext[y0, x0] or arr[y0, x0, 3] > 80:
+                continue
+            q = deque([(x0, y0)])
+            vis[y0, x0] = True
+            cells = [(x0, y0)]
+            while q:
+                x, y = q.popleft()
+                for dx, dy in ((-1, 0), (1, 0), (0, -1), (0, 1)):
+                    nx, ny = x + dx, y + dy
+                    if not (0 <= ny < h and 0 <= nx < w) or vis[ny, nx]:
+                        continue
+                    if arr[ny, nx, 3] < 80 and not ext[ny, nx]:
+                        vis[ny, nx] = True
+                        q.append((nx, ny))
+                        cells.append((nx, ny))
+            if len(cells) > limit:
+                continue
+            samples = []
+            for x, y in cells:
+                for dx, dy in ((-1, 0), (1, 0), (0, -1), (0, 1)):
+                    nx, ny = x + dx, y + dy
+                    if 0 <= ny < h and 0 <= nx < w and arr[ny, nx, 3] > 80:
+                        if not _is_skin(arr[ny, nx]):
+                            samples.append(tuple(int(v) for v in arr[ny, nx]))
+            if not samples:
+                continue
+            fill = samples[len(samples) // 2]
+            for x, y in cells:
+                arr[y, x] = fill
+    return arr
+
+
 def strip_concept_shadow(arr: np.ndarray) -> np.ndarray:
     """Drop the baked sheet oval under the shoes. Standing frames only."""
     h, w = arr.shape[:2]
@@ -591,7 +819,7 @@ def _row_span(arr, y):
 
 
 def strip_chair(arr: np.ndarray, back: bool = False) -> np.ndarray:
-    """Person-only sit: drop star / stem / seat / chair back."""
+    """Person-only sit: drop star / stem / seat / chair back. Do not hole the torso."""
     h, w = arr.shape[:2]
     top = next((y for y in range(h) if any(arr[y, x, 3] > 80 for x in range(w))), 0)
 
@@ -607,81 +835,254 @@ def strip_chair(arr: np.ndarray, back: bool = False) -> np.ndarray:
         arr[cut:] = 0
         return arr
 
-    # sit front: walk up from the 5-star stem through the seat, stop at the body
+    # skin bands: merge glasses gaps so the face is one band, then hands, then feet.
+    raw_bands = []
+    in_band, start = False, 0
+    for y in range(top, h):
+        n = sum(1 for x in range(w) if _is_skin(arr[y, x]))
+        if n >= 2 and not in_band:
+            start, in_band = y, True
+        elif n < 2 and in_band:
+            raw_bands.append((start, y - 1))
+            in_band = False
+    if in_band:
+        raw_bands.append((start, h - 1))
+    bands = []
+    for a, b in raw_bands:
+        if bands and a - bands[-1][1] <= 16:
+            bands[-1] = (bands[-1][0], b)
+        else:
+            bands.append((a, b))
+    last_skin = None
+    if bands:
+        face_end = bands[0][1]
+        for a, b in bands[1:]:
+            if a >= face_end + 20:
+                last_skin = b
+                break
+        if last_skin is None:
+            last_skin = min(h - 1, face_end + 78)
+    # only trust a stem cut below the hands — never a mid-torso pinch
     stem_y = None
-    for y in range(h - 1, int(h * 0.55), -1):
+    search_from = (last_skin + 4) if last_skin is not None else int(h * 0.70)
+    for y in range(h - 1, min(h - 1, search_from) - 1, -1):
+        if y < int(h * 0.62):
+            break
         span, dark = _row_span(arr, y)
-        if 8 <= span <= 52 and dark > 0.55:
+        if 8 <= span <= 40 and dark > 0.55:
             stem_y = y
             break
-    cut = int(h * 0.78)
-    if stem_y is not None:
+    if last_skin is not None:
+        cut = min(h, last_skin + 8)
+        if stem_y is not None and stem_y >= last_skin:
+            cut = min(cut, stem_y)
+    elif stem_y is not None:
         cut = stem_y
-        for y in range(stem_y, max(top + 80, int(h * 0.40)), -1):
-            span, dark = _row_span(arr, y)
-            body = sum(
-                1 for x in range(w)
-                if arr[y, x, 3] > 80 and (not _is_dark(arr[y, x])) and max(arr[y, x, :3]) > 80
-            )
-            # seat: mid-wide, mostly black. body: wider, or cloth/skin.
-            if body >= 10 or span >= 108:
-                cut = y + 4
-                break
-            if 60 <= span <= 104 and dark > 0.65:
-                cut = y
-                continue
-            if span < 56:
-                continue
-            cut = y + 4
-            break
+    else:
+        cut = int(h * 0.78)
     arr[cut:] = 0
-    for y in range(max(0, cut - 4), h):
+    return arr
+
+
+def _span_hw(arr, y):
+    xs = [x for x in range(arr.shape[1]) if arr[y, x, 3] > 80]
+    if not xs:
+        return 0
+    return (max(xs) - min(xs)) // 2
+
+
+def clip_sit_to_stand(sit: np.ndarray, stand: np.ndarray, pad: int = 6) -> np.ndarray:
+    """Drop sheet-chair pixels outside a head-tight / body-reasonable envelope."""
+    sh, sw = stand.shape[:2]
+    h, w = sit.shape[:2]
+    st = next((y for y in range(sh) if (stand[y, :, 3] > 80).any()), 0)
+    sb = next((y for y in range(sh - 1, -1, -1) if (stand[y, :, 3] > 80).any()), sh - 1)
+    si = next((y for y in range(h) if (sit[y, :, 3] > 80).any()), 0)
+    se = next((y for y in range(h - 1, -1, -1) if (sit[y, :, 3] > 80).any()), h - 1)
+    ixs = [x for y in range(si, min(h, si + 80)) for x in range(w) if _is_skin(sit[y, x])]
+    icx = int(round(sum(ixs) / len(ixs))) if ixs else w // 2
+    stand_h = max(1, sb - st + 1)
+    sit_h = max(1, se - si + 1)
+
+    def band_hw(arr, y0, y1):
+        vals = [_span_hw(arr, y) for y in range(y0, y1) if _span_hw(arr, y)]
+        return max(vals) if vals else 20
+
+    head_hw = band_hw(sit, si, si + max(8, int(sit_h * 0.24)))
+    if head_hw < 8:
+        head_hw = band_hw(stand, st, st + max(8, int(stand_h * 0.28)))
+    neck_vals = [_span_hw(stand, y) for y in range(st + int(stand_h * 0.22), st + int(stand_h * 0.40))]
+    neck_vals = [v for v in neck_vals if v]
+    neck_hw = min(neck_vals) if neck_vals else max(10, head_hw - 6)
+    body_hw = max(head_hw + 10, neck_hw + 16) + pad
+    lap_hw = max(head_hw + 8, neck_hw + 14) + pad
+
+    for y in range(h):
+        rel = (y - si) / sit_h
+        if rel < 0.34:
+            hw = head_hw + 3
+        elif rel < 0.70:
+            hw = body_hw
+        else:
+            hw = lap_hw
         for x in range(w):
-            r, g, b, a = arr[y, x]
-            if a < 80:
+            if sit[y, x, 3] < 80:
                 continue
-            if max(r, g, b) < 70 or (abs(int(r) - int(g)) < 24 and abs(int(g) - int(b)) < 24 and 70 < r < 210):
-                arr[y, x] = (0, 0, 0, 0)
-    # lap cut: drop leftover office-chair seat / stem under the hands.
-    # Never use the face — after BOX-downscale the hands can fail a 4-px skin test.
-    last_skin = None
-    for y in range(h - 1, top, -1):
-        if sum(1 for x in range(w) if _is_skin(arr[y, x])) >= 2:
-            last_skin = y
-            break
-    if last_skin is not None and last_skin > top + 90:
-        arr[min(h, last_skin + 12):] = 0
-    return strip_chair_wings(arr)
+            if _is_skin(sit[y, x]) or _white_cloth(
+                int(sit[y, x, 0]), int(sit[y, x, 1]), int(sit[y, x, 2]), int(sit[y, x, 3])
+            ):
+                continue
+            if abs(x - icx) > hw and (_is_dark(sit[y, x]) or max(sit[y, x, :3]) < 110):
+                sit[y, x] = 0
+    return sit
 
 
-def strip_chair_wings(arr: np.ndarray) -> np.ndarray:
-    """Drop office-chair back / arms beside the sitter. Never trim the hair band."""
+def keep_largest_body(arr: np.ndarray) -> np.ndarray:
+    """Drop detached chair arms / stem bits after the envelope clip."""
     h, w = arr.shape[:2]
-    rows = [y for y in range(h) if (arr[y, :, 3] > 80).any()]
-    if not rows:
-        return arr
-    top, bot = rows[0], rows[-1]
-    head_end = top + max(28, int((bot - top) * 0.32))
-    body_lo = body_hi = None
-    for y in range(head_end, bot + 1):
-        light = [
-            x for x in range(w)
-            if arr[y, x, 3] > 80 and not _is_dark(arr[y, x])
-        ]
-        if len(light) >= 6:
-            lo, hi = min(light), max(light)
-            body_lo, body_hi = lo, hi
-            for x in range(w):
-                if arr[y, x, 3] < 80 or not _is_dark(arr[y, x]):
-                    continue
-                if x < lo - 2 or x > hi + 2:
-                    arr[y, x] = 0
-        elif body_lo is not None:
-            for x in range(w):
-                if arr[y, x, 3] < 80:
-                    continue
-                if x < body_lo - 6 or x > body_hi + 6:
-                    arr[y, x] = 0
+    seen = np.zeros((h, w), bool)
+    best, best_n = None, 0
+    for y0 in range(h):
+        for x0 in range(w):
+            if seen[y0, x0] or arr[y0, x0, 3] < 80:
+                continue
+            q = deque([(x0, y0)])
+            seen[y0, x0] = True
+            cells = [(x0, y0)]
+            while q:
+                x, y = q.popleft()
+                for dx, dy in ((-1, 0), (1, 0), (0, -1), (0, 1), (-1, -1), (1, 1), (-1, 1), (1, -1)):
+                    nx, ny = x + dx, y + dy
+                    if 0 <= ny < h and 0 <= nx < w and not seen[ny, nx] and arr[ny, nx, 3] > 80:
+                        seen[ny, nx] = True
+                        q.append((nx, ny))
+                        cells.append((nx, ny))
+            if len(cells) > best_n:
+                best_n = len(cells)
+                best = cells
+    if best:
+        keep = np.zeros((h, w), bool)
+        for x, y in best:
+            keep[y, x] = True
+        arr[~keep] = 0
+    return arr
+
+
+def _is_brown_hair_px(c):
+    r, g, b, a = int(c[0]), int(c[1]), int(c[2]), int(c[3] if len(c) > 3 else 255)
+    if a < 80 or _is_skin(c):
+        return False
+    return 35 < r < 175 and g < r + 8 and b < g + 10 and r >= g - 4 and (r - b) > 8
+
+
+def _is_grey_cloth(c):
+    r, g, b, a = int(c[0]), int(c[1]), int(c[2]), int(c[3] if len(c) > 3 else 255)
+    if a < 80:
+        return False
+    mx = max(r, g, b)
+    return 55 <= mx < 155 and abs(r - g) < 20 and abs(g - b) < 20
+
+
+def _is_blue_collar(c):
+    r, g, b, a = int(c[0]), int(c[1]), int(c[2]), int(c[3] if len(c) > 3 else 255)
+    return a > 80 and b > 140 and g > 130 and b > r + 8
+
+
+def _is_person_color(c):
+    if _is_skin(c) or _white_cloth(int(c[0]), int(c[1]), int(c[2]), int(c[3] if len(c) > 3 else 255)):
+        return True
+    if _goldish(int(c[0]), int(c[1]), int(c[2]), int(c[3] if len(c) > 3 else 255)):
+        return True
+    return _is_brown_hair_px(c) or _is_grey_cloth(c) or _is_blue_collar(c)
+
+
+def drop_sheet_chair(arr: np.ndarray, stand: np.ndarray) -> np.ndarray:
+    """Remove chair back / arms. Never scanline-cut a dark sweater."""
+    h, w = arr.shape[:2]
+    sh = stand.shape[0]
+    st = next((y for y in range(sh) if (stand[y, :, 3] > 80).any()), 0)
+    sb = next((y for y in range(sh - 1, -1, -1) if (stand[y, :, 3] > 80).any()), sh - 1)
+    stand_h = max(1, sb - st + 1)
+    top = next((y for y in range(h) if (arr[y, :, 3] > 80).any()), 0)
+    bot = next((y for y in range(h - 1, -1, -1) if (arr[y, :, 3] > 80).any()), h - 1)
+    ixs = [x for y in range(top, min(h, top + 120)) for x in range(w) if _is_skin(arr[y, x])]
+    icx = int(round(sum(ixs) / len(ixs))) if ixs else w // 2
+    chin = top
+    for y in range(top, min(h, top + 140)):
+        if sum(1 for x in range(w) if _is_skin(arr[y, x])) >= 8:
+            chin = y
+
+    torso_vals = [_span_hw(stand, y) * 2 + 1 for y in range(st + int(stand_h * 0.56), st + int(stand_h * 0.72))]
+    torso_vals = [v for v in torso_vals if v >= 30]
+    torso_w = int(sorted(torso_vals)[len(torso_vals) // 2]) if torso_vals else 80
+
+    # 04: black chair vs white hoodie — only below the chin (avoid eye-white)
+    last_white = None
+    for y in range(chin + 2, h):
+        whites = [x for x in range(w) if _white_cloth(
+            int(arr[y, x, 0]), int(arr[y, x, 1]), int(arr[y, x, 2]), int(arr[y, x, 3])
+        )]
+        if len(whites) >= 12 and max(whites) - min(whites) >= 28:
+            last_white = (min(whites) - 3, max(whites) + 3)
+        elif last_white is None:
+            continue
+        lo, hi = last_white
+        for x in range(w):
+            if arr[y, x, 3] < 80 or lo <= x <= hi:
+                continue
+            if _is_skin(arr[y, x]) or _is_brown_hair_px(arr[y, x]):
+                continue
+            if _is_dark(arr[y, x]) or max(arr[y, x, :3]) < 110:
+                arr[y, x] = 0
+
+    # chair back: stencil the head→shoulder band from the standing crop
+    s_face = [y for y in range(st, min(sh, st + 140)) for x in range(stand.shape[1]) if _is_skin(stand[y, x])]
+    s_cy = int(round(sum(s_face) / len(s_face))) if s_face else st + 70
+    i_face = [y for y in range(top, min(h, top + 140)) for x in range(w) if _is_skin(arr[y, x])]
+    i_cy = int(round(sum(i_face) / len(i_face))) if i_face else chin
+    for y in range(top, min(h, chin + 34)):
+        sy = s_cy + (y - i_cy)
+        if sy < 0 or sy >= sh:
+            continue
+        hw = _span_hw(stand, sy) + 3
+        if hw < 8:
+            continue
+        for x in range(w):
+            if arr[y, x, 3] < 80:
+                continue
+            if _is_skin(arr[y, x]) or _white_cloth(
+                int(arr[y, x, 0]), int(arr[y, x, 1]), int(arr[y, x, 2]), int(arr[y, x, 3])
+            ):
+                continue
+            if _is_brown_hair_px(arr[y, x]) or _is_grey_cloth(arr[y, x]) or _is_blue_collar(arr[y, x]):
+                continue
+            if abs(x - icx) > hw and (_is_dark(arr[y, x]) or max(arr[y, x, :3]) < 100):
+                arr[y, x] = 0
+
+    # armrests / leftover seat: only the lower third, never the chest
+    lap0 = top + int((bot - top) * 0.62)
+    hw = max(28, torso_w // 2)
+    for y in range(lap0, h):
+        for x in range(w):
+            if arr[y, x, 3] < 80:
+                continue
+            if _is_skin(arr[y, x]) or _white_cloth(
+                int(arr[y, x, 0]), int(arr[y, x, 1]), int(arr[y, x, 2]), int(arr[y, x, 3])
+            ):
+                continue
+            if abs(x - icx) > hw and (_is_dark(arr[y, x]) or max(arr[y, x, :3]) < 100):
+                arr[y, x] = 0
+    return arr
+
+
+def extract_sit_person(sit: np.ndarray, stand: np.ndarray) -> np.ndarray:
+    """Seated person + own lap; no sheet chair, no torso holes, no bars."""
+    arr = sit.copy()
+    strip_chair(arr, back=False)
+    drop_sheet_chair(arr, stand)
+    keep_largest_body(arr)
+    fill_interior_holes(arr, limit=200)
+    harden_outline(arr, skip_shadow=False)
     return arr
 
 
@@ -708,7 +1109,7 @@ def sit_from_back(arr: np.ndarray, tall: bool = False) -> np.ndarray:
     out = arr.copy()
     h, w = out.shape[:2]
     top = next((y for y in range(h) if any(out[y, x, 3] > 80 for x in range(w))), 0)
-    depth = 208 if tall else 148
+    depth = 148
     out[min(h, top + depth):] = 0
     return out
 
@@ -1248,9 +1649,8 @@ def scale_to_height(figs: list[np.ndarray], target_h: int = TARGET_STAND_H) -> l
         nw = max(1, int(round(fig.shape[1] * scale)))
         im = Image.fromarray(fig, "RGBA").resize((nw, nh), Image.Resampling.BOX)
         a = np.array(im)
-        # Native crop is already polished. Re-polish after BOX eats white cloth
-        # (hoodie reads as sheet). Harden alpha only — drop the semi-transparent halo.
-        a[..., 3] = np.where(a[..., 3] > 100, 255, 0)
+        punch_limb_gaps(a)
+        harden_outline(a, skip_shadow=False)
         out.append(a)
     return out
 
@@ -1276,20 +1676,20 @@ def process_one(n: int, figs: list[np.ndarray]) -> dict[str, Image.Image]:
         print(f"    {name}: keeping native crop")
         raw[name] = fig
     # strip chairs on the native sit crops, then pad so we never clip a head
-    raw["sitF"] = strip_chair(raw["sitF"], back=False)
-    raw["sitF"] = clip_sit_width(raw["sitF"], raw["front"])
-    # concept sit_back is almost all chair; keep the person's back crop
-    # from crown through upper back so seating can show head+shoulders.
-    raw["sitB"] = sit_from_back(raw["back"], tall=(n == 8))
-    # Do not polish sit after the chair strip — white hoodies get eaten as sheet.
-    # Scale already ran polish_cutout on the native crop.
+    raw["sitF"] = extract_sit_person(raw["sitF"], raw["front"])
+    # concept sit_back is almost all chair; head + shoulders from standing back
+    raw["sitB"] = sit_from_back(raw["back"], tall=False)
+    harden_outline(raw["sitB"], skip_shadow=False)
     for name in list(raw):
         raw[name] = pad_canvas(raw[name], foot_pad=(0 if name in ("sitF", "sitB") else FOOT_PAD))
     apply_laura(n, raw)
     for name in ("front", "side", "back", "walk"):
         strip_concept_shadow(raw[name])
-        # no polish_cutout after pad — it treats a white hoodie as sheet
+        punch_limb_gaps(raw[name])
         clean_ankles(raw[name])
+        harden_outline(raw[name], skip_shadow=False)
+    harden_outline(raw["sitF"], skip_shadow=False)
+    harden_outline(raw["sitB"], skip_shadow=False)
     frames = {
         "idle_front": raw["front"],
         "idle_front_1": bob(raw["front"], 2),
@@ -1508,6 +1908,39 @@ def make_cutout_x4(all_frames: list[dict]) -> Image.Image:
     return out
 
 
+def make_dark_poses_x4(all_frames: list[dict]) -> Image.Image:
+    """4× idle_side / front / back / walk / sitF / sitB of 02/04/06/08 on #222."""
+    keys = ("idle_side", "idle_front", "idle_back", "walk_side_0", "sit_front", "sit_back")
+    ids = (2, 4, 6, 8)
+    cell_w, cell_h = CW * 4 + 16, CH * 4 + 24
+    pad, title = 12, 36
+    W = pad + len(keys) * cell_w
+    H = title + len(ids) * cell_h + 8
+    out = Image.new("RGBA", (W, H), (20, 20, 22, 255))
+    d = ImageDraw.Draw(out)
+    d.text((pad, 8), "02/04/06/08  ·  6 poses ×4 on #222  ·  outline must be ink, no bars, no chair",
+           fill=(230, 230, 230, 255), font=_font(14))
+    for r, n in enumerate(ids):
+        frames = all_frames[n - 1]
+        for c, k in enumerate(keys):
+            im = frames[k]
+            big = im.resize((im.size[0] * 4, im.size[1] * 4), Image.Resampling.NEAREST)
+            ba = np.array(big)
+            canvas = np.full((cell_h - 16, cell_w - 8, 3), 34, np.uint8)
+            ox = max(0, (canvas.shape[1] - ba.shape[1]) // 2)
+            oy = 4
+            bh = min(ba.shape[0], canvas.shape[0] - oy)
+            bw = min(ba.shape[1], canvas.shape[1] - ox)
+            m = ba[:bh, :bw, 3] > 0
+            canvas[oy:oy + bh, ox:ox + bw][m] = ba[:bh, :bw, :3][m]
+            x = pad + c * cell_w
+            y = title + r * cell_h
+            out.paste(Image.fromarray(canvas), (x, y))
+            if r == 0:
+                d.text((x, title - 16), k.replace("_", " "), fill=(200, 200, 200, 255), font=_font(11))
+    return out
+
+
 def write_cast_md():
     text = """# Cast · 8 Soul Knight chibi（HD v6, concept crops）
 
@@ -1579,6 +2012,7 @@ def main():
     frames_sheet = make_frames(all_frames)
     cutout = make_cutout_check(all_frames)
     cutout_x4 = make_cutout_x4(all_frames)
+    dark_poses = make_dark_poses_x4(all_frames)
     for dest in (PREVIEW, ARTIFACT, REVIEW):
         dest.mkdir(parents=True, exist_ok=True)
         lineup.save(dest / "cast_hd_lineup.png")
@@ -1587,9 +2021,10 @@ def main():
         frames_sheet.save(dest / "cast_hd_frames.png")
         cutout.save(dest / "cast_cutout_check.png")
         cutout_x4.save(dest / "cast_cutout_x4.png")
+        dark_poses.save(dest / "cast_new4_poses_x4_dark.png")
 
     write_cast_md()
-    print("Done HD cast v6 (02/04/06/08 v3 cutouts, 01/03/05/07 kept).")
+    print("Done HD cast v6b (clean outlines, sit person-only, 01/03/05/07 kept).")
 
 
 if __name__ == "__main__":
