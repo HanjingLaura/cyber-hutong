@@ -1,8 +1,8 @@
 # 场景：胡同 · 反打（`hutong_reverse`）
 
-> HD 精致像素 · 家具 320×320 ×4 NN · 人是概念原裁 1:1 · 画布 1280×1280
+> 空背景 · 同一房间转 180° · 画布 1280×1280
 
-同一房间转 180°。无墙，底沿一条。正脸/后脑勺对调，左右对调。
+无墙，底沿一条。靠近顶的一排柜脚朝过道可见；底排抽屉朝上，只画面板。无椅、无人。
 
 - `public/assets/scenes/hutong_reverse/scene_hutong_reverse.png`
-- `public/preview/hutong_view2_hd.png`
+- `public/preview/hutong_empty_view2.png`

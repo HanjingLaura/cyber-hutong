@@ -1,13 +1,12 @@
 # 场景：胡同工位区（`hutong`）
 
-> HD 精致像素 · 家具 320×320 ×4 NN · 人是概念原裁 1:1 · 画布 1280×1280
+> 空背景 · Soul Knight 3/4 · 家具 320×320 ×4 NN · 画布 1280×1280
 
-正打：3/4 浅木通长桌 · ttc 墙 · 两排七框 · 八人入座 · 过道可走
+正打：白墙厚顶帽 · 小写 `ttc` · `TRUE TALENTS CONNECT` · 右两排四框 · 浅灰地砖。
 
-上排 01–04 `sit_back`：头肩上背露在椅背上沿。下排 05–08 `sit_front`：整张脸到肩在桌沿之上。
+两排各一条浅木通长桌、四座。上排靠墙，柜脚朝过道（向下）贴在桌下，2–3 屉。下排靠底沿，抽屉朝过道（向上）被桌面挡住，只画面板。无椅、无人、桌面无物。
 
 - `public/assets/scenes/hutong/scene_hutong.png`（1280×1280）
-- `public/preview/hutong_view1_hd_v6.png`
-- View 2 `hutong_reverse`：无墙、底沿一条，朝向对调，`walk_y=704`。
+- `public/preview/hutong_empty_view1.png`
 
-不描摹真人，不提交 refs。
+人物精灵另存，不画进房间。

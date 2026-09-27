@@ -913,15 +913,15 @@ def _paint_hutong(view: str, people: bool = True) -> Image.Image:
 
 
 def scene_hutong() -> Image.Image:
-    """View 1 — HD 1280×1280, camera looks north."""
+    """View 1 — empty HD 1280×1280 background, camera looks north."""
     import generate_hutong_hd as hd
-    return hd.paint("v1", people=True)
+    return hd.paint("v1", people=False)
 
 
 def scene_hutong_reverse() -> Image.Image:
-    """View 2 — HD 180°."""
+    """View 2 — empty HD 180° background."""
     import generate_hutong_hd as hd
-    return hd.paint("v2", people=True)
+    return hd.paint("v2", people=False)
 
 
 def scene_hutong_empty() -> Image.Image:
@@ -1571,18 +1571,18 @@ def scene_mixian() -> Image.Image:
 
 SCENES = [
     dict(id="hutong", title="胡同工位区",
-         blurb="正打 1280×1280 HD：3/4 浅木通长桌 · ttc 墙 · 八人入座 · 过道可走",
+         blurb="正打 1280×1280 空背景：3/4 浅木通长桌 · ttc 墙 · 无椅无人",
          fn=scene_hutong, walk_y=864, line="这边还能放杯子。",
          beat_t="09:20", action="sit_aisle",
          seats=hutong_seats_view1(),
-         why="HD 3/4：桌面和桌前脸都看见。白墙立体 ttc + TRUE/TALENT/CENTER + 两排七框。上排 01–04 sit_back（头肩上背露在椅背上沿）。下排 05–08 sit_front（整张脸到肩在桌沿之上）。"),
+         why="空背景。白墙厚顶帽 + 小写 ttc + TRUE TALENTS CONNECT + 右两排四框。上排四座柜脚朝过道可见，下排抽屉朝过道故只见面板。"),
     dict(id="hutong_reverse", title="胡同 · 反打",
-         blurb="反打 180° 1280×1280 HD：无墙 · 薄房间沿 · 八人朝向对调",
+         blurb="反打 180° 1280×1280 空背景：无墙 · 薄房间沿 · 上排见柜 · 下排隐柜",
          fn=scene_hutong_reverse, walk_y=704, line="从这边看是正脸。",
          beat_t="09:21", action="look_back",
          camera_only=True,
          seats=hutong_seats_view2(),
-         why="同一房间转 180°。ttc 墙在画面底外，只留一条薄沿。原先正脸的一排改后脑勺，原先后脑勺的一排改正脸，左右对调。桌前脸始终朝下。"),
+         why="同一空房间转 180°。无墙。靠近顶的一排柜脚朝过道可见，底排只见面板。"),
     dict(id="elevator", title="电梯间",
          blurb="米黄石材 · 开门体积 · 雕塑台座 · 屏与按钮",
          fn=scene_elevator, walk_y=140, line="先等这梯。",
