@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="zh-CN" data-base="__BASE__">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#284c3e" />
+    <link rel="icon" href="data:," />
+    <title>赛博胡同</title>
+    <link rel="preload" href="__BASE__/login-background.png" as="image" />
+    <link rel="stylesheet" href="__BASE__/style.css" />
+  </head>
+  <body>
+    <div class="scene" aria-hidden="true"></div>
+    <section id="auth" class="open" aria-label="账号入口">
+      <div class="wall">
+        <h1>赛博胡同</h1>
+        <nav aria-label="账号操作">
+          <button type="button" data-mode="login" aria-current="true">
+            登录
+          </button>
+          <button type="button" data-mode="register">注册</button>
+        </nav>
+        <form id="auth-form"></form>
+        <p id="auth-message" role="status"></p>
+        <div class="auth-links">
+          <button type="button" data-mode="forgot">忘记密码</button>
+          <button type="button" data-mode="reset">已有重置码</button>
+        </div>
+      </div>
+    </section>
+    <div id="app" hidden>
+      <header class="hud">
+        <strong class="wordmark">赛博胡同</strong>
+        <span id="connection" role="status">连接中</span>
+        <div class="hud-actions">
+          <button
+            id="members-toggle"
+            type="button"
+            aria-expanded="false"
+            aria-controls="roster"
+          >
+            成员
+          </button>
+          <button id="logout" type="button">退出</button>
+        </div>
+      </header>
+      <div class="play-layout">
+        <aside id="roster" aria-label="胡同成员">
+          <div class="me">
+            <canvas
+              id="me-sprite"
+              width="64"
+              height="88"
+              aria-hidden="true"
+            ></canvas>
+            <div>
+              <strong id="me-name"></strong><span class="sub">我的角色</span>
+            </div>
+          </div>
+          <div class="modes" role="group" aria-label="角色控制">
+            <button type="button" id="mode-manual">手动</button>
+            <button type="button" id="mode-auto">托管</button>
+          </div>
+          <h2 class="roster-title">找人说话</h2>
+          <div class="people" id="people"></div>
+        </aside>
+        <main class="conversation" aria-labelledby="title">
+          <header class="dialogue-heading">
+            <canvas
+              id="peer-sprite"
+              width="64"
+              height="88"
+              aria-hidden="true"
+            ></canvas>
+            <div>
+              <h2 id="title">找谁聊聊？</h2>
+              <p class="sub" id="subtitle">选择一位成员。</p>
+            </div>
+            <button id="close-thread" type="button" aria-label="关闭对话">
+              返回
+            </button>
+          </header>
+          <div
+            id="log"
+            role="log"
+            aria-label="聊天记录"
+            aria-live="polite"
+            aria-relevant="additions"
+          ></div>
+          <div id="empty">
+            <p>选一位成员，开始聊天。</p>
+            <p class="sub">方向键选择，Enter 打开。</p>
+          </div>
+          <p class="warn" id="warn" role="status"></p>
+          <form id="composer">
+            <label class="sr-only" for="draft">私聊内容</label>
+            <input
+              id="draft"
+              name="text"
+              maxlength="200"
+              placeholder="说点什么…"
+              autocomplete="off"
+              disabled
+            />
+            <button class="secondary" type="button" id="auto" hidden>
+              打个招呼
+            </button>
+            <button type="submit" disabled>发送</button>
+          </form>
+          <footer class="controls">
+            <span><kbd>Enter</kbd> 发送</span><span><kbd>Esc</kbd> 返回</span
+            ><span id="char-count">0 / 200</span>
+          </footer>
+        </main>
+      </div>
+    </div>
+    <script type="module" src="__BASE__/app.js"></script>
+  </body>
+</html>
