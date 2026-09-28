@@ -22,6 +22,8 @@ front, back, side_right, walk_right, sit_front, sit_back — on a #00FF00 green 
 
 NPC、角色和部分小物件保留绿底，导入游戏前需要裁切与去背景；巴斯光年服装中的绿色必须保留。场景中含椅子时不要重复叠加椅子。登录预览未连接后端，行为代码未连接寻路、渲染和数据库。
 
-运行模块测试：`node --test examples/mvp-behavior/engine.test.mjs`。
+运行模块测试：`node --test examples/mvp-behavior/engine.test.mjs src/server/chat.test.mjs`。
+
+私聊：把百炼 Key 填进根目录 `.env` 的 `DASHSCOPE_API_KEY=`，然后 `node src/server/index.mjs`，打开 http://127.0.0.1:8787 。领取码在 `data/claim-codes.txt`。自动角色用 `qwen-turbo` 非思考模式；真人在线时模型不会替这个人说话。
 
 交接文档中的 Windows 绝对路径是素材来源记录。实际开发请用本仓库相对路径：场景见 assets/scenes，NPC 见 assets/npcs，预览见 examples/login，行为代码见 examples/mvp-behavior。原始照片、聊天剪贴板截图、旧版素材、node_modules 和 ZIP 未上传。

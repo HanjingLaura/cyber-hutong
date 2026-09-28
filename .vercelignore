@@ -1,0 +1,8 @@
+.git
+.env
+.env.*
+data
+assets
+scripts
+node_modules
+docs
