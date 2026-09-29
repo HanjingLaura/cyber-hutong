@@ -6,7 +6,7 @@ const facts = {
   cora: '喜欢去盲盒店 POP MART，常和 Amber 结伴下楼',
   amber: '喜欢去厕所，常和 Cora 结伴下楼，会回应 Celine 的 Hawaii 邀请',
   franco: '喜欢打电话',
-  kay: '会去健身，早上会给 Sid 买咖啡',
+  kay: '会去健身，图图会在健身房出现，早上会给 Sid 买咖啡',
   laura: '用电脑开发，有时加入 Amber 和 Cora 的下楼',
   suki: '喜欢去米线店',
 };

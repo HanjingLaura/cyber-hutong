@@ -78,6 +78,7 @@
 - Jilly 进入演唱会：触发朱志鑫互动。
 - Cora 进入 POP MART：触发巴斯光年互动。
 - Amber 进入厕所：触发富贵貂互动。
+- Kay 进入健身房：触发图图互动。
 - Celine 常驻 Hawaii，偶尔到胡同；她进入胡同且 Amber 不在胡同时说“amber呢”，
   每次到访只说一次。判断场景，不是判断 Amber 是否在线。
 - Celine 偶尔邀请 Amber 或 Jilly 去 Hawaii。

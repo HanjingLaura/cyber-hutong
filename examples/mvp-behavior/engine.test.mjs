@@ -17,6 +17,12 @@ test('encounters restricted, repeated entry idempotent, departure cleans up', ()
   assert.equal(e.enter('jilly', 'hutong')[0].type, 'despawn');
   assert.equal(e.enter('cora', 'popmart')[0].npc, 'buzz_lightyear');
   assert.equal(e.enter('amber', 'restroom')[0].npc, 'fuguidiao');
+  assert.deepEqual(e.enter('sid', 'gym'), []);
+  assert.equal(e.enter('kay', 'gym')[0].npc, 'tutu');
+  assert.deepEqual(e.enter('kay', 'gym'), []);
+  assert.equal(e.canInteract('sid', 'tutu'), false);
+  assert.equal(e.canInteract('kay', 'tutu'), true);
+  assert.equal(e.enter('kay', 'hutong')[0].type, 'despawn');
 });
 test('Celine asks exactly on entry when Amber is absent', () => {
   const e = new BehaviorEngine();

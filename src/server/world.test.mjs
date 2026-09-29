@@ -43,6 +43,16 @@ test('nearby visiting characters return speech rather than a non-existent member
   assert.equal(reply.text, 'Amber，来聊聊。');
 });
 
+test('Kay talking to Tutu in the gym is guest speech, not a member chat', () => {
+  const world = createWorld({ loadPlaces: () => [{ memberId: 'kay', scene: 'gym', x: 780, y: 500, pose: 'stand' }] });
+  world.spawnGuest({ npc: 'tutu', scene: 'gym' });
+  const joined = world.join('kay', 'tutu-talk-tab', 1000);
+  const reply = world.intent('kay', { seq: 1, leaseId: joined.leaseId, intent: { type: 'interact' } }, 1010, true);
+  assert.equal(reply.action, 'speech');
+  assert.equal(reply.actorId, 'tutu');
+  assert.equal(reply.text, 'Kay，今天也来陪我健身呀！');
+});
+
 test('snapshots acknowledge stop input separately from an old idle state', () => {
   const world = createWorld();
   const joined = world.join('suki', 'stop-ack-tab', 1000);

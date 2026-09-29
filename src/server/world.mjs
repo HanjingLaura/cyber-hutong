@@ -402,6 +402,7 @@ export function createWorld({ loadPlaces = () => [], savePlaces = () => {}, scen
         zhu_zhixin: actor.id === 'jilly' ? 'Jilly，今天也来听歌啦！' : '演出快开始了！',
         buzz_lightyear: actor.id === 'cora' ? 'Cora，今天想拆哪一盒？' : '一起看看新来的盲盒吧。',
         fuguidiao: actor.id === 'amber' ? 'Amber，又见面了！' : '你好呀！',
+        tutu: actor.id === 'kay' ? 'Kay，今天也来陪我健身呀！' : '喵～',
         celine: actors.get('amber')?.scene !== nearest.scene ? 'amber呢' : 'Amber，来聊聊。',
       };
       return { action: 'speech', actorId: nearest.id, text: lines[nearest.id] || '你好！' };

@@ -38,6 +38,7 @@
 |buzz_lightyear|巴斯光年|7f7142bcb02ecdf2c86c4cf0d1d01da2.png|
 |celine|Celine|codex-clipboard-27040317-c068-4259-9039-2cfedf7ac8e3.png|
 |fuguidiao|富贵貂|codex-clipboard-0d8d922d-0eb2-458e-b214-a128c614f398.png|
+|tutu|图图|Kay 去健身房刷新的六姿势小猫表|
 
 前两张来源目录：`D:/wechat_file/xwechat_files/wxid_z40ttmse7gwb32_ef9a/temp/RWTemp/2026-09/13f040de4c7d7db4c99d4e90503a1dbe/`。
 后两张来源目录：`C:/Users/hj120/AppData/Local/Temp/`。
@@ -49,6 +50,7 @@
 |演唱会相遇|Jilly 进入 concert|在合法 NPC 点出现朱志鑫，开放 Jilly 的互动入口|
 |盲盒店相遇|Cora 进入 popmart|出现巴斯光年，开放 Cora 的互动入口|
 |厕所相遇|Amber 进入 restroom|出现富贵貂，开放 Amber 的互动入口|
+|健身房相遇|Kay 进入 gym|出现图图，开放 Kay 的互动入口|
 |寻找 Amber|Celine 从其他场景进入 hutong，且此时 Amber 的 sceneId 不为 hutong|Celine 冒泡原文：`amber呢`|
 |Hawaii 邀请|Celine 平时在 hawaii，偶尔选择 Amber 或 Jilly|发送去 Hawaii 的游戏内邀请，接受后寻路到 Hawaii 与 Celine 互动|
 
@@ -95,6 +97,7 @@ export const encounters = [
   { id: 'jilly-concert', actor: 'jilly', scene: 'concert', npc: 'zhu_zhixin' },
   { id: 'cora-popmart', actor: 'cora', scene: 'popmart', npc: 'buzz_lightyear' },
   { id: 'amber-restroom', actor: 'amber', scene: 'restroom', npc: 'fuguidiao' },
+  { id: 'kay-gym', actor: 'kay', scene: 'gym', npc: 'tutu' },
 ] as const;
 
 export const coffeeGifts = [

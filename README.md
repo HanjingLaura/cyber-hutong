@@ -14,7 +14,7 @@ front, back, side_right, walk_right, sit_front, sit_back — on a #00FF00 green 
 |`characters/`|人物素材：f01 Suki、f02 Sid、f03 Jilly、f04 Laura、f05 Kay、f06 Franco、f07 Cora、f08 Amber|
 |`assets/scenes/`|16 张场景，包括胡同八工位、空桌双视角、休息区、厕所、Hawaii、POP MART、演唱会等|
 |`assets/props/`|7 张小物件图集及黑色办公椅正背面|
-|`assets/npcs/`|朱志鑫、巴斯光年、Celine、富贵貂四张绿底原图|
+|`assets/npcs/`|朱志鑫、巴斯光年、Celine、富贵貂、图图五张绿底原图|
 |`assets/avatars/`|原创头像 PNG/GIF、飞书暖肤色头像|
 |`examples/login/`|登录/注册/忘记密码静态预览与指定背景图；打开 index.html 查看|
 |`examples/mvp-behavior/`|独立行为模块、9 项测试及接入说明|
@@ -53,7 +53,7 @@ Vercel 使用独立 Turso 数据库 `cyber-hutong-auth`，环境变量为
 
 位置由常驻 Node 进程计算。浏览器只提交带序号的意图，服务端做碰撞、速度和距离判断。同一角色同时只有一个控制窗口，断线约 15 秒内用原窗口重连。座位是 `ttc-1..4`（Jilly、Cora、Amber、Franco）和 `opposite-1..4`（Sid、Suki、Laura、Kay）。角色表只有正面、背面、朝右站立、朝右迈步、正面坐、背面坐，没有四向走路循环。
 
-门口按 E 可以选择电梯间、休息区、厕所、POP MART、演唱会、Hawaii、健身房或米线店，到了再按 E 回胡同。Jilly 进演唱会出现朱志鑫，Cora 进 POP MART 出现巴斯光年，Amber 进厕所出现富贵貂；离开后收掉，不会重复生成。Celine 住在 Hawaii。Amber 不在胡同时，Celine 进胡同会说一次「amber呢」。托管角色按偏好偶尔出门，服务器确认走到目标后才开始停留，再走回自己的工位。Amber 和 Cora 下楼会先在电梯间会合，没有指定楼下目的地时就停在那里。Celine 在 Hawaii 时偶尔邀请 Amber 或 Jilly；手动角色会看到“去 / 不去”，不同意就不会被拖走。托管角色买咖啡会先走到咖啡机，服务器确认到达后才进入下一步。Vercel 上的 SQLite 在 `/tmp`，不能当正式存档；多人权威世界需要本机或一台常驻进程加持久卷。不要把 `data/`、`.env`、领取码提交进 Git。
+门口按 E 可以选择电梯间、休息区、厕所、POP MART、演唱会、Hawaii、健身房或米线店，到了再按 E 回胡同。Jilly 进演唱会出现朱志鑫，Cora 进 POP MART 出现巴斯光年，Amber 进厕所出现富贵貂，Kay 进健身房出现图图；离开后收掉，不会重复生成。Celine 住在 Hawaii。Amber 不在胡同时，Celine 进胡同会说一次「amber呢」。托管角色按偏好偶尔出门，服务器确认走到目标后才开始停留，再走回自己的工位。Amber 和 Cora 下楼会先在电梯间会合，没有指定楼下目的地时就停在那里。Celine 在 Hawaii 时偶尔邀请 Amber 或 Jilly；手动角色会看到“去 / 不去”，不同意就不会被拖走。托管角色买咖啡会先走到咖啡机，服务器确认到达后才进入下一步。Vercel 上的 SQLite 在 `/tmp`，不能当正式存档；多人权威世界需要本机或一台常驻进程加持久卷。不要把 `data/`、`.env`、领取码提交进 Git。
 
 验证：`npm test`。桌面请看 1280×720 和 1440×900，并切换系统浅色、深色和减少动画。
 
