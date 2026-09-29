@@ -1,11 +1,12 @@
 import { removeGreenScreen, spriteColumns, spriteComponents } from './shared/sprite-key.mjs';
+// Visual asset binding, independent of legacy claim IDs. Used by portraits and world actors.
 const files = {
   suki: "f01",
-  franco: "f02",
-  sid: "f03",
-  jilly: "f04",
-  laura: "f05",
-  kay: "f06",
+  franco: "f06",
+  sid: "f02",
+  jilly: "f03",
+  laura: "f04",
+  kay: "f05",
   cora: "f07",
   amber: "f08",
 };
