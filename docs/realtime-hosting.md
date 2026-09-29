@@ -4,6 +4,15 @@ This patch improves render/loading cost and bounds LLM concurrency. It does NOT
 make independent Vercel function instances share world state. Production eight-player
 acceptance remains blocked on choosing and provisioning a persistent host.
 
+Online control policy: authenticated browser traffic enters manual mode. An open
+SSE connection keeps its owner manual even when a background tab's JS timers are
+throttled. After the last connection closes, allow 60 seconds for refresh/reconnect
+before offline automation takes over. Closing the browser cannot be distinguished
+perfectly from network loss or OS suspension. The online Auto toggle is removed.
+These connection pins are still process-local; they do not solve Vercel world
+splitting. Client stale-input filtering and bounded position corrections mitigate
+local rewind artifacts but are not a substitute for the single-host deployment.
+
 ## Topology
 
 Keep the public `/cyber-hutong/` URL. Once a host is selected, change its existing

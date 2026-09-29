@@ -1,8 +1,19 @@
 import { pointInPolygon } from './geometry.mjs';
 
 export function reconcileStep(point, authority, dt) {
-  const t = 1 - Math.exp(-Math.min(0.05, Math.max(0, dt)) * 14);
+  const seconds = Math.min(0.05, Math.max(0, dt));
+  const distance = Math.hypot(authority.x - point.x, authority.y - point.y);
+  const t = Math.min(1 - Math.exp(-seconds * 14), distance ? 112 * seconds / distance : 1);
   return { ...point, x: point.x + (authority.x - point.x) * t, y: point.y + (authority.y - point.y) * t };
+}
+
+export function mergeActorSnapshots(previous, next, reset = false) {
+  if (reset) return next;
+  const byId = new Map(previous.map(actor => [actor.id, actor]));
+  return next.map(actor => {
+    const old = byId.get(actor.id);
+    return old && (actor.inputSeq ?? 0) < (old.inputSeq ?? 0) ? old : actor;
+  });
 }
 
 // Client prediction uses the same footprint and axis sliding as the server.
