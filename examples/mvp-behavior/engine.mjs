@@ -1,5 +1,16 @@
 import { roster, seats, preferences, encounters, gifts, shanghaiTime } from './config.mjs';
 
+const trips = {
+  concert: ['concert', 'zhu_zhixin'],
+  popmart: ['popmart', 'buzz_lightyear'],
+  restroom: ['restroom', 'fuguidiao'],
+  gym: ['gym', 'floor'],
+  mixian: ['mixian', 'counter'],
+  coffee: ['rest_area', 'coffee_machine'],
+  snack: ['rest_area', 'coffee_machine'],
+};
+const localActivities = ['work', 'development', 'phone_scroll', 'phone_call'];
+
 /** Pure single-server domain module. Methods are called by authenticated server handlers,
  * never directly with a client-supplied actor identity. Commands need a game adapter. */
 export class BehaviorEngine {
@@ -80,6 +91,61 @@ export class BehaviorEngine {
         : this.coffeeMove(e));
     }
     return commands;
+  }
+  schedule(now, random = Math.random) {
+    const commands = [];
+    for (const event of Object.values(this.state.events)) {
+      if (event.kind === 'activity' && event.status === 'active' && event.stage === 'there' && now >= event.returnAt) {
+        event.stage = 'home';
+        commands.push({ type: 'move', eventId: event.id, actor: event.actor, scene: 'hutong', target: this.seat(event.actor) });
+      }
+    }
+    if (this.state.nextSchedule && now < this.state.nextSchedule) return commands;
+    this.state.nextSchedule = now + 20000;
+    if (random() < 0.2) commands.push(...this.invite('outing', { includeLaura: random() < 0.35 }, now));
+    if (random() < 0.15) commands.push(...this.invite('hawaii', { target: random() < 0.5 ? 'amber' : 'jilly' }, now));
+    const idle = roster.filter((person) => {
+      const actor = this.actor(person.id);
+      return actor.mode === 'auto' && !actor.busy && (!actor.nextAt || now >= actor.nextAt);
+    });
+    if (!idle.length) return commands;
+    const person = idle[Math.min(idle.length - 1, Math.floor(random() * idle.length))];
+    const pick = this.proposeActivity(person.id, [...Object.keys(trips), ...localActivities], random);
+    if (pick) commands.push(...this.beginActivity(pick.actor, pick.activity, now));
+    return commands;
+  }
+  beginActivity(id, activity, now) {
+    const actor = this.actor(id);
+    if (actor.mode !== 'auto' || actor.busy) return [];
+    const trip = trips[activity];
+    if (!trip) {
+      actor.nextAt = now + 45000;
+      return [];
+    }
+    const eventId = `activity:${++this.state.sequence}`;
+    this.state.events[eventId] = {
+      id: eventId, kind: 'activity', actor: id, activity, status: 'active', stage: 'out',
+      scene: trip[0], target: trip[1], expiresAt: now + 180000,
+    };
+    actor.busy = eventId;
+    return [{ type: 'move', eventId, actor: id, scene: trip[0], target: trip[1] }];
+  }
+  activityReached(id, target, now) {
+    const event = this.state.events[id];
+    if (!event || event.kind !== 'activity' || event.status !== 'active') return [];
+    if (now >= event.expiresAt) return this.cancel(id, 'expired');
+    const actor = this.actor(event.actor);
+    if (event.stage === 'out' && target === event.target && actor.scene === event.scene) {
+      event.stage = 'there';
+      event.returnAt = now + 25000;
+      return [];
+    }
+    if (event.stage === 'home' && actor.scene === 'hutong' && target === this.seat(event.actor)) {
+      event.status = 'completed';
+      this.release(event.actor, id);
+      actor.nextAt = now + 90000;
+    }
+    return [];
   }
   coffeeMove(e) { return { type: 'move', eventId: e.id, actor: e.actor,
     scene: 'rest_area', target: 'coffee_machine' }; }

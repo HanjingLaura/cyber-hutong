@@ -1,4 +1,5 @@
 import { portrait } from "./portraits.js";
+import { mountStage } from "./stage.js";
 const base = document.documentElement.dataset.base || "";
 const $ = (s) => document.querySelector(s);
 const state = {
@@ -11,6 +12,7 @@ const state = {
   pending: new Set(),
   epoch: 0,
   loading: false,
+  history: false,
 };
 const auth = $("#auth"),
   app = $("#app"),
@@ -38,6 +40,11 @@ $("#composer").onsubmit = (e) => {
 };
 $("#auto").onclick = () => send(true);
 $("#close-thread").onclick = closeThread;
+$("#history-toggle").onclick = () => {
+  state.history = !state.history;
+  log.dataset.signature = "";
+  renderThread();
+};
 $("#members-toggle").onclick = () =>
   toggleRoster(!app.classList.contains("roster-open"));
 people.onclick = (e) => {
@@ -73,9 +80,10 @@ boot();
 function renderAuth() {
   document
     .querySelectorAll("nav button")
-    .forEach((b) =>
-      b.setAttribute("aria-current", String(b.dataset.mode === state.mode)),
-    );
+    .forEach((b) => {
+      if (b.dataset.mode === state.mode) b.setAttribute("aria-current", "true");
+      else b.removeAttribute("aria-current");
+    });
   $("#auth-message").textContent = "";
   const m = state.mode,
     fields = [field("name", "英文名", "text", "username")];
@@ -190,12 +198,25 @@ async function boot() {
   auth.classList.remove("open");
   app.hidden = false;
   $("#me-name").textContent = state.me.name;
+  $("#who").textContent = state.me.name;
   portrait($("#me-sprite"), state.me.id);
   renderPeople();
   renderMode();
   renderThread();
   if (matchMedia("(max-width:767px)").matches) toggleRoster(true);
   connect();
+  state.stage?.stop();
+  state.stage = mountStage({
+    canvas: $("#stage"),
+    hint: $("#hint"),
+    request,
+    meId: state.me.id,
+    onTalk: openThread,
+    chatOpen: () => !$(".conversation").hidden,
+    manual: () => state.me?.control === "human",
+    place: $("#where"),
+    notice: $("#world-log"),
+  });
   clearInterval(state.timer);
   state.timer = setInterval(refreshPeople, 10000);
 }
@@ -207,6 +228,8 @@ function showAuth() {
   state.drafts = {};
   state.pending.clear();
   state.events?.close();
+  state.stage?.stop();
+  state.stage = null;
   clearInterval(state.timer);
   app.hidden = true;
   auth.classList.add("open");
@@ -244,7 +267,7 @@ function renderPeople() {
     const b = document.createElement("button");
     b.type = "button";
     b.dataset.id = p.id;
-    b.setAttribute("aria-current", String(p.id === state.peerId));
+    if (p.id === state.peerId) b.setAttribute("aria-current", "true");
     const canvas = document.createElement("canvas");
     canvas.width = 64;
     canvas.height = 88;
@@ -274,6 +297,7 @@ function renderThread() {
     : "选择一位成员。";
   portrait($("#peer-sprite"), p?.id || "");
   $("#close-thread").hidden = !p;
+  $(".conversation").hidden = !p;
   $("#auto").hidden = !p || p.control === "human" || !state.llm?.configured;
   $("#auto").disabled = busy || state.loading;
   $("#composer button[type=submit]").disabled = !p || busy || state.loading;
@@ -286,13 +310,20 @@ function renderThread() {
       ? "还没有消息，打个招呼吧。"
       : "选一位成员，开始聊天。";
   $("#empty .sub").hidden = Boolean(p);
+  const shown = state.history ? state.messages : [];
+  log.hidden = !state.history;
+  $("#empty").hidden = !state.history || Boolean(p && !state.loading && state.messages.length);
   const signature =
-    state.peerId + ":" + state.messages.map((m) => m.id).join(",");
+    state.peerId + ":" + state.history + ":" + state.messages.map((m) => m.id).join(",");
+  $("#history-toggle").hidden = !p;
+  $("#history-toggle").textContent = state.history ? "收起记录" : "聊天记录";
+  $("#history-toggle").setAttribute("aria-expanded", String(state.history));
+  log.classList.toggle("expanded", state.history);
   if (log.dataset.signature !== signature) {
     const atBottom = log.scrollHeight - log.scrollTop - log.clientHeight < 60,
       scroll = log.scrollTop;
     log.dataset.signature = signature;
-    log.replaceChildren(...state.messages.map(bubble));
+    log.replaceChildren(...shown.map(bubble));
     log.scrollTop = atBottom || state.forceScroll ? log.scrollHeight : scroll;
     state.forceScroll = false;
   }
@@ -323,6 +354,7 @@ function bubble(m) {
 async function openThread(id) {
   if (state.peerId) state.drafts[state.peerId] = $("#draft").value;
   state.peerId = id;
+  state.history = false;
   state.messages = [];
   state.loading = true;
   state.forceScroll = true;
@@ -332,6 +364,7 @@ async function openThread(id) {
   toggleRoster(false);
   renderPeople();
   renderThread();
+  state.stage?.halt();
   const r = await request("/api/chats/" + id + "/messages", null, "GET");
   if (epoch !== state.epoch || !state.me) return;
   state.loading = false;
@@ -351,7 +384,7 @@ function closeThread() {
   renderPeople();
   renderThread();
   if (matchMedia("(max-width:767px)").matches) toggleRoster(true);
-  people.querySelector("button")?.focus();
+  else state.stage?.focus();
 }
 async function send(auto) {
   const peer = state.peerId,
@@ -368,6 +401,7 @@ async function send(auto) {
   );
   state.pending.delete(peer);
   if (state.me?.id !== owner) return;
+  if (r.ok) for (const message of r.body.messages || []) showSpeech(message);
   if (r.ok && !auto && state.drafts[peer]?.trim() === text) {
     state.drafts[peer] = "";
     if (state.peerId === peer) $("#draft").value = "";
@@ -388,6 +422,13 @@ function merge(a, b) {
     (a, b) => a.at - b.at,
   );
 }
+function showSpeech(message) {
+  state.stage?.speak({ actorId: message.senderId, text: message.body, id: message.id, source: message.source });
+  if (message.senderId !== state.me?.id && !state.stage?.sameScene(message.senderId)) {
+    if (state.peerId === message.senderId) state.history = true;
+    else state.stage?.say(`${state.characters.find(p => p.id === message.senderId)?.name || '成员'} 发来一条私聊，可在成员列表中查看。`);
+  }
+}
 async function setMode(mode) {
   const r = await request("/api/me/mode", { mode });
   if (!state.me) return;
@@ -397,6 +438,8 @@ async function setMode(mode) {
   }
   state.me = { ...state.me, ...r.body.member };
   renderMode();
+  if (mode === "manual") await state.stage?.reclaim();
+  else await state.stage?.halt();
 }
 function connect() {
   state.events?.close();
@@ -406,6 +449,7 @@ function connect() {
     $("#connection").textContent = "已连接";
     refreshPeople();
     resyncThread();
+    state.stage?.refresh();
   };
   events.onerror = () => {
     $("#connection").textContent = "正在重连";
@@ -418,14 +462,20 @@ function connect() {
       return;
     }
     if (!state.me) return;
+    if (p.type === "world") state.stage?.setActors(p.actors);
+    if (p.type === "invite") showInvite(p.notice);
+    if (p.type === "say") state.stage?.speak({ actorId: p.notice.actor, text: p.notice.text, id: p.notice.id });
     if (p.type === "presence") {
       state.characters = p.characters;
       renderPeople();
       renderThread();
     }
-    if (p.type === "message" && p.peerId === state.peerId) {
-      state.messages = merge(state.messages, [p.message]);
-      renderThread();
+    if (p.type === "message") {
+      showSpeech(p.message);
+      if (p.peerId === state.peerId) {
+        state.messages = merge(state.messages, [p.message]);
+        renderThread();
+      }
     }
   };
 }
@@ -464,6 +514,32 @@ function count() {
 }
 function note(text) {
   $("#warn").textContent = text || "";
+}
+function showInvite(notice) {
+  let bar = document.querySelector("#invite");
+  if (!bar) {
+    bar = document.createElement("div");
+    bar.id = "invite";
+    document.querySelector(".hud").after(bar);
+  }
+  bar.hidden = false;
+  bar.replaceChildren();
+  const text = document.createElement("span");
+  text.textContent = notice.activity === "deliver_coffee" ? "要去给 Sid 买咖啡吗？" : "有人约你一起走。";
+  const yes = document.createElement("button");
+  yes.type = "button";
+  yes.textContent = "去";
+  const no = document.createElement("button");
+  no.type = "button";
+  no.textContent = "不去";
+  const answer = async (accept) => {
+    bar.hidden = true;
+    const r = await request("/api/world/respond", { eventId: notice.eventId, accept });
+    if (!r.ok) state.stage?.say(r.body.error);
+  };
+  yes.onclick = () => answer(true);
+  no.onclick = () => answer(false);
+  bar.append(text, yes, no);
 }
 async function request(path, body, method) {
   try {

@@ -1,3 +1,4 @@
+import { removeGreenScreen, spriteColumns, spriteComponents } from '../shared/sprite-key.mjs';
 const files = {
   suki: "f01",
   franco: "f02",
@@ -8,8 +9,91 @@ const files = {
   cora: "f07",
   amber: "f08",
 };
+const poseNames = ["front", "back", "side", "walk", "sit", "sit_back"];
+const sheets = new Map();
 const cache = new Map();
+
+function keyBackground(ctx, width, height, key = true) {
+  const image = ctx.getImageData(0, 0, width, height);
+  const data = image.data;
+  if (key) removeGreenScreen(data, width, height);
+  ctx.putImageData(image, 0, 0);
+  let left = width;
+  let right = 0;
+  let top = height;
+  let bottom = 0;
+  for (let y = 0; y < height; y += 1) {
+    for (let x = 0; x < width; x += 1) {
+      if (!data[(y * width + x) * 4 + 3]) continue;
+      left = Math.min(left, x);
+      right = Math.max(right, x);
+      top = Math.min(top, y);
+      bottom = Math.max(bottom, y);
+    }
+  }
+  return {
+    left,
+    top,
+    width: Math.max(1, right - left + 1),
+    height: Math.max(1, bottom - top + 1),
+    anchorX: (left + right) / 2,
+    anchorY: bottom,
+  };
+}
+
+function cutCell(image, box, key = true) {
+  const [x, y, w, h] = box;
+  const source = document.createElement("canvas");
+  source.width = w;
+  source.height = h;
+  const ctx = source.getContext("2d", { willReadFrequently: true });
+  ctx.drawImage(image, x, y, w, h, 0, 0, w, h);
+  return { source, ...keyBackground(ctx, w, h, key) };
+}
+function splitSheet(image, fallback) {
+  const keyed = cutCell(image, [0, 0, image.width, image.height]).source;
+  const data = keyed.getContext('2d').getImageData(0, 0, keyed.width, keyed.height).data;
+  const columns = spriteColumns(data, keyed.width, keyed.height);
+  if (columns.length !== poseNames.length && fallback?.length === poseNames.length) {
+    // The ferret's walking tail overlaps the side pose's horizontal extent.
+    // Isolate actual connected pixels so neither pose contains the other's tail.
+    const components = spriteComponents(data, keyed.width, keyed.height);
+    if (components.length === poseNames.length) {
+      return Object.fromEntries(components.map((part, index) => {
+        const source = document.createElement('canvas');
+        source.width = part.right - part.left + 5;
+        source.height = part.bottom - part.top + 5;
+        const ctx = source.getContext('2d');
+        const frame = ctx.createImageData(source.width, source.height);
+        for (const n of part.pixels) {
+          const x = n % keyed.width - part.left + 2, y = Math.floor(n / keyed.width) - part.top + 2;
+          frame.data.set(data.subarray(n * 4, n * 4 + 4), (y * source.width + x) * 4);
+        }
+        ctx.putImageData(frame, 0, 0);
+        return [poseNames[index], { source, ...keyBackground(ctx, source.width, source.height, false) }];
+      }));
+    }
+  }
+  let frames;
+  if (columns.length === poseNames.length) {
+    frames = columns.map(([left, right]) => {
+      const x = Math.max(0, left - 2), end = Math.min(keyed.width, right + 3);
+      return [x, 0, end - x, keyed.height];
+    });
+  } else if (fallback) frames = fallback;
+  else throw new Error('角色素材的六个姿势无法分开');
+  return Object.fromEntries(frames.map((box, index) => [poseNames[index], cutCell(keyed, box, false)]));
+}
 async function load(id) {
+  const sheet = await loadSheet(id);
+  return sheet?.front ?? null;
+}
+export async function loadSheet(id) {
+  if (!files[id]) return null;
+  if (!sheets.has(id)) sheets.set(id, cutSheet(id));
+  return sheets.get(id);
+}
+async function cutSheet(id) {
   const image = new Image();
   image.src =
     (document.documentElement.dataset.base || "") +
@@ -17,37 +101,14 @@ async function load(id) {
     files[id] +
     ".png";
   await image.decode();
-  const source = document.createElement("canvas");
-  source.width = Math.floor(image.width / 6);
-  source.height = image.height;
-  const ctx = source.getContext("2d", { willReadFrequently: true });
-  ctx.drawImage(image, 0, 0);
-  const pixels = ctx.getImageData(0, 0, source.width, source.height);
-  let left = source.width,
-    right = 0,
-    top = source.height,
-    bottom = 0;
-  for (let y = 0; y < source.height; y++)
-    for (let x = 0; x < source.width; x++) {
-      const i = (y * source.width + x) * 4,
-        d = pixels.data;
-      if (d[i + 1] > 140 && d[i + 1] > d[i] * 1.5 && d[i + 1] > d[i + 2] * 1.5)
-        d[i + 3] = 0;
-      else if (d[i + 3]) {
-        left = Math.min(left, x);
-        right = Math.max(right, x);
-        top = Math.min(top, y);
-        bottom = Math.max(bottom, y);
-      }
-    }
-  ctx.putImageData(pixels, 0, 0);
-  return {
-    source,
-    left,
-    top,
-    width: right - left + 1,
-    height: bottom - top + 1,
-  };
+  return splitSheet(image);
+}
+export async function loadGuestSheet(src, frames) {
+  if (!frames?.length) return null;
+  const image = new Image();
+  image.src = src;
+  await image.decode();
+  return splitSheet(image, frames);
 }
 export async function portrait(canvas, id) {
   canvas.dataset.actor = id;
