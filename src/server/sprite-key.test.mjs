@@ -1,6 +1,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { removeGreenScreen, spriteColumns, spriteComponents } from '../shared/sprite-key.mjs';
+
+test('visual sheets match the confirmed member identities without changing claim IDs', () => {
+  const source = readFileSync(new URL('../client/portraits.js', import.meta.url), 'utf8');
+  const mapping = Object.fromEntries([...source.matchAll(/\b(suki|franco|sid|jilly|laura|kay|cora|amber):\s*"(f0[1-8])"/g)]
+    .map(match => [match[1], match[2]]));
+  assert.deepEqual(mapping, { suki: 'f01', franco: 'f06', sid: 'f02', jilly: 'f03', laura: 'f04', kay: 'f05', cora: 'f07', amber: 'f08' });
+});
 
 test('overlapping horizontal extents are separated by connected pixels', () => {
   const data = new Uint8ClampedArray(10 * 10 * 4);

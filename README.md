@@ -11,7 +11,7 @@ front, back, side_right, walk_right, sit_front, sit_back — on a #00FF00 green 
 
 |目录|内容|
 |---|---|
-|`characters/`|八人角色：f01 Suki、f02 Franco、f03 Sid、f04 Jilly、f05 Laura、f06 Kay、f07 Cora、f08 Amber|
+|`characters/`|人物素材：f01 Suki、f02 Sid、f03 Jilly、f04 Laura、f05 Kay、f06 Franco、f07 Cora、f08 Amber|
 |`assets/scenes/`|16 张场景，包括胡同八工位、空桌双视角、休息区、厕所、Hawaii、POP MART、演唱会等|
 |`assets/props/`|7 张小物件图集及黑色办公椅正背面|
 |`assets/npcs/`|朱志鑫、巴斯光年、Celine、富贵貂四张绿底原图|
