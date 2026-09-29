@@ -123,12 +123,12 @@ export const gym = {
   background: '/scenes/gym.png',
   file: 'office-gym-1280x720.png',
   walkable: [
-    { x: 280, y: 300 }, { x: 1000, y: 300 }, { x: 1080, y: 640 }, { x: 200, y: 640 },
+    { x: 280, y: 300 }, { x: 1000, y: 300 }, { x: 1080, y: 700 }, { x: 200, y: 700 },
   ],
   seats: [],
   exits: [backToHutong],
   spawn: { x: 640, y: 540 },
-  targets: { floor: { x: 640, y: 420 } },
+  targets: { floor: { x: 640, y: 420 }, tutu: { x: 780, y: 500 } },
   foreground: [],
 };
 
@@ -163,6 +163,10 @@ export const guestSprites = {
   celine: {
     name: 'Celine', file: 'celine-green.png',
     frames: [[54, 190, 150, 300], [264, 194, 142, 296], [456, 198, 142, 292], [655, 202, 146, 288], [874, 240, 146, 250], [1086, 231, 142, 259]],
+  },
+  tutu: {
+    name: '图图', file: 'tutu-green.png', scale: 0.55,
+    frames: [[44, 244, 163, 214], [240, 246, 157, 216], [408, 256, 205, 202], [637, 266, 217, 191], [882, 254, 163, 208], [1090, 254, 153, 211]],
   },
 };
 

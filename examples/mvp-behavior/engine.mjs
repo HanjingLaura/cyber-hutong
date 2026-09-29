@@ -4,7 +4,7 @@ const trips = {
   concert: ['concert', 'zhu_zhixin'],
   popmart: ['popmart', 'buzz_lightyear'],
   restroom: ['restroom', 'fuguidiao'],
-  gym: ['gym', 'floor'],
+  gym: ['gym', 'tutu'],
   mixian: ['mixian', 'counter'],
   coffee: ['rest_area', 'coffee_machine'],
   snack: ['rest_area', 'coffee_machine'],

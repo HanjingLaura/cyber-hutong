@@ -106,6 +106,42 @@ test('an encounter npc appears once on entry and leaves with its owner', async (
   store.close();
 });
 
+test('Kay entering the gym refreshes Tutu once and leaving despawns her', async () => {
+  const store = openStore(':memory:');
+  const world = createWorld({ loadPlaces: () => [], savePlaces() {} });
+  const repository = store.worldRepository();
+  const runtime = await createWorldRuntime(repository);
+  const director = createDirector({
+    world, runtime, repository, manualIds: () => new Set(['kay', 'sid']), random: () => 0.99,
+  });
+  const joined = world.join('kay', 'tab-kay-gym', morning);
+  let seq = joined.seq;
+  const next = () => ++seq;
+  world.spawnGuest({ npc: 'tutu', scene: 'gym' });
+  assert.equal(world.view().find((actor) => actor.id === 'tutu').name, '图图');
+  world.removeGuest('tutu');
+  const atDoor = walk(world, 'kay', joined.leaseId, { x: 1180, y: 650 }, morning, next);
+  world.intent('kay', {
+    seq: next(), leaseId: joined.leaseId, intent: { type: 'travel', scene: 'gym' },
+  }, atDoor, true);
+  await director.step(atDoor);
+  assert.equal(world.view().filter((actor) => actor.id === 'tutu').length, 1);
+  assert.equal(world.view().find((actor) => actor.id === 'tutu').scene, 'gym');
+  const sid = world.join('sid', 'tab-sid-gym', atDoor + 1);
+  world.intent('sid', {
+    seq: sid.seq + 1, leaseId: sid.leaseId, intent: { type: 'switch-scene', scene: 'gym' },
+  }, atDoor + 1, true);
+  await director.step(atDoor + 1);
+  assert.equal(world.view().filter((actor) => actor.id === 'tutu').length, 1);
+  const back = walk(world, 'kay', joined.leaseId, { x: 640, y: 660 }, atDoor + 2, next);
+  world.intent('kay', {
+    seq: next(), leaseId: joined.leaseId, intent: { type: 'travel', scene: 'hutong' },
+  }, back, true);
+  await director.step(back);
+  assert.equal(world.view().some((actor) => actor.id === 'tutu'), false);
+  store.close();
+});
+
 function walk(world, id, leaseId, target, start, next) {
   world.intent(id, { seq: next(), leaseId, intent: { type: 'path', target } }, start, true);
   for (let time = start; time < start + 30_000; time += 50) {

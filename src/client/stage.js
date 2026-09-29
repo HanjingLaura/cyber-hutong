@@ -409,7 +409,7 @@ export function mountStage({ canvas, hint, request, meId, onTalk, chatOpen, plac
       bubble.element.hidden = !actor;
       if (!actor) continue;
       bubble.element.style.left = `${Math.max(12, Math.min(88, actor.x / 1280 * 100))}%`;
-      bubble.element.style.top = `${Math.max(16, (actor.y - heightAt(actor.y, actor.scene) - 12) / 720 * 100)}%`;
+      bubble.element.style.top = `${Math.max(16, (actor.y - actorHeight(actor) - 12) / 720 * 100)}%`;
     }
     paintHint(sprites);
     const sceneLabel = sceneNames[scene.id] || scene.id;
@@ -419,6 +419,9 @@ export function mountStage({ canvas, hint, request, meId, onTalk, chatOpen, plac
       ctx.fillRect(Math.round(mark.x) - 3, Math.round(mark.y) - 3, 6, 6);
     }
     if (failed.has(background.dataset.source)) reportLoad(background.dataset.source);
+  }
+  function actorHeight(actor) {
+    return heightAt(actor.y, actor.scene) * (guestSprites[actor.id]?.scale || 1);
   }
   function drawActor(actor, now) {
     const sheet = sheets.get(actor.id);
@@ -437,7 +440,7 @@ export function mountStage({ canvas, hint, request, meId, onTalk, chatOpen, plac
       flip = actor.facing === "left";
     }
     const pose = sheet[name] || sheet.front;
-    const unit = heightAt(actor.y, actor.scene) / sheet.front.height;
+    const unit = actorHeight(actor) / sheet.front.height;
     const w = pose.width * unit;
     const h = pose.height * unit;
     ctx.save();

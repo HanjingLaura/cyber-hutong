@@ -17,7 +17,7 @@ export const preferences = {
 };
 export const encounters = {
   'jilly:concert': 'zhu_zhixin', 'cora:popmart': 'buzz_lightyear',
-  'amber:restroom': 'fuguidiao',
+  'amber:restroom': 'fuguidiao', 'kay:gym': 'tutu',
 };
 export const gifts = [
   { id: 'kay-morning', from: 'kay', to: 'sid', start: 540, end: 690 },
