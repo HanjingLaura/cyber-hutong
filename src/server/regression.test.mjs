@@ -127,6 +127,26 @@ test("HTTP assets, origin checks, auth throttling and takeover during generation
   assert.equal((await fetch(root + "/style.css")).status, 200);
   assert.equal((await fetch(root + "/characters/f01.png")).status, 200);
   assert.equal((await fetch(root + "/characters/f09.png")).status, 404);
+  // Resolve imports as the browser does, not as filesystem paths. A parent
+  // import from /cyber-hutong/stage.js escapes the microfrontend route.
+  for (const prefix of ["/", "/cyber-hutong/"]) {
+    const seen = new Set();
+    async function visitModule(path) {
+      if (seen.has(path)) return;
+      seen.add(path);
+      assert.ok(path.startsWith(prefix), `Module escaped ${prefix}: ${path}`);
+      const response = await fetch(root + "/" + path.slice(prefix.length));
+      assert.equal(response.status, 200, path);
+      assert.match(response.headers.get("content-type"), /javascript/);
+      const source = await response.text();
+      for (const match of source.matchAll(/\bfrom\s*["']([^"']+)["']/g)) {
+        await visitModule(new URL(match[1], root + path).pathname);
+      }
+    }
+    await visitModule(prefix + "app.js");
+    assert.ok(seen.has(prefix + "shared/sprite-key.mjs"));
+    assert.ok(seen.has(prefix + "shared/motion.mjs"));
+  }
   const reply = post("/api/chats/franco/messages", { text: "在吗" });
   await reached;
   assert.equal(store.messages("franco:suki")[0].body, "在吗");

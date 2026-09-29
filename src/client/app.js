@@ -182,12 +182,17 @@ async function submitAuth(e) {
     return;
   }
   form.reset();
-  await boot();
+  await boot(true);
 }
-async function boot() {
+async function boot(afterLogin = false) {
   const r = await request("/api/me", null, "GET");
   if (!r.ok) {
     showAuth();
+    if (afterLogin || r.status !== 401) {
+      $("#auth-message").textContent = afterLogin && r.status === 401
+        ? "登录会话未能保存，请联系管理员检查线上账号存储。"
+        : r.body.error || "暂时无法进入胡同，请稍后重试。";
+    }
     return;
   }
   Object.assign(state, {
