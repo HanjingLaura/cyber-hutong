@@ -1,8 +1,8 @@
 import { loadGuestSheet, loadSheet } from "./portraits.js";
-import { heightAt, hutongPoint, hutongFacing } from "../shared/hutong.mjs";
-import { pointInPolygon } from "../shared/geometry.mjs";
-import { guestSprites, scenes } from "../shared/scenes.mjs";
-import { createMotionBuffer, predictStep, reconcileStep } from "../shared/motion.mjs";
+import { heightAt, hutongPoint, hutongFacing } from "./shared/hutong.mjs";
+import { pointInPolygon } from "./shared/geometry.mjs";
+import { guestSprites, scenes } from "./shared/scenes.mjs";
+import { createMotionBuffer, predictStep, reconcileStep } from "./shared/motion.mjs";
 
 const reduced = matchMedia("(prefers-reduced-motion: reduce)");
 const sceneNames = {

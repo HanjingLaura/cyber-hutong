@@ -1,4 +1,4 @@
-import { removeGreenScreen, spriteColumns, spriteComponents } from '../shared/sprite-key.mjs';
+import { removeGreenScreen, spriteColumns, spriteComponents } from './shared/sprite-key.mjs';
 const files = {
   suki: "f01",
   franco: "f02",
