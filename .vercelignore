@@ -2,7 +2,9 @@
 .env
 .env.*
 data
-assets
+assets/avatars
+.agents
+skills-lock.json
 scripts
 node_modules
 docs

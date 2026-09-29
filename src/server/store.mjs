@@ -11,13 +11,13 @@ function digest(value) {
   return createHash('sha256').update(value).digest('hex');
 }
 
-function hashPassword(password) {
+export function hashPassword(password) {
   const salt = randomBytes(16);
   const hash = scryptSync(password, salt, 32, { N: 16384, r: 8, p: 1 });
   return `scrypt:16384:8:1:${salt.toString('hex')}:${hash.toString('hex')}`;
 }
 
-function verifyPassword(password, stored) {
+export function verifyPassword(password, stored) {
   const [kind, n, r, p, saltHex, hashHex] = String(stored ?? '').split(':');
   if (kind !== 'scrypt') return false;
   const actual = scryptSync(password, Buffer.from(saltHex, 'hex'), 32, {
@@ -114,7 +114,7 @@ export function openStore(filename) {
 
   return {
     close() { db.close(); },
-    ensureRoster(codeFile) {
+    ensureRoster(codeFile, { claims = true } = {}) {
       const insertMember = db.prepare('INSERT OR IGNORE INTO members (id, canonical_name) VALUES (?, ?)');
       const insertCharacter = db.prepare('INSERT OR IGNORE INTO characters (id, sprite) VALUES (?, ?)');
       const insertPresence = db.prepare("INSERT OR IGNORE INTO presence (member_id, mode, seen_at) VALUES (?, 'auto', 0)");
@@ -123,6 +123,7 @@ export function openStore(filename) {
         insertCharacter.run(person.sprite, person.sprite);
         insertPresence.run(person.id);
       }
+      if (!claims) return { written: false, file: codeFile };
       const existing = db.prepare("SELECT COUNT(*) AS n FROM auth_tokens WHERE purpose = 'claim'").get().n;
       if (existing) return { written: false, file: codeFile };
       const insertToken = db.prepare(`INSERT INTO auth_tokens

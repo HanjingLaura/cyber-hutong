@@ -4,6 +4,7 @@ import { bailianComplete } from '../src/server/bailian.mjs';
 import { createApp } from '../src/server/app.mjs';
 import { loadEnv } from '../src/server/env.mjs';
 import { openStore } from '../src/server/store.mjs';
+import { openAuthStore } from '../src/server/auth-store.mjs';
 
 const root = process.cwd();
 loadEnv(join(root, '.env'));
@@ -13,12 +14,18 @@ mkdirSync(dataDir, { recursive: true });
 
 const model = process.env.BAILIAN_MODEL?.trim() || 'qwen-turbo';
 const store = openStore(join(dataDir, 'cyber-hutong.sqlite'));
-const codes = store.ensureRoster(join(dataDir, 'claim-codes.txt'));
+store.ensureRoster(join(dataDir, 'claim-codes.txt'), { claims: false });
 // Claim codes must not be printed into deployment logs.
+// Production never falls back to temporary credentials when configuration fails.
+const authStore = await openAuthStore({
+  url: process.env.TURSO_DATABASE_URL,
+  authToken: process.env.TURSO_AUTH_TOKEN,
+});
 
 const basePath = '/cyber-hutong';
 const server = createApp({
   store,
+  authStore,
   maxTurns: clampTurns(process.env.CHAT_AUTO_TURNS),
   llm: { configured: Boolean(process.env.DASHSCOPE_API_KEY?.trim()), model },
   clientDir: join(root, 'src', 'client'),
