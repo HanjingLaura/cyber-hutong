@@ -1,5 +1,6 @@
 import { createReadStream, existsSync, readFileSync } from 'node:fs';
 import { createServer } from 'node:http';
+import { randomUUID } from 'node:crypto';
 import { extname, join, normalize } from 'node:path';
 import { buildPrompt, cleanReply, memberById, planAutoSpeakers, speakInOrder, threadId } from './chat.mjs';
 import { roster } from '../../examples/mvp-behavior/config.mjs';
@@ -18,6 +19,7 @@ const types = {
 
 export function createApp({ store, authStore = store, complete, maxTurns = 4, llm, clientDir, loginBackground, basePath = '', characterDir, sceneFile, sceneFiles = {}, npcDir }) {
   const clients = new Map();
+  const worldId = randomUUID();
   const tails = new Map();
   const generations = new Map();
   const rates = new Map();
@@ -30,6 +32,13 @@ export function createApp({ store, authStore = store, complete, maxTurns = 4, ll
     loadPlaces: () => store.loadPlaces(),
     savePlaces: (rows) => store.savePlaces(rows),
   });
+  function enterManual(memberId) {
+    if (!store.effectiveManual(memberId)) {
+      invalidate(memberId);
+      world.takeControl(memberId);
+    }
+    store.setMode(memberId, 'manual');
+  }
   const worldTimer = setInterval(() => {
     if (world.tick(Date.now())) publishWorld();
   }, 50);
@@ -40,7 +49,7 @@ export function createApp({ store, authStore = store, complete, maxTurns = 4, ll
       world,
       runtime,
       repository,
-      manualIds: () => new Set(roster.filter((person) => store.controlMode(person.id) === 'manual').map((person) => person.id)),
+      manualIds: () => new Set(roster.filter((person) => store.effectiveManual(person.id)).map((person) => person.id)),
     });
   }).catch(() => {});
   let behaviorRunning = false;
@@ -77,7 +86,7 @@ export function createApp({ store, authStore = store, complete, maxTurns = 4, ll
 
   function publishWorld() {
     const actors = world.view();
-    const data = `data: ${JSON.stringify({ type: 'world', actors })}\n\n`;
+    const data = `data: ${JSON.stringify({ type: 'world', worldId, actors })}\n\n`;
     for (const group of clients.values()) for (const client of group) {
       if (client.res.destroyed || client.res.writableEnded) continue;
       if (client.res.writableLength > 128 * 1024) client.res.destroy();
@@ -217,13 +226,13 @@ export function createApp({ store, authStore = store, complete, maxTurns = 4, ll
     if (req.method === 'POST' && url.pathname === '/api/auth/register') {
       const body = await readBody(req);
       const session = await authStore.register(body);
-      store.setMode(session.member.id, 'manual');
+      enterManual(session.member.id);
       return send(res, 201, { member: session.member }, { 'Set-Cookie': cookie(session.token, 604800, req, basePath) });
     }
     if (req.method === 'POST' && url.pathname === '/api/auth/login') {
       const body = await readBody(req);
       const session = await authStore.login(body);
-      store.setMode(session.member.id, 'manual');
+      enterManual(session.member.id);
       invalidate(session.member.id);
       return send(res, 200, { member: session.member }, { 'Set-Cookie': cookie(session.token, 604800, req, basePath) });
     }
@@ -235,7 +244,8 @@ export function createApp({ store, authStore = store, complete, maxTurns = 4, ll
     }
     const viewer = await authStore.session(readCookie(req));
     if (!viewer) return send(res, 401, { error: '请先登录' });
-    store.touch(viewer.id);
+    // Every authenticated browser request means the person is operating online.
+    enterManual(viewer.id);
 
     if (req.method === 'POST' && url.pathname === '/api/world/respond') {
       if (!director) return send(res, 503, { error: '世界还在准备' });
@@ -253,7 +263,7 @@ export function createApp({ store, authStore = store, complete, maxTurns = 4, ll
       const body = await readBody(req);
       const joined = world.join(viewer.id, String(body.tabId ?? ''), Date.now());
       if (joined.control) tabs.set(viewer.id, String(body.tabId));
-      return send(res, 200, joined);
+      return send(res, 200, { ...joined, worldId });
     }
     if (req.method === 'POST' && url.pathname === '/api/world/intent') {
       const body = await readBody(req);
@@ -261,10 +271,10 @@ export function createApp({ store, authStore = store, complete, maxTurns = 4, ll
       const result = world.intent(viewer.id, body, Date.now(), manual);
       // Movement is broadcast by the 20 Hz world tick, not once per player input.
       if (!result.duplicate && !['move', 'renew'].includes(body.intent?.type)) publishWorld();
-      return send(res, 200, result);
+      return send(res, 200, { ...result, worldId, actor: world.view().find(actor => actor.id === viewer.id) });
     }
     if (req.method === 'GET' && url.pathname === '/api/world') {
-      return send(res, 200, { actors: world.view() });
+      return send(res, 200, { worldId, actors: world.view() });
     }
     if (req.method === 'GET' && url.pathname === '/api/me') {
       return send(res, 200, {
@@ -279,7 +289,8 @@ export function createApp({ store, authStore = store, complete, maxTurns = 4, ll
     }
     if (req.method === 'POST' && url.pathname === '/api/me/mode') {
       const body = await readBody(req);
-      store.setMode(viewer.id, body.mode);
+      if (body.mode !== 'manual') return send(res, 400, { error: '在线时由本人操作，离开网页后自动托管' });
+      store.setMode(viewer.id, 'manual');
       invalidate(viewer.id);
       publishPresence();
       return send(res, 200, { member: { ...viewer, ...store.describe(viewer.id) } });
@@ -311,7 +322,7 @@ export function createApp({ store, authStore = store, complete, maxTurns = 4, ll
   async function openEvents(req, res) {
     const viewer = await authStore.session(readCookie(req));
     if (!viewer) return send(res, 401, { error: '请先登录' });
-    store.touch(viewer.id);
+    enterManual(viewer.id);
     res.writeHead(200, {
       'Content-Type': 'text/event-stream; charset=utf-8',
       'Cache-Control': 'no-cache',
@@ -319,6 +330,7 @@ export function createApp({ store, authStore = store, complete, maxTurns = 4, ll
     });
     res.write('retry: 2000\n\n');
     const client = { res, token: readCookie(req) };
+    store.connectPresence(viewer.id, client);
     const group = clients.get(viewer.id) ?? new Set();
     group.add(client);
     clients.set(viewer.id, group);
@@ -335,6 +347,7 @@ export function createApp({ store, authStore = store, complete, maxTurns = 4, ll
     req.on('close', () => {
       clearInterval(beat);
       group.delete(client);
+      store.disconnectPresence(viewer.id, client);
       if (!group.size) {
         clients.delete(viewer.id);
         const tabId = tabs.get(viewer.id);

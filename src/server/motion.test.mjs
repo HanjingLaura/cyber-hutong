@@ -1,6 +1,19 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createMotionBuffer, predictStep, reconcileStep } from '../shared/motion.mjs';
+import { createMotionBuffer, predictStep, reconcileStep, mergeActorSnapshots } from '../shared/motion.mjs';
+
+test('a stale pre-stop snapshot cannot rewind a confirmed position or scene', () => {
+  const current = [{ id:'suki', x:600, y:500, scene:'popmart', inputSeq:10 }];
+  const stale = [{ id:'suki', x:200, y:500, scene:'hutong', inputSeq:8 }];
+  assert.deepEqual(mergeActorSnapshots(current, stale), current);
+  assert.equal(mergeActorSnapshots(current, [{ ...stale[0], inputSeq:11 }])[0].x, 200);
+  assert.deepEqual(mergeActorSnapshots(current, stale, true), stale, 'new world incarnation accepts reset sequences');
+});
+
+test('even a large correction is bounded to walking speed, never a one-frame snap', () => {
+  const next = reconcileStep({ x:700, y:500 }, { x:300, y:200 }, 1/60);
+  assert.ok(Math.hypot(next.x - 700, next.y - 500) <= 112/60 + 1e-8);
+});
 
 test('short released predictions reconcile without a single-frame rewind', () => {
   let point = { x: 565.6, y: 400 };

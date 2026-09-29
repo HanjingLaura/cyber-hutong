@@ -4,7 +4,7 @@ import { dirname } from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
 import { roster } from '../../examples/mvp-behavior/config.mjs';
 
-const OFFLINE_MS = 15000;
+const OFFLINE_MS = 60000;
 const SESSION_MS = 7 * 24 * 60 * 60 * 1000;
 
 function digest(value) {
@@ -37,6 +37,7 @@ export function openStore(filename) {
   if (filename !== ':memory:') mkdirSync(dirname(filename), { recursive: true });
   const db = new DatabaseSync(filename);
   const dummyPassword = hashPassword('dummy-password-value');
+  const connections = new Map();
   db.exec(`
     PRAGMA journal_mode = WAL;
     PRAGMA foreign_keys = ON;
@@ -218,14 +219,26 @@ export function openStore(filename) {
       if (!['manual', 'auto'].includes(mode)) fail(400, '无法切换这个状态');
       db.prepare('UPDATE presence SET mode = ?, seen_at = ? WHERE member_id = ?').run(mode, Date.now(), memberId);
     },
+    connectPresence(memberId, connection) {
+      const group = connections.get(memberId) ?? new Set();
+      group.add(connection);
+      connections.set(memberId, group);
+      this.setMode(memberId, 'manual');
+    },
+    disconnectPresence(memberId, connection) {
+      const group = connections.get(memberId);
+      group?.delete(connection);
+      if (!group?.size) connections.delete(memberId);
+      this.touch(memberId);
+    },
     effectiveManual(memberId, now = Date.now()) {
       const row = presenceOf(memberId);
-      return Boolean(row && row.mode === 'manual' && now - row.seen_at < OFFLINE_MS);
+      return Boolean(row && row.mode === 'manual' && (connections.get(memberId)?.size || now - row.seen_at < OFFLINE_MS));
     },
     describe(memberId, viewerId) {
       const person = roster.find((item) => item.id === memberId);
       const row = presenceOf(memberId);
-      const watching = Boolean(row && Date.now() - row.seen_at < OFFLINE_MS);
+      const watching = Boolean(row && (connections.get(memberId)?.size || Date.now() - row.seen_at < OFFLINE_MS));
       const human = this.effectiveManual(memberId);
       const last = viewerId ? db.prepare(`SELECT sender_id, body, source, created_at FROM messages
         WHERE thread_id = ? ORDER BY created_at DESC LIMIT 1`).get([viewerId, memberId].sort().join(':')) : null;

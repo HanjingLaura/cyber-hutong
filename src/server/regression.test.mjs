@@ -32,6 +32,22 @@ function fixture(t) {
     });
   return { store, register };
 }
+test('open browser connections retain human control until the final disconnect grace expires', t => {
+  const { store, register } = fixture(t);
+  register('suki');
+  const one = {}, two = {};
+  store.connectPresence('suki', one);
+  store.connectPresence('suki', two);
+  assert.equal(store.effectiveManual('suki', Date.now() + 3600000), true);
+  store.disconnectPresence('suki', one);
+  assert.equal(store.effectiveManual('suki', Date.now() + 3600000), true);
+  store.disconnectPresence('suki', two);
+  assert.equal(store.effectiveManual('suki', Date.now() + 30000), true);
+  assert.equal(store.effectiveManual('suki', Date.now() + 61000), false);
+  store.connectPresence('suki', {});
+  assert.equal(store.effectiveManual('suki', Date.now() + 3600000), true);
+});
+
 test("fixed names, duplicate claims, reset expiration, one-time use and session revocation", (t) => {
   const { store, register } = fixture(t);
   assert.throws(
@@ -177,7 +193,7 @@ test("HTTP assets, origin checks, auth throttling and takeover during generation
   process.env.HUTONG_ALLOWED_HOSTS = "hanjing-laura.vercel.app";
   assert.equal(
     (
-      await post("/api/me/mode", { mode: "auto" }, suki.token, {
+      await post("/api/me/mode", { mode: "manual" }, suki.token, {
         Origin: "https://hanjing-laura.vercel.app",
       })
     ).status,

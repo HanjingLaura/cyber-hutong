@@ -47,7 +47,7 @@ test('a chain stops when the next speaker is a real person', async () => {
   assert.equal(produced.length, 1);
 });
 
-test('human, llm, and two-llm threads stay private', async (t) => {
+test('human and offline-llm threads stay private; an online viewer is never automated', async (t) => {
   const directory = mkdtempSync(join(tmpdir(), 'hutong-chat-'));
   const store = openStore(':memory:');
   const codes = Object.fromEntries(readFileSync(store.ensureRoster(join(directory, 'codes.txt')).file, 'utf8')
@@ -87,7 +87,8 @@ test('human, llm, and two-llm threads stay private', async (t) => {
   const hidden = await get(port, outsider, '/api/chats/suki/messages');
   assert.equal(hidden.body.messages.length, 0);
 
-  await post(port, franco, '/api/me/mode', { mode: 'auto' });
+  assert.equal((await post(port, franco, '/api/me/mode', { mode: 'auto' })).status, 400);
+  store.setMode('franco', 'auto'); // Simulate an offline peer, not an online mode toggle.
   calls.length = 0;
   const reply = await post(port, suki, '/api/chats/franco/messages', { text: '现在呢' });
   assert.equal(calls.length, 1);
@@ -95,12 +96,12 @@ test('human, llm, and two-llm threads stay private', async (t) => {
   assert.equal(reply.body.messages.at(-1).body, '我在打电话。');
   assert.match(calls[0], /喜欢打电话/);
 
-  await post(port, suki, '/api/me/mode', { mode: 'auto' });
+  store.setMode('suki', 'auto');
   calls.length = 0;
   const both = await post(port, suki, '/api/chats/franco/auto', {});
   assert.equal(both.status, 200);
-  assert.equal(calls.length, 4);
-  assert.deepEqual(both.body.messages.map((item) => item.senderId), ['franco', 'suki', 'franco', 'suki']);
+  assert.equal(calls.length, 1);
+  assert.deepEqual(both.body.messages.map((item) => item.senderId), ['franco']);
 });
 
 async function register(port, name, code) {

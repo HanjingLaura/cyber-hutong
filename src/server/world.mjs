@@ -91,6 +91,15 @@ export function createWorld({ loadPlaces = () => [], savePlaces = () => {}, scen
   }
 
   return {
+    takeControl(memberId) {
+      const actor = actors.get(memberId);
+      if (!actor) return;
+      actor.route = null;
+      actor.path = null;
+      actor.dir = null;
+      actor.moving = false;
+      dirty = true;
+    },
     flush() {
       if (pendingSave) { persist(); pendingSave = false; }
     },
@@ -141,7 +150,8 @@ export function createWorld({ loadPlaces = () => [], savePlaces = () => {}, scen
         return { control: false, leaseId: null, seq: 0, actors: this.view() };
       }
       const leaseId = current?.tabId === tabId ? current.leaseId : randomBytes(16).toString('hex');
-      leases.set(memberId, { tabId, leaseId, until: now + LEASE_MS, seq: current?.tabId === tabId ? current.seq : 0 });
+      leases.set(memberId, { tabId, leaseId, until: now + LEASE_MS,
+        seq: Math.max(actors.get(memberId).seq, current?.tabId === tabId ? current.seq : 0) });
       const actor = actors.get(memberId);
       if (!introduced.has(memberId)) {
         introduced.add(memberId);
@@ -206,6 +216,7 @@ export function createWorld({ loadPlaces = () => [], savePlaces = () => {}, scen
         if (!goal) throw Object.assign(new Error('那里走不过去'), { status: 400 });
         if (actor.pose === 'sit' && actor.scene === 'hutong') stand(actor, seatOf(memberId));
         actor.path = findPath(grids[actor.scene], actor, goal);
+        actor.seq = seq;
         actor.dir = null;
         actor.route = null;
         dirty = true;
@@ -220,9 +231,16 @@ export function createWorld({ loadPlaces = () => [], savePlaces = () => {}, scen
         dirty = true;
         return { ok: true };
       }
-      if (intent.type === 'travel') return { ok: true, ...travel(actor, intent.scene) };
-      if (intent.type === 'switch-scene') return { ok: true, ...travel(actor, intent.scene, true) };
-      if (intent.type === 'interact') return { ok: true, ...interact(actor) };
+      if (intent.type === 'travel' || intent.type === 'switch-scene') {
+        const result = travel(actor, intent.scene, intent.type === 'switch-scene');
+        actor.seq = seq;
+        return { ok: true, ...result };
+      }
+      if (intent.type === 'interact') {
+        const result = interact(actor);
+        actor.seq = seq;
+        return { ok: true, ...result };
+      }
       throw Object.assign(new Error('不认识这个操作'), { status: 400 });
     },
     tick(now) {

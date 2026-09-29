@@ -33,7 +33,6 @@ $("#logout").onclick = async () => {
   else note(r.body.error);
 };
 $("#mode-manual").onclick = () => setMode("manual");
-$("#mode-auto").onclick = () => setMode("auto");
 $("#composer").onsubmit = (e) => {
   e.preventDefault();
   send(false);
@@ -255,10 +254,6 @@ function renderMode() {
     "aria-pressed",
     String(state.me?.control === "human"),
   );
-  $("#mode-auto").setAttribute(
-    "aria-pressed",
-    String(state.me?.control === "llm"),
-  );
 }
 function renderPeople() {
   const signature = JSON.stringify(
@@ -472,7 +467,7 @@ function connect() {
       return;
     }
     if (!state.me) return;
-    if (p.type === "world") state.stage?.setActors(p.actors);
+    if (p.type === "world") state.stage?.setActors(p.actors, p.worldId);
     if (p.type === "invite") showInvite(p.notice);
     if (p.type === "say") state.stage?.speak({ actorId: p.notice.actor, text: p.notice.text, id: p.notice.id });
     if (p.type === "presence") {
@@ -554,6 +549,7 @@ function showInvite(notice) {
 async function request(path, body, method) {
   try {
     const r = await fetch(base + path, {
+      signal: path.startsWith('/api/world/') ? AbortSignal.timeout(5000) : undefined,
       method: method || "POST",
       credentials: "same-origin",
       headers: body ? { "Content-Type": "application/json" } : undefined,

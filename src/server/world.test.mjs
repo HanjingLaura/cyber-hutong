@@ -4,6 +4,20 @@ import { pointInPolygon } from '../shared/geometry.mjs';
 import { hutong } from '../shared/hutong.mjs';
 import { createWorld } from './world.mjs';
 
+test('new tab leases inherit actor sequence and a stop can recover from overtaking renew', () => {
+  const world = createWorld();
+  const first = world.join('suki', 'ordering-test-one', 1000);
+  const intent = (seq, type, extra = {}) => world.intent('suki', { leaseId:first.leaseId, seq, intent:{type,...extra} }, 1010, true);
+  intent(1, 'move', {dir:{x:1,y:0}});
+  intent(3, 'renew');
+  assert.equal(intent(2, 'stop').duplicate, true);
+  intent(4, 'stop');
+  assert.equal(world.view().find(a=>a.id==='suki').inputSeq, 4);
+  assert.equal(world.view().find(a=>a.id==='suki').moving, false);
+  const second = world.join('suki', 'ordering-test-two', 100000);
+  assert.equal(second.seq, 4);
+});
+
 test('direct scene switching retains lease/manual validation and rejects unknown scenes', () => {
   const world = createWorld();
   const joined = world.join('suki', 'scene-switch-test', 1000);

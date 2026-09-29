@@ -2,7 +2,7 @@ import { loadGuestSheet, loadSheet } from "./portraits.js";
 import { heightAt, hutongPoint, hutongFacing } from "./shared/hutong.mjs";
 import { pointInPolygon } from "./shared/geometry.mjs";
 import { guestSprites, scenes } from "./shared/scenes.mjs";
-import { createMotionBuffer, predictStep, reconcileStep } from "./shared/motion.mjs";
+import { createMotionBuffer, predictStep, reconcileStep, mergeActorSnapshots } from "./shared/motion.mjs";
 
 const reduced = matchMedia("(prefers-reduced-motion: reduce)");
 const sceneNames = {
@@ -42,6 +42,9 @@ export function mountStage({ canvas, hint, request, meId, onTalk, chatOpen, plac
   let previousFrame = 0;
   let lastSnapshot = 0;
   let moveInFlight = false;
+  let stopInFlight = false;
+  let lastStopAttempt = 0;
+  let worldId = null;
   let stopSeq = Infinity;
   const speech = new Map();
   const spoken = new Set();
@@ -81,6 +84,7 @@ export function mountStage({ canvas, hint, request, meId, onTalk, chatOpen, plac
   let switching = false;
   const scenesButton = document.getElementById('scenes-toggle');
   let recovering = false;
+  let joining = null;
   let mark = null;
   const failed = new Set();
   const base = document.documentElement.dataset.base || "";
@@ -156,7 +160,13 @@ export function mountStage({ canvas, hint, request, meId, onTalk, chatOpen, plac
   window.addEventListener("blur", onBlur);
 
   async function join() {
+    if (joining) return joining;
+    joining = performJoin().finally(() => { joining = null; });
+    return joining;
+  }
+  async function performJoin() {
     const r = await request("/api/world/join", { tabId });
+    if (stopped) return;
     if (!r.ok) {
       hint.hidden = false;
       hint.textContent = r.body.error || "进不了胡同";
@@ -164,13 +174,18 @@ export function mountStage({ canvas, hint, request, meId, onTalk, chatOpen, plac
     }
     control = r.body.control;
     leaseId = r.body.leaseId;
-    seq = r.body.seq || 0;
-    apply(r.body.actors, true);
+    const changedWorld = Boolean(worldId && r.body.worldId && worldId !== r.body.worldId);
+    worldId = r.body.worldId || worldId;
+    seq = changedWorld ? (r.body.seq || 0) : Math.max(seq, r.body.seq || 0);
+    if (changedWorld) { keys.clear(); lastSent = ''; stopSeq = Infinity; }
+    apply(r.body.actors, actors.length === 0, changedWorld);
     hint.hidden = control;
     if (!control) hint.textContent = "这个角色正在另一个窗口里。";
   }
   async function send(intent) {
     if (!leaseId) return;
+    if (intent.type === 'stop' && stopInFlight) return;
+    if (intent.type === 'stop') { stopInFlight = true; lastStopAttempt = performance.now(); }
     if (intent.type === "move" && moveInFlight) return;
     if (intent.type === "move") moveInFlight = true;
     let r;
@@ -178,7 +193,14 @@ export function mountStage({ canvas, hint, request, meId, onTalk, chatOpen, plac
     if (intent.type === "stop") stopSeq = inputSeq;
     if (intent.type === "move") stopSeq = Infinity;
     try { r = await request("/api/world/intent", { seq: inputSeq, leaseId, intent }); }
-    finally { if (intent.type === "move") moveInFlight = false; }
+    finally {
+      if (intent.type === "move") moveInFlight = false;
+      if (intent.type === 'stop') stopInFlight = false;
+    }
+    if (stopped) return r;
+    if (r.ok && r.body.actor && (!r.body.worldId || r.body.worldId === worldId)) {
+      apply(actors.map(actor => actor.id === meId ? r.body.actor : actor), false);
+    }
     if (r.status === 409) {
       if (r.body.code === "manual") {
         report(r.body.error || "托管中，先切回手动");
@@ -195,9 +217,11 @@ export function mountStage({ canvas, hint, request, meId, onTalk, chatOpen, plac
         recovering = true;
         keys.clear();
         if (intent.type !== "renew") report("操作中断了，正在恢复");
-        await join();
-        recovering = false;
-        if (control && intent.type !== "renew") return send(intent);
+        try {
+          await join();
+          // Do not replay an obsolete move/path after key release or reconnect.
+          if (control) await send({ type: 'stop' });
+        } finally { recovering = false; }
         return r;
       }
     }
@@ -217,11 +241,13 @@ export function mountStage({ canvas, hint, request, meId, onTalk, chatOpen, plac
     if (chatOpen()) return;
     await send({ type: "interact" });
   }
-  function apply(next, snap) {
-    motion.push(next, performance.now(), snap);
+  function apply(next, snap, resetHistory = false) {
+    if (stopped) return;
+    if (!snap) next = mergeActorSnapshots(actors, next, resetHistory);
+    motion.push(next, performance.now(), snap || resetHistory);
     lastSnapshot = performance.now();
     const mine = next.find(actor => actor.id === meId);
-    if (snap || !mine || mine.scene !== predicted?.scene || mine.pose === "sit") predicted = null;
+    if (snap || !mine || mine.scene !== predicted?.scene || (!resetHistory && mine.pose === "sit" && mine.inputSeq >= seq)) predicted = null;
     actors = next;
   }
   let dirTimer = 0;
@@ -237,6 +263,11 @@ export function mountStage({ canvas, hint, request, meId, onTalk, chatOpen, plac
     }
     const dir = direction();
     const signature = dir ? `${dir.x},${dir.y}` : "";
+    const mine = actors.find(actor => actor.id === meId);
+    if (!dir && predicted && !stopInFlight && now - lastStopAttempt >= 500 &&
+        (mine?.inputSeq < stopSeq || mine?.moving)) {
+      send({ type: 'stop' });
+    }
     // Send changes immediately; repeat held direction only to renew its 600 ms TTL.
     if (signature === lastSent && now - dirTimer < 200) return;
     if (signature === lastSent && !dir) return;
@@ -331,18 +362,16 @@ export function mountStage({ canvas, hint, request, meId, onTalk, chatOpen, plac
           const seat = scene.seats?.find(item => item.owner === meId);
           predicted = { ...actor, ...(actor.pose === "sit" && seat ? seat.stand : {}) };
         }
-        // Network authority wins on large corrections; normal local input renders immediately.
-        if (Math.hypot(predicted.x - actor.x, predicted.y - actor.y) > 72) predicted = { ...actor };
         predicted = predictStep(predicted, dir, dt, scene.walkable);
         renderedActor = { ...actor, ...predicted, pose: "stand", moving: true,
           facing: Math.abs(dir.x) > Math.abs(dir.y) ? (dir.x > 0 ? "right" : "left") : (dir.y > 0 ? "down" : "up") };
-      } else if (actor.id === meId && predicted && now - lastSnapshot < 650 && control && manual()) {
+      } else if (actor.id === meId && predicted && control && manual()) {
         // A stale idle snapshot is not a stop acknowledgement. Only reconcile after
         // the server confirms the actual stop input, and blend the small correction.
         if (!direction() && actor.inputSeq >= stopSeq && !actor.moving) {
           predicted = reconcileStep(predicted, actor, dt);
         }
-        renderedActor = { ...actor, x: predicted.x, y: predicted.y, moving: false };
+        renderedActor = { ...actor, x: predicted.x, y: predicted.y, pose: 'stand', moving: false };
         if (!direction() && actor.inputSeq >= stopSeq && Math.hypot(predicted.x - actor.x, predicted.y - actor.y) < 0.5) {
           // Do not hand off to an older, deliberately delayed interpolation frame.
           motion.settle(actor, now);
@@ -477,7 +506,11 @@ export function mountStage({ canvas, hint, request, meId, onTalk, chatOpen, plac
       if (!control || !manual()) { report('请先切回手动操作'); return; }
       showChoices(Object.entries(sceneNames).map(([scene, label]) => ({ scene, label })), true);
     },
-    setActors(next) { apply(next, false); },
+    setActors(next, sourceWorld) {
+      // A superseded SSE connection must not overwrite the world joined via HTTP.
+      if (worldId && sourceWorld && sourceWorld !== worldId) return;
+      apply(next, false);
+    },
     refresh() { join(); },
     focus() { canvas.focus(); },
     say(text) { report(text); },
