@@ -46,7 +46,8 @@ const server = createApp({
   },
   npcDir: join(root, 'assets', 'npcs'),
   basePath,
-  complete: (prompt) => bailianComplete(prompt, {
+  complete: (prompt, { signal } = {}) => bailianComplete(prompt, {
+    signal,
     apiKey: process.env.DASHSCOPE_API_KEY ?? '',
     baseUrl: process.env.BAILIAN_BASE_URL?.trim() || 'https://dashscope.aliyuncs.com/compatible-mode/v1',
     model,

@@ -77,6 +77,9 @@ export function mountStage({ canvas, hint, request, meId, onTalk, chatOpen, plac
   let lastSent = "";
   let stopped = false;
   let choosing = false;
+  let directChoices = false;
+  let switching = false;
+  const scenesButton = document.getElementById('scenes-toggle');
   let recovering = false;
   let mark = null;
   const failed = new Set();
@@ -137,7 +140,7 @@ export function mountStage({ canvas, hint, request, meId, onTalk, chatOpen, plac
     if (e.type === "keydown" && e.key.toLowerCase() === "e" && !e.repeat) interact();
   }
   function onClick(e) {
-    if (!control || chatOpen() || !manual()) return;
+    if (!control || chatOpen() || choosing || !manual()) return;
     predicted = null;
     const rect = canvas.getBoundingClientRect();
     const x = ((e.clientX - rect.left) / rect.width) * 1280;
@@ -198,9 +201,9 @@ export function mountStage({ canvas, hint, request, meId, onTalk, chatOpen, plac
         return r;
       }
     }
-    if (!r.ok && (intent.type === "path" || intent.type === "travel")) {
+    if (!r.ok && (intent.type === "path" || intent.type === "travel" || intent.type === "switch-scene")) {
       report(r.body.error || "那里走不过去");
-      if (intent.type === "travel") closeChoices();
+      if (intent.type === "travel" || intent.type === "switch-scene") closeChoices();
     }
     if (r.ok && intent.type === "path" && r.body.path === 0) report("那里走不过去");
     if (r.ok && intent.type === "interact") {
@@ -208,7 +211,7 @@ export function mountStage({ canvas, hint, request, meId, onTalk, chatOpen, plac
       if (r.body.action === "speech") speak({ actorId: r.body.actorId, text: r.body.text });
       if (r.body.action === "choose") showChoices(r.body.choices);
     }
-    if (r.ok && intent.type === "travel") closeChoices();
+    if (r.ok && (intent.type === "travel" || intent.type === "switch-scene")) { predicted = null; closeChoices(); }
   }
   async function interact() {
     if (chatOpen()) return;
@@ -223,7 +226,7 @@ export function mountStage({ canvas, hint, request, meId, onTalk, chatOpen, plac
   }
   let dirTimer = 0;
   function pumpKeys(now) {
-    const paused = !control || typing() || chatOpen() || !manual();
+    const paused = !control || choosing || typing() || chatOpen() || !manual();
     if (paused) {
       if (keys.size || lastSent) {
         keys.clear();
@@ -232,9 +235,10 @@ export function mountStage({ canvas, hint, request, meId, onTalk, chatOpen, plac
       }
       return;
     }
-    if (now - dirTimer < 80) return;
     const dir = direction();
     const signature = dir ? `${dir.x},${dir.y}` : "";
+    // Send changes immediately; repeat held direction only to renew its 600 ms TTL.
+    if (signature === lastSent && now - dirTimer < 200) return;
     if (signature === lastSent && !dir) return;
     lastSent = signature;
     dirTimer = now;
@@ -243,6 +247,7 @@ export function mountStage({ canvas, hint, request, meId, onTalk, chatOpen, plac
   }
   function loop(now) {
     if (stopped) return;
+    if (document.hidden) { previousFrame = 0; requestAnimationFrame(loop); return; }
     pumpKeys(now);
     try { draw(now); }
     catch (error) { window.__stageError = String(error && error.stack || error); }
@@ -255,15 +260,27 @@ export function mountStage({ canvas, hint, request, meId, onTalk, chatOpen, plac
     const length = Math.hypot(x, y);
     return { x: x / length, y: y / length };
   }
-  function showChoices(choices) {
+  function showChoices(choices, direct = false) {
+    keys.clear();
+    lastSent = '';
+    if (control) send({ type: 'stop' });
     choosing = true;
+    directChoices = direct;
+    scenesButton?.setAttribute('aria-expanded', String(direct));
     hint.hidden = false;
     hint.replaceChildren();
     for (const choice of choices) {
       const button = document.createElement("button");
       button.type = "button";
       button.textContent = choice.label;
-      button.onclick = () => send({ type: "travel", scene: choice.scene });
+      button.disabled = choice.scene === actors.find(actor => actor.id === meId)?.scene;
+      button.onclick = async () => {
+        if (switching) return;
+        switching = true;
+        for (const item of hint.querySelectorAll('button')) item.disabled = true;
+        try { await send({ type: direct ? 'switch-scene' : 'travel', scene: choice.scene }); }
+        finally { switching = false; closeChoices(); canvas.focus(); }
+      };
       hint.append(button);
     }
     const cancel = document.createElement("button");
@@ -271,9 +288,12 @@ export function mountStage({ canvas, hint, request, meId, onTalk, chatOpen, plac
     cancel.textContent = "取消";
     cancel.onclick = () => closeChoices();
     hint.append(cancel);
+    hint.querySelector('button:not(:disabled)')?.focus();
   }
   function closeChoices() {
     choosing = false;
+    directChoices = false;
+    scenesButton?.setAttribute('aria-expanded', 'false');
     hint.replaceChildren();
     hint.hidden = true;
   }
@@ -363,7 +383,8 @@ export function mountStage({ canvas, hint, request, meId, onTalk, chatOpen, plac
       bubble.element.style.top = `${Math.max(16, (actor.y - heightAt(actor.y, actor.scene) - 12) / 720 * 100)}%`;
     }
     paintHint(sprites);
-    if (place) place.textContent = sceneNames[scene.id] || scene.id;
+    const sceneLabel = sceneNames[scene.id] || scene.id;
+    if (place && place.textContent !== sceneLabel) place.textContent = sceneLabel;
     if (mark && now < mark.until) {
       ctx.fillStyle = "#f4f1c8";
       ctx.fillRect(Math.round(mark.x) - 3, Math.round(mark.y) - 3, 6, 6);
@@ -399,6 +420,7 @@ export function mountStage({ canvas, hint, request, meId, onTalk, chatOpen, plac
   function paintHint(sprites) {
     const me = sprites.find((actor) => actor.id === meId);
     if (choosing) {
+      if (directChoices) return;
       if (!me || !exitHere(me)) closeChoices();
       else return;
     }
@@ -422,7 +444,7 @@ export function mountStage({ canvas, hint, request, meId, onTalk, chatOpen, plac
       }
     }
     hint.hidden = !text;
-    if (text) hint.textContent = text;
+    if (text && hint.textContent !== text) hint.textContent = text;
   }
   function reportLoad(source) {
     if (!notice || notice.querySelector("[data-retry]")) return;
@@ -449,6 +471,12 @@ export function mountStage({ canvas, hint, request, meId, onTalk, chatOpen, plac
   join();
   requestAnimationFrame(loop);
   return {
+    openScenes() {
+      if (switching) return;
+      if (choosing) { closeChoices(); canvas.focus(); return; }
+      if (!control || !manual()) { report('请先切回手动操作'); return; }
+      showChoices(Object.entries(sceneNames).map(([scene, label]) => ({ scene, label })), true);
+    },
     setActors(next) { apply(next, false); },
     refresh() { join(); },
     focus() { canvas.focus(); },
@@ -472,6 +500,7 @@ export function mountStage({ canvas, hint, request, meId, onTalk, chatOpen, plac
     },
     stop() {
       stopped = true;
+      closeChoices();
       clearInterval(renewTimer);
       document.removeEventListener("keydown", onKey);
       document.removeEventListener("keyup", onKey);
