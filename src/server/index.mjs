@@ -4,15 +4,20 @@ import { bailianComplete } from './bailian.mjs';
 import { createApp } from './app.mjs';
 import { loadEnv } from './env.mjs';
 import { openStore } from './store.mjs';
+import { openAuthStore } from './auth-store.mjs';
 
 const root = fileURLToPath(new URL('../../', import.meta.url));
 loadEnv(join(root, '.env'));
 
 const model = process.env.BAILIAN_MODEL?.trim() || 'qwen-turbo';
 const store = openStore(join(root, 'data', 'cyber-hutong.sqlite'));
-const codes = store.ensureRoster(join(root, 'data', 'claim-codes.txt'));
+const codes = store.ensureRoster(join(root, 'data', 'claim-codes.txt'), { claims: !process.env.TURSO_DATABASE_URL });
+const authStore = process.env.TURSO_DATABASE_URL
+  ? await openAuthStore({ url: process.env.TURSO_DATABASE_URL, authToken: process.env.TURSO_AUTH_TOKEN })
+  : store;
 const server = createApp({
   store,
+  authStore,
   maxTurns: clampTurns(process.env.CHAT_AUTO_TURNS),
   llm: { configured: Boolean(process.env.DASHSCOPE_API_KEY?.trim()), model },
   clientDir: join(root, 'src', 'client'),
@@ -46,7 +51,8 @@ server.listen(port, '127.0.0.1', () => {
   console.log(`赛博胡同私聊  http://127.0.0.1:${port}`);
   console.log(`模型  ${model}  非思考模式`);
   if (!process.env.DASHSCOPE_API_KEY?.trim()) console.log('DASHSCOPE_API_KEY 还是空的。填进 .env 后重启，真人私聊现在就能用。');
-  if (codes.written) console.log(`八人领取码已写到 ${codes.file}`);
+  if (authStore === store && codes.written) console.log(`八人领取码已写到 ${codes.file}`);
+  if (authStore !== store) console.log('账号使用持久化数据库；领取码使用管理员已分配的固定码。');
 });
 
 function clampTurns(value) {

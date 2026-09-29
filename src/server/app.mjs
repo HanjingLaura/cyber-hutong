@@ -15,7 +15,7 @@ const types = {
   '.mjs': 'text/javascript; charset=utf-8',
 };
 
-export function createApp({ store, complete, maxTurns = 4, llm, clientDir, loginBackground, basePath = '', characterDir, sceneFile, sceneFiles = {}, npcDir }) {
+export function createApp({ store, authStore = store, complete, maxTurns = 4, llm, clientDir, loginBackground, basePath = '', characterDir, sceneFile, sceneFiles = {}, npcDir }) {
   const clients = new Map();
   const tails = new Map();
   const generations = new Map();
@@ -163,7 +163,7 @@ export function createApp({ store, complete, maxTurns = 4, llm, clientDir, login
       if (req.method === 'GET' && /^\/characters\/f0[1-8]\.png$/.test(url.pathname) && characterDir) return sendFile(res, join(characterDir, url.pathname.split('/').at(-1)));
       if (req.method === 'GET' && npcDir && /^\/npcs\/[a-z0-9-]+\.png$/.test(url.pathname)) return sendFile(res, join(npcDir, url.pathname.split('/').at(-1)));
       if (req.method === 'GET' && /^\/props\/prop-black-office-chair(-back)?-green-512\.png$/.test(url.pathname)) return sendFile(res, join(clientDir, '..', '..', 'assets', 'props', url.pathname.split('/').at(-1)));
-      if (req.method === 'GET' && url.pathname === '/api/events') return openEvents(req, res);
+      if (req.method === 'GET' && url.pathname === '/api/events') return await openEvents(req, res);
       if (url.pathname.startsWith('/api/')) return await api(req, res, url);
       send(res, 404, { error: '没有这个页面' });
     } catch (error) {
@@ -184,29 +184,32 @@ export function createApp({ store, complete, maxTurns = 4, llm, clientDir, login
       return send(res, 200, { ok: true });
     }
     if (req.method === 'POST' && url.pathname === '/api/auth/reset-password') {
-      const id = store.resetPassword(await readBody(req));
+      const id = await authStore.resetPassword(await readBody(req));
+      store.setMode(id, 'auto');
       invalidate(id);
       for (const client of clients.get(id) ?? []) client.res.end();
       return send(res, 200, { ok: true });
     }
     if (req.method === 'POST' && url.pathname === '/api/auth/register') {
       const body = await readBody(req);
-      const session = store.register(body);
+      const session = await authStore.register(body);
+      store.setMode(session.member.id, 'manual');
       return send(res, 201, { member: session.member }, { 'Set-Cookie': cookie(session.token, 604800, req, basePath) });
     }
     if (req.method === 'POST' && url.pathname === '/api/auth/login') {
       const body = await readBody(req);
-      const session = store.login(body);
+      const session = await authStore.login(body);
+      store.setMode(session.member.id, 'manual');
       invalidate(session.member.id);
       return send(res, 200, { member: session.member }, { 'Set-Cookie': cookie(session.token, 604800, req, basePath) });
     }
     if (req.method === 'POST' && url.pathname === '/api/auth/logout') {
-      const token = readCookie(req), member = store.session(token);
-      store.logout(readCookie(req));
+      const token = readCookie(req), member = await authStore.session(token);
+      await authStore.logout(token);
       for (const client of clients.get(member?.id) ?? []) if (client.token === token) client.res.end();
       return send(res, 200, { ok: true }, { 'Set-Cookie': cookie('', 0, req, basePath) });
     }
-    const viewer = store.session(readCookie(req));
+    const viewer = await authStore.session(readCookie(req));
     if (!viewer) return send(res, 401, { error: '请先登录' });
     store.touch(viewer.id);
 
@@ -280,8 +283,8 @@ export function createApp({ store, complete, maxTurns = 4, llm, clientDir, login
     return send(res, 404, { error: '没有这个接口' });
   }
 
-  function openEvents(req, res) {
-    const viewer = store.session(readCookie(req));
+  async function openEvents(req, res) {
+    const viewer = await authStore.session(readCookie(req));
     if (!viewer) return send(res, 401, { error: '请先登录' });
     store.touch(viewer.id);
     res.writeHead(200, {
@@ -294,9 +297,15 @@ export function createApp({ store, complete, maxTurns = 4, llm, clientDir, login
     const group = clients.get(viewer.id) ?? new Set();
     group.add(client);
     clients.set(viewer.id, group);
-    const beat = setInterval(() => {
-      if (!store.session(client.token)) return res.end();
-      res.write(': ping\n\n');
+    let checking = false;
+    const beat = setInterval(async () => {
+      if (checking || res.writableEnded || res.destroyed) return;
+      checking = true;
+      try {
+        if (!await authStore.session(client.token)) return res.end();
+        if (!res.writableEnded && !res.destroyed) res.write(': ping\n\n');
+      } catch { res.end(); }
+      finally { checking = false; }
     }, 10000);
     req.on('close', () => {
       clearInterval(beat);

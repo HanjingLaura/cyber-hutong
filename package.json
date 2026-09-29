@@ -9,5 +9,8 @@
     "start": "node src/server/index.mjs",
     "test": "node --test examples/mvp-behavior/engine.test.mjs src/server/*.test.mjs",
     "reset-password": "node src/server/reset-password.mjs"
+  },
+  "dependencies": {
+    "@tursodatabase/serverless": "^1.3.1"
   }
 }
