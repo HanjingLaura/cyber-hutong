@@ -78,3 +78,19 @@ test('Hawaii invites only Amber/Jilly, needs Celine there, manual acceptance', (
   e.enter('celine','hutong');
   assert.deepEqual(e.invite('hawaii',{target:'amber'},morning),[]);
 });
+test('preference trips wait for arrival and leave manual actors alone', () => {
+  const engine = new BehaviorEngine();
+  for (const person of roster) if (person.id !== 'suki') engine.setMode(person.id, 'manual');
+  const values = [0.99, 0.99, 0, 0.6];
+  let index = 0;
+  const commands = engine.schedule(morning, () => values[index++]);
+  assert.equal(commands[0].actor, 'suki');
+  assert.equal(commands[0].scene, 'mixian');
+  assert.equal(engine.snapshot().events[commands[0].eventId].stage, 'out');
+  engine.activityReached(commands[0].eventId, 'counter', morning);
+  assert.equal(engine.snapshot().events[commands[0].eventId].stage, 'out');
+  engine.enter('suki', 'mixian');
+  engine.activityReached(commands[0].eventId, 'counter', morning);
+  assert.equal(engine.snapshot().events[commands[0].eventId].stage, 'there');
+  assert.deepEqual(engine.beginActivity('sid', 'gym', morning), []);
+});

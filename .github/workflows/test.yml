@@ -16,3 +16,4 @@ jobs:
       - run: npm test
       - run: node --check src/client/app.js
       - run: node --check src/client/portraits.js
+      - run: node --check src/client/stage.js

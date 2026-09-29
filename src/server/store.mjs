@@ -83,6 +83,25 @@ export function openStore(filename) {
       created_at INTEGER NOT NULL
     );
     CREATE INDEX IF NOT EXISTS messages_thread ON messages(thread_id, created_at);
+    CREATE TABLE IF NOT EXISTS world_state (
+      id INTEGER PRIMARY KEY,
+      version INTEGER NOT NULL,
+      snapshot TEXT NOT NULL
+    );
+    CREATE TABLE IF NOT EXISTS world_outbox (
+      id TEXT PRIMARY KEY,
+      payload TEXT NOT NULL,
+      acked INTEGER NOT NULL DEFAULT 0
+    );
+    CREATE TABLE IF NOT EXISTS actor_places (
+      member_id TEXT PRIMARY KEY,
+      scene TEXT NOT NULL,
+      x REAL NOT NULL,
+      y REAL NOT NULL,
+      pose TEXT NOT NULL,
+      facing TEXT NOT NULL,
+      seat_id TEXT
+    );
   `);
 
   function fail(status, error) {
@@ -231,6 +250,63 @@ export function openStore(filename) {
         senderName: roster.find((person) => person.id === row.sender_id).name,
         body: row.body,
       }));
+    },
+    controlMode(memberId) {
+      return db.prepare('SELECT mode FROM presence WHERE member_id = ?').get(memberId)?.mode ?? 'auto';
+    },
+    worldRepository() {
+      return {
+        async load() {
+          const row = db.prepare('SELECT version, snapshot FROM world_state WHERE id = 1').get();
+          return row ? { version: row.version, snapshot: JSON.parse(row.snapshot) } : null;
+        },
+        async commit({ expectedVersion, snapshot, commands }) {
+          db.exec('BEGIN IMMEDIATE');
+          try {
+            const row = db.prepare('SELECT version FROM world_state WHERE id = 1').get();
+            const version = row?.version ?? 0;
+            if (version !== expectedVersion) throw Object.assign(new Error('世界版本冲突'), { status: 409 });
+            db.prepare(`INSERT INTO world_state (id, version, snapshot) VALUES (1, ?, ?)
+              ON CONFLICT(id) DO UPDATE SET version = excluded.version, snapshot = excluded.snapshot`)
+              .run(expectedVersion + 1, JSON.stringify(snapshot));
+            const insert = db.prepare('INSERT INTO world_outbox (id, payload, acked) VALUES (?, ?, 0)');
+            for (const command of commands) insert.run(command.id, JSON.stringify(command.payload));
+            db.exec('COMMIT');
+            return expectedVersion + 1;
+          } catch (error) {
+            if (db.isTransaction) db.exec('ROLLBACK');
+            throw error;
+          }
+        },
+        async pendingCommands(limit) {
+          return db.prepare('SELECT id, payload FROM world_outbox WHERE acked = 0 ORDER BY rowid LIMIT ?').all(limit)
+            .map((row) => ({ id: row.id, payload: JSON.parse(row.payload) }));
+        },
+        async acknowledgeCommand(id) {
+          db.prepare('UPDATE world_outbox SET acked = 1 WHERE id = ?').run(id);
+        },
+      };
+    },
+    loadPlaces() {
+      return db.prepare(`SELECT member_id, scene, x, y, pose, facing, seat_id FROM actor_places`).all()
+        .map((row) => ({
+          memberId: row.member_id, scene: row.scene, x: row.x, y: row.y,
+          pose: row.pose, facing: row.facing, seatId: row.seat_id,
+        }));
+    },
+    savePlaces(rows) {
+      const write = db.prepare(`INSERT INTO actor_places (member_id, scene, x, y, pose, facing, seat_id)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+        ON CONFLICT(member_id) DO UPDATE SET scene = excluded.scene, x = excluded.x, y = excluded.y,
+          pose = excluded.pose, facing = excluded.facing, seat_id = excluded.seat_id`);
+      db.exec('BEGIN IMMEDIATE');
+      try {
+        for (const row of rows) write.run(row.memberId, row.scene, row.x, row.y, row.pose, row.facing, row.seatId);
+        db.exec('COMMIT');
+      } catch (error) {
+        if (db.isTransaction) db.exec('ROLLBACK');
+        throw error;
+      }
     },
     addMessage({ thread, senderId, body, source }) {
       const id = cryptoRandomId();

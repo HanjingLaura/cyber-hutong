@@ -154,6 +154,16 @@ test("HTTP assets, origin checks, auth throttling and takeover during generation
     ).status,
     403,
   );
+  process.env.HUTONG_ALLOWED_HOSTS = "hanjing-laura.vercel.app";
+  assert.equal(
+    (
+      await post("/api/me/mode", { mode: "auto" }, suki.token, {
+        Origin: "https://hanjing-laura.vercel.app",
+      })
+    ).status,
+    200,
+  );
+  delete process.env.HUTONG_ALLOWED_HOSTS;
   for (let i = 0; i < 15; i++)
     await post("/api/auth/login", {
       name: "nobody",

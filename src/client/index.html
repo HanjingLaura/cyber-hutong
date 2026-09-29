@@ -60,14 +60,24 @@
               <strong id="me-name"></strong><span class="sub">我的角色</span>
             </div>
           </div>
-          <div class="modes" role="group" aria-label="角色控制">
-            <button type="button" id="mode-manual">手动</button>
-            <button type="button" id="mode-auto">托管</button>
-          </div>
           <h2 class="roster-title">找人说话</h2>
           <div class="people" id="people"></div>
         </aside>
-        <main class="conversation" aria-labelledby="title">
+        <div class="stage-column">
+          <div class="stage-frame">
+            <div class="stage-status">
+              <strong id="who"></strong>
+              <span id="where">胡同</span>
+              <div class="modes" role="group" aria-label="角色控制">
+                <button type="button" id="mode-manual">手动</button>
+                <button type="button" id="mode-auto">托管</button>
+              </div>
+            </div>
+            <div id="world-log" hidden aria-live="polite"></div>
+            <canvas id="stage" width="1280" height="720" tabindex="0" aria-label="胡同，方向键或 WASD 移动，点击地面寻路，靠近后按 E 互动"></canvas>
+            <div id="hint" hidden></div>
+          </div>
+        <main class="conversation" hidden aria-labelledby="title">
           <header class="dialogue-heading">
             <canvas
               id="peer-sprite"
@@ -82,6 +92,7 @@
             <button id="close-thread" type="button" aria-label="关闭对话">
               返回
             </button>
+            <button id="history-toggle" type="button" hidden>更早的对话</button>
           </header>
           <div
             id="log"
@@ -115,6 +126,7 @@
             ><span id="char-count">0 / 200</span>
           </footer>
         </main>
+        </div>
       </div>
     </div>
     <script type="module" src="__BASE__/app.js"></script>
