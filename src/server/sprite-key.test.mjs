@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { removeGreenScreen, spriteColumns, spriteComponents } from '../shared/sprite-key.mjs';
+import { guestSprites } from '../shared/scenes.mjs';
 
 test('visual sheets match the confirmed member identities without changing claim IDs', () => {
   const source = readFileSync(new URL('../client/portraits.js', import.meta.url), 'utf8');
@@ -37,4 +38,19 @@ test('removes enclosed green holes but preserves olive armour and dark outlines'
   assert.equal(data[24 * 4 + 3], 0);
   assert.equal(data[23 * 4 + 3], 255);
   assert.equal(data[8 * 4 + 3], 255);
+});
+
+test('Kay gym cat sheet is a 1280x720 six-pose sprite', () => {
+  const tutu = guestSprites.tutu;
+  assert.equal(tutu.file, 'tutu-green.png');
+  assert.equal(tutu.frames.length, 6);
+  const png = readFileSync(new URL('../../assets/npcs/' + tutu.file, import.meta.url));
+  assert.equal(png.readUInt32BE(16), 1280);
+  assert.equal(png.readUInt32BE(20), 720);
+  let lastRight = 0;
+  for (const [x, y, width, height] of tutu.frames) {
+    assert.ok(width > 80 && height > 80);
+    assert.ok(x >= lastRight && y >= 0 && x + width <= 1280 && y + height <= 720);
+    lastRight = x + width;
+  }
 });
