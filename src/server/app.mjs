@@ -6,6 +6,7 @@ import { roster } from '../../examples/mvp-behavior/config.mjs';
 import { createDirector } from './director.mjs';
 import { createWorld } from './world.mjs';
 import { createWorldRuntime } from './world-runtime.mjs';
+import { createTaskPool } from './task-pool.mjs';
 
 const types = {
   '.html': 'text/html; charset=utf-8',
@@ -23,6 +24,7 @@ export function createApp({ store, authStore = store, complete, maxTurns = 4, ll
   const authRates = new Map();
   const controls = new Map();
   const tabs = new Map();
+  const runLlm = createTaskPool();
   const invalidate = id => controls.set(id, (controls.get(id) ?? 0) + 1);
   const world = createWorld({
     loadPlaces: () => store.loadPlaces(),
@@ -41,7 +43,10 @@ export function createApp({ store, authStore = store, complete, maxTurns = 4, ll
       manualIds: () => new Set(roster.filter((person) => store.controlMode(person.id) === 'manual').map((person) => person.id)),
     });
   }).catch(() => {});
+  let behaviorRunning = false;
   const behaviorTimer = setInterval(() => {
+    if (!director || behaviorRunning) return;
+    behaviorRunning = true;
     director?.step(Date.now()).then(async (result) => {
       const visit = await director.visit(Date.now());
       for (const notice of [...(result?.notices ?? []), ...(visit?.notices ?? [])]) {
@@ -50,7 +55,7 @@ export function createApp({ store, authStore = store, complete, maxTurns = 4, ll
         } else publish(notice.actor, { type: 'invite', notice });
       }
       publishWorld();
-    }).catch(() => {});
+    }).catch(() => {}).finally(() => { behaviorRunning = false; });
   }, 2000);
   function authLimit(req) {
     const now = Date.now(), key = req.socket.remoteAddress || 'unknown';
@@ -62,12 +67,22 @@ export function createApp({ store, authStore = store, complete, maxTurns = 4, ll
 
   function publish(memberId, event) {
     const data = `data: ${JSON.stringify(event)}\n\n`;
-    for (const client of clients.get(memberId) ?? []) client.res.write(data);
+    for (const client of clients.get(memberId) ?? []) {
+      if (client.res.destroyed || client.res.writableEnded) continue;
+      // Reconnect slow readers rather than retaining unbounded world snapshots.
+      if (client.res.writableLength > 128 * 1024) client.res.destroy();
+      else client.res.write(data);
+    }
   }
 
   function publishWorld() {
     const actors = world.view();
-    for (const memberId of clients.keys()) publish(memberId, { type: 'world', actors });
+    const data = `data: ${JSON.stringify({ type: 'world', actors })}\n\n`;
+    for (const group of clients.values()) for (const client of group) {
+      if (client.res.destroyed || client.res.writableEnded) continue;
+      if (client.res.writableLength > 128 * 1024) client.res.destroy();
+      else client.res.write(data);
+    }
   }
 
   function publishPresence() {
@@ -77,8 +92,8 @@ export function createApp({ store, authStore = store, complete, maxTurns = 4, ll
   }
 
   function enqueue(thread, job) {
-    const previous = tails.get(thread) ?? Promise.resolve();
-    const run = previous.catch(() => {}).then(job);
+    if (tails.has(thread)) throw Object.assign(new Error('这段对话还在回复，请稍等'), { status: 429 });
+    const run = Promise.resolve().then(job).finally(() => tails.delete(thread));
     tails.set(thread, run);
     return run;
   }
@@ -93,10 +108,12 @@ export function createApp({ store, authStore = store, complete, maxTurns = 4, ll
 
   function produce({ viewer, peerId, trigger, humanBody }) {
     const thread = threadId(viewer.id, peerId);
+    if (tails.has(thread)) throw Object.assign(new Error('这段对话还在回复，请稍等'), { status: 429 });
     const generation = (generations.get(thread) ?? 0) + 1;
     generations.set(thread, generation);
     if (humanBody) { invalidate(viewer.id); store.setMode(viewer.id, 'manual'); }
     return enqueue(thread, async () => {
+      const deadline = AbortSignal.timeout(22000);
       const produced = [];
       const publishMessage = message => {
         produced.push(message);
@@ -106,7 +123,7 @@ export function createApp({ store, authStore = store, complete, maxTurns = 4, ll
       if (humanBody) {
         publishMessage(store.addMessage({ thread, senderId: viewer.id, body: humanBody, source: 'human' }));
       }
-      const stale = () => generations.get(thread) !== generation;
+      const stale = () => generations.get(thread) !== generation || deadline.aborted;
       if (!stale()) {
         const speakers = planAutoSpeakers({
           selfId: viewer.id,
@@ -130,7 +147,11 @@ export function createApp({ store, authStore = store, complete, maxTurns = 4, ll
               const speaker = memberById(speakerId);
               const peer = memberById(speakerId === viewer.id ? peerId : viewer.id);
               const prompt = buildPrompt({ speaker, peer, history: store.recent(thread, 12) });
-              const text = cleanReply(await complete(prompt), speaker.name);
+              const text = await runLlm(async () => {
+                if (stale() || store.effectiveManual(speakerId) || deadline.aborted) return '';
+                return cleanReply(await complete(prompt, { signal: deadline }), speaker.name);
+              }, { signal: deadline });
+              if (!text) return '';
               if (stale() || store.effectiveManual(speakerId) || version !== (controls.get(speakerId) ?? 0)) return text;
               publishMessage(store.addMessage({ thread, senderId: speakerId, body: text, source: 'llm' }));
               return text;
@@ -148,11 +169,14 @@ export function createApp({ store, authStore = store, complete, maxTurns = 4, ll
   const server = createServer(async (req, res) => {
     try {
       const url = new URL(req.url, 'http://127.0.0.1');
+      if (basePath && (url.pathname === basePath || url.pathname.startsWith(basePath + '/'))) {
+        url.pathname = url.pathname.slice(basePath.length) || '/';
+      }
       if (req.method === 'GET' && url.pathname === '/login-background.png') {
         return sendFile(res, loginBackground);
       }
       if (req.method === 'GET' && url.pathname === '/') return sendHtml(res, join(clientDir, 'index.html'), basePath);
-      if (req.method === 'GET' && ['/app.js', '/style.css', '/portraits.js', '/stage.js'].includes(url.pathname)) return sendFile(res, join(clientDir, url.pathname.slice(1)));
+      if (req.method === 'GET' && ['/app.js', '/style.css', '/portraits.js', '/stage.js', '/sprite-worker.js'].includes(url.pathname)) return sendFile(res, join(clientDir, url.pathname.slice(1)));
       if (req.method === 'GET' && url.pathname === '/scenes/hutong.png') return sendFile(res, sceneFiles[url.pathname] || sceneFile);
       if (req.method === 'GET' && sceneFiles[url.pathname]) return sendFile(res, sceneFiles[url.pathname]);
       if (req.method === 'GET' && url.pathname === '/shared/hutong.mjs') return sendFile(res, join(clientDir, '..', 'shared', 'hutong.mjs'));
@@ -235,7 +259,8 @@ export function createApp({ store, authStore = store, complete, maxTurns = 4, ll
       const body = await readBody(req);
       const manual = store.describe(viewer.id).control === 'human';
       const result = world.intent(viewer.id, body, Date.now(), manual);
-      if (!result.duplicate) publishWorld();
+      // Movement is broadcast by the 20 Hz world tick, not once per player input.
+      if (!result.duplicate && !['move', 'renew'].includes(body.intent?.type)) publishWorld();
       return send(res, 200, result);
     }
     if (req.method === 'GET' && url.pathname === '/api/world') {
@@ -403,6 +428,6 @@ function sendFile(res, file) {
   if (!file) return send(res, 404, { error: '没有这个文件' });
   const safe = normalize(file);
   if (!existsSync(safe)) return send(res, 404, { error: '没有这个文件' });
-  res.writeHead(200, { 'Content-Type': types[extname(safe)] || 'application/octet-stream', 'Cache-Control': 'no-store' });
+  res.writeHead(200, { 'Content-Type': types[extname(safe)] || 'application/octet-stream', 'Cache-Control': extname(safe) === '.png' ? 'public, max-age=300' : 'no-cache' });
   createReadStream(safe).pipe(res);
 }

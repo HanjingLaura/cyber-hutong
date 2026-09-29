@@ -221,6 +221,7 @@ export function createWorld({ loadPlaces = () => [], savePlaces = () => {}, scen
         return { ok: true };
       }
       if (intent.type === 'travel') return { ok: true, ...travel(actor, intent.scene) };
+      if (intent.type === 'switch-scene') return { ok: true, ...travel(actor, intent.scene, true) };
       if (intent.type === 'interact') return { ok: true, ...interact(actor) };
       throw Object.assign(new Error('不认识这个操作'), { status: 400 });
     },
@@ -337,13 +338,14 @@ export function createWorld({ loadPlaces = () => [], savePlaces = () => {}, scen
     sceneChanges.push({ memberId: actor.id, scene: destination.id });
   }
 
-  function travel(actor, sceneId) {
+  function travel(actor, sceneId, direct = false) {
     const exit = scenes[actor.scene]?.exits.find((item) => pointInPolygon(actor.x, actor.y, item.area)
       && item.choices?.some((choice) => choice.scene === sceneId));
-    if (!exit || !scenes[sceneId]) throw Object.assign(new Error('这里去不了'), { status: 400 });
+    if ((!direct && !exit) || !Object.hasOwn(scenes, sceneId)) throw Object.assign(new Error('这里去不了'), { status: 400 });
     actor.route = null;
     actor.path = null;
     actor.dir = null;
+    actor.moving = false;
     enter(actor, sceneId);
     dirty = true;
     return { action: 'travel', scene: sceneId };

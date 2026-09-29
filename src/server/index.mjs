@@ -8,6 +8,9 @@ import { openAuthStore } from './auth-store.mjs';
 
 const root = fileURLToPath(new URL('../../', import.meta.url));
 loadEnv(join(root, '.env'));
+if (process.env.NODE_ENV === 'production' && !process.env.TURSO_DATABASE_URL) {
+  throw new Error('Production requires persistent authentication configuration');
+}
 
 const model = process.env.BAILIAN_MODEL?.trim() || 'qwen-turbo';
 const store = openStore(join(root, 'data', 'cyber-hutong.sqlite'));
@@ -18,6 +21,7 @@ const authStore = process.env.TURSO_DATABASE_URL
 const server = createApp({
   store,
   authStore,
+  basePath: process.env.HUTONG_BASE_PATH || '',
   maxTurns: clampTurns(process.env.CHAT_AUTO_TURNS),
   llm: { configured: Boolean(process.env.DASHSCOPE_API_KEY?.trim()), model },
   clientDir: join(root, 'src', 'client'),
@@ -37,7 +41,8 @@ const server = createApp({
     '/scenes/mixian.png': join(root, 'assets', 'scenes', 'mixian-restaurant-1280x720.png'),
   },
   npcDir: join(root, 'assets', 'npcs'),
-  complete: (prompt) => bailianComplete(prompt, {
+  complete: (prompt, { signal } = {}) => bailianComplete(prompt, {
+    signal,
     apiKey: process.env.DASHSCOPE_API_KEY ?? '',
     baseUrl: process.env.BAILIAN_BASE_URL?.trim() || 'https://dashscope.aliyuncs.com/compatible-mode/v1',
     model,
@@ -47,7 +52,7 @@ const server = createApp({
 });
 
 const port = Number(process.env.PORT || 8787);
-server.listen(port, '127.0.0.1', () => {
+server.listen(port, process.env.HOST || '127.0.0.1', () => {
   console.log(`赛博胡同私聊  http://127.0.0.1:${port}`);
   console.log(`模型  ${model}  非思考模式`);
   if (!process.env.DASHSCOPE_API_KEY?.trim()) console.log('DASHSCOPE_API_KEY 还是空的。填进 .env 后重启，真人私聊现在就能用。');

@@ -24,7 +24,7 @@ async function request(body, options, canRetry) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(body),
-      signal: AbortSignal.timeout(20000),
+      signal: options.signal ? AbortSignal.any([options.signal, AbortSignal.timeout(10000)]) : AbortSignal.timeout(10000),
     });
   } catch {
     throw Object.assign(new Error('百炼暂时没有连上'), { code: 'NETWORK' });

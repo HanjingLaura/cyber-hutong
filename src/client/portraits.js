@@ -13,6 +13,48 @@ const files = {
 const poseNames = ["front", "back", "side", "walk", "sit", "sit_back"];
 const sheets = new Map();
 const cache = new Map();
+const guestCache = new Map();
+const makeCanvas = () => typeof document === 'undefined' ? new OffscreenCanvas(1, 1) : document.createElement('canvas');
+let worker;
+let workerId = 0;
+let workerFailed = false;
+const jobs = new Map();
+
+async function prepareSheet(src, fallback) {
+  if (!workerFailed && typeof Worker !== 'undefined' && typeof OffscreenCanvas !== 'undefined') {
+    try {
+      if (!worker) {
+        worker = new Worker(new URL('./sprite-worker.js', import.meta.url), { type: 'module' });
+        worker.onmessage = ({ data }) => {
+          const job = jobs.get(data.id);
+          if (!job) return;
+          jobs.delete(data.id);
+          clearTimeout(job.timer);
+          if (data.error) job.reject(new Error(data.error));
+          else job.resolve(data.sheet);
+        };
+        worker.onerror = () => {
+          workerFailed = true;
+          worker.terminate();
+          worker = null;
+          for (const job of jobs.values()) { clearTimeout(job.timer); job.reject(new Error('Sprite worker failed')); }
+          jobs.clear();
+        };
+      }
+      return await new Promise((resolve, reject) => {
+        const id = ++workerId;
+        const timer = setTimeout(() => { jobs.delete(id); reject(new Error('Sprite timeout')); }, 15000);
+        jobs.set(id, { resolve, reject, timer });
+        worker.postMessage({ id, src: new URL(src, location.href).href, fallback });
+      });
+    } catch { /* Unsupported worker/CSP: retain a compatible main-thread fallback. */ }
+  }
+  const image = new Image();
+  image.src = src;
+  await image.decode();
+  await new Promise(resolve => setTimeout(resolve, 0));
+  return splitSheet(image, fallback);
+}
 
 function keyBackground(ctx, width, height, key = true) {
   const image = ctx.getImageData(0, 0, width, height);
@@ -44,14 +86,14 @@ function keyBackground(ctx, width, height, key = true) {
 
 function cutCell(image, box, key = true) {
   const [x, y, w, h] = box;
-  const source = document.createElement("canvas");
+  const source = makeCanvas();
   source.width = w;
   source.height = h;
   const ctx = source.getContext("2d", { willReadFrequently: true });
   ctx.drawImage(image, x, y, w, h, 0, 0, w, h);
   return { source, ...keyBackground(ctx, w, h, key) };
 }
-function splitSheet(image, fallback) {
+export function splitSheet(image, fallback) {
   const keyed = cutCell(image, [0, 0, image.width, image.height]).source;
   const data = keyed.getContext('2d').getImageData(0, 0, keyed.width, keyed.height).data;
   const columns = spriteColumns(data, keyed.width, keyed.height);
@@ -61,7 +103,7 @@ function splitSheet(image, fallback) {
     const components = spriteComponents(data, keyed.width, keyed.height);
     if (components.length === poseNames.length) {
       return Object.fromEntries(components.map((part, index) => {
-        const source = document.createElement('canvas');
+        const source = makeCanvas();
         source.width = part.right - part.left + 5;
         source.height = part.bottom - part.top + 5;
         const ctx = source.getContext('2d');
@@ -95,21 +137,18 @@ export async function loadSheet(id) {
   return sheets.get(id);
 }
 async function cutSheet(id) {
-  const image = new Image();
-  image.src =
+  const src =
     (document.documentElement.dataset.base || "") +
     "/characters/" +
     files[id] +
     ".png";
-  await image.decode();
-  return splitSheet(image);
+  return prepareSheet(src);
 }
 export async function loadGuestSheet(src, frames) {
   if (!frames?.length) return null;
-  const image = new Image();
-  image.src = src;
-  await image.decode();
-  return splitSheet(image, frames);
+  const key = JSON.stringify([src, frames]);
+  if (!guestCache.has(key)) guestCache.set(key, prepareSheet(src, frames).catch(error => { guestCache.delete(key); throw error; }));
+  return guestCache.get(key);
 }
 export async function portrait(canvas, id) {
   canvas.dataset.actor = id;

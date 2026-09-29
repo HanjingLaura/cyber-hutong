@@ -47,6 +47,11 @@ $("#history-toggle").onclick = () => {
 };
 $("#members-toggle").onclick = () =>
   toggleRoster(!app.classList.contains("roster-open"));
+$("#scenes-toggle").onclick = () => {
+  if (state.peerId) closeThread();
+  toggleRoster(false);
+  state.stage?.openScenes();
+};
 people.onclick = (e) => {
   const b = e.target.closest("[data-id]");
   if (b) openThread(b.dataset.id);

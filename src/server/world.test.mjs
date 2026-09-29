@@ -4,6 +4,22 @@ import { pointInPolygon } from '../shared/geometry.mjs';
 import { hutong } from '../shared/hutong.mjs';
 import { createWorld } from './world.mjs';
 
+test('direct scene switching retains lease/manual validation and rejects unknown scenes', () => {
+  const world = createWorld();
+  const joined = world.join('suki', 'scene-switch-test', 1000);
+  let seq = 0;
+  const run = (scene, manual = true, leaseId = joined.leaseId) => world.intent('suki', {
+    seq: ++seq, leaseId, intent: { type: 'switch-scene', scene },
+  }, 1010, manual);
+  assert.throws(() => run('popmart', false), { code: 'manual' });
+  assert.throws(() => run('popmart', true, 'forged'));
+  assert.throws(() => run('__proto__'), { status: 400 });
+  assert.equal(run('popmart').scene, 'popmart');
+  const actor = world.view().find(a => a.id === 'suki');
+  assert.equal(actor.scene, 'popmart');
+  assert.equal(actor.moving, false);
+});
+
 test('nearby visiting characters return speech rather than a non-existent member chat', () => {
   const world = createWorld({ loadPlaces: () => [{ memberId: 'amber', scene: 'hawaii', x: 640, y: 500, pose: 'stand' }] });
   const joined = world.join('amber', 'guest-talk-tab', 1000);
