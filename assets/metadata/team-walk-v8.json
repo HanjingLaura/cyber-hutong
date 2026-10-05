@@ -1,0 +1,2544 @@
+{
+  "sources": {
+    "suki-walk-a-v8": {
+      "file": "team/v8/suki-a.png",
+      "size": [
+        2172,
+        724
+      ]
+    },
+    "suki-walk-b-v8": {
+      "file": "team/v8/suki-b.png",
+      "size": [
+        2172,
+        724
+      ]
+    },
+    "sid-walk-a-v8": {
+      "file": "team/v8/sid-a.png",
+      "size": [
+        2172,
+        724
+      ]
+    },
+    "sid-walk-b-v8": {
+      "file": "team/v8/sid-b.png",
+      "size": [
+        2172,
+        724
+      ]
+    },
+    "jilly-walk-a-v8": {
+      "file": "team/v8/jilly-a.png",
+      "size": [
+        2172,
+        724
+      ]
+    },
+    "jilly-walk-b-v8": {
+      "file": "team/v8/jilly-b.png",
+      "size": [
+        2172,
+        724
+      ]
+    },
+    "laura-walk-a-v8": {
+      "file": "team/v8/laura-a.png",
+      "size": [
+        2172,
+        724
+      ]
+    },
+    "laura-walk-b-v8": {
+      "file": "team/v8/laura-b.png",
+      "size": [
+        2172,
+        724
+      ]
+    },
+    "kay-walk-a-v8": {
+      "file": "team/v8/kay-a.png",
+      "size": [
+        2172,
+        724
+      ]
+    },
+    "kay-walk-b-v8": {
+      "file": "team/v8/kay-b.png",
+      "size": [
+        2172,
+        724
+      ]
+    },
+    "franco-walk-a-v8": {
+      "file": "team/v8/franco-a.png",
+      "size": [
+        2172,
+        724
+      ]
+    },
+    "franco-walk-b-v8": {
+      "file": "team/v8/franco-b.png",
+      "size": [
+        2172,
+        724
+      ]
+    },
+    "cora-walk-a-v8": {
+      "file": "team/v8/cora-a.png",
+      "size": [
+        2172,
+        724
+      ]
+    },
+    "cora-walk-b-v8": {
+      "file": "team/v8/cora-b.png",
+      "size": [
+        2172,
+        724
+      ]
+    },
+    "amber-walk-a-v8": {
+      "file": "team/v8/amber-a.png",
+      "size": [
+        2172,
+        724
+      ]
+    },
+    "amber-walk-b-v8": {
+      "file": "team/v8/amber-b.png",
+      "size": [
+        2172,
+        724
+      ]
+    },
+    "celine-walk-a-v8": {
+      "file": "team/v8/celine-a.png",
+      "size": [
+        2172,
+        724
+      ]
+    },
+    "celine-walk-b-v8": {
+      "file": "team/v8/celine-b.png",
+      "size": [
+        2172,
+        724
+      ]
+    }
+  },
+  "members": {
+    "suki": {
+      "frames": [
+        {
+          "name": "walk-side-v8-0",
+          "source": "suki-walk-a-v8",
+          "rect": [
+            69,
+            53,
+            380,
+            598
+          ],
+          "referenceHeight": 598,
+          "pivotX": 0.5671052631578948,
+          "foot": [
+            215.50000000000003,
+            598
+          ],
+          "seat": [
+            197.057596238613,
+            430.56
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 1,
+          "offsetYRatio": 0,
+          "headMetrics": {
+            "headWidth": 328,
+            "landmarkHeight": 217,
+            "centerX": 215.5,
+            "originalReferenceHeight": 598
+          }
+        },
+        {
+          "name": "walk-side-v8-1",
+          "source": "suki-walk-a-v8",
+          "rect": [
+            591,
+            53,
+            382,
+            598
+          ],
+          "referenceHeight": 600.7557603686636,
+          "pivotX": 0.5641361256544503,
+          "foot": [
+            215.5,
+            598
+          ],
+          "seat": [
+            197.68220914440928,
+            430.56
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 0.9925045805341179,
+          "offsetYRatio": -0.004587155963302725,
+          "headMetrics": {
+            "headWidth": 332,
+            "landmarkHeight": 218,
+            "centerX": 215.5,
+            "originalReferenceHeight": 598
+          }
+        },
+        {
+          "name": "walk-side-v8-2",
+          "source": "suki-walk-a-v8",
+          "rect": [
+            1134,
+            53,
+            381,
+            598
+          ],
+          "referenceHeight": 598,
+          "pivotX": 0.5643044619422573,
+          "foot": [
+            215,
+            598
+          ],
+          "seat": [
+            197.2344731558837,
+            430.56
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 0.9909365558912386,
+          "offsetYRatio": 0,
+          "headMetrics": {
+            "headWidth": 331,
+            "landmarkHeight": 217,
+            "centerX": 215,
+            "originalReferenceHeight": 598
+          }
+        },
+        {
+          "name": "walk-side-v8-3",
+          "source": "suki-walk-a-v8",
+          "rect": [
+            1654,
+            53,
+            407,
+            598
+          ],
+          "referenceHeight": 600.7557603686636,
+          "pivotX": 0.527027027027027,
+          "foot": [
+            214.49999999999997,
+            598
+          ],
+          "seat": [
+            196.70388570684713,
+            430.56
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 0.9985197598100822,
+          "offsetYRatio": -0.004587155963302725,
+          "headMetrics": {
+            "headWidth": 330,
+            "landmarkHeight": 218,
+            "centerX": 214.5,
+            "originalReferenceHeight": 598
+          }
+        },
+        {
+          "name": "walk-side-v8-4",
+          "source": "suki-walk-b-v8",
+          "rect": [
+            89,
+            39,
+            359,
+            617
+          ],
+          "referenceHeight": 562.1751152073733,
+          "pivotX": 0.5766016713091922,
+          "foot": [
+            206.99999999999997,
+            617
+          ],
+          "seat": [
+            183.16431972444536,
+            444.24
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 1.0176575261212757,
+          "offsetYRatio": 0.09752278837956574,
+          "headMetrics": {
+            "headWidth": 303,
+            "landmarkHeight": 204,
+            "centerX": 207,
+            "originalReferenceHeight": 617
+          }
+        },
+        {
+          "name": "walk-side-v8-5",
+          "source": "suki-walk-b-v8",
+          "rect": [
+            628,
+            39,
+            359,
+            617
+          ],
+          "referenceHeight": 562.1751152073733,
+          "pivotX": 0.5738161559888579,
+          "foot": [
+            206,
+            617
+          ],
+          "seat": [
+            182.12178341371285,
+            444.24
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 1.0109843620155623,
+          "offsetYRatio": 0.09752278837956574,
+          "headMetrics": {
+            "headWidth": 305,
+            "landmarkHeight": 204,
+            "centerX": 206,
+            "originalReferenceHeight": 617
+          }
+        },
+        {
+          "name": "walk-side-v8-6",
+          "source": "suki-walk-b-v8",
+          "rect": [
+            1130,
+            39,
+            357,
+            617
+          ],
+          "referenceHeight": 562.1751152073733,
+          "pivotX": 0.5756302521008403,
+          "foot": [
+            205.49999999999997,
+            617
+          ],
+          "seat": [
+            182.2855296278658,
+            444.24
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 1.0210272530289621,
+          "offsetYRatio": 0.09752278837956574,
+          "headMetrics": {
+            "headWidth": 302,
+            "landmarkHeight": 204,
+            "centerX": 205.5,
+            "originalReferenceHeight": 617
+          }
+        },
+        {
+          "name": "walk-side-v8-7",
+          "source": "suki-walk-b-v8",
+          "rect": [
+            1668,
+            39,
+            404,
+            617
+          ],
+          "referenceHeight": 562.1751152073733,
+          "pivotX": 0.5086633663366337,
+          "foot": [
+            205.5,
+            617
+          ],
+          "seat": [
+            182.3817013360392,
+            444.24
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 1.014309968469561,
+          "offsetYRatio": 0.09752278837956574,
+          "headMetrics": {
+            "headWidth": 304,
+            "landmarkHeight": 204,
+            "centerX": 205.5,
+            "originalReferenceHeight": 617
+          }
+        }
+      ],
+      "walkLoop": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "sideWalkFrameMs": 100,
+      "headTarget": {
+        "width": 0.5484949832775919,
+        "landmark": 0.362876254180602,
+        "top": 1
+      }
+    },
+    "sid": {
+      "frames": [
+        {
+          "name": "walk-side-v8-0",
+          "source": "sid-walk-a-v8",
+          "rect": [
+            96,
+            41,
+            363,
+            611
+          ],
+          "referenceHeight": 611,
+          "pivotX": 0.5633608815426997,
+          "foot": [
+            204.5,
+            611
+          ],
+          "seat": [
+            198.30818274418078,
+            439.91999999999996
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 1.0000000000000002,
+          "offsetYRatio": 0,
+          "headMetrics": {
+            "headWidth": 316,
+            "landmarkHeight": 239,
+            "centerX": 204.5,
+            "originalReferenceHeight": 611
+          }
+        },
+        {
+          "name": "walk-side-v8-1",
+          "source": "sid-walk-a-v8",
+          "rect": [
+            652,
+            41,
+            344,
+            611
+          ],
+          "referenceHeight": 611,
+          "pivotX": 0.5377906976744186,
+          "foot": [
+            184.99999999999997,
+            611
+          ],
+          "seat": [
+            179.08642859836345,
+            439.91999999999996
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 0.996845425867508,
+          "offsetYRatio": 0,
+          "headMetrics": {
+            "headWidth": 317,
+            "landmarkHeight": 239,
+            "centerX": 185,
+            "originalReferenceHeight": 611
+          }
+        },
+        {
+          "name": "walk-side-v8-2",
+          "source": "sid-walk-a-v8",
+          "rect": [
+            1214,
+            41,
+            317,
+            611
+          ],
+          "referenceHeight": 608.4435146443515,
+          "pivotX": 0.49842271293375395,
+          "foot": [
+            158,
+            611
+          ],
+          "seat": [
+            152.89197403474532,
+            439.91999999999996
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 0.9926745245040456,
+          "offsetYRatio": 0.004201680672268893,
+          "headMetrics": {
+            "headWidth": 317,
+            "landmarkHeight": 238,
+            "centerX": 158,
+            "originalReferenceHeight": 611
+          }
+        },
+        {
+          "name": "walk-side-v8-3",
+          "source": "sid-walk-a-v8",
+          "rect": [
+            1707,
+            41,
+            370,
+            611
+          ],
+          "referenceHeight": 611,
+          "pivotX": 0.5081081081081081,
+          "foot": [
+            188,
+            611
+          ],
+          "seat": [
+            182.5249745925396,
+            439.91999999999996
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 0.996845425867508,
+          "offsetYRatio": 0,
+          "headMetrics": {
+            "headWidth": 317,
+            "landmarkHeight": 239,
+            "centerX": 188,
+            "originalReferenceHeight": 611
+          }
+        },
+        {
+          "name": "walk-side-v8-4",
+          "source": "sid-walk-b-v8",
+          "rect": [
+            95,
+            38,
+            358,
+            647
+          ],
+          "referenceHeight": 631.4518828451883,
+          "pivotX": 0.5418994413407822,
+          "foot": [
+            194,
+            647
+          ],
+          "seat": [
+            191.77819023816522,
+            465.84
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 1.0433782934752096,
+          "offsetYRatio": 0.02462280591318411,
+          "headMetrics": {
+            "headWidth": 313,
+            "landmarkHeight": 247,
+            "centerX": 194,
+            "originalReferenceHeight": 647
+          }
+        },
+        {
+          "name": "walk-side-v8-5",
+          "source": "sid-walk-b-v8",
+          "rect": [
+            661,
+            38,
+            348,
+            647
+          ],
+          "referenceHeight": 631.4518828451883,
+          "pivotX": 0.5287356321839081,
+          "foot": [
+            184,
+            647
+          ],
+          "seat": [
+            181.6452442159383,
+            465.84
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 1.0433782934752096,
+          "offsetYRatio": 0.02462280591318411,
+          "headMetrics": {
+            "headWidth": 313,
+            "landmarkHeight": 247,
+            "centerX": 184,
+            "originalReferenceHeight": 647
+          }
+        },
+        {
+          "name": "walk-side-v8-6",
+          "source": "sid-walk-b-v8",
+          "rect": [
+            1197,
+            38,
+            321,
+            647
+          ],
+          "referenceHeight": 631.4518828451883,
+          "pivotX": 0.48598130841121495,
+          "foot": [
+            156,
+            647
+          ],
+          "seat": [
+            153.53311282616687,
+            465.84
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 1.0433782934752096,
+          "offsetYRatio": 0.02462280591318411,
+          "headMetrics": {
+            "headWidth": 313,
+            "landmarkHeight": 247,
+            "centerX": 156,
+            "originalReferenceHeight": 647
+          }
+        },
+        {
+          "name": "walk-side-v8-7",
+          "source": "sid-walk-b-v8",
+          "rect": [
+            1730,
+            38,
+            362,
+            647
+          ],
+          "referenceHeight": 631.4518828451883,
+          "pivotX": 0.4558011049723757,
+          "foot": [
+            165,
+            647
+          ],
+          "seat": [
+            162.7844564538068,
+            465.84
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 1.0433782934752096,
+          "offsetYRatio": 0.02462280591318411,
+          "headMetrics": {
+            "headWidth": 313,
+            "landmarkHeight": 247,
+            "centerX": 165,
+            "originalReferenceHeight": 647
+          }
+        }
+      ],
+      "walkLoop": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "sideWalkFrameMs": 100,
+      "headTarget": {
+        "width": 0.5171849427168577,
+        "landmark": 0.3911620294599018,
+        "top": 1
+      }
+    },
+    "jilly": {
+      "frames": [
+        {
+          "name": "walk-side-v8-0",
+          "source": "jilly-walk-a-v8",
+          "rect": [
+            95,
+            54,
+            363,
+            594
+          ],
+          "referenceHeight": 594,
+          "pivotX": 0.5647382920110193,
+          "foot": [
+            205.00000000000003,
+            594
+          ],
+          "seat": [
+            186.43063720521653,
+            427.68
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 1,
+          "offsetYRatio": 0,
+          "headMetrics": {
+            "headWidth": 315,
+            "landmarkHeight": 209,
+            "centerX": 205,
+            "originalReferenceHeight": 594
+          }
+        },
+        {
+          "name": "walk-side-v8-1",
+          "source": "jilly-walk-a-v8",
+          "rect": [
+            621,
+            54,
+            359,
+            594
+          ],
+          "referenceHeight": 594,
+          "pivotX": 0.5598885793871866,
+          "foot": [
+            201,
+            594
+          ],
+          "seat": [
+            182.78100156281846,
+            427.68
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 1,
+          "offsetYRatio": 0,
+          "headMetrics": {
+            "headWidth": 315,
+            "landmarkHeight": 209,
+            "centerX": 201,
+            "originalReferenceHeight": 594
+          }
+        },
+        {
+          "name": "walk-side-v8-2",
+          "source": "jilly-walk-a-v8",
+          "rect": [
+            1124,
+            54,
+            359,
+            594
+          ],
+          "referenceHeight": 596.8421052631579,
+          "pivotX": 0.5626740947075209,
+          "foot": [
+            202.00000000000003,
+            594
+          ],
+          "seat": [
+            183.52800790972015,
+            427.68
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 1.0112050384456641,
+          "offsetYRatio": -0.004761904761904856,
+          "headMetrics": {
+            "headWidth": 313,
+            "landmarkHeight": 210,
+            "centerX": 202,
+            "originalReferenceHeight": 594
+          }
+        },
+        {
+          "name": "walk-side-v8-3",
+          "source": "jilly-walk-a-v8",
+          "rect": [
+            1667,
+            54,
+            392,
+            594
+          ],
+          "referenceHeight": 594,
+          "pivotX": 0.5153061224489796,
+          "foot": [
+            201.99999999999997,
+            594
+          ],
+          "seat": [
+            183.87536547222408,
+            427.68
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 1,
+          "offsetYRatio": 0,
+          "headMetrics": {
+            "headWidth": 315,
+            "landmarkHeight": 209,
+            "centerX": 202,
+            "originalReferenceHeight": 594
+          }
+        },
+        {
+          "name": "walk-side-v8-4",
+          "source": "jilly-walk-b-v8",
+          "rect": [
+            99,
+            53,
+            345,
+            604
+          ],
+          "referenceHeight": 548.5263157894736,
+          "pivotX": 0.5739130434782609,
+          "foot": [
+            198,
+            604
+          ],
+          "seat": [
+            171.6383490911628,
+            434.88
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 0.9927821415157501,
+          "offsetYRatio": 0.10113222030320479,
+          "headMetrics": {
+            "headWidth": 293,
+            "landmarkHeight": 193,
+            "centerX": 198,
+            "originalReferenceHeight": 605
+          }
+        },
+        {
+          "name": "walk-side-v8-5",
+          "source": "jilly-walk-b-v8",
+          "rect": [
+            645,
+            53,
+            342,
+            604
+          ],
+          "referenceHeight": 548.5263157894736,
+          "pivotX": 0.5687134502923976,
+          "foot": [
+            194.49999999999997,
+            604
+          ],
+          "seat": [
+            168.61755967984345,
+            434.88
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 0.9894053315105945,
+          "offsetYRatio": 0.10113222030320479,
+          "headMetrics": {
+            "headWidth": 294,
+            "landmarkHeight": 193,
+            "centerX": 194.5,
+            "originalReferenceHeight": 605
+          }
+        },
+        {
+          "name": "walk-side-v8-6",
+          "source": "jilly-walk-b-v8",
+          "rect": [
+            1180,
+            52,
+            341,
+            605
+          ],
+          "referenceHeight": 548.5263157894736,
+          "pivotX": 0.5659824046920822,
+          "foot": [
+            193.00000000000003,
+            605
+          ],
+          "seat": [
+            166.90970496622685,
+            435.59999999999997
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 0.9860514151325924,
+          "offsetYRatio": 0.10295528689311073,
+          "headMetrics": {
+            "headWidth": 295,
+            "landmarkHeight": 193,
+            "centerX": 193,
+            "originalReferenceHeight": 605
+          }
+        },
+        {
+          "name": "walk-side-v8-7",
+          "source": "jilly-walk-b-v8",
+          "rect": [
+            1723,
+            52,
+            382,
+            605
+          ],
+          "referenceHeight": 551.3684210526316,
+          "pivotX": 0.5052356020942408,
+          "foot": [
+            192.99999999999997,
+            605
+          ],
+          "seat": [
+            167.33329842200806,
+            435.59999999999997
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 0.9911604898223987,
+          "offsetYRatio": 0.09726995036273389,
+          "headMetrics": {
+            "headWidth": 295,
+            "landmarkHeight": 194,
+            "centerX": 193,
+            "originalReferenceHeight": 605
+          }
+        }
+      ],
+      "walkLoop": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "sideWalkFrameMs": 100,
+      "headTarget": {
+        "width": 0.5303030303030303,
+        "landmark": 0.35185185185185186,
+        "top": 1
+      }
+    },
+    "laura": {
+      "frames": [
+        {
+          "name": "walk-side-v8-0",
+          "source": "laura-walk-a-v8",
+          "rect": [
+            92,
+            56,
+            368,
+            594
+          ],
+          "referenceHeight": 594,
+          "pivotX": 0.5597826086956522,
+          "foot": [
+            206.00000000000003,
+            594
+          ],
+          "seat": [
+            188.29114220674884,
+            427.68
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 1,
+          "offsetYRatio": 0,
+          "headMetrics": {
+            "headWidth": 323,
+            "landmarkHeight": 213,
+            "centerX": 206,
+            "originalReferenceHeight": 594
+          }
+        },
+        {
+          "name": "walk-side-v8-1",
+          "source": "laura-walk-a-v8",
+          "rect": [
+            620,
+            56,
+            370,
+            594
+          ],
+          "referenceHeight": 594,
+          "pivotX": 0.5608108108108109,
+          "foot": [
+            207.50000000000003,
+            594
+          ],
+          "seat": [
+            189.45851470343916,
+            427.68
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 0.9969135802469136,
+          "offsetYRatio": 0,
+          "headMetrics": {
+            "headWidth": 324,
+            "landmarkHeight": 213,
+            "centerX": 207.5,
+            "originalReferenceHeight": 594
+          }
+        },
+        {
+          "name": "walk-side-v8-2",
+          "source": "laura-walk-a-v8",
+          "rect": [
+            1132,
+            56,
+            368,
+            594
+          ],
+          "referenceHeight": 594,
+          "pivotX": 0.561141304347826,
+          "foot": [
+            206.5,
+            594
+          ],
+          "seat": [
+            188.79218086351628,
+            427.68
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 1.0031055900621118,
+          "offsetYRatio": 0,
+          "headMetrics": {
+            "headWidth": 322,
+            "landmarkHeight": 213,
+            "centerX": 206.5,
+            "originalReferenceHeight": 594
+          }
+        },
+        {
+          "name": "walk-side-v8-3",
+          "source": "laura-walk-a-v8",
+          "rect": [
+            1661,
+            56,
+            396,
+            594
+          ],
+          "referenceHeight": 596.7887323943662,
+          "pivotX": 0.523989898989899,
+          "foot": [
+            207.5,
+            594
+          ],
+          "seat": [
+            189.96075102366922,
+            427.68
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 1.0015939256940822,
+          "offsetYRatio": -0.004672897196261738,
+          "headMetrics": {
+            "headWidth": 324,
+            "landmarkHeight": 214,
+            "centerX": 207.5,
+            "originalReferenceHeight": 594
+          }
+        },
+        {
+          "name": "walk-side-v8-4",
+          "source": "laura-walk-b-v8",
+          "rect": [
+            92,
+            39,
+            357,
+            617
+          ],
+          "referenceHeight": 563.3239436619718,
+          "pivotX": 0.5686274509803921,
+          "foot": [
+            203,
+            617
+          ],
+          "seat": [
+            178.18728173745302,
+            444.24
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 0.9977825694667461,
+          "offsetYRatio": 0.09528452845284519,
+          "headMetrics": {
+            "headWidth": 307,
+            "landmarkHeight": 202,
+            "centerX": 203,
+            "originalReferenceHeight": 617
+          }
+        },
+        {
+          "name": "walk-side-v8-5",
+          "source": "laura-walk-b-v8",
+          "rect": [
+            636,
+            39,
+            356,
+            617
+          ],
+          "referenceHeight": 563.3239436619718,
+          "pivotX": 0.5674157303370787,
+          "foot": [
+            202.00000000000003,
+            617
+          ],
+          "seat": [
+            176.92954462173952,
+            444.24
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 0.9977825694667461,
+          "offsetYRatio": 0.09528452845284519,
+          "headMetrics": {
+            "headWidth": 307,
+            "landmarkHeight": 202,
+            "centerX": 202,
+            "originalReferenceHeight": 617
+          }
+        },
+        {
+          "name": "walk-side-v8-6",
+          "source": "laura-walk-b-v8",
+          "rect": [
+            1141,
+            39,
+            353,
+            617
+          ],
+          "referenceHeight": 563.3239436619718,
+          "pivotX": 0.56657223796034,
+          "foot": [
+            200,
+            617
+          ],
+          "seat": [
+            175.80490100507586,
+            444.24
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 1.0043254059878395,
+          "offsetYRatio": 0.09528452845284519,
+          "headMetrics": {
+            "headWidth": 305,
+            "landmarkHeight": 202,
+            "centerX": 200,
+            "originalReferenceHeight": 617
+          }
+        },
+        {
+          "name": "walk-side-v8-7",
+          "source": "laura-walk-b-v8",
+          "rect": [
+            1684,
+            39,
+            390,
+            617
+          ],
+          "referenceHeight": 563.3239436619718,
+          "pivotX": 0.5115384615384615,
+          "foot": [
+            199.49999999999997,
+            617
+          ],
+          "seat": [
+            175.61175363098437,
+            444.24
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 1.0010432968179446,
+          "offsetYRatio": 0.09528452845284519,
+          "headMetrics": {
+            "headWidth": 306,
+            "landmarkHeight": 202,
+            "centerX": 199.5,
+            "originalReferenceHeight": 617
+          }
+        }
+      ],
+      "walkLoop": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "sideWalkFrameMs": 100,
+      "headTarget": {
+        "width": 0.5437710437710438,
+        "landmark": 0.35858585858585856,
+        "top": 1
+      }
+    },
+    "kay": {
+      "frames": [
+        {
+          "name": "walk-side-v8-0",
+          "source": "kay-walk-a-v8",
+          "rect": [
+            94,
+            59,
+            367,
+            591
+          ],
+          "referenceHeight": 591,
+          "pivotX": 0.5640326975476839,
+          "foot": [
+            207,
+            591
+          ],
+          "seat": [
+            186.7858724089354,
+            425.52
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 1,
+          "offsetYRatio": 0,
+          "headMetrics": {
+            "headWidth": 319,
+            "landmarkHeight": 210,
+            "centerX": 207,
+            "originalReferenceHeight": 591
+          }
+        },
+        {
+          "name": "walk-side-v8-1",
+          "source": "kay-walk-a-v8",
+          "rect": [
+            631,
+            59,
+            370,
+            591
+          ],
+          "referenceHeight": 591,
+          "pivotX": 0.5608108108108109,
+          "foot": [
+            207.50000000000003,
+            591
+          ],
+          "seat": [
+            187.35931224483022,
+            425.52
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 0.9845679012345679,
+          "offsetYRatio": 0,
+          "headMetrics": {
+            "headWidth": 324,
+            "landmarkHeight": 210,
+            "centerX": 207.5,
+            "originalReferenceHeight": 591
+          }
+        },
+        {
+          "name": "walk-side-v8-2",
+          "source": "kay-walk-a-v8",
+          "rect": [
+            1143,
+            59,
+            364,
+            591
+          ],
+          "referenceHeight": 591,
+          "pivotX": 0.5618131868131868,
+          "foot": [
+            204.5,
+            591
+          ],
+          "seat": [
+            184.19225197911396,
+            425.52
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 1.0031446540880504,
+          "offsetYRatio": 0,
+          "headMetrics": {
+            "headWidth": 318,
+            "landmarkHeight": 210,
+            "centerX": 204.5,
+            "originalReferenceHeight": 591
+          }
+        },
+        {
+          "name": "walk-side-v8-3",
+          "source": "kay-walk-a-v8",
+          "rect": [
+            1681,
+            59,
+            392,
+            591
+          ],
+          "referenceHeight": 591,
+          "pivotX": 0.5242346938775511,
+          "foot": [
+            205.50000000000003,
+            591
+          ],
+          "seat": [
+            185.5351109917051,
+            425.52
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 0.996875,
+          "offsetYRatio": 0,
+          "headMetrics": {
+            "headWidth": 320,
+            "landmarkHeight": 210,
+            "centerX": 205.5,
+            "originalReferenceHeight": 591
+          }
+        },
+        {
+          "name": "walk-side-v8-4",
+          "source": "kay-walk-b-v8",
+          "rect": [
+            85,
+            49,
+            364,
+            618
+          ],
+          "referenceHeight": 565.6714285714286,
+          "pivotX": 0.5769230769230769,
+          "foot": [
+            209.99999999999997,
+            618
+          ],
+          "seat": [
+            181.88309375809376,
+            444.96
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 0.9945556072591903,
+          "offsetYRatio": 0.09250700810667478,
+          "headMetrics": {
+            "headWidth": 307,
+            "landmarkHeight": 201,
+            "centerX": 210,
+            "originalReferenceHeight": 618
+          }
+        },
+        {
+          "name": "walk-side-v8-5",
+          "source": "kay-walk-b-v8",
+          "rect": [
+            631,
+            49,
+            360,
+            618
+          ],
+          "referenceHeight": 565.6714285714286,
+          "pivotX": 0.5722222222222222,
+          "foot": [
+            206,
+            618
+          ],
+          "seat": [
+            179.49216229428055,
+            444.96
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 0.9945556072591903,
+          "offsetYRatio": 0.09250700810667478,
+          "headMetrics": {
+            "headWidth": 307,
+            "landmarkHeight": 201,
+            "centerX": 206,
+            "originalReferenceHeight": 618
+          }
+        },
+        {
+          "name": "walk-side-v8-6",
+          "source": "kay-walk-b-v8",
+          "rect": [
+            1135,
+            49,
+            355,
+            618
+          ],
+          "referenceHeight": 565.6714285714286,
+          "pivotX": 0.571830985915493,
+          "foot": [
+            203,
+            618
+          ],
+          "seat": [
+            176.47624722746377,
+            444.96
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 1.0076850542197076,
+          "offsetYRatio": 0.09250700810667478,
+          "headMetrics": {
+            "headWidth": 303,
+            "landmarkHeight": 201,
+            "centerX": 203,
+            "originalReferenceHeight": 618
+          }
+        },
+        {
+          "name": "walk-side-v8-7",
+          "source": "kay-walk-b-v8",
+          "rect": [
+            1672,
+            49,
+            402,
+            618
+          ],
+          "referenceHeight": 565.6714285714286,
+          "pivotX": 0.5124378109452736,
+          "foot": [
+            206,
+            618
+          ],
+          "seat": [
+            179.16839208491683,
+            444.96
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 0.9945556072591903,
+          "offsetYRatio": 0.09250700810667478,
+          "headMetrics": {
+            "headWidth": 307,
+            "landmarkHeight": 201,
+            "centerX": 206,
+            "originalReferenceHeight": 618
+          }
+        }
+      ],
+      "walkLoop": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "sideWalkFrameMs": 100,
+      "headTarget": {
+        "width": 0.5397631133671743,
+        "landmark": 0.3553299492385787,
+        "top": 1
+      }
+    },
+    "franco": {
+      "frames": [
+        {
+          "name": "walk-side-v8-0",
+          "source": "franco-walk-a-v8",
+          "rect": [
+            98,
+            55,
+            350,
+            594
+          ],
+          "referenceHeight": 598,
+          "pivotX": 0.5728571428571428,
+          "foot": [
+            200.5,
+            594
+          ],
+          "seat": [
+            196.68634628252056,
+            427.68
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 1,
+          "offsetYRatio": 0,
+          "headMetrics": {
+            "headWidth": 298,
+            "landmarkHeight": 220,
+            "centerX": 200.5,
+            "originalReferenceHeight": 598
+          }
+        },
+        {
+          "name": "walk-side-v8-1",
+          "source": "franco-walk-a-v8",
+          "rect": [
+            659,
+            51,
+            327,
+            598
+          ],
+          "referenceHeight": 608.8727272727273,
+          "pivotX": 0.5290519877675841,
+          "foot": [
+            173,
+            598
+          ],
+          "seat": [
+            168.286602104621,
+            430.56
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 0.988332839798638,
+          "offsetYRatio": -0.011168179646440568,
+          "headMetrics": {
+            "headWidth": 307,
+            "landmarkHeight": 224,
+            "centerX": 173,
+            "originalReferenceHeight": 598
+          }
+        },
+        {
+          "name": "walk-side-v8-2",
+          "source": "franco-walk-a-v8",
+          "rect": [
+            1191,
+            55,
+            299,
+            594
+          ],
+          "referenceHeight": 598,
+          "pivotX": 0.4983277591973244,
+          "foot": [
+            149,
+            594
+          ],
+          "seat": [
+            145.52064336868466,
+            427.68
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 0.9966555183946488,
+          "offsetYRatio": 0,
+          "headMetrics": {
+            "headWidth": 299,
+            "landmarkHeight": 220,
+            "centerX": 149,
+            "originalReferenceHeight": 598
+          }
+        },
+        {
+          "name": "walk-side-v8-3",
+          "source": "franco-walk-a-v8",
+          "rect": [
+            1687,
+            51,
+            370,
+            598
+          ],
+          "referenceHeight": 608.8727272727273,
+          "pivotX": 0.5013513513513513,
+          "foot": [
+            185.5,
+            598
+          ],
+          "seat": [
+            180.8919630590749,
+            430.56
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 0.9915626856803328,
+          "offsetYRatio": -0.011168179646440568,
+          "headMetrics": {
+            "headWidth": 306,
+            "landmarkHeight": 224,
+            "centerX": 185.5,
+            "originalReferenceHeight": 598
+          }
+        },
+        {
+          "name": "walk-side-v8-4",
+          "source": "franco-walk-b-v8",
+          "rect": [
+            92,
+            33,
+            358,
+            635
+          ],
+          "referenceHeight": 600.7181818181818,
+          "pivotX": 0.5628491620111732,
+          "foot": [
+            201.5,
+            635
+          ],
+          "seat": [
+            199.97210122754598,
+            457.2
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 0.9847188995215311,
+          "offsetYRatio": 0.06375701811468093,
+          "headMetrics": {
+            "headWidth": 304,
+            "landmarkHeight": 221,
+            "centerX": 201.5,
+            "originalReferenceHeight": 635
+          }
+        },
+        {
+          "name": "walk-side-v8-5",
+          "source": "franco-walk-b-v8",
+          "rect": [
+            657,
+            34,
+            328,
+            634
+          ],
+          "referenceHeight": 603.4363636363637,
+          "pivotX": 0.5320121951219512,
+          "foot": [
+            174.5,
+            634
+          ],
+          "seat": [
+            172.72475177304966,
+            456.47999999999996
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 0.9827094474153298,
+          "offsetYRatio": 0.057338274729578975,
+          "headMetrics": {
+            "headWidth": 306,
+            "landmarkHeight": 222,
+            "centerX": 174.5,
+            "originalReferenceHeight": 635
+          }
+        },
+        {
+          "name": "walk-side-v8-6",
+          "source": "franco-walk-b-v8",
+          "rect": [
+            1203,
+            33,
+            301,
+            635
+          ],
+          "referenceHeight": 603.4363636363637,
+          "pivotX": 0.4983388704318937,
+          "foot": [
+            150,
+            635
+          ],
+          "seat": [
+            147.919668797211,
+            457.2
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 0.9990335246149201,
+          "offsetYRatio": 0.058995450299798025,
+          "headMetrics": {
+            "headWidth": 301,
+            "landmarkHeight": 222,
+            "centerX": 150,
+            "originalReferenceHeight": 635
+          }
+        },
+        {
+          "name": "walk-side-v8-7",
+          "source": "franco-walk-b-v8",
+          "rect": [
+            1709,
+            34,
+            383,
+            634
+          ],
+          "referenceHeight": 600.7181818181818,
+          "pivotX": 0.4869451697127937,
+          "foot": [
+            186.5,
+            634
+          ],
+          "seat": [
+            184.55987896048418,
+            456.47999999999996
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 0.9847188995215311,
+          "offsetYRatio": 0.06209234401246988,
+          "headMetrics": {
+            "headWidth": 304,
+            "landmarkHeight": 221,
+            "centerX": 186.5,
+            "originalReferenceHeight": 635
+          }
+        }
+      ],
+      "walkLoop": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "sideWalkFrameMs": 100,
+      "headTarget": {
+        "width": 0.4983277591973244,
+        "landmark": 0.36789297658862874,
+        "top": 0.9933110367892977
+      }
+    },
+    "cora": {
+      "frames": [
+        {
+          "name": "walk-side-v8-0",
+          "source": "cora-walk-a-v8",
+          "rect": [
+            78,
+            55,
+            379,
+            595
+          ],
+          "referenceHeight": 596,
+          "pivotX": 0.5844327176781002,
+          "foot": [
+            221.5,
+            595
+          ],
+          "seat": [
+            203.77415179179724,
+            428.4
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 1,
+          "offsetYRatio": 0,
+          "headMetrics": {
+            "headWidth": 314,
+            "landmarkHeight": 214,
+            "centerX": 221.5,
+            "originalReferenceHeight": 596
+          }
+        },
+        {
+          "name": "walk-side-v8-1",
+          "source": "cora-walk-a-v8",
+          "rect": [
+            612,
+            55,
+            381,
+            595
+          ],
+          "referenceHeight": 596,
+          "pivotX": 0.5826771653543307,
+          "foot": [
+            222,
+            595
+          ],
+          "seat": [
+            204.6777950310559,
+            428.4
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 0.9905362776025236,
+          "offsetYRatio": 0,
+          "headMetrics": {
+            "headWidth": 317,
+            "landmarkHeight": 214,
+            "centerX": 222,
+            "originalReferenceHeight": 596
+          }
+        },
+        {
+          "name": "walk-side-v8-2",
+          "source": "cora-walk-a-v8",
+          "rect": [
+            1144,
+            54,
+            377,
+            596
+          ],
+          "referenceHeight": 598.785046728972,
+          "pivotX": 0.5755968169761273,
+          "foot": [
+            217,
+            596
+          ],
+          "seat": [
+            200.7029280195202,
+            429.12
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 0.9951649517969281,
+          "offsetYRatio": -0.0029733104417044576,
+          "headMetrics": {
+            "headWidth": 317,
+            "landmarkHeight": 215,
+            "centerX": 217,
+            "originalReferenceHeight": 596
+          }
+        },
+        {
+          "name": "walk-side-v8-3",
+          "source": "cora-walk-a-v8",
+          "rect": [
+            1679,
+            54,
+            405,
+            596
+          ],
+          "referenceHeight": 598.785046728972,
+          "pivotX": 0.5469135802469136,
+          "foot": [
+            221.5,
+            596
+          ],
+          "seat": [
+            204.12799838742194,
+            429.12
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 0.9858352803738318,
+          "offsetYRatio": -0.0029733104417044576,
+          "headMetrics": {
+            "headWidth": 320,
+            "landmarkHeight": 215,
+            "centerX": 221.5,
+            "originalReferenceHeight": 596
+          }
+        },
+        {
+          "name": "walk-side-v8-4",
+          "source": "cora-walk-b-v8",
+          "rect": [
+            81,
+            49,
+            369,
+            611
+          ],
+          "referenceHeight": 565.3644859813085,
+          "pivotX": 0.592140921409214,
+          "foot": [
+            218.49999999999997,
+            611
+          ],
+          "seat": [
+            195.7702318572554,
+            439.91999999999996
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 0.9928660436137071,
+          "offsetYRatio": 0.08239660131583282,
+          "headMetrics": {
+            "headWidth": 300,
+            "landmarkHeight": 203,
+            "centerX": 218.5,
+            "originalReferenceHeight": 611
+          }
+        },
+        {
+          "name": "walk-side-v8-5",
+          "source": "cora-walk-b-v8",
+          "rect": [
+            635,
+            49,
+            357,
+            611
+          ],
+          "referenceHeight": 565.3644859813085,
+          "pivotX": 0.5826330532212886,
+          "foot": [
+            208,
+            611
+          ],
+          "seat": [
+            186.46942752740566,
+            439.91999999999996
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 1.002894993549199,
+          "offsetYRatio": 0.08239660131583282,
+          "headMetrics": {
+            "headWidth": 297,
+            "landmarkHeight": 203,
+            "centerX": 208,
+            "originalReferenceHeight": 611
+          }
+        },
+        {
+          "name": "walk-side-v8-6",
+          "source": "cora-walk-b-v8",
+          "rect": [
+            1175,
+            49,
+            357,
+            611
+          ],
+          "referenceHeight": 565.3644859813085,
+          "pivotX": 0.5840336134453782,
+          "foot": [
+            208.5,
+            611
+          ],
+          "seat": [
+            187.24831488143056,
+            439.91999999999996
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 1.0062831523111897,
+          "offsetYRatio": 0.08239660131583282,
+          "headMetrics": {
+            "headWidth": 296,
+            "landmarkHeight": 203,
+            "centerX": 208.5,
+            "originalReferenceHeight": 611
+          }
+        },
+        {
+          "name": "walk-side-v8-7",
+          "source": "cora-walk-b-v8",
+          "rect": [
+            1710,
+            49,
+            400,
+            611
+          ],
+          "referenceHeight": 565.3644859813085,
+          "pivotX": 0.54625,
+          "foot": [
+            218.5,
+            611
+          ],
+          "seat": [
+            196.0810707986027,
+            439.91999999999996
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 0.9995295741077589,
+          "offsetYRatio": 0.08239660131583282,
+          "headMetrics": {
+            "headWidth": 298,
+            "landmarkHeight": 203,
+            "centerX": 218.5,
+            "originalReferenceHeight": 611
+          }
+        }
+      ],
+      "walkLoop": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "sideWalkFrameMs": 100,
+      "headTarget": {
+        "width": 0.5268456375838926,
+        "landmark": 0.35906040268456374,
+        "top": 0.9983221476510067
+      }
+    },
+    "amber": {
+      "frames": [
+        {
+          "name": "walk-side-v8-0",
+          "source": "amber-walk-a-v8",
+          "rect": [
+            81,
+            59,
+            380,
+            590
+          ],
+          "referenceHeight": 591,
+          "pivotX": 0.5815789473684211,
+          "foot": [
+            221,
+            590
+          ],
+          "seat": [
+            204.25095825493068,
+            424.8
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 1,
+          "offsetYRatio": 0,
+          "headMetrics": {
+            "headWidth": 317,
+            "landmarkHeight": 211,
+            "centerX": 221,
+            "originalReferenceHeight": 591
+          }
+        },
+        {
+          "name": "walk-side-v8-1",
+          "source": "amber-walk-a-v8",
+          "rect": [
+            616,
+            59,
+            381,
+            590
+          ],
+          "referenceHeight": 591,
+          "pivotX": 0.5826771653543307,
+          "foot": [
+            222,
+            590
+          ],
+          "seat": [
+            205.09848300760234,
+            424.8
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 1,
+          "offsetYRatio": 0,
+          "headMetrics": {
+            "headWidth": 317,
+            "landmarkHeight": 211,
+            "centerX": 222,
+            "originalReferenceHeight": 591
+          }
+        },
+        {
+          "name": "walk-side-v8-2",
+          "source": "amber-walk-a-v8",
+          "rect": [
+            1139,
+            58,
+            373,
+            591
+          ],
+          "referenceHeight": 593.8009478672986,
+          "pivotX": 0.5750670241286864,
+          "foot": [
+            214.50000000000003,
+            591
+          ],
+          "seat": [
+            197.90786189683854,
+            425.52
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 1.0079188913552102,
+          "offsetYRatio": -0.003024933754749104,
+          "headMetrics": {
+            "headWidth": 316,
+            "landmarkHeight": 212,
+            "centerX": 214.5,
+            "originalReferenceHeight": 591
+          }
+        },
+        {
+          "name": "walk-side-v8-3",
+          "source": "amber-walk-a-v8",
+          "rect": [
+            1667,
+            59,
+            399,
+            590
+          ],
+          "referenceHeight": 591,
+          "pivotX": 0.5413533834586466,
+          "foot": [
+            216,
+            590
+          ],
+          "seat": [
+            200.15942079675415,
+            424.8
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 1,
+          "offsetYRatio": 0,
+          "headMetrics": {
+            "headWidth": 317,
+            "landmarkHeight": 211,
+            "centerX": 216,
+            "originalReferenceHeight": 591
+          }
+        },
+        {
+          "name": "walk-side-v8-4",
+          "source": "amber-walk-b-v8",
+          "rect": [
+            81,
+            39,
+            366,
+            618
+          ],
+          "referenceHeight": 562.9905213270142,
+          "pivotX": 0.5942622950819673,
+          "foot": [
+            217.50000000000003,
+            618
+          ],
+          "seat": [
+            194.44392216500188,
+            444.96
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 1.0201902139105932,
+          "offsetYRatio": 0.09940146980831877,
+          "headMetrics": {
+            "headWidth": 296,
+            "landmarkHeight": 201,
+            "centerX": 217.5,
+            "originalReferenceHeight": 618
+          }
+        },
+        {
+          "name": "walk-side-v8-5",
+          "source": "amber-walk-b-v8",
+          "rect": [
+            625,
+            40,
+            365,
+            617
+          ],
+          "referenceHeight": 560.1895734597157,
+          "pivotX": 0.5917808219178082,
+          "foot": [
+            216,
+            617
+          ],
+          "seat": [
+            192.90239732002647,
+            444.24
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 1.0116967462939028,
+          "offsetYRatio": 0.10310490693739416,
+          "headMetrics": {
+            "headWidth": 297,
+            "landmarkHeight": 200,
+            "centerX": 216,
+            "originalReferenceHeight": 618
+          }
+        },
+        {
+          "name": "walk-side-v8-6",
+          "source": "amber-walk-b-v8",
+          "rect": [
+            1145,
+            40,
+            362,
+            617
+          ],
+          "referenceHeight": 560.1895734597157,
+          "pivotX": 0.5925414364640884,
+          "foot": [
+            214.5,
+            617
+          ],
+          "seat": [
+            191.3363236587511,
+            444.24
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 1.0220201824805752,
+          "offsetYRatio": 0.10310490693739416,
+          "headMetrics": {
+            "headWidth": 294,
+            "landmarkHeight": 200,
+            "centerX": 214.5,
+            "originalReferenceHeight": 618
+          }
+        },
+        {
+          "name": "walk-side-v8-7",
+          "source": "amber-walk-b-v8",
+          "rect": [
+            1676,
+            39,
+            402,
+            618
+          ],
+          "referenceHeight": 562.9905213270142,
+          "pivotX": 0.5360696517412935,
+          "foot": [
+            215.5,
+            618
+          ],
+          "seat": [
+            192.90331805809183,
+            444.96
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 1.0133432997232736,
+          "offsetYRatio": 0.09940146980831877,
+          "headMetrics": {
+            "headWidth": 298,
+            "landmarkHeight": 201,
+            "centerX": 215.5,
+            "originalReferenceHeight": 618
+          }
+        }
+      ],
+      "walkLoop": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "sideWalkFrameMs": 100,
+      "headTarget": {
+        "width": 0.5363790186125211,
+        "landmark": 0.3570219966159052,
+        "top": 0.9983079526226735
+      }
+    },
+    "celine": {
+      "frames": [
+        {
+          "name": "walk-side-v8-0",
+          "source": "celine-walk-a-v8",
+          "rect": [
+            82,
+            57,
+            382,
+            594
+          ],
+          "referenceHeight": 594,
+          "pivotX": 0.5798429319371727,
+          "foot": [
+            221.49999999999997,
+            594
+          ],
+          "seat": [
+            201.59236671916366,
+            427.68
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 1,
+          "offsetYRatio": 0,
+          "headMetrics": {
+            "headWidth": 320,
+            "landmarkHeight": 220,
+            "centerX": 221.5,
+            "originalReferenceHeight": 594
+          }
+        },
+        {
+          "name": "walk-side-v8-1",
+          "source": "celine-walk-a-v8",
+          "rect": [
+            611,
+            57,
+            384,
+            594
+          ],
+          "referenceHeight": 594,
+          "pivotX": 0.5755208333333334,
+          "foot": [
+            221,
+            594
+          ],
+          "seat": [
+            202.4040680424606,
+            427.68
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 0.9846153846153847,
+          "offsetYRatio": 0,
+          "headMetrics": {
+            "headWidth": 325,
+            "landmarkHeight": 220,
+            "centerX": 221,
+            "originalReferenceHeight": 594
+          }
+        },
+        {
+          "name": "walk-side-v8-2",
+          "source": "celine-walk-a-v8",
+          "rect": [
+            1145,
+            57,
+            374,
+            594
+          ],
+          "referenceHeight": 591.3000000000001,
+          "pivotX": 0.5762032085561497,
+          "foot": [
+            215.5,
+            594
+          ],
+          "seat": [
+            196.85345618986094,
+            427.68
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 1.0080552359033372,
+          "offsetYRatio": 0.004566210045662045,
+          "headMetrics": {
+            "headWidth": 316,
+            "landmarkHeight": 219,
+            "centerX": 215.5,
+            "originalReferenceHeight": 594
+          }
+        },
+        {
+          "name": "walk-side-v8-3",
+          "source": "celine-walk-a-v8",
+          "rect": [
+            1673,
+            57,
+            406,
+            594
+          ],
+          "referenceHeight": 594,
+          "pivotX": 0.5431034482758621,
+          "foot": [
+            220.5,
+            594
+          ],
+          "seat": [
+            200.86592587663858,
+            427.68
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 1,
+          "offsetYRatio": 0,
+          "headMetrics": {
+            "headWidth": 320,
+            "landmarkHeight": 220,
+            "centerX": 220.5,
+            "originalReferenceHeight": 594
+          }
+        },
+        {
+          "name": "walk-side-v8-4",
+          "source": "celine-walk-b-v8",
+          "rect": [
+            94,
+            38,
+            359,
+            619
+          ],
+          "referenceHeight": 558.9,
+          "pivotX": 0.5779944289693594,
+          "foot": [
+            207.50000000000003,
+            619
+          ],
+          "seat": [
+            184.04608356397347,
+            445.68
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 0.9969897652016857,
+          "offsetYRatio": 0.10753265342637319,
+          "headMetrics": {
+            "headWidth": 302,
+            "landmarkHeight": 207,
+            "centerX": 207.5,
+            "originalReferenceHeight": 619
+          }
+        },
+        {
+          "name": "walk-side-v8-5",
+          "source": "celine-walk-b-v8",
+          "rect": [
+            633,
+            38,
+            363,
+            619
+          ],
+          "referenceHeight": 558.9,
+          "pivotX": 0.5798898071625345,
+          "foot": [
+            210.5,
+            619
+          ],
+          "seat": [
+            186.52475933008043,
+            445.68
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 0.9904306220095693,
+          "offsetYRatio": 0.10753265342637319,
+          "headMetrics": {
+            "headWidth": 304,
+            "landmarkHeight": 207,
+            "centerX": 210.5,
+            "originalReferenceHeight": 619
+          }
+        },
+        {
+          "name": "walk-side-v8-6",
+          "source": "celine-walk-b-v8",
+          "rect": [
+            1141,
+            38,
+            356,
+            619
+          ],
+          "referenceHeight": 558.9,
+          "pivotX": 0.5786516853932584,
+          "foot": [
+            206,
+            619
+          ],
+          "seat": [
+            182.3391614269863,
+            445.68
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 1.0069930069930069,
+          "offsetYRatio": 0.10753265342637319,
+          "headMetrics": {
+            "headWidth": 299,
+            "landmarkHeight": 207,
+            "centerX": 206,
+            "originalReferenceHeight": 619
+          }
+        },
+        {
+          "name": "walk-side-v8-7",
+          "source": "celine-walk-b-v8",
+          "rect": [
+            1674,
+            38,
+            399,
+            619
+          ],
+          "referenceHeight": 558.9,
+          "pivotX": 0.5275689223057645,
+          "foot": [
+            210.50000000000003,
+            619
+          ],
+          "seat": [
+            185.94791494427727,
+            445.68
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 0.9969897652016857,
+          "offsetYRatio": 0.10753265342637319,
+          "headMetrics": {
+            "headWidth": 302,
+            "landmarkHeight": 207,
+            "centerX": 210.5,
+            "originalReferenceHeight": 619
+          }
+        }
+      ],
+      "walkLoop": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "sideWalkFrameMs": 100,
+      "headTarget": {
+        "width": 0.5387205387205387,
+        "landmark": 0.37037037037037035,
+        "top": 1
+      }
+    }
+  }
+}

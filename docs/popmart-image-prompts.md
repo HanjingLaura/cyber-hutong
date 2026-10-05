@@ -1,0 +1,23 @@
+# POP MART 素材生成提示词
+
+## 更新：开放式陈列台 popmart-stand-v2.png
+
+使用内置 image_gen，将原陈列柜图集作为参考，成功生成并接入工作区。
+
+Create a replacement standalone game sprite of an OPEN POP MART retail blind-box merchandise island display stand for hutong-online. Reference existing pixel asset in image 1 for palette, bold outlines, pixel size and yellow illuminated base, but replace the glass vitrine with an OPEN layered product sales podium. Wide horizontal rectangular yellow-lit charcoal plinth, cream white open countertop, three shallow stepped tiers densely stocked with MANY boxed blind boxes, about 24-30 small rectangular unopened packages arranged in multiple rows and small stacks, pastel pink, lilac, mint, pale yellow, blue printed toy packaging. This is a sales island stacked with boxed merchandise like the center display podium in the user's real POP MART store photo, not a museum glass display case. All products are on an exposed countertop with stepped risers. NO glass cover, NO transparent enclosure, NO large unboxed figurines. Crisp true pixel art 2.5D slightly overhead front-facing orthographic game sprite matching existing 1990s RPG room. Pixel clusters, hard edged nearest-neighbor style, no smooth glossy render. Sprite completely visible with generous transparent margin, no floor background, no other furniture, no people, no UI, no text outside packages. Width to height of total object about 2.3 to 1, realistic tabletop depth visible from overhead. Preserve recognizability of luminous yellow base. Transparent background.
+
+后续包含具体 IP 的新背景、玩偶和包装三项生成被工具安全系统拒绝（类别 other），没有产出可接入素材，当前使用官方参考图展示商品。通用玩偶图集 v1 已不用于新主题收藏。
+
+使用内置 image_gen 工具，经 imagegen 技能生成；三个最终 PNG 均复制到工作区 assets/drafts，消费代码未引用生成工具的临时目录。背景不透明；物件与玩偶请求透明背景。
+
+## popmart-room-v1.png
+
+Generate a production game background asset for hutong-online. Crisp true pixel art, cohesive 2.5D top-down front-facing room like a 1990s JRPG interior, 16:9 wide. Reference user POP MART store photo: dark charcoal storefront fascia with readable white POP MART sign, thin golden yellow light strips, warm ivory tiled floor, tall display cabinets along both side walls, pastel pink collectible display poster at rear. Adapt photograph to orthographic slightly overhead game room, NOT realistic perspective. Empty walkable central floor taking lower two thirds. Display cabinets fixed along rear wall and sides only, central aisle empty. NO central table or vending machine; these will be independent game objects. No people, no UI. All pixels same grid, hard edged nearest-neighbor appearance, limited restrained warm grey palette accented yellow and pink. Room fills full canvas, no outer decorative frame. Asset intended logical 640x360. Return wide image.
+
+## popmart-props-v1.png
+
+Game sprite sheet asset for hutong-online POP MART scene. True crisp 2.5D pixel art, front-facing slightly overhead orthographic view, consistent pixel grid with 1990s RPG games, black 1px outlines. Transparent background. Two distinct sprites aligned baseline and separated with large transparent gap: LEFT a wide central collectible display counter with bright yellow illuminated lower plinth, glass upper display case, three small pastel pink collectible figures and several small pastel blind box packages atop it; RIGHT a tall standalone blind box vending machine with dark charcoal frame, bright yellow border, glass upper window showing 3 rows of pastel blind box packages, small controls on right and a black pickup hatch at bottom. No people, no perspective vanishing point, no text labels, no UI. Left counter aspect about 2.4:1 width-height, machine aspect .60:1. Each independent sprite completely visible; no cut off parts, no floor shadows outside sprites. Native artwork intended final sprites about 150x65 and65x115 logical pixels.
+
+## popmart-toys-v1.png
+
+Transparent game collectible sprite sheet, six standalone adorable pixel art toys in a strictly evenly spaced 3 columns by 2 rows grid. Each sprite centered inside its own equal sized cell, generous gutters. Cohesive crisp true pixel art, bold one pixel outlines, restrained highlights and no blur, like cozy 1990s JRPG collectible items. Top row left pink little teddy bear; top middle mint green rabbit with long ears; top right blue little friendly robot. Bottom row left orange cat; bottom middle purple tiny elf; bottom right golden teddy bear with small star shaped crown. Full bodies of every toy, no shadow, no text, no UI, identical scale and baseline within every cell, FRONT facing. Transparent backdrop. Assets intended at 24x32 native pixels each. Pixel style matches pastel pink toys and charcoal/yellow-lit POP MART store game.

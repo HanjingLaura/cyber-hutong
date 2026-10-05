@@ -1,8 +1,8 @@
-.git
-.env
-.env.*
-.vercel
 node_modules
+dist
 data
-.agents
-skills-lock.json
+output
+.env*
+.git
+.vercel
+references

@@ -1,0 +1,220 @@
+{
+  "sources": {
+    "laura-walk-approved-v7": {
+      "file": "laura/v7/walk-approved.png",
+      "size": [
+        1536,
+        1024
+      ]
+    },
+    "laura-walk-b-v7": {
+      "file": "laura/v7/walk-b.png",
+      "size": [
+        2172,
+        724
+      ]
+    }
+  },
+  "members": {
+    "laura": {
+      "frames": [
+        {
+          "name": "walk-side-v7-0",
+          "source": "laura-walk-approved-v7",
+          "rect": [
+            66,
+            51,
+            257,
+            420
+          ],
+          "referenceHeight": 420,
+          "pivotX": 0.5127354163999028,
+          "foot": [
+            131.77300201477502,
+            420
+          ],
+          "seat": [
+            131.77300201477502,
+            302.4
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null
+        },
+        {
+          "name": "walk-side-v7-1",
+          "source": "laura-walk-approved-v7",
+          "rect": [
+            439,
+            51,
+            257,
+            420
+          ],
+          "referenceHeight": 420,
+          "pivotX": 0.5115450609431641,
+          "foot": [
+            131.4670806623932,
+            420
+          ],
+          "seat": [
+            131.4670806623932,
+            302.4
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null
+        },
+        {
+          "name": "walk-side-v7-2",
+          "source": "laura-walk-approved-v7",
+          "rect": [
+            803,
+            51,
+            253,
+            420
+          ],
+          "referenceHeight": 420,
+          "pivotX": 0.5125691057258722,
+          "foot": [
+            129.67998374864567,
+            420
+          ],
+          "seat": [
+            129.67998374864567,
+            302.4
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null
+        },
+        {
+          "name": "walk-side-v7-3",
+          "source": "laura-walk-approved-v7",
+          "rect": [
+            1177,
+            51,
+            269,
+            420
+          ],
+          "referenceHeight": 420,
+          "pivotX": 0.48519927144815866,
+          "foot": [
+            130.5186040195547,
+            420
+          ],
+          "seat": [
+            130.5186040195547,
+            302.4
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null
+        },
+        {
+          "name": "walk-side-v7-4",
+          "source": "laura-walk-b-v7",
+          "rect": [
+            92,
+            56,
+            368,
+            594
+          ],
+          "referenceHeight": 594,
+          "pivotX": 0.5116607125183392,
+          "foot": [
+            188.29114220674884,
+            594
+          ],
+          "seat": [
+            188.29114220674884,
+            427.68
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null
+        },
+        {
+          "name": "walk-side-v7-5",
+          "source": "laura-walk-b-v7",
+          "rect": [
+            620,
+            56,
+            370,
+            594
+          ],
+          "referenceHeight": 594,
+          "pivotX": 0.5120500397390247,
+          "foot": [
+            189.45851470343916,
+            594
+          ],
+          "seat": [
+            189.45851470343916,
+            427.68
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null
+        },
+        {
+          "name": "walk-side-v7-6",
+          "source": "laura-walk-b-v7",
+          "rect": [
+            1132,
+            56,
+            368,
+            594
+          ],
+          "referenceHeight": 594,
+          "pivotX": 0.5130222306073812,
+          "foot": [
+            188.79218086351628,
+            594
+          ],
+          "seat": [
+            188.79218086351628,
+            427.68
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null
+        },
+        {
+          "name": "walk-side-v7-7",
+          "source": "laura-walk-b-v7",
+          "rect": [
+            1661,
+            56,
+            396,
+            594
+          ],
+          "referenceHeight": 594,
+          "pivotX": 0.4796988662213869,
+          "foot": [
+            189.96075102366922,
+            594
+          ],
+          "seat": [
+            189.96075102366922,
+            427.68
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null
+        }
+      ],
+      "walkLoop": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "sideWalkFrameMs": 100,
+      "runFrameMs": 75
+    }
+  }
+}

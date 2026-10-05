@@ -1,0 +1,114 @@
+{
+ "hutong": {
+  "name": "胡同",
+  "group": "办公",
+  "exit": [
+   596,
+   194
+  ]
+ },
+ "hawaii": {
+  "name": "夏威夷",
+  "group": "办公",
+  "exit": [
+   596,
+   254
+  ]
+ },
+ "rest": {
+  "name": "休息室",
+  "group": "办公",
+  "exit": [
+   554,
+   184
+  ]
+ },
+ "bathroom": {
+  "name": "厕所",
+  "group": "办公",
+  "exit": [
+   570,
+   295
+  ]
+ },
+ "rehearsal": {
+  "name": "排练厅",
+  "group": "办公",
+  "exit": [
+   580,
+   320
+  ]
+ },
+ "pop": {
+  "name": "POP MART",
+  "group": "休闲",
+  "exit": [
+   320,
+   330
+  ]
+ },
+ "noodle": {
+  "name": "米线店",
+  "group": "休闲",
+  "exit": [
+   320,
+   337
+  ]
+ },
+ "arcade": {
+  "name": "娱乐室",
+  "group": "休闲",
+  "exit": [
+   568,
+   212
+  ]
+ },
+ "gym": {
+  "name": "健身房",
+  "group": "休闲",
+  "exit": [
+   320,
+   330
+  ]
+ },
+ "dance": {
+  "name": "舞室",
+  "group": "休闲",
+  "exit": [
+   590,
+   323
+  ]
+ },
+ "perler": {
+  "name": "拼豆店",
+  "group": "休闲",
+  "exit": [
+   580,
+   338
+  ]
+ },
+ "concert": {
+  "name": "演唱会",
+  "group": "休闲",
+  "exit": [
+   320,
+   340
+  ]
+ },
+ "elevator": {
+  "name": "电梯间",
+  "group": "出行",
+  "exit": [
+   320,
+   330
+  ]
+ },
+ "subway": {
+  "name": "五道口站",
+  "group": "出行",
+  "exit": [
+   580,
+   320
+  ]
+ }
+}

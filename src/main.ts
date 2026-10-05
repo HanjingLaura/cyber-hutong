@@ -1,0 +1,710 @@
+import { BASE } from './base';
+import {canWorkAt} from './workstations';
+import { OfficeWindow } from './office-window';
+import { AniGuest, preloadAni } from './ani-guest';
+import {sharedAction,onlineWorld} from './multiplayer/world-client';
+import { startSocial } from './multiplayer/social';
+import { OfficeGuest, preloadOfficeGuests } from './office-guests';
+import { SideWalkLegs, sideUpperFrame, heldSideFrame } from './side-walk-legs';
+import Phaser from 'phaser';
+import './style.css';
+import { RestRoomScene } from './rest-room';
+import { PopMartScene } from './popmart';
+import { BathroomScene } from './bathroom';
+import { ConcertScene } from './concert';
+import { ArcadeScene } from './arcade';
+import { NoodleShopScene } from './noodle-shop';
+import { GymScene } from './gym';
+import { DanceStudioScene } from './dance-studio';
+import { PerlerShopScene } from './perler-shop';
+import { RehearsalScene } from './rehearsal';
+import { ElevatorLobbyScene } from './elevator-lobby';
+import { SubwayScene } from './subway';
+import { HeldItemView, type GripSlot } from './held-item';
+import { playerInventory, items, type ItemName } from './player-inventory';
+import { registerProductTextures } from './product-textures';
+import gripRegistry from '../assets/metadata/owner-grips.json';
+import { registerFrames, registerRegions, setSpriteFrame, type SpriteFrame } from './frames';
+import { canWalk, project, visualFacing, floorY, HEIGHT_PROJECTION, WORKSTATIONS, DESK_ROWS, REVERSE_Y, SPAWN, METRICS, VIEW_WIDTH, VIEW_HEIGHT, PIXEL_RATIO, CONTENT_SCALE, scaleRowPoint, type Facing, type Workstation } from './layout';
+
+const assets = {
+  wall: new URL('../assets/drafts/hutong-wall-view-v5.png', import.meta.url).href,
+  reverse: new URL('../assets/drafts/hutong-reverse-view-v5.png', import.meta.url).href,
+  furniture: new URL('../assets/drafts/hutong-furniture-kit-v5.png', import.meta.url).href,
+  decor: new URL('../assets/drafts/desk-decor-v1.png', import.meta.url).href,
+  idle: new URL('../assets/drafts/owner-standing-v2.png', import.meta.url).href,
+  walk: new URL('../assets/drafts/owner-walk-v1.png', import.meta.url).href,
+  sideWalk: new URL('../assets/drafts/owner-side-walk-v2.png', import.meta.url).href,
+  seated: new URL('../assets/drafts/owner-seated-front-back-v2.png', import.meta.url).href,
+};
+const HAWAII_SEATS: Workstation[] = ['culture', 'plain'].flatMap((row,index) =>
+  Array.from({length:3},(_,number)=>({
+    ...WORKSTATIONS.find(seat=>seat.row===row)!, id:`H${index===0?'R':'L'}${number+1}`,number:number+1,
+    foot:{x:96+(number+2/3)*(448/3),y:WORKSTATIONS.find(seat=>seat.row===row)!.foot.y},
+    stand:{x:96+(number+2/3)*(448/3),y:WORKSTATIONS.find(seat=>seat.row===row)!.stand.y},
+  })));
+type Layer = 'room' | 'desk' | 'chair' | 'laptop' | 'decor' | 'actor' | 'anchors';
+interface Seat extends Workstation {
+  chair: Phaser.GameObjects.Image;
+  back: Phaser.GameObjects.Image; laptop: Phaser.GameObjects.Image; label: Phaser.GameObjects.Text;
+}
+interface DeskRow { row: Workstation['row']; footY: number; facing: Facing; floorStart: number; floorEnd: number;
+  desk: Phaser.GameObjects.Image; panel: Phaser.GameObjects.Image }
+type FurnitureKind = 'desk' | 'chair' | 'laptop';
+interface DeskDecoration { row: Workstation['row']; x: number; frame: number; image: Phaser.GameObjects.Image }
+interface PreviewState {
+  hand: ItemName | null; heldItemVisible: boolean;
+  ready: boolean; view: 'culture' | 'opposite'; mode: 'standing' | 'walking' | 'working' | 'sit';
+  x: number; y: number; screenX: number; screenY: number; facing: Facing; visualFacing: Facing;
+  seatedAt: string | null; nearest: string | null; seatCount: number; walkFrame: number;
+  texture: string; actorScale: number; layers: Record<Layer, boolean>; frameCounts: Record<string, number>;
+  metrics: typeof METRICS; deskRowCount: number; projectionY: number; framebuffer: { width: number; height: number };
+  furnitureBounds: Record<FurnitureKind, { width: number; height: number }[]>; fps: number;
+}
+declare global { interface Window { __hawaiiPreview?: { getState: () => PreviewState & {curtainDown:boolean;curtainProgress:number;nearWindow:boolean} }; __hutongPreview?: { getState: () => PreviewState } } }
+
+document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
+  <header><h1>hutong-online</h1><p>WASD 移动 · E 互动 · <a href="${BASE}members.html">八人动作素材</a></p></header>
+  <nav class="scene-nav" aria-label="场景视角"><button data-scene="culture" aria-pressed="true">胡同 · 文化墙</button><button data-scene="opposite" aria-pressed="false">胡同 · 另一侧</button><button data-scene="rest" aria-pressed="false">休息室 · 设备墙</button><button data-scene="pop" aria-pressed="false">POP MART · 盲盒店</button><button data-scene="hawaii" aria-pressed="false">夏威夷 · 窗边工位</button><button data-scene="bathroom" aria-pressed="false">厕所 · 从右往左</button><button data-scene="concert" aria-pressed="false">演唱会 · 内场</button><button data-scene="arcade" aria-pressed="false">娱乐室 · 电玩城</button><button data-scene="noodle" aria-pressed="false">米线店</button><button data-scene="gym" aria-pressed="false">健身房</button><button data-scene="dance" aria-pressed="false">舞室</button><button data-scene="perler" aria-pressed="false">拼豆店</button><button data-scene="rehearsal" aria-pressed="false">排练厅</button><button data-scene="elevator" aria-pressed="false">电梯间</button><button data-scene="subway" aria-pressed="false">五道口站</button></nav>
+  <main>
+    <div class="stage-column">
+      <section class="world" tabindex="0" aria-label="胡同游戏，方向键移动，E 互动，V 切换视角">
+        <dialog id="vending-menu" class="vending-menu" aria-labelledby="vending-title">
+          <div class="machine-header"><h2 id="vending-title">贩卖机</h2><button id="vending-close" type="button">关闭 · Esc</button></div>
+          <div class="machine-window"><div id="vending-products"></div></div>
+          <div class="machine-bottom"><p></p><div class="pickup-slot" aria-hidden="true"></div></div>
+        </dialog><dialog id="table-menu" class="table-menu" aria-labelledby="table-menu-title"><h2 id="table-menu-title">拿回桌上物品</h2><p>点击或按对应数字拿回一件</p><div id="table-pick-list"></div><button id="table-close" type="button">取消 · Esc</button></dialog><dialog id="fridge-menu" class="fridge-menu" aria-labelledby="fridge-title">
+          <div class="fridge-heading"><h2 id="fridge-title">冰箱 · 上层冷藏柜</h2><button id="fridge-close" type="button">关门 · Esc</button></div>
+          <div class="fridge-cabinet"><div id="fridge-items"></div><div class="fridge-door-bins" aria-hidden="true"><span></span><span></span><span></span></div></div>
+          <div class="fridge-actions"><p id="fridge-hand"></p><button id="fridge-store" type="button">放入手中物品 · F</button><p id="fridge-message" aria-live="polite">点击或按 1–9 取出物品，F 存入。</p></div>
+        </dialog><dialog id="blind-menu" class="blind-menu" aria-labelledby="blind-title"><div class="blind-heading"><h2 id="blind-title">挑选盲盒</h2><button id="blind-close" type="button">关闭</button></div><div id="blind-machine-art" hidden><canvas id="gacha-art" width="82" height="190" aria-label="扭蛋机与取物口"></canvas></div><div id="blind-themes" aria-label="盲盒主题"></div><p id="blind-help"></p><div class="blind-glass"><div id="blind-boxes"></div></div><div class="blind-pickup"><button id="blind-extract" type="button" disabled>先选择一盒</button><button id="blind-refill" type="button">补货</button></div><div id="blind-result" aria-live="polite"></div></dialog><dialog id="arcade-game" class="arcade-game" aria-labelledby="arcade-title"><header><h2 id="arcade-title"></h2><button id="arcade-close" type="button">返回 · Esc</button></header><canvas id="arcade-screen" width="640" height="420" aria-label="像素小游戏"></canvas><footer><span id="arcade-help"></span><button id="arcade-undo" type="button" hidden>撤销</button><button id="arcade-action" type="button" hidden></button><button id="arcade-new" type="button">重开</button></footer></dialog><dialog id="noodle-menu" class="noodle-menu" aria-labelledby="noodle-title"><div class="noodle-heading"><h2 id="noodle-title"></h2><button id="noodle-close" type="button">关闭 · Esc</button></div><p id="noodle-menu-hand"></p><div id="noodle-choices"></div></dialog><dialog id="gym-storage" class="gym-storage" aria-labelledby="gym-storage-title"><div class="gym-storage-heading"><h2 id="gym-storage-title">储物架</h2><button id="gym-storage-close" type="button">关闭 · Esc</button></div><div id="gym-storage-items"></div></dialog><dialog id="perler-workshop" class="perler-workshop" aria-labelledby="perler-title"><div class="perler-heading"><h2 id="perler-title">拼豆</h2><button id="perler-close" type="button">返回 · Esc</button></div><div class="perler-workspace"><canvas id="perler-board" width="360" height="360" aria-label="16乘16拼豆底板，点击或拖动放豆，右键擦除"></canvas><div class="perler-tools"><label for="perler-pattern">底图</label><select id="perler-pattern"></select><div id="perler-palette" aria-label="豆子颜色"></div><button id="perler-eraser" type="button" aria-pressed="false">橡皮擦</button><div class="perler-history"><button id="perler-undo" type="button">撤销</button><button id="perler-redo" type="button">重做</button></div><button id="perler-iron" type="button">熨烫作品</button><button id="perler-new" type="button">换新底板</button><p id="perler-progress"></p></div></div><p id="perler-message" aria-live="polite"></p><div id="perler-collection" hidden><h3>作品</h3><div id="perler-gallery"></div></div></dialog><div id="game"></div><div class="loading">正在载入像素素材…</div>
+        <div id="play-guide" aria-live="polite"><strong id="guide-title">胡同 · WASD / 方向键移动</strong><span id="guide-action">靠近工位按 E 坐下 · V 换视角</span></div>
+        <div id="rehearsal-piano" hidden><div class="piano-heading"><span>钢琴 · C3–C6</span><span id="piano-range"></span><button id="rehearsal-piano-close" type="button">起身 · Esc</button></div><div id="rehearsal-keyboard" aria-label="钢琴琴键"></div><p class="piano-help">鼠标 / 触屏演奏 · Z 行低音，Q 行高音 · ↑↓ 切换键盘音区 · 支持和弦</p></div>
+        <button id="view" aria-pressed="false">换个视角 · V</button>
+      </section>
+      <div class="scene-caption"><span id="view-label">文化墙一侧</span><span>八个靠墙工位 · 中间通道</span></div>
+      <figure id="walk-review" hidden><canvas id="walk-sheet" width="768" height="224" role="img" aria-label="本人左右步行的六帧循环，包含迈步、抬脚、双腿交叉和换脚"></canvas>
+        <figcaption>右向／左向各六帧：迈步 → 抬脚 → 经过身体下方 → 换脚迈步 → 抬脚 → 回步。游戏里按固定尺度播放。</figcaption>
+      </figure>
+    </div>
+    <aside>
+      <div class="status"><h2>你的角色</h2><strong id="mode">准备进入胡同</strong>
+        <p id="hint" class="hint" aria-live="polite">载入后点击场景开始。</p>
+        <button id="interact" disabled>靠近椅子坐下</button><button id="table-action" hidden>放到桌上</button>
+      </div>
+      <p class="keys"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> / 方向键移动<br>
+        <kbd>E</kbd> 坐下办公 / 起身<br><kbd>Esc</kbd> 起身　<kbd>V</kbd> 切换视角</p>
+      <div id="hutong-controls"><h2>素材分层</h2>
+      <div class="layers">
+        <label><input type="checkbox" data-layer="room" checked>墙、地毯、固定墙饰</label>
+        <label><input type="checkbox" data-layer="desk" checked>两条完整连续桌排</label>
+        <label><input type="checkbox" data-layer="chair" checked>八把独立网椅</label>
+        <label><input type="checkbox" data-layer="laptop" checked>八台独立电脑</label>
+        <label><input type="checkbox" data-layer="decor" checked>桌面绿植与杯子</label>
+        <label><input type="checkbox" data-layer="actor" checked>人物与动作</label>
+        <label><input type="checkbox" data-layer="anchors">座位交互点</label>
+      </div>
+      <button id="curtain-control" type="button" hidden>拉下窗帘</button><div class="seat-state" id="seat-state">左墙 L1–L4 · 右墙 R1–R4</div>
+      <p class="note">L／R 按进入真实胡同时的左右墙定义；从中国结所在的尽头向入口编号。切换视角保持同一座位和位置。</p>
+      <div class="review-actions"><button id="walk-toggle" aria-expanded="false">查看步行动作</button><button id="reset">回到入口</button></div>
+      <p class="note">八个座位均可试坐；电脑与椅子对准桌下空位。</p></div>
+      <div id="rest-controls" hidden><h2>休息室</h2><p>从 Go! 墙朝设备墙看。靠近物件按 E，也可点击侧栏操作。</p><p id="rest-inventory">手中：空</p><p id="rest-message" aria-live="polite">试试接一杯咖啡，再放到餐桌上。</p><div class="layers"><label><input type="checkbox" data-rest-layer="equipment" checked>贩卖机、冰箱、咖啡台</label><label><input type="checkbox" data-rest-layer="tables" checked>独立餐桌</label><label><input type="checkbox" data-rest-layer="chairs" checked>独立椅子</label></div><button id="rest-reset">重置休息室试玩</button><p class="note">贩卖机产品免费领取。物品可放到餐桌上，也可带去胡同；状态保留到刷新前。</p></div>
+      <div id="pop-controls" hidden><h2>盲盒收藏</h2><p>陈列台挑盒，扭蛋机转动抽取。</p><p id="pop-count">收藏：0 件</p><div id="pop-collection"></div><p id="pop-legacy" class="note"></p><p class="note"></p></div>
+      <div id="bathroom-controls" hidden><h2>厕所</h2><p>四个独立隔间，两个洗手台。</p><p id="bathroom-state"></p><button id="bathroom-door" type="button" disabled>靠近隔间开关门</button><p class="note">E 开门 / 坐下，E 或 Esc 起身；F 开关门。靠近洗手台按 E 洗手。门和座位状态在切换场景时保留。</p></div>
+      <div id="concert-controls" hidden><h2>演唱会内场</h2><p id="concert-state">三排共十八席</p><p>靠近座位按 E 坐下，面向舞台观看。E / Esc 起身。中央与两侧通道可以通行。</p></div>
+      <div id="arcade-controls" hidden><h2>娱乐室</h2><p>扫雷 · 蜘蛛纸牌 · 抓娃娃 · 投篮 · 空气曲棍球</p><p>靠近机器按 E，Esc 返回。长椅可以坐下休息，关闭游戏会保留本局进度。</p></div>
+      <div id="noodle-controls" hidden><h2>米线店</h2><p id="noodle-hand">手中：空</p><p>左侧拿碗筷，前方取米线，右侧买鸡柳或炸鸡。</p><p>饮料柜有可乐、冰红茶。靠近餐桌按 F 放下、拿回或加醋、麻油；坐下可以吃东西。</p></div>
+      <div id="gym-controls" hidden><h2>健身房</h2><p id="gym-hand"></p><p id="gym-stats"></p><button id="gym-speed" type="button" hidden>切换速度 · F</button><button id="gym-rep" type="button" hidden>举一次 · Space</button><p id="gym-breath"></p><p>跑步机调速跑步，哑铃举起后放下计一次。训练需空手，物品可存到左侧储物架。训练凳可以休息，瑜伽垫练习呼吸。</p></div>
+      <div id="dance-controls" hidden><h2>舞室</h2><p id="dance-hand"></p><button id="dance-music" type="button">播放节拍</button><button id="dance-tempo" type="button">120 BPM · F 调速</button><button id="dance-start" type="button">对镜跳舞</button><button id="dance-practice" type="button">跟拍练习</button><p id="dance-sequence" aria-live="polite"></p><p id="dance-score"></p><p>镜子前跳舞，中央空地跟拍。右侧储物格可存放物品，左侧长凳可以休息。</p></div>
+      <div id="perler-controls" hidden><h2>拼豆店</h2><p id="perler-hand"></p><p id="perler-count"></p><button id="perler-continue" type="button" hidden>继续拼豆 · F</button><p>选色放豆、擦除、撤销；也可以照着底图拼。熨烫后收进作品架，底板和作品会保存在当前浏览器。</p></div>
+      <div id="rehearsal-controls" hidden><h2>排练厅</h2><p id="rehearsal-state"></p><p>十组椅子与谱台都可以试坐。右侧琴凳按 E 弹琴，可以点击琴键或用键盘弹奏和弦。</p></div>
+      <div id="subway-controls" hidden><h2>五道口站</h2><p id="subway-state"></p><p>靠近车门按 E，打开或关闭列车车门。</p></div>
+      <div id="elevator-controls" hidden><h2>电梯间</h2><p id="elevator-state"></p><p>靠近电梯按 E，分别打开或关闭两扇电梯门。</p></div>
+    </aside>
+  </main>`;
+
+const modeElement = document.querySelector('#mode')!;
+const hintElement = document.querySelector('#hint')!;
+const interactButton = document.querySelector<HTMLButtonElement>('#interact')!;
+const viewButton = document.querySelector<HTMLButtonElement>('#view')!;
+const world = document.querySelector<HTMLElement>('.world')!;
+
+class HutongScene extends Phaser.Scene {
+  private frames: Record<string, SpriteFrame[]> = {};
+  private groups: Record<Layer, Phaser.GameObjects.GameObject[]> = { room: [], desk: [], chair: [], laptop: [], decor: [], actor: [], anchors: [] };
+  private layers: Record<Layer, boolean> = { room: true, desk: true, chair: true, laptop: true, decor: true, actor: true, anchors: false };
+  private seats: Seat[] = [];
+  private deskRows: DeskRow[] = [];
+  private hawaiiDeskPieces: {desk: Phaser.GameObjects.Image[];panel: Phaser.GameObjects.Image[]}[] = [];
+  private decorations: DeskDecoration[] = [];
+  private furnitureScales: Record<FurnitureKind, { x: number; y: number }> = {
+    desk: { x: 1, y: 1 }, chair: { x: 1, y: 1 }, laptop: { x: 1, y: 1 },
+  };
+  private sideLegs!: SideWalkLegs;
+  private actor!: Phaser.GameObjects.Image;
+  private heldItem!: HeldItemView;
+  private gripSlots: Record<string, Map<string, GripSlot>> = {};
+  private actorUpper!: Phaser.GameObjects.Image;
+  private room!: Phaser.GameObjects.Image;
+  private keyInput!: Record<string, Phaser.Input.Keyboard.Key>;
+  private actorX = SPAWN.x;
+  private actorY = SPAWN.y;
+  private facing: Facing = 0;
+  private reverse = false;
+  private mode: PreviewState['mode'] = 'standing';
+  private seatedAt: Seat | null = null;
+  private nearest: Seat | null = null;
+  private motionTime = 0;
+  private walkFrame = 0;
+  private lastHud = '';
+
+  constructor(key='hutong') { super(key); }
+  private get isHawaii() { return this.sys.settings.key==='hawaii'; }
+  private get workstations() { return this.isHawaii ? HAWAII_SEATS : WORKSTATIONS; }
+  private officeWindow?: OfficeWindow;
+  private officeGuest?: OfficeGuest;
+  private aniGuest?: AniGuest;
+  private guestSeatState='';
+  private curtainDown=false;
+  private curtainProgress=0;
+  private nearWindow() { return this.isHawaii && !this.seatedAt && Math.hypot(this.actorX-78,this.actorY-184)<40; }
+  private toggleCurtain() {
+    if(!this.isHawaii)return;
+    if(sharedAction('hawaii:curtain','toggle'))return;
+    this.curtainDown=!this.curtainDown;
+    this.tweens.killTweensOf(this);
+    this.tweens.add({targets:this,curtainProgress:this.curtainDown?1:0,duration:450,ease:'Linear'});
+    this.lastHud='';
+  }
+  preload() {
+    if(!this.isHawaii)preloadAni(this);
+    preloadOfficeGuests(this);
+    for (const [key, url] of Object.entries(assets)) if(!this.textures.exists(key))this.load.image(key, url);
+    if(this.isHawaii)this.load.image('hawaii-wall',new URL('../assets/drafts/hawaii-wall-v2.png',import.meta.url).href);
+    this.load.image('rest-kit', new URL('../assets/drafts/rest-interaction-kit-v2.png', import.meta.url).href);
+    this.load.image('held-water', new URL('../assets/props/water-bottle-v1.png', import.meta.url).href);
+    this.load.image('rest-hold', new URL('../assets/drafts/owner-carry-empty-v1.png', import.meta.url).href);
+    this.load.image('rest-seated-hold', new URL('../assets/drafts/owner-seated-hold-empty-v1.png', import.meta.url).href);
+    this.load.on('loaderror', () => {
+      const loading = document.querySelector('.loading');
+      if (loading) loading.textContent = '素材载入失败，请刷新页面。';
+    });
+  }
+  private addSlice(key: string, frame: SpriteFrame, name: string, ratio: number, lower: boolean) {
+    const height = Math.round(frame.height * ratio);
+    if(this.textures.get(key).has(name))return;
+    this.textures.get(key).add(name, 0, frame.x, lower ? frame.y + height : frame.y,
+      frame.width, lower ? frame.height - height : height);
+  }
+  create() {
+    registerProductTextures(this);
+    this.sideLegs = new SideWalkLegs(this);
+    this.cameras.main.setZoom(1 / PIXEL_RATIO).centerOn(VIEW_WIDTH / 2, VIEW_HEIGHT / 2);
+    const furniture = registerRegions(this, 'furniture', [
+      { name: 'desk-front', x0: 0, y0: 0, x1: 1, y1: .38 },
+      { name: 'desk-back', x0: 0, y0: .38, x1: 1, y1: .65 },
+      ...[0, .23, .40, .54, .68, .83].map((x0, index, starts) => ({
+        name: `prop-${index}`, x0, y0: .65, x1: starts[index + 1] ?? 1, y1: 1,
+      })),
+    ]);
+    this.frames.desk = furniture.slice(0, 2);
+    this.frames.chair = furniture.slice(2, 4);
+    this.frames.laptop = furniture.slice(4);
+    this.frames.decor = registerRegions(this, 'decor', [
+      { name: 'plant', x0: 0, y0: 0, x1: .64, y1: 1 },
+      { name: 'cup', x0: .64, y0: 0, x1: 1, y1: 1 },
+    ]);
+    // One world-size contract per furniture type; state and camera changes keep
+    // that same scale. Transparent margins never determine a prop's size.
+    const size = (kind: FurnitureKind) => ({ width: Math.max(...this.frames[kind].map(f => f.width)),
+      height: Math.max(...this.frames[kind].map(f => f.height)) });
+    const deskSize = size('desk'), chairSize = size('chair'), laptopSize = size('laptop');
+    this.furnitureScales.desk = { x: (this.isHawaii?448:METRICS.deskRowWidth) / deskSize.width, y: METRICS.deskHeight / deskSize.height };
+    this.furnitureScales.chair = { x: METRICS.chairWidth / chairSize.width, y: METRICS.chairHeight / chairSize.height };
+    this.furnitureScales.laptop = { x: METRICS.laptopWidth / laptopSize.width, y: METRICS.laptopWidth / laptopSize.width };
+    this.frames.idle = registerFrames(this, 'idle', 4, 1, true);
+    this.frames.walk = registerFrames(this, 'walk', 4, 4, true);
+    this.frames.sideWalk = registerFrames(this, 'sideWalk', 6, 2, true);
+    this.frames.seated = registerFrames(this, 'seated', 3, 2, true);
+    this.frames.hold = registerFrames(this, 'rest-hold', 4, 5, true, { x: [0, .32, .51, .70, 1], y: [0, .207, .412, .609, .808, 1] });
+    this.frames.seatedHold = registerFrames(this, 'rest-seated-hold', 3, 1, true);
+    registerRegions(this, 'rest-kit', [{ name: 'coffee-cup', x0: .76, x1: .99, y0: 0, y1: 1 }]);
+    this.textures.get('held-water').add('bottle', 0, 6, 2, 6, 11);
+    for (const [key, registry] of Object.entries(gripRegistry)) {
+      this.gripSlots[key] = new Map(Object.entries(registry.slots));
+      for (const [name, slot] of this.gripSlots[key]) {
+        const [x, y, width, height] = slot.handRect;
+        if(!this.textures.get(key).has(`palm-${name}`))this.textures.get(key).add(`palm-${name}`, 0, x, y, width, height);
+      }
+    }
+    this.frames.hold.forEach(frame => this.addSlice('rest-hold', frame, `held-upper-${frame.name}`, .72, false));
+    this.frames.seatedHold.forEach(frame => this.addSlice('rest-seated-hold', frame, `held-upper-${frame.name}`, .72, false));
+    this.heldItem = new HeldItemView(this);
+    const walkSheet = document.querySelector<HTMLCanvasElement>('#walk-sheet')!;
+    const reviewContext = walkSheet.getContext('2d')!;
+    reviewContext.imageSmoothingEnabled = false;
+    const walkSource = this.textures.get('sideWalk').getSourceImage() as HTMLImageElement;
+    this.frames.sideWalk.forEach((frame, index) => {
+      // Match the current game sampling and character height in the review.
+      const scale = METRICS.standing / PIXEL_RATIO / frame.referenceHeight;
+      const center = index % 6 * 128 + 64, baseline = Math.floor(index / 6) * 112 + 96;
+      reviewContext.drawImage(walkSource, frame.x, frame.y, frame.width, frame.height,
+        Math.round(center - frame.width * scale * frame.pivotX), Math.round(baseline - frame.height * scale),
+        Math.round(frame.width * scale), Math.round(frame.height * scale));
+    });
+    this.frames.desk.forEach((frame, index) => this.addSlice('furniture', frame, `panel-${index}`, .42, true));
+    this.addSlice('furniture', this.frames.chair[0], 'backrest', .58, false);
+    this.frames.seated.forEach((frame, index) => this.addSlice('seated', frame, `upper-${index}`, .72, false));
+    this.room = this.add.image(0, 0, this.isHawaii?'hawaii-wall':'wall').setOrigin(0).setDisplaySize(VIEW_WIDTH, VIEW_HEIGHT).setDepth(-100);
+    this.groups.room.push(this.room);
+    if(this.isHawaii)this.officeWindow=new OfficeWindow(this);
+    for (const row of DESK_ROWS) {
+      const workstation = this.workstations.find(seat => seat.row === row.row)!;
+      const desk = this.add.image(0, 0, 'furniture'), panel = this.add.image(0, 0, 'furniture');
+      this.deskRows.push({ ...row, footY: workstation.foot.y, desk, panel });
+      this.groups.desk.push(desk, panel);
+      if(this.isHawaii){
+        const pieces={desk:[] as Phaser.GameObjects.Image[],panel:[] as Phaser.GameObjects.Image[]};
+        for(let piece=0;piece<3;piece++){
+          pieces.desk.push(this.add.image(0,0,'furniture'));
+          pieces.panel.push(this.add.image(0,0,'furniture'));
+        }
+        this.hawaiiDeskPieces.push(pieces); this.groups.desk.push(...pieces.desk,...pieces.panel);
+      }
+    }
+    for (const workstation of this.workstations) {
+      const chair = this.add.image(0, 0, 'furniture'), back = this.add.image(0, 0, 'furniture', 'backrest');
+      const laptop = this.add.image(0, 0, 'furniture');
+      const label = this.add.text(0, 0, workstation.id, { fontFamily: 'Consolas', fontSize: '11px', color: '#f5f0c9',
+        backgroundColor: '#26382d', padding: { x: 3, y: 1 } }).setOrigin(.5, 0).setDepth(900);
+      this.seats.push({ ...workstation, chair, back, laptop, label });
+      this.groups.chair.push(chair, back);
+      this.groups.laptop.push(laptop); this.groups.anchors.push(label);
+    }
+    for (const row of ['culture', 'plain'] as const) {
+      for (const x of [104, row === 'culture' ? 344 : 464]) {
+        const image = this.add.image(0, 0, 'decor');
+        this.decorations.push({ row, x, frame: 0, image }); this.groups.decor.push(image);
+      }
+      for (const x of row === 'culture' ? [194, 434] : [314, 477]) {
+        const image = this.add.image(0, 0, 'decor');
+        this.decorations.push({ row, x, frame: 1, image }); this.groups.decor.push(image);
+      }
+    }
+    this.actor = this.add.image(0, 0, 'idle');
+    this.actorUpper = this.add.image(0, 0, 'seated').setVisible(false);
+    this.groups.actor.push(this.actor, this.actorUpper);
+    this.keyInput = this.input.keyboard!.addKeys('W,A,S,D,UP,DOWN,LEFT,RIGHT') as Record<string, Phaser.Input.Keyboard.Key>;
+    this.input.keyboard!.addCapture(['UP', 'DOWN', 'LEFT', 'RIGHT', 'SPACE']);
+    const acceptsInput = () => this.sys.isActive() && (document.activeElement === world || document.activeElement === this.game.canvas);
+    // Actions run once on the DOM keydown. They must not get lost between
+    // Phaser's queued down/up processing during a very short key tap.
+    const actionKey = (event: KeyboardEvent) => {
+      if (!acceptsInput() || event.repeat) return;
+      if (event.code === 'KeyE') { event.preventDefault(); this.interact(); }
+      else if (event.code === 'Escape') { event.preventDefault(); this.stand(); }
+      else if (!this.isHawaii && event.code === 'KeyV') { event.preventDefault(); this.switchView(); }
+    };
+    window.addEventListener('keydown', actionKey);
+    const clearKeys = () => this.input.keyboard?.resetKeys();
+    world.addEventListener('blur', clearKeys); window.addEventListener('blur', clearKeys);
+    this.events.once('shutdown', () => {
+      world.removeEventListener('blur', clearKeys); window.removeEventListener('blur', clearKeys);
+      window.removeEventListener('keydown', actionKey);
+    });
+    world.addEventListener('pointerdown', () => world.focus());
+    interactButton.addEventListener('click', () => { if (this.sys.isActive()) { this.interact(); world.focus(); } });
+    viewButton.addEventListener('click', () => { if (this.sys.isActive()) { this.switchView(); world.focus(); } });
+    document.querySelector('#reset')!.addEventListener('click', () => {
+      if (!this.sys.isActive()) return;
+      this.stand(); this.actorX = SPAWN.x; this.actorY = SPAWN.y; this.facing = 0; world.focus();
+    });
+    document.querySelector<HTMLButtonElement>('#walk-toggle')!.addEventListener('click', event => {
+      if(!this.sys.isActive())return;
+      const review = document.querySelector<HTMLElement>('#walk-review')!;
+      review.hidden = !review.hidden;
+      const button = event.currentTarget as HTMLButtonElement;
+      button.setAttribute('aria-expanded', String(!review.hidden));
+      button.textContent = review.hidden ? '查看步行动作' : '收起步行动作';
+    });
+    for (const checkbox of document.querySelectorAll<HTMLInputElement>('[data-layer]')) {
+      checkbox.addEventListener('change', () => {
+        if(!this.sys.isActive())return;
+        const layer = checkbox.dataset.layer as Layer; this.layers[layer] = checkbox.checked;
+        for (const object of this.groups[layer]) (object as Phaser.GameObjects.Image).setVisible(checkbox.checked);
+        this.drawFurniture();
+      });
+    }
+    this.drawFurniture();
+    this.officeGuest=new OfficeGuest(this,this.isHawaii,this.workstations);
+    if(!this.isHawaii)this.aniGuest=new AniGuest(this);
+    this.events.on(Phaser.Scenes.Events.WAKE,()=>this.officeGuest?.enter(this.seatedAt?.id??null));
+    this.drawFurniture();
+    if(this.isHawaii)window.__hawaiiPreview={getState:()=>({...this.snapshot(),curtainDown:this.curtainDown,curtainProgress:this.curtainProgress,nearWindow:this.nearWindow()})};
+    else window.__hutongPreview = { getState: () => this.snapshot() };
+    document.querySelector('#curtain-control')!.addEventListener('click',()=>{if(this.sys.isActive()&&this.isHawaii){this.toggleCurtain();world.focus();}});
+    document.querySelector('.loading')?.remove(); world.focus();
+  }
+  private snapshot(): PreviewState {
+    const screen = project({ x: this.actorX, y: this.actorY }, this.reverse);
+    return { hand: playerInventory.hand, heldItemVisible: this.heldItem.visible, ready: true, view: this.reverse ? 'opposite' : 'culture', mode: this.mode,
+      x: this.actorX, y: this.actorY, screenX: screen.x, screenY: screen.y,
+      facing: this.facing, visualFacing: visualFacing(this.facing, this.reverse),
+      seatedAt: this.seatedAt?.id ?? null, nearest: this.nearest?.id ?? null, seatCount: this.seats.length,
+      walkFrame: this.walkFrame, texture: this.actor.texture.key, actorScale: this.actor.scaleY,
+      layers: { ...this.layers }, frameCounts: Object.fromEntries(Object.entries(this.frames).map(([key, value]) => [key, value.length])),
+      metrics: this.isHawaii?{...METRICS,deskRowWidth:448,workstationWidth:448/3}:METRICS, deskRowCount: this.deskRows.length, projectionY: REVERSE_Y,
+      framebuffer: { width: this.game.canvas.width, height: this.game.canvas.height },
+      furnitureBounds: Object.fromEntries((['desk', 'chair', 'laptop'] as const).map(kind => [kind,
+        this.frames[kind].map(frame => ({ width: frame.width * this.furnitureScales[kind].x,
+          height: frame.height * this.furnitureScales[kind].y }))])) as PreviewState['furnitureBounds'],
+      fps: Math.round(this.game.loop.actualFps) };
+  }
+  private switchView() {
+    if(this.isHawaii)return;
+    this.input.keyboard?.resetKeys(); this.reverse = !this.reverse; this.motionTime = 0;
+    this.room.setTexture(this.reverse ? 'reverse' : 'wall').setDisplaySize(VIEW_WIDTH, VIEW_HEIGHT);
+    viewButton.setAttribute('aria-pressed', String(this.reverse));
+    for (const tab of document.querySelectorAll<HTMLElement>('[data-scene]')) tab.setAttribute('aria-pressed', String(tab.dataset.scene === (this.reverse ? 'opposite' : 'culture')));
+    document.querySelector('#view-label')!.textContent = this.reverse ? '另一侧 · 同一个胡同' : '文化墙一侧';
+    this.drawFurniture();
+  }
+  public selectView(reverse: boolean) {
+    if (this.reverse !== reverse) this.switchView();
+    this.lastHud = '';
+  }
+  private drawFurniture() {
+    for (const [rowNumber,row] of this.deskRows.entries()) {
+      const point = project({ x: VIEW_WIDTH / 2, y: row.footY }, this.reverse);
+      const far = visualFacing(row.facing, this.reverse) === 2;
+      const index = far ? 0 : 1, frame = this.frames.desk[index], scale = this.furnitureScales.desk;
+      const bottom = this.reverse ? REVERSE_Y - row.floorStart : row.floorEnd;
+      row.desk.setTexture('furniture', frame.name).setOrigin(.5, 1).setScale(scale.x, scale.y).setFlipX(this.reverse)
+        .setPosition(point.x, bottom).setDepth(far ? bottom - 4 : point.y + 3).setVisible(this.layers.desk);
+      if(this.isHawaii){
+        const parts=this.hawaiiDeskPieces[rowNumber];
+        const atlas=this.textures.get('furniture');
+        for(const [piece,sourceBay] of [0,1,3].entries()){
+          const left=Math.round(frame.width*sourceBay/4),right=Math.round(frame.width*(sourceBay+1)/4);
+          const name=`hawaii-desk-${index}-${piece}`;
+          if(!atlas.has(name))atlas.add(name,0,frame.x+left,frame.y,right-left,frame.height);
+          const partX=320-224+(piece+.5)*(448/3);
+          parts.desk[piece].setTexture('furniture',name).setOrigin(.5,1).setDisplaySize(448/3,frame.height*scale.y)
+            .setPosition(partX,bottom).setDepth(far?bottom-4:point.y+3).setVisible(this.layers.desk);
+          const nativePanel=atlas.get(`panel-${index}`),panelName=`hawaii-panel-${index}-${piece}`;
+          if(!atlas.has(panelName))atlas.add(panelName,0,nativePanel.cutX+left,nativePanel.cutY,right-left,nativePanel.cutHeight);
+          parts.panel[piece].setTexture('furniture',panelName).setOrigin(.5,1).setDisplaySize(448/3,nativePanel.cutHeight*scale.y)
+            .setPosition(partX,bottom).setDepth(point.y+5).setVisible(this.layers.desk&&!far);
+        }
+        row.desk.setVisible(false);
+      }
+      row.panel.setTexture('furniture', `panel-${index}`).setOrigin(.5, 1).setScale(scale.x, scale.y).setFlipX(this.reverse)
+        .setPosition(point.x, bottom).setDepth(point.y + 5).setVisible(this.layers.desk && !far && !this.isHawaii);
+    }
+    for (const seat of this.seats) {
+      const point = project(seat.foot, this.reverse), far = visualFacing(seat.facing, this.reverse) === 2;
+      const index = far ? 0 : 1;
+      const chairFrame = this.frames.chair[index];
+      const chairScale = this.furnitureScales.chair;
+      seat.chair.setTexture('furniture', chairFrame.name).setOrigin(.5, 1).setScale(chairScale.x, chairScale.y);
+      seat.chair.setPosition(point.x, point.y).setDepth(point.y).setVisible(this.layers.chair);
+      const backrestFrame = this.frames.chair[0];
+      seat.back.setTexture('furniture', 'backrest').setOrigin(.5, 0).setScale(chairScale.x, chairScale.y)
+        .setPosition(point.x, point.y - backrestFrame.height * chairScale.y)
+        .setDepth(point.y + 2).setVisible(this.layers.chair && far && (this.seatedAt === seat||!!this.officeGuest?.occupies(seat.id)));
+      const computerIndex = index * 2 + Number(this.seatedAt===seat&&this.mode==='working'||!!onlineWorld()?.bridge.players.some(p=>p.scene===this.sys.settings.key&&p.seat===seat.id&&canWorkAt(p.role,p.scene,p.seat)));
+      const laptopScale = this.furnitureScales.laptop;
+      const computerPoint = project({ x: seat.foot.x, y: scaleRowPoint({ x: 0, y: floorY(seat.row === 'culture' ? 35 : 305) }, seat.row).y }, this.reverse);
+      seat.laptop.setTexture('furniture', this.frames.laptop[computerIndex].name).setOrigin(.5, 1)
+        .setScale(laptopScale.x, laptopScale.y).setPosition(computerPoint.x, computerPoint.y - 75 * HEIGHT_PROJECTION * CONTENT_SCALE)
+        .setDepth(point.y + (far ? -2 : 6)).setVisible(this.layers.laptop);
+      const stand = project(seat.stand, this.reverse);
+      seat.label.setPosition(stand.x, stand.y + 4).setVisible(this.layers.anchors);
+    }
+    for (const decoration of this.decorations) {
+      const seat = this.workstations.find(seat => seat.row === decoration.row)!;
+      const far = visualFacing(seat.facing, this.reverse) === 2;
+      const point = project(scaleRowPoint({ x: decoration.x + (decoration.frame === 1 ? 15 : 0), y: floorY(decoration.row === 'culture' ? 40 : 300) }, decoration.row), this.reverse);
+      const frame = this.frames.decor[decoration.frame];
+      setSpriteFrame(decoration.image, 'decor', frame, (decoration.frame === 0 ? 36 : 14) * CONTENT_SCALE);
+      decoration.image.setPosition(point.x, point.y - 75 * HEIGHT_PROJECTION * CONTENT_SCALE)
+        .setDepth(project(seat.foot, this.reverse).y + (far ? -3 : 7)).setVisible(this.layers.decor);
+    }
+  }
+  private interact() {
+    if (this.seatedAt) { this.stand(); return; }
+    if(this.nearWindow()){this.toggleCurtain();return;}
+    if(this.nearGuest()){this.officeGuest!.interact({x:this.actorX,y:this.actorY});this.lastHud='';this.drawFurniture();return;}
+    const seat = this.findNearest();
+    if (!seat) return;
+    this.seatedAt = seat;
+    this.actorX = this.seatedAt.foot.x; this.actorY = this.seatedAt.foot.y;
+    this.facing = this.seatedAt.facing; this.mode = canWorkAt(onlineWorld()?.bridge.user?.role??'laura',this.sys.settings.key,seat.id)?'working':'sit'; this.motionTime = 0;
+    this.drawFurniture();
+  }
+  private findNearest(): Seat | null {
+    return this.seats.reduce<Seat | null>((nearest, seat) => {
+      if(this.officeGuest?.occupies(seat.id))return nearest;
+      const distance = Math.hypot(this.actorX - seat.foot.x, this.actorY - seat.foot.y);
+      if (distance > 43) return nearest;
+      return !nearest || distance < Math.hypot(this.actorX - nearest.foot.x, this.actorY - nearest.foot.y) ? seat : nearest;
+    }, null);
+  }
+  private nearGuest(){if(!this.officeGuest?.near(this.actorX,this.actorY))return false;const guest=this.officeGuest.snapshot(),seat=this.findNearest();return !seat||Math.hypot(this.actorX-guest.x,this.actorY-guest.y)<Math.hypot(this.actorX-seat.stand.x,this.actorY-seat.stand.y);}
+  private stand() {
+    if (!this.seatedAt) return;
+    const seat = this.seatedAt;
+    this.actorX = seat.stand.x; this.actorY = seat.stand.y;
+    if(this.officeGuest?.blocks(this.actorX,this.actorY)){
+      const clear=[{x:this.actorX+30,y:this.actorY},{x:this.actorX-30,y:this.actorY}].find(p=>canWalk(p,this.workstations)&&!this.officeGuest?.blocks(p.x,p.y));
+      if(clear){this.actorX=clear.x;this.actorY=clear.y;}
+    }
+    this.seatedAt = null; this.mode = 'standing'; this.motionTime = 0;
+    this.drawFurniture();
+  }
+  private drawActor() {
+    this.sideLegs.hide();
+    const point = project({ x: this.actorX, y: this.actorY }, this.reverse);
+    const direction = visualFacing(this.facing, this.reverse);
+    this.actorUpper.setVisible(false);
+    this.actor.setFlipX(false);
+    this.heldItem.hide();
+    if (this.seatedAt) {
+      const far = direction === 2;
+      const frameIndex = (far ? 0 : 3) + (this.mode==='working'?1+Math.floor(this.motionTime/250)%2:0);
+      const frame = this.frames.seated[frameIndex];
+      setSpriteFrame(this.actor, 'seated', frame, METRICS.seated);
+      this.actor.setDepth(point.y + 1);
+      if (far) {
+        // Facing the wall, knees and shins are forward under the desk. Do not
+        // render the sheet's hanging legs as if they were behind the chair.
+        if (this.layers.chair && this.layers.desk) {
+          const cropHeight = Math.round(frame.height * .72);
+          this.actor.setTexture('seated', `upper-${frameIndex}`)
+            .setOrigin(frame.pivotX, frame.height / cropHeight);
+        }
+      } else {
+        const scale = METRICS.seated / frame.referenceHeight;
+        this.actorUpper.setTexture('seated', `upper-${frameIndex}`).setOrigin(frame.pivotX, 0).setScale(scale)
+          .setPosition(point.x, point.y - frame.height * scale).setDepth(point.y + 4).setVisible(this.layers.actor);
+      }
+    } else if (this.mode === 'walking') {
+      if (direction === 1 || direction === 3) {
+        this.walkFrame = sideUpperFrame(this.motionTime);
+        setSpriteFrame(this.actor, 'sideWalk', this.frames.sideWalk[(direction === 1 ? 0 : 6) + this.walkFrame], METRICS.standing);
+      } else {
+        this.walkFrame = Math.floor(this.motionTime / 125) % 4;
+        setSpriteFrame(this.actor, 'walk', this.frames.walk[direction * 4 + this.walkFrame], METRICS.standing);
+      }
+      this.actor.setDepth(point.y + 1);
+    } else {
+      this.walkFrame = 0;
+      setSpriteFrame(this.actor, 'idle', this.frames.idle[direction], METRICS.standing);
+      this.actor.setDepth(point.y + 1);
+    }
+    this.actor.setPosition(Math.round(point.x), Math.round(point.y)).setVisible(this.layers.actor);
+    if (playerInventory.hand && this.layers.actor) {
+      const seated = !!this.seatedAt, back = seated && direction === 2;
+      const key = seated && !back ? 'rest-seated-hold' : 'rest-hold';
+      const moving = !seated && this.mode === 'walking';
+      const index = moving ? (direction === 0 ? 4 : direction === 2 ? 12 : 8) + ((direction === 1 || direction === 3) ? heldSideFrame(this.motionTime) : Math.floor(this.motionTime / 125) % 4) : direction;
+      const frame = seated && !back ? this.frames.seatedHold[0] : this.frames.hold[index];
+      const height = seated ? METRICS.seated : METRICS.standing;
+      this.actorUpper.setVisible(false);
+      setSpriteFrame(this.actor, key, frame, height);
+      this.actor.setFlipX(moving && direction === 3);
+      if (this.actor.flipX) this.actor.setOrigin(1 - frame.pivotX, 1);
+      this.actor.setDepth(point.y + 1);
+      if (seated && !back) {
+        this.actorUpper.setTexture(key, `held-upper-${frame.name}`).setOrigin(frame.pivotX, 0)
+          .setScale(height / frame.referenceHeight).setPosition(this.actor.x, this.actor.y - frame.height * height / frame.referenceHeight)
+          .setDepth(point.y + 4).setVisible(true);
+      }
+      if (back && this.layers.chair && this.layers.desk) {
+        const crop = Math.round(frame.height * .72);
+        this.actor.setTexture(key, `held-upper-${frame.name}`).setOrigin(frame.pivotX, frame.height / crop);
+      }
+      this.heldItem.draw(this.actor, key, frame, this.gripSlots[key].get(frame.name)!, height, items[playerInventory.hand], point.y + (seated && !back ? 4 : 1), direction);
+    }
+    if (!this.seatedAt && this.mode === 'walking' && (direction === 1 || direction === 3) && this.layers.actor) {
+      const frames = this.actor.texture.key === 'rest-hold' ? this.frames.hold : this.frames.sideWalk;
+      const frame = frames.find(frame => frame.name === this.actor.frame.name)!;
+      this.sideLegs.draw(this.actor, frame, METRICS.standing, direction, this.motionTime);
+    }
+  }
+  update(_time: number, delta: number) {
+    if (!this.actor) return;
+    const active = document.activeElement === world || document.activeElement === this.game.canvas;
+    const key = (name: string) => active && this.keyInput[name].isDown;
+    const screenDx = Number(key('D') || key('RIGHT')) - Number(key('A') || key('LEFT'));
+    const screenDy = Number(key('S') || key('DOWN')) - Number(key('W') || key('UP'));
+    const dx = this.reverse ? -screenDx : screenDx, dy = this.reverse ? -screenDy : screenDy;
+    if (this.seatedAt) this.motionTime += Math.min(delta, 50);
+    else {
+      const oldX = this.actorX, oldY = this.actorY, oldFacing = this.facing;
+      if (dx || dy) {
+        this.facing = (dx === 0 ? (dy > 0 ? 0 : 2) : (dx > 0 ? 1 : 3)) as Facing;
+        const distance = 108 * Math.min(delta, 32) / 1000 / Math.hypot(dx, dy);
+        const nextX = this.actorX + dx * distance, nextY = this.actorY + dy * distance;
+        if (canWalk({ x: nextX, y: this.actorY },this.workstations)&&!this.officeGuest?.blocks(nextX,this.actorY)&&!this.aniGuest?.blocks(nextX,this.actorY,{x:this.actorX,y:this.actorY})) this.actorX = nextX;
+        if (canWalk({ x: this.actorX, y: nextY },this.workstations)&&!this.officeGuest?.blocks(this.actorX,nextY)&&!this.aniGuest?.blocks(this.actorX,nextY,{x:this.actorX,y:this.actorY})) this.actorY = nextY;
+      }
+      const moved = Math.hypot(this.actorX - oldX, this.actorY - oldY) > .001;
+      if (moved) {
+        if (this.mode !== 'walking' || this.facing !== oldFacing) this.motionTime = 0;
+        else this.motionTime += Math.min(delta, 50);
+        this.mode = 'walking';
+      } else { this.mode = 'standing'; this.motionTime = 0; }
+    }
+    this.drawActor();
+    this.officeGuest?.update(delta,{x:this.actorX,y:this.actorY,seat:this.seatedAt?.id??null});
+    const guestSeat=JSON.stringify([this.officeGuest?.snapshot().mode,onlineWorld()?.bridge.players.filter(p=>p.scene===this.sys.settings.key&&canWorkAt(p.role,p.scene,p.seat)).map(p=>p.seat).sort()]);
+    if(guestSeat!==this.guestSeatState){this.guestSeatState=guestSeat;this.lastHud='';this.drawFurniture();}
+    this.officeGuest?.draw(this.reverse,this.layers.actor);
+    this.aniGuest?.draw(this.reverse,this.layers.actor);
+    this.nearest = this.findNearest();
+    this.officeWindow?.draw(this.curtainProgress,this.layers.room);
+    const nearGuest=!this.seatedAt&&this.nearGuest();
+    const hud = `${nearGuest}:${this.officeGuest?.prompt}:${this.nearWindow()}:${this.curtainDown}:${this.mode}:${this.nearest?.id}:${this.seatedAt?.id}:${this.reverse}`;
+    if (hud !== this.lastHud) {
+      this.lastHud = hud;
+      modeElement.textContent = this.mode === 'working' ? `在 ${this.seatedAt!.id} 工位办公` : this.mode === 'sit' ? `坐在 ${this.seatedAt!.id} 休息` : this.mode === 'walking' ? '在胡同里走动' : '站在胡同里';
+      hintElement.textContent = this.seatedAt ? (this.mode==='working'?'在自己的工位办公。按 E 起身。':'坐下休息，只有自己的工位可以办公。按 E 起身。') : this.nearest ? `靠近 ${this.nearest.id}：按 E 坐下，自己的工位可办公。` : '沿中间通道走动，靠近椅子试坐。';
+      interactButton.disabled = !this.seatedAt && !this.nearest;
+      interactButton.textContent = this.seatedAt ? '起身' : this.nearest ? `坐到 ${this.nearest.id}` : '靠近椅子坐下';
+      document.querySelector('#guide-title')!.textContent = '胡同 · WASD / 方向键移动 · V 换视角';
+      document.querySelector('#guide-action')!.textContent = this.seatedAt ? (this.mode==='working'?'自己的工位 · 办公中 · E / Esc 起身':'坐下休息 · E / Esc 起身') : this.nearest ? `E · ${this.nearest.id} ${canWorkAt(onlineWorld()?.bridge.user?.role??'laura',this.sys.settings.key,this.nearest.id)?'我的工位，坐下办公':'坐下休息'}` : '靠近工位，按 E 坐下';
+      document.querySelector('#seat-state')!.textContent = this.seatedAt ? `${this.seatedAt.id} 使用中 · 其余 ${this.seats.length-1} 位空闲` : this.isHawaii?'两排各三个座位 · 六个工位':'左墙 L1–L4 · 右墙 R1–R4 · 暂未分配';
+      if(this.isHawaii){
+        modeElement.textContent=this.mode==='working'?`在 ${this.seatedAt!.id} 办公`:this.mode==='sit'?`坐在 ${this.seatedAt!.id} 休息`:this.mode==='walking'?'在夏威夷走动':'站在夏威夷';
+        document.querySelector('#guide-title')!.textContent='夏威夷 · WASD / 方向键移动';
+        if(this.nearWindow()){
+          interactButton.disabled=false;interactButton.textContent=this.curtainDown?'卷起窗帘':'拉下窗帘';
+          hintElement.textContent=`靠近窗边：按 E ${interactButton.textContent}。`;
+          document.querySelector('#guide-action')!.textContent=`E · ${interactButton.textContent}`;
+        }
+        document.querySelector('#curtain-control')!.textContent=this.curtainDown?'卷起窗帘':'拉下窗帘';
+      }
+      if(nearGuest&&!this.nearWindow()){
+        interactButton.disabled=false;interactButton.textContent=this.officeGuest!.prompt;
+        hintElement.textContent=`按 E ${this.officeGuest!.prompt}。`;
+        document.querySelector('#guide-action')!.textContent=`E · ${this.officeGuest!.prompt}`;
+      }
+    }
+  }
+}
+
+const game = new Phaser.Game({ type: Phaser.AUTO, width: VIEW_WIDTH / PIXEL_RATIO, height: VIEW_HEIGHT / PIXEL_RATIO, parent: 'game', backgroundColor: '#333936',
+  pixelArt: true, roundPixels: true, scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH },
+  scene: [new HutongScene(), RestRoomScene, PopMartScene, new HutongScene('hawaii'), BathroomScene, ConcertScene, ArcadeScene, NoodleShopScene, GymScene, DanceStudioScene, PerlerShopScene, RehearsalScene, ElevatorLobbyScene, SubwayScene], input: { keyboard: true }, banner: false,
+});
+let selectedSceneKey='hutong';
+game.events.once('ready',()=>startSocial(game));
+// A scene may finish its first asset load after the user has already left it.
+// Check the current selection at CREATE, not just the running scenes at click time.
+game.events.once('ready',()=>{
+  for(const key of ['hutong','rest','pop','hawaii','bathroom','concert','arcade','noodle','gym','dance','perler','rehearsal','elevator','subway']){
+    const scene=game.scene.getScene(key);
+    scene.events.on('create',()=>{if(key!==selectedSceneKey)game.scene.sleep(key);});
+  }
+});
+let navigationAuthorized=false;
+window.addEventListener('hutong:navigate',event=>{navigationAuthorized=true;try{document.querySelector<HTMLButtonElement>(`[data-scene="${(event as CustomEvent).detail}"]`)?.click();}finally{navigationAuthorized=false;}});
+for (const button of document.querySelectorAll<HTMLButtonElement>('[data-scene]')) button.addEventListener('click', () => {
+  if(!navigationAuthorized&&!((import.meta as any).env.DEV&&location.search.includes('debug=1')))return;
+  const target = button.dataset.scene!;
+  world.dataset.area=target;
+  for (const tab of document.querySelectorAll('[data-scene]')) tab.setAttribute('aria-pressed', String(tab === button));
+  const rest = target === 'rest', pop = target === 'pop', hawaii=target==='hawaii', bathroom=target==='bathroom', concert=target==='concert', arcade=target==='arcade', noodle=target==='noodle', gym=target==='gym', dance=target==='dance', perler=target==='perler', rehearsal=target==='rehearsal', elevator=target==='elevator', subway=target==='subway';
+  document.querySelector<HTMLElement>('#curtain-control')!.hidden=!hawaii;
+  const updateLayerLabel=(layer:string,label:string)=>{
+    const input=document.querySelector<HTMLInputElement>(`[data-layer="${layer}"]`)!;
+    input.parentElement!.lastChild!.textContent=label;
+  };
+  updateLayerLabel('chair',hawaii?'六把独立网椅':'八把独立网椅');
+  updateLayerLabel('laptop',hawaii?'六台独立电脑':'八台独立电脑');
+  document.querySelector('#hutong-controls .review-actions + .note')!.textContent=hawaii?'六个座位均可试坐；三段桌架的腿部空间与椅子对齐。':'八个座位均可试坐；电脑与椅子对准桌下空位。';
+  document.querySelector('#hutong-controls .seat-state + .note')!.textContent=hawaii?'固定使用文化墙同向视角；左側窗边按 E 拉下或卷起窗帘。':'L／R 按进入真实胡同时的左右墙定义；从中国结所在的尽头向入口编号。切换视角保持同一座位和位置。';
+  document.querySelector<HTMLElement>('#hutong-controls')!.hidden = rest || pop || bathroom || concert || arcade || noodle || gym || dance || perler || rehearsal || elevator || subway;
+  document.querySelector<HTMLElement>('#rest-controls')!.hidden = !rest;
+  document.querySelector<HTMLElement>('#pop-controls')!.hidden = !pop;
+  viewButton.hidden = rest || pop || hawaii || bathroom || concert || arcade || noodle || gym || dance || perler || rehearsal || elevator || subway;
+  document.querySelector<HTMLButtonElement>('#table-action')!.hidden = true;
+  document.querySelector<HTMLElement>('#walk-review')!.hidden = true;
+  document.querySelector('#view-label')!.textContent = hawaii?'夏威夷 · 文化墙同向视角':pop ? 'POP MART · 盲盒店' : rest ? '休息室 · 从 Go! 墙看向设备墙' : target === 'culture' ? '文化墙一侧' : '另一侧 · 同一个胡同';
+  document.querySelector('.scene-caption span:last-child')!.textContent = hawaii?'两排各三席 · 窗边卷帘 · E 互动':pop ? '中央陈列台、扭蛋机 · E 互动' : rest ? '独立设备、桌椅 · E 互动' : '八个靠墙工位 · 中间通道';
+  document.querySelector('.keys')!.innerHTML = hawaii?'WASD / 方向键移动<br>E 坐下 / 起身 · 窗边 E 卷帘<br>Esc 起身':pop ? 'WASD / 方向键移动<br>E 挑盒 / 转动扭蛋机<br>点击选盒 · Esc 关闭' : rest ? 'WASD / 方向键移动<br>E 与物件互动 · Esc 起身<br>坐着时 F 放下 / 拿回物品' : 'WASD / 方向键移动<br>E 坐下办公 / 起身 · V 换视角';
+  document.querySelector<HTMLElement>('#bathroom-controls')!.hidden=!bathroom;
+  if(bathroom){
+    document.querySelector('#view-label')!.textContent='厕所 · 从右往左';
+    document.querySelector('.scene-caption span:last-child')!.textContent='四个隔间 · 两个洗手台';
+    document.querySelector('.keys')!.innerHTML='WASD / 方向键移动<br>E 开门 / 坐下 / 起身<br>F 开关门 · Esc 起身<br>洗手台 E 洗手';
+  }
+  document.querySelector<HTMLElement>('#concert-controls')!.hidden=!concert;
+  if(concert){
+    document.querySelector('#view-label')!.textContent='演唱会 · 内场朝向舞台';
+    document.querySelector('.scene-caption span:last-child')!.textContent='保留顶部标志 · 三排可坐座位';
+    document.querySelector('.keys')!.innerHTML='WASD / 方向键移动<br>E 坐下 / 起身 · Esc 起身';
+  }
+  document.querySelector<HTMLElement>('#arcade-controls')!.hidden=!arcade;
+  if(arcade){
+    document.querySelector('#view-label')!.textContent='娱乐室 · 电玩城';
+    document.querySelector('.scene-caption span:last-child')!.textContent='五台可玩的机器 · 休息长椅';
+    document.querySelector('.keys')!.innerHTML='WASD / 方向键移动<br>E 玩游戏 · Esc 返回';
+  }
+  document.querySelector<HTMLElement>('#noodle-controls')!.hidden=!noodle;
+  if(noodle){
+    document.querySelector('#view-label')!.textContent='米线店';
+    document.querySelector('.scene-caption span:last-child')!.textContent='米线 · 鸡柳大人 · 饮料柜';
+    document.querySelector('.keys')!.innerHTML='WASD / 方向键移动<br>E 取餐 / 坐下 / 起身<br>F 桌上物品 / 调料 · Esc 起身';
+  }
+  document.querySelector<HTMLElement>('#gym-controls')!.hidden=!gym;
+  if(gym){
+    document.querySelector('#view-label')!.textContent='健身房';
+    document.querySelector('.scene-caption span:last-child')!.textContent='跑步机 · 哑铃 · 训练凳 · 瑜伽垫';
+    document.querySelector('.keys')!.innerHTML='WASD / 方向键移动<br>E 使用 / 结束 · Esc 结束<br>跑步 F 调速 · 哑铃 Space 举起';
+  }
+  document.querySelector<HTMLElement>('#dance-controls')!.hidden=!dance;
+  if(dance){
+    document.querySelector('#view-label')!.textContent='舞室';
+    document.querySelector('.scene-caption span:last-child')!.textContent='镜子 · 音响 · 跟拍练习';
+    document.querySelector('.keys')!.innerHTML='WASD / 方向键移动<br>E 跳舞 / 互动 · Esc 结束<br>F 调速 · 跟拍时按方向键';
+  }
+  document.querySelector<HTMLElement>('#perler-controls')!.hidden=!perler;
+  if(perler){
+    document.querySelector('#view-label')!.textContent='拼豆店';
+    document.querySelector('.scene-caption span:last-child')!.textContent='彩豆架 · 八个座位 · 熨烫台';
+    document.querySelector('.keys')!.innerHTML='WASD / 方向键移动<br>E 坐下 / 互动 · Esc 返回 / 起身<br>F 继续拼豆 · 点击或拖动放豆';
+  }
+  document.querySelector<HTMLElement>('#rehearsal-controls')!.hidden=!rehearsal;
+  if(rehearsal){
+    document.querySelector('#view-label')!.textContent='排练厅';
+    document.querySelector('.scene-caption span:last-child')!.textContent='前排四席 · 后排六席 · 指挥台 · 钢琴';
+    document.querySelector('.keys')!.innerHTML='WASD / 方向键移动<br>E 坐下 / 互动 · Esc 起身<br>弹琴时 A W S R D F T G Y H U J K';
+  }
+  document.querySelector<HTMLElement>('#elevator-controls')!.hidden=!elevator;
+  if(elevator){
+    document.querySelector('#view-label')!.textContent='电梯间 · 从左往右';
+    document.querySelector('.scene-caption span:last-child')!.textContent='两部独立电梯 · E 开关门';
+    document.querySelector('.keys')!.innerHTML='WASD / 方向键移动<br>E 开关附近电梯门';
+  }
+  document.querySelector<HTMLElement>('#subway-controls')!.hidden=!subway;
+  if(subway){
+    document.querySelector('#view-label')!.textContent='五道口站 · 站台';
+    document.querySelector('.scene-caption span:last-child')!.textContent='停靠列车 · E 开关车门';
+    document.querySelector('.keys')!.innerHTML='WASD / 方向键移动<br>E 开关列车车门';
+  }
+  const activeKey = subway?'subway':elevator?'elevator':rehearsal?'rehearsal' :perler?'perler' :dance?'dance' :gym?'gym' :noodle?'noodle':arcade?'arcade':concert?'concert':bathroom?'bathroom':hawaii?'hawaii':pop ? 'pop' : rest ? 'rest' : 'hutong';
+  selectedSceneKey=activeKey;
+  for (const key of ['hutong', 'rest', 'pop', 'hawaii', 'bathroom', 'concert', 'arcade', 'noodle', 'gym', 'dance', 'perler', 'rehearsal', 'elevator', 'subway']) {
+    const scene = game.scene.getScene(key);
+    scene.input.keyboard?.resetKeys();
+    if (key !== activeKey && game.scene.isActive(key)) game.scene.sleep(key);
+  }
+  // Phaser run() restarts an already active scene; viewpoint tabs share Hutong.
+  if(!game.scene.isActive(activeKey))game.scene.run(activeKey);
+  if (activeKey === 'hutong') (game.scene.getScene('hutong') as HutongScene).selectView(target === 'opposite');
+  world.focus();
+});
+
+

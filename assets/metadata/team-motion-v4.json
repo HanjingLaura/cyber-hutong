@@ -1,0 +1,1005 @@
+{
+  "sources": {
+    "suki-motion-v4": {
+      "file": "team/v4/suki-motion.png",
+      "size": [
+        1223,
+        1286
+      ]
+    },
+    "sid-motion-v4": {
+      "file": "team/v4/sid-motion.png",
+      "size": [
+        1223,
+        1286
+      ]
+    },
+    "jilly-motion-v4": {
+      "file": "team/v4/jilly-motion.png",
+      "size": [
+        1223,
+        1286
+      ]
+    },
+    "laura-motion-v4": {
+      "file": "team/v4/laura-motion.png",
+      "size": [
+        1223,
+        1286
+      ]
+    },
+    "kay-motion-v4": {
+      "file": "team/v4/kay-motion.png",
+      "size": [
+        1223,
+        1286
+      ]
+    },
+    "franco-motion-v4": {
+      "file": "team/v4/franco-motion.png",
+      "size": [
+        1223,
+        1286
+      ]
+    },
+    "cora-motion-v4": {
+      "file": "team/v4/cora-motion.png",
+      "size": [
+        1223,
+        1286
+      ]
+    },
+    "amber-motion-v4": {
+      "file": "team/v4/amber-motion.png",
+      "size": [
+        1223,
+        1286
+      ]
+    },
+    "celine-motion-v4": {
+      "file": "team/v4/celine-motion.png",
+      "size": [
+        1223,
+        1286
+      ]
+    }
+  },
+  "members": {
+    "suki": {
+      "frames": [
+        {
+          "name": "walk-side-v4-0",
+          "source": "suki-motion-v4",
+          "rect": [
+            132,
+            81,
+            397,
+            549
+          ],
+          "referenceHeight": 549,
+          "pivotX": 0.4571907436681658,
+          "foot": [
+            181.50472523626183,
+            549
+          ],
+          "seat": [
+            181.50472523626183,
+            395.28
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null
+        },
+        {
+          "name": "walk-side-v4-1",
+          "source": "suki-motion-v4",
+          "rect": [
+            654,
+            81,
+            401,
+            549
+          ],
+          "referenceHeight": 549,
+          "pivotX": 0.4444969290945632,
+          "foot": [
+            178.24326856691982,
+            549
+          ],
+          "seat": [
+            178.24326856691982,
+            395.28
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null
+        },
+        {
+          "name": "run-side-v4-0",
+          "source": "suki-motion-v4",
+          "rect": [
+            120,
+            676,
+            435,
+            549
+          ],
+          "referenceHeight": 549,
+          "pivotX": 0.5110227539291579,
+          "foot": [
+            222.29489795918366,
+            549
+          ],
+          "seat": [
+            222.29489795918366,
+            395.28
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null
+        },
+        {
+          "name": "run-side-v4-1",
+          "source": "suki-motion-v4",
+          "rect": [
+            685,
+            677,
+            423,
+            548
+          ],
+          "referenceHeight": 549,
+          "pivotX": 0.48637514006768245,
+          "foot": [
+            205.73668424862967,
+            548
+          ],
+          "seat": [
+            205.73668424862967,
+            394.56
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null
+        }
+      ],
+      "walkLoop": [
+        0,
+        1
+      ],
+      "runLoop": [
+        2,
+        3
+      ]
+    },
+    "sid": {
+      "frames": [
+        {
+          "name": "walk-side-v4-0",
+          "source": "sid-motion-v4",
+          "rect": [
+            221,
+            76,
+            310,
+            529
+          ],
+          "referenceHeight": 535,
+          "pivotX": 0.5213396301043547,
+          "foot": [
+            161.61528533234994,
+            529
+          ],
+          "seat": [
+            161.61528533234994,
+            380.88
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null
+        },
+        {
+          "name": "walk-side-v4-1",
+          "source": "sid-motion-v4",
+          "rect": [
+            796,
+            76,
+            291,
+            529
+          ],
+          "referenceHeight": 535,
+          "pivotX": 0.4638536645143696,
+          "foot": [
+            134.98141637368155,
+            529
+          ],
+          "seat": [
+            134.98141637368155,
+            380.88
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null
+        },
+        {
+          "name": "run-side-v4-0",
+          "source": "sid-motion-v4",
+          "rect": [
+            161,
+            688,
+            401,
+            536
+          ],
+          "referenceHeight": 535,
+          "pivotX": 0.5803818143723098,
+          "foot": [
+            232.73310756329624,
+            536
+          ],
+          "seat": [
+            232.73310756329624,
+            385.91999999999996
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null
+        },
+        {
+          "name": "run-side-v4-1",
+          "source": "sid-motion-v4",
+          "rect": [
+            736,
+            689,
+            373,
+            535
+          ],
+          "referenceHeight": 535,
+          "pivotX": 0.5467912403970092,
+          "foot": [
+            203.95313266808444,
+            535
+          ],
+          "seat": [
+            203.95313266808444,
+            385.2
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null
+        }
+      ],
+      "walkLoop": [
+        0,
+        1
+      ],
+      "runLoop": [
+        2,
+        3
+      ]
+    },
+    "jilly": {
+      "frames": [
+        {
+          "name": "walk-side-v4-0",
+          "source": "jilly-motion-v4",
+          "rect": [
+            177,
+            88,
+            355,
+            530
+          ],
+          "referenceHeight": 530,
+          "pivotX": 0.5214981239854697,
+          "foot": [
+            185.13183401484173,
+            530
+          ],
+          "seat": [
+            185.13183401484173,
+            381.59999999999997
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null
+        },
+        {
+          "name": "walk-side-v4-1",
+          "source": "jilly-motion-v4",
+          "rect": [
+            700,
+            88,
+            358,
+            530
+          ],
+          "referenceHeight": 530,
+          "pivotX": 0.46792189806418727,
+          "foot": [
+            167.51603950697904,
+            530
+          ],
+          "seat": [
+            167.51603950697904,
+            381.59999999999997
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null
+        },
+        {
+          "name": "run-side-v4-0",
+          "source": "jilly-motion-v4",
+          "rect": [
+            168,
+            683,
+            397,
+            522
+          ],
+          "referenceHeight": 530,
+          "pivotX": 0.5558068888656807,
+          "foot": [
+            220.65533487967525,
+            522
+          ],
+          "seat": [
+            220.65533487967525,
+            375.84
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null
+        },
+        {
+          "name": "run-side-v4-1",
+          "source": "jilly-motion-v4",
+          "rect": [
+            703,
+            682,
+            412,
+            523
+          ],
+          "referenceHeight": 530,
+          "pivotX": 0.5155520112946052,
+          "foot": [
+            212.4074286533773,
+            523
+          ],
+          "seat": [
+            212.4074286533773,
+            376.56
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null
+        }
+      ],
+      "walkLoop": [
+        0,
+        1
+      ],
+      "runLoop": [
+        2,
+        3
+      ]
+    },
+    "laura": {
+      "frames": [
+        {
+          "name": "walk-side-v4-0",
+          "source": "laura-motion-v4",
+          "rect": [
+            197,
+            79,
+            340,
+            526
+          ],
+          "referenceHeight": 526,
+          "pivotX": 0.4975671854090041,
+          "foot": [
+            169.17284303906138,
+            526
+          ],
+          "seat": [
+            169.17284303906138,
+            378.71999999999997
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null
+        },
+        {
+          "name": "walk-side-v4-1",
+          "source": "laura-motion-v4",
+          "rect": [
+            719,
+            79,
+            342,
+            526
+          ],
+          "referenceHeight": 526,
+          "pivotX": 0.47006783994449114,
+          "foot": [
+            160.76320126101598,
+            526
+          ],
+          "seat": [
+            160.76320126101598,
+            378.71999999999997
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null
+        },
+        {
+          "name": "run-side-v4-0",
+          "source": "laura-motion-v4",
+          "rect": [
+            186,
+            675,
+            369,
+            518
+          ],
+          "referenceHeight": 526,
+          "pivotX": 0.5227648671347752,
+          "foot": [
+            192.90023597273205,
+            518
+          ],
+          "seat": [
+            192.90023597273205,
+            372.96
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null
+        },
+        {
+          "name": "run-side-v4-1",
+          "source": "laura-motion-v4",
+          "rect": [
+            713,
+            675,
+            363,
+            518
+          ],
+          "referenceHeight": 526,
+          "pivotX": 0.45795656273092517,
+          "foot": [
+            166.23823227132584,
+            518
+          ],
+          "seat": [
+            166.23823227132584,
+            372.96
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null
+        }
+      ],
+      "walkLoop": [
+        0,
+        1
+      ],
+      "runLoop": [
+        2,
+        3
+      ]
+    },
+    "kay": {
+      "frames": [
+        {
+          "name": "walk-side-v4-0",
+          "source": "kay-motion-v4",
+          "rect": [
+            156,
+            99,
+            380,
+            521
+          ],
+          "referenceHeight": 522,
+          "pivotX": 0.4477826148663717,
+          "foot": [
+            170.15739364922126,
+            521
+          ],
+          "seat": [
+            170.15739364922126,
+            375.12
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null
+        },
+        {
+          "name": "walk-side-v4-1",
+          "source": "kay-motion-v4",
+          "rect": [
+            679,
+            98,
+            378,
+            522
+          ],
+          "referenceHeight": 522,
+          "pivotX": 0.4312392832647462,
+          "foot": [
+            163.00844907407406,
+            522
+          ],
+          "seat": [
+            163.00844907407406,
+            375.84
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null
+        },
+        {
+          "name": "run-side-v4-0",
+          "source": "kay-motion-v4",
+          "rect": [
+            155,
+            698,
+            407,
+            519
+          ],
+          "referenceHeight": 522,
+          "pivotX": 0.4892581245643353,
+          "foot": [
+            199.12805669768449,
+            519
+          ],
+          "seat": [
+            199.12805669768449,
+            373.68
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null
+        },
+        {
+          "name": "run-side-v4-1",
+          "source": "kay-motion-v4",
+          "rect": [
+            689,
+            698,
+            409,
+            519
+          ],
+          "referenceHeight": 522,
+          "pivotX": 0.4628843820224557,
+          "foot": [
+            189.31971224718438,
+            519
+          ],
+          "seat": [
+            189.31971224718438,
+            373.68
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null
+        }
+      ],
+      "walkLoop": [
+        0,
+        1
+      ],
+      "runLoop": [
+        2,
+        3
+      ]
+    },
+    "franco": {
+      "frames": [
+        {
+          "name": "walk-side-v4-0",
+          "source": "franco-motion-v4",
+          "rect": [
+            221,
+            102,
+            300,
+            507
+          ],
+          "referenceHeight": 516,
+          "pivotX": 0.5231600577585249,
+          "foot": [
+            156.94801732755747,
+            507
+          ],
+          "seat": [
+            156.94801732755747,
+            365.03999999999996
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null
+        },
+        {
+          "name": "walk-side-v4-1",
+          "source": "franco-motion-v4",
+          "rect": [
+            748,
+            102,
+            279,
+            507
+          ],
+          "referenceHeight": 516,
+          "pivotX": 0.46509900522103653,
+          "foot": [
+            129.7626224566692,
+            507
+          ],
+          "seat": [
+            129.7626224566692,
+            365.03999999999996
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null
+        },
+        {
+          "name": "run-side-v4-0",
+          "source": "franco-motion-v4",
+          "rect": [
+            138,
+            692,
+            397,
+            516
+          ],
+          "referenceHeight": 516,
+          "pivotX": 0.595709660550032,
+          "foot": [
+            236.49673523836273,
+            516
+          ],
+          "seat": [
+            236.49673523836273,
+            371.52
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null
+        },
+        {
+          "name": "run-side-v4-1",
+          "source": "franco-motion-v4",
+          "rect": [
+            702,
+            692,
+            379,
+            516
+          ],
+          "referenceHeight": 516,
+          "pivotX": 0.5471161677493723,
+          "foot": [
+            207.3570275770121,
+            516
+          ],
+          "seat": [
+            207.3570275770121,
+            371.52
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null
+        }
+      ],
+      "walkLoop": [
+        0,
+        1
+      ],
+      "runLoop": [
+        2,
+        3
+      ]
+    },
+    "cora": {
+      "frames": [
+        {
+          "name": "walk-side-v4-0",
+          "source": "cora-motion-v4",
+          "rect": [
+            161,
+            141,
+            368,
+            501
+          ],
+          "referenceHeight": 501,
+          "pivotX": 0.43688018893312636,
+          "foot": [
+            160.7719095273905,
+            501
+          ],
+          "seat": [
+            160.7719095273905,
+            360.71999999999997
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null
+        },
+        {
+          "name": "walk-side-v4-1",
+          "source": "cora-motion-v4",
+          "rect": [
+            693,
+            141,
+            367,
+            501
+          ],
+          "referenceHeight": 501,
+          "pivotX": 0.4226234434286588,
+          "foot": [
+            155.1028037383178,
+            501
+          ],
+          "seat": [
+            155.1028037383178,
+            360.71999999999997
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null
+        },
+        {
+          "name": "run-side-v4-0",
+          "source": "cora-motion-v4",
+          "rect": [
+            160,
+            704,
+            399,
+            499
+          ],
+          "referenceHeight": 501,
+          "pivotX": 0.47931795066884025,
+          "foot": [
+            191.24786231686727,
+            499
+          ],
+          "seat": [
+            191.24786231686727,
+            359.28
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null
+        },
+        {
+          "name": "run-side-v4-1",
+          "source": "cora-motion-v4",
+          "rect": [
+            692,
+            704,
+            401,
+            499
+          ],
+          "referenceHeight": 501,
+          "pivotX": 0.4439096776185091,
+          "foot": [
+            178.00778072502214,
+            499
+          ],
+          "seat": [
+            178.00778072502214,
+            359.28
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null
+        }
+      ],
+      "walkLoop": [
+        0,
+        1
+      ],
+      "runLoop": [
+        2,
+        3
+      ]
+    },
+    "amber": {
+      "frames": [
+        {
+          "name": "walk-side-v4-0",
+          "source": "amber-motion-v4",
+          "rect": [
+            160,
+            103,
+            364,
+            527
+          ],
+          "referenceHeight": 527,
+          "pivotX": 0.44194267599705356,
+          "foot": [
+            160.8671340629275,
+            527
+          ],
+          "seat": [
+            160.8671340629275,
+            379.44
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null
+        },
+        {
+          "name": "walk-side-v4-1",
+          "source": "amber-motion-v4",
+          "rect": [
+            705,
+            103,
+            362,
+            527
+          ],
+          "referenceHeight": 527,
+          "pivotX": 0.42347542259952997,
+          "foot": [
+            153.29810298102984,
+            527
+          ],
+          "seat": [
+            153.29810298102984,
+            379.44
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null
+        },
+        {
+          "name": "run-side-v4-0",
+          "source": "amber-motion-v4",
+          "rect": [
+            137,
+            685,
+            403,
+            525
+          ],
+          "referenceHeight": 527,
+          "pivotX": 0.49727636997392616,
+          "foot": [
+            200.40237709949224,
+            525
+          ],
+          "seat": [
+            200.40237709949224,
+            378
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null
+        },
+        {
+          "name": "run-side-v4-1",
+          "source": "amber-motion-v4",
+          "rect": [
+            699,
+            685,
+            403,
+            525
+          ],
+          "referenceHeight": 527,
+          "pivotX": 0.45026406523957957,
+          "foot": [
+            181.45641829155056,
+            525
+          ],
+          "seat": [
+            181.45641829155056,
+            378
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null
+        }
+      ],
+      "walkLoop": [
+        0,
+        1
+      ],
+      "runLoop": [
+        2,
+        3
+      ]
+    },
+    "celine": {
+      "frames": [
+        {
+          "name": "walk-side-v4-0",
+          "source": "celine-motion-v4",
+          "rect": [
+            151,
+            63,
+            390,
+            540
+          ],
+          "referenceHeight": 542,
+          "pivotX": 0.4531515751836104,
+          "foot": [
+            176.72911432160805,
+            540
+          ],
+          "seat": [
+            176.72911432160805,
+            388.8
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null
+        },
+        {
+          "name": "walk-side-v4-1",
+          "source": "celine-motion-v4",
+          "rect": [
+            675,
+            64,
+            381,
+            539
+          ],
+          "referenceHeight": 542,
+          "pivotX": 0.45829204474540797,
+          "foot": [
+            174.60926904800044,
+            539
+          ],
+          "seat": [
+            174.60926904800044,
+            388.08
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null
+        },
+        {
+          "name": "run-side-v4-0",
+          "source": "celine-motion-v4",
+          "rect": [
+            141,
+            662,
+            425,
+            542
+          ],
+          "referenceHeight": 542,
+          "pivotX": 0.5031312445436027,
+          "foot": [
+            213.83077893103115,
+            542
+          ],
+          "seat": [
+            213.83077893103115,
+            390.24
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null
+        },
+        {
+          "name": "run-side-v4-1",
+          "source": "celine-motion-v4",
+          "rect": [
+            711,
+            662,
+            416,
+            542
+          ],
+          "referenceHeight": 542,
+          "pivotX": 0.4788642338309508,
+          "foot": [
+            199.20752127367552,
+            542
+          ],
+          "seat": [
+            199.20752127367552,
+            390.24
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null
+        }
+      ],
+      "walkLoop": [
+        0,
+        1
+      ],
+      "runLoop": [
+        2,
+        3
+      ]
+    }
+  }
+}

@@ -1,0 +1,115 @@
+{
+  "sources": {
+    "laura-dance-v12": {
+      "file": "team/v12/laura-dance.png",
+      "size": [
+        1536,
+        1024
+      ]
+    }
+  },
+  "members": {
+    "laura": {
+      "frames": [
+        {
+          "name": "dance-v12-0",
+          "source": "laura-dance-v12",
+          "rect": [
+            354,
+            36,
+            336,
+            447
+          ],
+          "referenceHeight": 449,
+          "pivotX": 0.5,
+          "foot": [
+            168,
+            447
+          ],
+          "seat": [
+            168,
+            321.84
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null
+        },
+        {
+          "name": "dance-v12-1",
+          "source": "laura-dance-v12",
+          "rect": [
+            845,
+            34,
+            337,
+            449
+          ],
+          "referenceHeight": 449,
+          "pivotX": 0.5,
+          "foot": [
+            168.5,
+            449
+          ],
+          "seat": [
+            168.5,
+            323.28
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null
+        },
+        {
+          "name": "dance-v12-2",
+          "source": "laura-dance-v12",
+          "rect": [
+            349,
+            535,
+            339,
+            441
+          ],
+          "referenceHeight": 443,
+          "pivotX": 0.5,
+          "foot": [
+            169.5,
+            441
+          ],
+          "seat": [
+            169.5,
+            317.52
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null
+        },
+        {
+          "name": "dance-v12-3",
+          "source": "laura-dance-v12",
+          "rect": [
+            846,
+            533,
+            337,
+            443
+          ],
+          "referenceHeight": 443,
+          "pivotX": 0.5,
+          "foot": [
+            168.5,
+            443
+          ],
+          "seat": [
+            168.5,
+            318.96
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null
+        }
+      ],
+      "indices": [
+        46,
+        47,
+        54,
+        55
+      ]
+    }
+  }
+}

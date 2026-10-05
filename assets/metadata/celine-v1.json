@@ -1,0 +1,114 @@
+{
+  "image": "celine-v1.png",
+  "referenceHeight": 368,
+  "frames": [
+    {
+      "name": "idle-front",
+      "rect": [
+        42,
+        60,
+        241,
+        368
+      ]
+    },
+    {
+      "name": "idle-back",
+      "rect": [
+        355,
+        60,
+        227,
+        368
+      ]
+    },
+    {
+      "name": "idle-right",
+      "rect": [
+        642,
+        62,
+        238,
+        366
+      ]
+    },
+    {
+      "name": "idle-left",
+      "rect": [
+        968,
+        62,
+        236,
+        367
+      ]
+    },
+    {
+      "name": "walk-right-0",
+      "rect": [
+        41,
+        459,
+        235,
+        353
+      ]
+    },
+    {
+      "name": "walk-right-1",
+      "rect": [
+        347,
+        459,
+        235,
+        353
+      ]
+    },
+    {
+      "name": "walk-front-0",
+      "rect": [
+        649,
+        459,
+        240,
+        361
+      ]
+    },
+    {
+      "name": "walk-front-1",
+      "rect": [
+        951,
+        459,
+        241,
+        361
+      ]
+    },
+    {
+      "name": "walk-back-0",
+      "rect": [
+        50,
+        836,
+        223,
+        361
+      ]
+    },
+    {
+      "name": "walk-back-1",
+      "rect": [
+        358,
+        835,
+        224,
+        363
+      ]
+    },
+    {
+      "name": "sit-front",
+      "rect": [
+        644,
+        847,
+        244,
+        347
+      ]
+    },
+    {
+      "name": "sit-back",
+      "rect": [
+        960,
+        852,
+        228,
+        342
+      ]
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+{$GAME_DOMAIN} {
+  reverse_proxy game:8788 {
+    flush_interval -1
+  }
+  log {
+    output stdout
+  }
+}

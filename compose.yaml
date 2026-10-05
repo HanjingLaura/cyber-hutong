@@ -1,0 +1,45 @@
+services:
+  game:
+    build: .
+    restart: unless-stopped
+    environment:
+      HUTONG_INVITE: ${HUTONG_INVITE:?请配置领取码}
+      COOKIE_SECURE: "1"
+      DASHSCOPE_API_KEY: ${DASHSCOPE_API_KEY:-}
+      LLM_MODEL: ${LLM_MODEL:-qwen-plus}
+      LLM_BASE_URL: ${LLM_BASE_URL:-https://dashscope.aliyuncs.com/compatible-mode/v1}
+      LLM_DAILY_LIMIT: ${LLM_DAILY_LIMIT:-200}
+    volumes:
+      - game-data:/app/data
+  backups:
+    build: .
+    restart: unless-stopped
+    command: ["node", "scripts/backup-loop.mjs"]
+    healthcheck:
+      disable: true
+    environment:
+      HUTONG_DB: /app/data/mvp.sqlite
+    volumes:
+      - game-data:/app/data
+    depends_on:
+      game:
+        condition: service_healthy
+  web:
+    image: caddy:2
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      GAME_DOMAIN: ${GAME_DOMAIN:?请配置域名}
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      game:
+        condition: service_healthy
+volumes:
+  game-data:
+  caddy-data:
+  caddy-config:
