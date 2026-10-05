@@ -56,7 +56,7 @@ export class WorldClient{
    if((key==='dance'||key==='perler')&&id==='stash')s.stored=o.slots?.[0]??null;
    if(key==='hawaii'&&id==='curtain'){s.curtainDown=o.open;s.curtainProgress=o.open?1:0;}
    if(key==='bathroom'&&id.startsWith('door-')){const i=Number(id.split('-')[1]);if(s.doors[i])s.setDoorOpen(i,o.open);}
-   if(key==='elevator'&&id.startsWith('door-'))s.doors[Number(id.split('-')[1])].open=o.open;
+   if(key==='elevator'&&id.startsWith('door-')){const door=s.doors?.[Number(id.split('-')[1])];if(door)door.open=!!o.open;}
    if(key==='subway'&&id==='doors')s.open=o.open;
    if(key==='pop'&&o.stock)blindBoxes.data.shelf[id as keyof typeof blindBoxes.data.shelf]=o.stock.map(v=>v?0:null);
   }
