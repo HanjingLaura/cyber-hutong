@@ -43,7 +43,7 @@ export class TeamAvatar{
   let part=0,index=front?0:back?2:1;
   if(holding){part=1;index=seated?(back?5:front?4:25):moving?(front?data.carryFrontLoop[phase%4]:back?data.carryBackLoop[phase%4]:data.carryRightLoop[(previewPhase??Math.floor(performance.now()/(data.carrySideFrameMs??125)))%data.carryRightLoop.length]):(front?0:back?2:24);}
   else if(working){part=2;index=(back?2:0)+(previewPhase===undefined?Math.floor(performance.now()/250):previewPhase)%2;}
-  else if(mode==='piano'){part=2;index=(back?2:0)+(previewPhase===undefined?Math.floor(performance.now()/250):previewPhase)%2;}
+  else if(mode==='piano'){part=0;index=6+(previewPhase===undefined?Math.floor(performance.now()/250):previewPhase)%2;}
   else if(seated)index=back?5:front?4:39;
   else if(mode==='run')index=data.runLoop?data.runLoop[(previewPhase??Math.floor(this.time/(data.runFrameMs??170)))%data.runLoop.length]:62+(previewPhase===undefined?Math.floor(performance.now()/140):previewPhase)%2;
   else if(mode==='dance'||mode==='practice')index=(back?54:46)+(previewPhase===undefined?Math.floor(performance.now()/400):previewPhase)%2;

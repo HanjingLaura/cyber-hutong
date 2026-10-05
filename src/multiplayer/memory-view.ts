@@ -26,7 +26,7 @@ async function paint(canvas:HTMLCanvasElement,e:MemoryEntry,bridge:MultiplayerBr
   const front=p.facing===0,back=p.facing===2,office=['hutong','hawaii'].includes(e.scene);let list=d.frames,index=front?0:back?2:1;
   if(p.hand){list=d.carryFrames;index=p.seat?(front?4:back?5:25):p.moving?(front?d.carryFrontLoop[0]:back?d.carryBackLoop[0]:d.carryRightLoop[0]):front?0:back?2:24;}
   else if(p.activity==='working'&&p.seat&&office){list=d.officeFrames;index=back?2:0;}
-  else if(p.activity==='piano'){list=d.officeFrames;index=6;}
+  else if(p.activity==='piano'){list=d.frames;index=6;}
   else if(p.seat)index=front?4:back?5:39;
   else if(p.activity==='run')index=d.runLoop?.[0]??62;
   else if(['dance','practice'].includes(p.activity))index=back?54:46;

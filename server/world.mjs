@@ -53,7 +53,7 @@ export function createWorld(store,life){
     if(input.action==='put'){if(!hand||o.slots[slot])fail(409,'空手或位置已被占用');o.slots[slot]={name:hand,seasoning};hand=null;seasoning=[];}
     if(input.action==='take'){if(hand||!o.slots[slot])fail(409,'物品已被拿走或手中已有物品');hand=typeof o.slots[slot]==='string'?o.slots[slot]:o.slots[slot].name;seasoning=o.slots[slot].seasoning??[];o.slots[slot]=null;}
     if(input.action==='consume'){if(!p.seat||!input.object.startsWith('noodle:'))fail(409,'先坐下用餐');if(input.fromHand){if(!['米线','鸡柳','炸鸡'].includes(hand))fail(400,'不能食用');hand=null;}else{const dish=o.slots[slot];if(!dish||!['米线','鸡柳','炸鸡'].includes(dish.name??dish))fail(409,'食物已被拿走');o.slots[slot]=null;}}
-    if(input.action==='season'){const dish=o.slots[slot];if(!dish||dish.name!=='米线'||!['醋','麻油'].includes(input.item))fail(400,'先放米线再加调料');if(!dish.seasoning.includes(input.item))dish.seasoning.push(input.item);}
+    if(input.action==='season'){const dish=o.slots[slot];if(!dish||dish.name!=='米线'||!['醋','麻油'].includes(input.item))fail(400,'先放米线再加调料');dish.seasoning??=[];if(!dish.seasoning.includes(input.item))dish.seasoning.push(input.item);}
     save(o);
    }else if(input.action==='toggle'){
     if(!o||typeof o.open!=='boolean')fail(400,'不能开关');

@@ -63,8 +63,10 @@ export function createLife(store){
  });};
  const send=(id,peer,kind,requestId,scene,revision)=>{
   if(!['gift','meet'].includes(kind))fail(400,'邀请无效');if(typeof requestId!=='string'||!requestId||requestId.length>120)fail(400,'操作编号无效');expire();
-  const old=db.prepare('SELECT * FROM offers WHERE sender=? AND request_id=?').get(id,requestId);if(old)return old;
-  return atomic(()=>{const a=store.byId(id),b=store.byRole(peer);if(!b||b.id===id)fail(400,'对方尚未领取角色');if(db.prepare("SELECT id FROM offers WHERE (sender=? OR recipient=?) AND kind=? AND status IN ('pending','accepted')").get(id,id,kind))fail(409,'先结束当前邀请');
+  const old=db.prepare('SELECT * FROM offers WHERE sender=? AND request_id=?').get(id,requestId);
+  // Replay in-flight and completed offers; allow a fresh attempt after reject/expire/cancel.
+  if(old&&['pending','accepted','completed'].includes(old.status))return old;
+  return atomic(()=>{if(old)db.prepare('DELETE FROM offers WHERE id=?').run(old.id);const a=store.byId(id),b=store.byRole(peer);if(!b||b.id===id)fail(400,'对方尚未领取角色');if(db.prepare("SELECT id FROM offers WHERE (sender=? OR recipient=?) AND kind=? AND status IN ('pending','accepted')").get(id,id,kind))fail(409,'先结束当前邀请');
    if(kind==='gift'){if(revision!==undefined&&a.revision!==revision)fail(409,'手中物品已改变，请重试');unlocked(id);if(!a.hand)fail(409,'手中没有物品');}
    const offer={id:randomUUID(),sender:id,recipient:b.id,kind,item:kind==='gift'?a.hand:null,status:'pending',scene,expires:Date.now()+(kind==='gift'?30000:90000),request_id:requestId};
    db.prepare('INSERT INTO offers VALUES(?,?,?,?,?,?,?,?,?)').run(...Object.values(offer));record(id,kind,kind==='gift'?`想把${a.hand}送给 ${b.role}，正在等待回应。`:`邀请 ${b.role} 一起去休息室。`,scene);return offer;

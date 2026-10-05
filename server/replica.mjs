@@ -137,7 +137,6 @@ export async function prepareReplica(path, client, { prefix = 'hutong_online', f
       if (!dbIsOpen(db2) || dbInTx(db2)) return 0;
       const dirty = db2.prepare('SELECT DISTINCT tbl, pk FROM temp._hto_dirty').all();
       if (!dirty.length) return 0;
-      db2.exec('DELETE FROM temp._hto_dirty');
       const statements = [];
       for (const { tbl, pk } of dirty) {
         let row = null;
@@ -146,8 +145,11 @@ export async function prepareReplica(path, client, { prefix = 'hutong_online', f
       }
       try {
         for (let i = 0; i < statements.length; i += 200) await client.batch(statements.slice(i, i + 200), 'write');
+        if (dbIsOpen(db2)) {
+          const clear = db2.prepare('DELETE FROM temp._hto_dirty WHERE tbl = ? AND pk = ?');
+          for (const d of dirty) clear.run(d.tbl, d.pk);
+        }
       } catch (e) {
-        if (dbIsOpen(db2)) { const back = db2.prepare('INSERT INTO temp._hto_dirty(tbl, pk) SELECT ?, ? WHERE NOT EXISTS (SELECT 1 FROM temp._hto_dirty WHERE tbl = ? AND pk = ?)'); for (const d of dirty) back.run(d.tbl, d.pk, d.tbl, d.pk); }
         log.error?.('replica: flush failed: ' + e.message);
         throw e;
       }
@@ -166,11 +168,12 @@ export async function prepareReplica(path, client, { prefix = 'hutong_online', f
         if (dbInTx(db2)) break;
         const local = new Set(userTables(db2)), pending = new Set(db2.prepare('SELECT tbl, pk FROM temp._hto_dirty').all().map(r => r.tbl + '\u0000' + r.pk));
         db2.exec('UPDATE temp._hto_ctl SET applying = 1; BEGIN; PRAGMA defer_foreign_keys = ON;');
+        let blocked = false;
         try {
           for (const r of result.rows) {
-            lastVer = Math.max(lastVer, Number(r.ver));
             const tbl = String(r.tbl), pk = String(r.pk);
-            if (!local.has(tbl) || pending.has(tbl + '\u0000' + pk)) continue;
+            if (!local.has(tbl)) { lastVer = Math.max(lastVer, Number(r.ver)); continue; }
+            if (pending.has(tbl + '\u0000' + pk)) { blocked = true; break; }
             try {
               if (Number(r.deleted)) {
                 const keys = keyColumns(db2, tbl);
@@ -178,10 +181,11 @@ export async function prepareReplica(path, client, { prefix = 'hutong_online', f
               } else upsertRow(db2, tbl, JSON.parse(String(r.data)));
               applied++;
             } catch (e) { log.warn?.(`replica: pull skipped ${tbl}: ${e.message}`); }
+            lastVer = Math.max(lastVer, Number(r.ver));
           }
           db2.exec('COMMIT');
         } catch (e) { try { db2.exec('ROLLBACK'); } catch {} throw e; } finally { db2.exec('UPDATE temp._hto_ctl SET applying = 0'); }
-        if (result.rows.length < 500) break;
+        if (blocked || result.rows.length < 500) break;
       }
       lastPull = Date.now();
       return applied;

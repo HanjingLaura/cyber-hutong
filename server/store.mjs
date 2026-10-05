@@ -9,7 +9,16 @@ const derive=promisify(scrypt),pool=new TaskPool();
 export const fail=(status,message)=>{throw Object.assign(new Error(message),{status});};
 export const digest=value=>createHash('sha256').update(value).digest('hex');
 async function passwordHash(password,salt=randomBytes(16).toString('hex')){const key=await derive(password,salt,64);return salt+':'+key.toString('hex');}
-async function passwordMatches(password,stored){const [salt,expected]=stored.split(':');const got=(await passwordHash(password,salt)).split(':')[1];return timingSafeEqual(Buffer.from(got,'hex'),Buffer.from(expected,'hex'));}
+async function passwordMatches(password,stored){
+  const [salt,expected]=String(stored||'').split(':');
+  if(!salt||!expected||expected.length%2)return false;
+  try{
+    const got=(await passwordHash(password,salt)).split(':')[1];
+    const a=Buffer.from(got,'hex'),b=Buffer.from(expected,'hex');
+    if(a.length!==b.length)return false;
+    return timingSafeEqual(a,b);
+  }catch{return false;}
+}
 export function openStore(path){
   if(path!==':memory:')mkdirSync(dirname(path),{recursive:true});
   const db=new DatabaseSync(path);db.exec(`PRAGMA journal_mode=WAL; PRAGMA foreign_keys=ON; PRAGMA busy_timeout=5000;
@@ -41,7 +50,7 @@ export function openStore(path){
     roster(){return roles.map(role=>({role,claimed:!!byRole(role)}));},
     claim(id,role){if(!roles.includes(role))fail(400,'请选择有效角色');if(byId(id).role)fail(409,'你已经领取了角色');try{db.prepare('UPDATE accounts SET role=?,profile=? WHERE id=? AND role IS NULL').run(role,JSON.stringify(distillProfile({},role)),id);}catch(e){if(e.code?.includes('SQLITE'))fail(409,'这个角色刚被别人领取了');throw e;}return publicAccount(byId(id));},
     profile(id,input){const row=byId(id);if(!row.role)fail(409,'请先领取角色');const profile=distillProfile(input,row.role);db.prepare('UPDATE accounts SET profile=? WHERE id=?').run(JSON.stringify(profile),id);return publicAccount(byId(id));},
-    hand(id,hand,revision){const row=byId(id);if(row.revision!==revision)return publicAccount(row);if(row.hand!==hand)db.prepare('UPDATE accounts SET hand=?,revision=revision+1 WHERE id=? AND revision=?').run(hand,id,revision);return publicAccount(byId(id));},
+    hand(id,hand,revision){const row=byId(id);if(row.revision!==revision)return publicAccount(row);if(row.hand!==hand)db.prepare("UPDATE accounts SET hand=?,seasoning='[]',revision=revision+1 WHERE id=? AND revision=?").run(hand,id,revision);return publicAccount(byId(id));},
     message(sender,recipient,scene,body,id,npc=false){if(typeof id!=='string'||id.length>120)fail(400,'消息编号无效');const existing=db.prepare('SELECT * FROM messages WHERE id=?').get(sender+':'+id);if(existing)return existing;db.prepare('INSERT INTO messages(id,sender,recipient,scene,body,at,npc) VALUES(?,?,?,?,?,?,?)').run(sender+':'+id,sender,recipient,scene,body,Date.now(),Number(npc));return db.prepare('SELECT * FROM messages WHERE id=?').get(sender+':'+id);},
     history(role,peer,scene){return peer?db.prepare('SELECT * FROM messages WHERE (sender=? AND recipient=?) OR (sender=? AND recipient=?) ORDER BY seq DESC LIMIT 60').all(role,peer,peer,role).reverse():db.prepare('SELECT * FROM messages WHERE scene=? AND recipient IS NULL ORDER BY seq DESC LIMIT 60').all(scene).reverse();},
     gift(id,toRole,requestId,revision){
