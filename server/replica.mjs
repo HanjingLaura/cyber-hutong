@@ -82,11 +82,12 @@ export async function prepareReplica(path, client, { prefix = 'hutong_online', f
     db2 = target;
     db2.exec(`CREATE TEMP TABLE IF NOT EXISTS _hto_dirty(tbl TEXT NOT NULL, pk TEXT NOT NULL, PRIMARY KEY(tbl, pk));
       CREATE TEMP TABLE IF NOT EXISTS _hto_ctl(applying INTEGER NOT NULL); DELETE FROM temp._hto_ctl; INSERT INTO temp._hto_ctl VALUES(0);`);
-    const when = 'WHEN (SELECT applying FROM temp._hto_ctl) = 0';
+    // Trigger bodies must use unqualified names (older SQLite builds reject schema-qualified targets).
+    const when = 'WHEN (SELECT applying FROM _hto_ctl) = 0';
     for (const table of userTables(db2)) {
       const keys = keyColumns(db2, table), key = p => `json_array(${keys.map(k => p + '.' + q(k)).join(',')})`;
       const tag = table.replace(/[^A-Za-z0-9_]/g, '_');
-      const ins = p => `INSERT OR IGNORE INTO temp._hto_dirty(tbl, pk) VALUES(${"'" + table.replaceAll("'", "''") + "'"}, ${key(p)});`;
+      const ins = p => `INSERT OR IGNORE INTO _hto_dirty(tbl, pk) VALUES(${"'" + table.replaceAll("'", "''") + "'"}, ${key(p)});`;
       db2.exec(`DROP TRIGGER IF EXISTS temp._hto_i_${tag}; DROP TRIGGER IF EXISTS temp._hto_u_${tag}; DROP TRIGGER IF EXISTS temp._hto_d_${tag};
         CREATE TEMP TRIGGER _hto_i_${tag} AFTER INSERT ON main.${q(table)} ${when} BEGIN ${ins('NEW')} END;
         CREATE TEMP TRIGGER _hto_u_${tag} AFTER UPDATE ON main.${q(table)} ${when} BEGIN ${ins('OLD')} ${ins('NEW')} END;
