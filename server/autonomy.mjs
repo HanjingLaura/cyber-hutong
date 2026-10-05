@@ -2,7 +2,6 @@ import rooms from '../shared/rooms.json' with {type:'json'};
 import geometry from '../shared/interactions.json' with {type:'json'};
 import desks from '../shared/workstations.json' with {type:'json'};
 import {habits} from './personas.mjs';
-import {memoryPolicy} from './life.mjs';
 export const activityPause=(kind='rest')=>(kind==='work'?30*60000:10*60000)+Math.random()*(kind==='work'?60*60000:15*60000);
 
 export function walkable(scene,x,y){
@@ -37,7 +36,7 @@ export function createAutonomy(store,life,players,leases=new Map()){
  const onlineScenes=()=>[...new Set(onlinePeople().map(p=>p.scene))];
  function deliveryCandidate(p,now){const hour=Number(new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Shanghai',hour:'2-digit',hourCycle:'h23'}).format(new Date(now))),day=Math.floor((now+28800000)/86400000)*86400000-28800000;return p.role==='kay'&&hour>=6&&hour<12&&store.byId(p.id).hand==='咖啡'&&!store.db.prepare("SELECT seq FROM experiences WHERE account=? AND kind='delivery' AND at>=?").get(p.id,day)&&all().find(o=>o.role==='sid');}
  function plan(p,now){
-  releaseSeat(p);const meeting=life.meeting(p.id),profile=JSON.parse(store.byId(p.id).profile),fact=profile.habits||habits[p.role];
+  releaseSeat(p);const meeting=life.meeting(p.id),profile=JSON.parse(store.byId(p.id).profile),fact=profile.confirmed?profile.habits:habits[p.role];
   const favorites=/米线/.test(fact)?['noodle']:/健身/.test(fact)?['gym']:/演唱会/.test(fact)?['concert']:/POP|下楼/.test(fact)?['pop','rest']:['rest'];
   const roll=Math.random(),pair=p.role==='amber'?'cora':p.role==='cora'?'amber':p.role==='laura'?'amber':null,friend=all().find(o=>o.role===pair);
   const occupied=onlineScenes();

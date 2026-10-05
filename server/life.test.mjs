@@ -67,6 +67,7 @@ test('routine cooldown persists through recreation and skips snapshots without s
  assert.equal(life.record(a.id,'coffee','接了一杯咖啡。','rest',at+1000,{routine:true}).changes,0);assert.equal(captures,1);
  const reopened=createLife(store);assert.equal(reopened.record(a.id,'coffee','接了一杯咖啡。','rest',at+10*60000,{routine:true}).changes,0);
  assert.equal(reopened.record(a.id,'coffee','接了一杯咖啡。','rest',at+30*60000,{routine:true}).changes,1);
+ assert.equal(reopened.journal(a.id).some(e=>e.kind==='coffee'),false,'routine events stay out of look-back journal');
  for(let i=0;i<30;i++)reopened.record(a.id,'gift','真实的赠送。','rest',at+i);assert.equal(reopened.journal(a.id).filter(e=>e.kind==='gift').length,30);
  const policy={key:'encounter:laura:sid',cooldown:60*60000};assert.equal(reopened.record(a.id,'encounter','碰面。','rest',at,policy).changes,1);
  assert.equal(createLife(store).record(a.id,'encounter','换一个房间碰面。','hutong',at+1000,policy).changes,0);

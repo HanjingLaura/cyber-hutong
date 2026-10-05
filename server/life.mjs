@@ -35,8 +35,8 @@ export function createLife(store){
   try{db.exec('BEGIN IMMEDIATE');}catch(e){if(String(e.message||e).includes('within a transaction')){insert();return eventId;}throw e;}
   try{insert();db.exec('COMMIT');return eventId;}catch(e){try{db.exec('ROLLBACK');}catch{/* keep original */}throw e;}
  };
- const journal=(account,before=Number.MAX_SAFE_INTEGER)=>db.prepare('SELECT seq,kind,body,scene,at,event_id AS eventId,data FROM experiences WHERE account=? AND seq<? ORDER BY seq DESC LIMIT 50').all(account,before).map(e=>({...e,data:JSON.parse(e.data)}));
- const recent=account=>db.prepare('SELECT seq,kind,body,scene,at FROM experiences WHERE account=? ORDER BY seq DESC LIMIT 5').all(account);
+ const journal=(account,before=Number.MAX_SAFE_INTEGER)=>db.prepare('SELECT seq,kind,body,scene,at,event_id AS eventId,data FROM experiences WHERE account=? AND seq<? AND routine=0 ORDER BY seq DESC LIMIT 50').all(account,before).map(e=>({...e,data:JSON.parse(e.data)}));
+ const recent=account=>db.prepare('SELECT seq,kind,body,scene,at FROM experiences WHERE account=? AND routine=0 ORDER BY seq DESC LIMIT 5').all(account);
  const savePosition=p=>db.prepare('INSERT INTO positions VALUES(?,?,?) ON CONFLICT(account) DO UPDATE SET state=excluded.state,at=excluded.at').run(p.id,JSON.stringify({scene:p.scene,x:p.x,y:p.y,facing:p.facing,seat:p.seat,activity:p.activity}),Date.now());
  const position=id=>{const row=db.prepare('SELECT state FROM positions WHERE account=?').get(id);return row?JSON.parse(row.state):null;};
  const bag=id=>JSON.parse(db.prepare('SELECT state FROM bags WHERE account=?').get(id)?.state??'[null,null,null,null]');

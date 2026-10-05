@@ -9,7 +9,7 @@ import interactions from '../shared/interactions.json' with {type:'json'};
 import npcRules from '../shared/npcs.json' with {type:'json'};
 import guestPositions from '../shared/guests.json' with {type:'json'};
 import {createWorld} from './world.mjs';
-import {createLife} from './life.mjs';
+import {createLife,memoryPolicy} from './life.mjs';
 import {createAutonomy} from './autonomy.mjs';
 import {createBailian} from './llm.mjs';
 import {createDirector} from './director.mjs';
@@ -149,7 +149,11 @@ export function createMvpServer({dbPath='data/mvp.sqlite',staticDir=resolve('dis
           for(const l of leases.values())if(l.account===user.id)l.at=now;
           const previousActivity=p.activity;
           Object.assign(p,{scene:input.scene,x:input.x,y:input.y,facing:input.facing,moving:input.moving===true,seat:input.seat,activity:activity.slice(0,20),at:now});if(now-(p.savedAt||0)>5000){life.savePosition(p);p.savedAt=now;}
-          if(previousActivity!==activity){if(activity==='working')life.record(user.id,'work','开始在自己的工位办公。',p.scene);else if(activity==='sit')life.record(user.id,'rest','坐在椅子上休息。',p.scene);else if(previousActivity==='working')life.record(user.id,'work','离开工位，结束了这段办公。',p.scene);}
+          if(previousActivity!==activity){
+            if(activity==='working')life.record(user.id,'work','开始在自己的工位办公。',p.scene,Date.now(),{routine:true,key:`work:start:${p.scene}`});
+            else if(activity==='sit')life.record(user.id,'rest','坐在椅子上休息。',p.scene,Date.now(),{routine:true,key:`rest:sit:${p.scene}`});
+            else if(previousActivity==='working')life.record(user.id,'work','离开工位，结束了这段办公。',p.scene,Date.now(),{routine:true,key:`work:end:${p.scene}`});
+          }
           dirty=true;json(res,200,{self:next,player:cleanPlayer(p)});return;
         }
         if(path==='/api/chat'){
@@ -163,7 +167,7 @@ export function createMvpServer({dbPath='data/mvp.sqlite',staticDir=resolve('dis
         if(path==='/api/interact'){
           limited('interact:'+user.id,10,10000);checkControl(user,input.client);
           const a=players.get(user.id),b=live(input.peer)||autonomy.all().find(p=>p.role===input.peer);if(!b||b.id===a.id||a.scene!==b.scene||Math.hypot(a.x-b.x,a.y-b.y)>55)fail(409,'请走到对方附近');
-          if(input.action==='greet'){const duplicate=store.db.prepare('SELECT seq FROM messages WHERE id=?').get(user.role+':'+input.requestId);const message=store.message(user.role,null,a.scene,`嗨，${name(b.role)}！`,input.requestId);publishMessage(message);if(!duplicate){life.record(user.id,'greet',`向 ${name(b.role)} 打了招呼。`,a.scene);life.record(b.id,'greet',`${name(user.role)} 向你打了招呼。`,a.scene);}json(res,200,{ok:true});return;}
+          if(input.action==='greet'){const duplicate=store.db.prepare('SELECT seq FROM messages WHERE id=?').get(user.role+':'+input.requestId);const message=store.message(user.role,null,a.scene,`嗨，${name(b.role)}！`,input.requestId);publishMessage(message);if(!duplicate){const pair=[user.role,b.role].sort().join(':');life.record(user.id,'greet',`向 ${name(b.role)} 打了招呼。`,a.scene,Date.now(),{key:`greet:${pair}`,cooldown:memoryPolicy.encounterCooldown});life.record(b.id,'greet',`${name(user.role)} 向你打了招呼。`,a.scene,Date.now(),{key:`greet:${pair}:peer`,cooldown:memoryPolicy.encounterCooldown});}json(res,200,{ok:true});return;}
           if(input.action==='gift'){if(typeof input.requestId!=='string'||input.requestId.length>120)fail(400,'操作编号无效');const result=life.send(user.id,b.role,'gift',input.requestId,a.scene,input.revision);dirty=true;flush();json(res,200,result);return;}
           fail(400,'互动无效');
         }
