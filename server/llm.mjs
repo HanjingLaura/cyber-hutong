@@ -4,7 +4,11 @@ export function createBailian(store,life,{key=process.env.DASHSCOPE_API_KEY||pro
  store.db.exec('CREATE TABLE IF NOT EXISTS llm_usage(day TEXT PRIMARY KEY,calls INTEGER NOT NULL,tokens INTEGER NOT NULL DEFAULT 0)');
  let busy=0,failures=0,retryAt=0,closed=false,lastStatus=key?'ready':'missing_key';const controllers=new Set();
  const configured=!!key;
- const profile=role=>{const a=store.byRole(role),p=a?JSON.parse(a.profile):{};return{role,habits:p.confirmed?p.habits:habits[role],voice:p.confirmed?p.voice:'',examples:p.confirmed?p.examples:'',memories:a?life.recent(a.id):[]};};
+  const profile=role=>{
+   const a=store.byRole(role),raw=a?JSON.parse(a.profile):{};
+   const distilled=raw.distilled||{facts:[],likes:[],expression:raw.voice||'',quotes:[],rules:{}};
+   return{role,habits:raw.confirmed?raw.habits:habits[role],voice:raw.confirmed&&raw.voice?raw.voice:(distilled.expression||''),examples:raw.confirmed?raw.examples:'',likes:distilled.likes||[],expression:distilled.expression||raw.voice||'',memories:a?life.recent(a.id):[]};
+  };
  async function json(task,context){
   if(!configured||closed||busy>=2||Date.now()<retryAt)return null;
   const day=new Date(Date.now()+28800000).toISOString().slice(0,10),used=store.db.prepare('SELECT calls FROM llm_usage WHERE day=?').get(day)?.calls??0;
@@ -21,7 +25,7 @@ export function createBailian(store,life,{key=process.env.DASHSCOPE_API_KEY||pro
  }
  return{
   configured,profile,
-  async reply(role,text,peer,scene){const a=store.byRole(role);if(!a)return null;const result=await json('生成简短自然的中文回复，最多100字。输出 {"text":"回复"}。不能修改游戏状态。',{character:profile(role),peer,scene,text,conversation:store.history(role,peer,scene).slice(-10).map(m=>({sender:m.sender,body:m.body}))});return typeof result?.text==='string'&&result.text.trim()?result.text.trim().slice(0,200):replyFor(role,text,JSON.parse(a.profile));},
+  async reply(role,text,peer,scene){const a=store.byRole(role);if(!a)return null;const result=await json('用角色本人口吻生成简短自然的中文回复，最多100字，像同事随口说话，不要说明书腔。输出 {"text":"回复"}。不能修改游戏状态。',{character:profile(role),peer,scene,text,conversation:store.history(role,peer,scene).slice(-10).map(m=>({sender:m.sender,body:m.body}))});return typeof result?.text==='string'&&result.text.trim()?result.text.trim().slice(0,200):replyFor(role,text,JSON.parse(a.profile),{peer,scene});},
   async choose(candidates){const result=await json('只从候选活动中选一个。返回 {"id":"候选ID"}，不得创造新候选。',{candidates:candidates.map(c=>({...c,characters:c.roles.map(profile)}))});return candidates.find(c=>c.id===result?.id)??null;},
   async dialogue(role,participants,outcome,scene){const result=await json('刚发生的结果已由游戏确认。以角色口吻说一句话，最多60字。输出 {"text":"话语"}，不改变结果。',{character:profile(role),participants,outcome,scene});return typeof result?.text==='string'?result.text.trim().slice(0,120):null;},
   status(){return{provider:'bailian',model,configured,status:lastStatus,inFlight:busy};},

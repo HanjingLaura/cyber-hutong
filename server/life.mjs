@@ -29,8 +29,11 @@ export function createLife(store){
   const ids=[...new Set(accounts)].filter(id=>store.byId(id));
   const data=JSON.stringify({...sceneProvider(scene),participants:ids.map(id=>store.byId(id).role),participantStates:ids.map(actorProvider).filter(Boolean),eventId});
   // Callers already inside a transaction retain their atomic state change.
-  const owned=!db.isTransaction;if(owned)db.exec('BEGIN IMMEDIATE');
-  try{for(const id of ids)db.prepare("INSERT OR IGNORE INTO experiences(account,kind,body,scene,at,data,routine,event_key,event_id) VALUES(?,?,?,?,?,?,0,'',?)").run(id,kind,body,scene,at,data,eventId);if(owned)db.exec('COMMIT');return eventId;}catch(e){if(owned)db.exec('ROLLBACK');throw e;}
+  // node:sqlite may omit isTransaction; fall back to detecting nested BEGIN.
+  const insert=()=>{for(const id of ids)db.prepare("INSERT OR IGNORE INTO experiences(account,kind,body,scene,at,data,routine,event_key,event_id) VALUES(?,?,?,?,?,?,0,'',?)").run(id,kind,body,scene,at,data,eventId);};
+  if(db.isTransaction===true){insert();return eventId;}
+  try{db.exec('BEGIN IMMEDIATE');}catch(e){if(String(e.message||e).includes('within a transaction')){insert();return eventId;}throw e;}
+  try{insert();db.exec('COMMIT');return eventId;}catch(e){try{db.exec('ROLLBACK');}catch{/* keep original */}throw e;}
  };
  const journal=(account,before=Number.MAX_SAFE_INTEGER)=>db.prepare('SELECT seq,kind,body,scene,at,event_id AS eventId,data FROM experiences WHERE account=? AND seq<? ORDER BY seq DESC LIMIT 50').all(account,before).map(e=>({...e,data:JSON.parse(e.data)}));
  const recent=account=>db.prepare('SELECT seq,kind,body,scene,at FROM experiences WHERE account=? ORDER BY seq DESC LIMIT 5').all(account);

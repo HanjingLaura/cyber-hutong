@@ -32,12 +32,18 @@ export function createAutonomy(store,life,players,leases=new Map()){
  const get=id=>doubles.get(id);
  const reclaim=id=>{director?.cancelFor(id);const p=doubles.get(id);if(p){releaseSeat(p);save(p);doubles.delete(id);if(coffeeOwner===id)coffeeOwner=null;}return p;};
  const all=()=>[...players.values(),...doubles.values()];
+ const onlinePeople=()=>[...players.values()].filter(p=>!p.disconnectedAt);
+ const onlineCount=()=>onlinePeople().length;
+ const onlineScenes=()=>[...new Set(onlinePeople().map(p=>p.scene))];
  function deliveryCandidate(p,now){const hour=Number(new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Shanghai',hour:'2-digit',hourCycle:'h23'}).format(new Date(now))),day=Math.floor((now+28800000)/86400000)*86400000-28800000;return p.role==='kay'&&hour>=6&&hour<12&&store.byId(p.id).hand==='咖啡'&&!store.db.prepare("SELECT seq FROM experiences WHERE account=? AND kind='delivery' AND at>=?").get(p.id,day)&&all().find(o=>o.role==='sid');}
  function plan(p,now){
   releaseSeat(p);const meeting=life.meeting(p.id),profile=JSON.parse(store.byId(p.id).profile),fact=profile.habits||habits[p.role];
   const favorites=/米线/.test(fact)?['noodle']:/健身/.test(fact)?['gym']:/演唱会/.test(fact)?['concert']:/POP|下楼/.test(fact)?['pop','rest']:['rest'];
   const roll=Math.random(),pair=p.role==='amber'?'cora':p.role==='cora'?'amber':p.role==='laura'?'amber':null,friend=all().find(o=>o.role===pair);
-  const destination=meeting?'rest':roll<.45?'hutong':roll<.65?'rest':roll<.8?p.scene:friend&&roll>.95?friend.scene:favorites[Math.floor(Math.random()*favorites.length)];
+  const occupied=onlineScenes();
+  // When humans are online, prefer their rooms so offline doubles stay visible rather than vanishing into empty scenes.
+  let destination=meeting?'rest':roll<.45?'hutong':roll<.65?'rest':roll<.8?p.scene:friend&&roll>.95?friend.scene:favorites[Math.floor(Math.random()*favorites.length)];
+  if(!meeting&&occupied.length&&roll>=.35&&roll<.8)destination=occupied[Math.floor(Math.random()*occupied.length)];
   const recipient=deliveryCandidate(p,now);
   const task={scene:recipient&&!meeting?recipient.scene:destination,kind:meeting?'meet':roll>=.65&&roll<.8?'walk':destination==='hutong'?'work':destination==='rest'?'coffee':destination==='noodle'?'noodle':destination==='gym'?'exercise':'visit',phase:'exit'};
   if(recipient&&!meeting){task.kind='deliver';task.peer=recipient.role;}
@@ -78,5 +84,5 @@ export function createAutonomy(store,life,players,leases=new Map()){
   const people=all();
   life.finishMeetings(people);return changed;
  }
- return{tick,get,reclaim,doubles,all,setDirector(value){director=value;},travel(p,scene,point,storyId,now){releaseSeat(p);p.task={kind:'story',storyId,scene,point,phase:p.scene===scene?'arrive':'exit'};p.path=route(p.scene,[p.x,p.y],p.task.phase==='exit'?rooms[p.scene].exit:point);p.next=now+180000;},holdStory(p,storyId){releaseSeat(p);p.path=[];p.task={kind:'story',storyId,phase:'hold'};p.moving=false;},releaseStory(p,now){p.task=null;p.path=[];p.moving=false;p.next=now+activityPause(p.activity==='working'?'work':'rest');save(p);},saveAll(){for(const p of all())save(p);}};
+ return{tick,get,reclaim,doubles,all,onlineCount,onlineScenes,setDirector(value){director=value;},travel(p,scene,point,storyId,now){releaseSeat(p);p.task={kind:'story',storyId,scene,point,phase:p.scene===scene?'arrive':'exit'};p.path=route(p.scene,[p.x,p.y],p.task.phase==='exit'?rooms[p.scene].exit:point);p.next=now+180000;},holdStory(p,storyId){releaseSeat(p);p.path=[];p.task={kind:'story',storyId,phase:'hold'};p.moving=false;},releaseStory(p,now){p.task=null;p.path=[];p.moving=false;p.next=now+activityPause(p.activity==='working'?'work':'rest');save(p);},saveAll(){for(const p of all())save(p);}};
 }
