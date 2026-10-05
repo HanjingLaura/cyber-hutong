@@ -37,11 +37,16 @@ Vercel 项目 `cyber-hutong`，作品集 `hanjing-laura.vercel.app` 把 `/cyber-
 | `HUTONG_INVITE` | 内测邀请码；未设置时注册不需要邀请码 |
 | `HUTONG_ALLOWED_HOSTS` | 允许的跨站 Origin（作品集域名），用于 POST 来源检查 |
 | `DASHSCOPE_API_KEY`（可选 `LLM_MODEL`/`BAILIAN_MODEL`、`LLM_DAILY_LIMIT`） | 百炼大模型；未设置时使用内置回复 |
+| `PARTY_AUTH_SECRET` | 与 PartyKit 共享的 join ticket HMAC 密钥 |
+| `VITE_PARTYKIT_HOST` | 前端连接的 PartyKit 主机（构建时嵌入），如 `cyber-hutong.xxx.partykit.dev` |
+| `PARTYKIT_HOST` / `PARTY_ROOM` | 可选；ticket 响应与房间名（默认 `hutong-main`） |
+
+PartyKit 部署步骤与双窗口验收见 [partykit.md](partykit.md)。
 
 ## 已知限制
 
-- 世界状态（位置、在线、租用设备、Celine、活动导演）仍在每个函数实例的内存里。Fluid compute 下低流量时
-  通常同一实例处理所有请求，但不保证；不同实例的玩家可能互相看不到，POST 落到没有 SSE 的实例会提示
-  “角色在另一个窗口操作”。真正的八人权威世界仍需要单个常驻 Node 进程（见 `Dockerfile`、`compose.yaml`）。
+- **已用 PartyKit 缓解：** 玩家位置与在线可见性默认走 PartyKit 权威房间，不再依赖单个 Vercel 函数实例内存互相同步。需同时配置 `PARTY_AUTH_SECRET` + `VITE_PARTYKIT_HOST` 并部署 PartyKit。
+- 座位、设备租用、Celine、活动导演等世界副作用仍在每个函数实例的内存里；物品/账号靠 Turso 行级复制。Fluid compute 下低流量时通常同一实例处理请求，但不保证。
 - Turso 复制是行级“后写覆盖”。并发修改同一行（例如两个实例同时领取同一角色）可能互相覆盖。
 - 自增编号（消息、经历）按实例时间偏移以避免冲突，编号会很大但仍是安全整数。
+- 可选常驻方案仍见 `Dockerfile`、`compose.yaml`（本仓库主路径是 Vercel + PartyKit，不必另租 VPS）。
