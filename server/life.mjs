@@ -25,11 +25,14 @@ export function createLife(store){
   if(cooldown&&db.prepare('SELECT 1 FROM experiences WHERE account=? AND event_key=? AND at>? LIMIT 1').get(account,key,at-cooldown))return{changes:0};
   return db.prepare('INSERT INTO experiences(account,kind,body,scene,at,data,routine,event_key) VALUES(?,?,?,?,?,?,?,?)').run(account,kind,body,scene,at,JSON.stringify(sceneProvider(scene)??{}),Number(routine),key);
  };
+ // Node <22.17 may lack DatabaseSync.isTransaction; fall back to nested-BEGIN detection.
+ const inTransaction=()=>typeof db.isTransaction==='boolean'?db.isTransaction:false;
+ const beginOwned=()=>{if(inTransaction())return false;try{db.exec('BEGIN IMMEDIATE');return true;}catch(e){if(String(e?.message||e).includes('within a transaction'))return false;throw e;}};
  const recordGroup=(accounts,kind,body,scene,at=Date.now(),eventId=randomUUID())=>{
   const ids=[...new Set(accounts)].filter(id=>store.byId(id));
   const data=JSON.stringify({...sceneProvider(scene),participants:ids.map(id=>store.byId(id).role),participantStates:ids.map(actorProvider).filter(Boolean),eventId});
   // Callers already inside a transaction retain their atomic state change.
-  const owned=!db.isTransaction;if(owned)db.exec('BEGIN IMMEDIATE');
+  const owned=beginOwned();
   try{for(const id of ids)db.prepare("INSERT OR IGNORE INTO experiences(account,kind,body,scene,at,data,routine,event_key,event_id) VALUES(?,?,?,?,?,?,0,'',?)").run(id,kind,body,scene,at,data,eventId);if(owned)db.exec('COMMIT');return eventId;}catch(e){if(owned)db.exec('ROLLBACK');throw e;}
  };
  const journal=(account,before=Number.MAX_SAFE_INTEGER)=>db.prepare('SELECT seq,kind,body,scene,at,event_id AS eventId,data FROM experiences WHERE account=? AND seq<? ORDER BY seq DESC LIMIT 50').all(account,before).map(e=>({...e,data:JSON.parse(e.data)}));
@@ -42,7 +45,7 @@ export function createLife(store){
  const writeCollection=(id,entries)=>db.prepare('INSERT INTO collections VALUES(?,?) ON CONFLICT(account) DO UPDATE SET state=excluded.state').run(id,JSON.stringify(entries));
  // Used inside the caller's transaction; collection changes and rewards commit together.
  const addCollected=(id,name,seasoning=[])=>{const entries=collection(id);const entry=entries.find(e=>e.name===name&&JSON.stringify(e.seasoning)===JSON.stringify(seasoning));if(entry)entry.count++;else{if(entries.length>=1000)fail(409,'收藏空间已满');entries.push({name,count:1,seasoning});}writeCollection(id,entries);};
- const atomic=fn=>{db.exec('BEGIN IMMEDIATE');try{const result=fn();db.exec('COMMIT');return result;}catch(e){db.exec('ROLLBACK');throw e;}};
+ const atomic=fn=>{const owned=beginOwned();try{const result=fn();if(owned)db.exec('COMMIT');return result;}catch(e){if(owned)db.exec('ROLLBACK');throw e;}};
  const replay=(id,key)=>{if(typeof key!=='string'||!key||key.length>120)fail(400,'操作编号无效');const r=db.prepare('SELECT result FROM operations WHERE account=? AND id=?').get(id,key);return r?JSON.parse(r.result):null;};
  const remember=(id,key,result)=>{db.prepare('INSERT INTO operations VALUES(?,?,?)').run(key,id,JSON.stringify(result));return result;};
  const expire=(now=Date.now())=>{for(const o of db.prepare("SELECT * FROM offers WHERE status IN ('pending','accepted') AND expires<=?").all(now)){db.prepare("UPDATE offers SET status='expired' WHERE id=?").run(o.id);record(o.sender,o.kind,o.kind==='gift'?'赠送等待超时，物品仍在手中。':'一起休息的约定超时。',o.scene,now);record(o.recipient,o.kind,'这次邀请已超时。',o.scene,now);}};
