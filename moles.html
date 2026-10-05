@@ -3,12 +3,15 @@
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
   <title>胡同地鼠 · Hutong Moles</title><link rel="icon" href="data:,">
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;700&family=ZCOOL+QingKe+HuangYou&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/src/moles/style.css">
 </head>
 <body>
   <header><div class="hardware"><button id="connect">连接 Uno</button><p id="serial-status" role="status"></p></div></header>
   <main>
-    <div class="title"><div><p class="english">HUTONG MOLES</p><h1>胡同地鼠</h1></div></div>
+    <div class="title"><div><p class="english">HUTONG MOLES</p><h1>胡同地鼠</h1><p class="lede">选人 · 开窗 · 下班前打一局</p></div></div>
     <section id="selection" aria-label="选择角色">
       <div id="people" class="people" aria-label="选择角色"></div>
       <div class="selection-actions"><div><button id="all">全选</button><button id="clear">清空</button></div><button id="start" class="primary" disabled>开始 · 60 秒 →</button></div>
@@ -26,4 +29,5 @@
     </section>
     <footer><span id="saved-best">本机最高 0 分</span></footer>
   </main><script type="module" src="/src/moles/app.js"></script>
-</body></html>
+</body>
+</html>

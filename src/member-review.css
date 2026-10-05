@@ -1,1 +1,89 @@
-:root{font-family:"Microsoft YaHei",sans-serif;color:#eee8dc;background:#242a28;color-scheme:dark}*{box-sizing:border-box}body{margin:0}main{max-width:1260px;margin:auto;padding:24px}h1{font-size:24px;margin:16px 0}p{font-size:14px;line-height:1.7;color:#c0c8ba}a{color:#c9d5b9}button,select{font:inherit;color:#efeadd;background:#354039;border:1px solid #88947b;border-radius:0;padding:7px 10px}button{cursor:pointer}button[aria-pressed=true]{background:#5a674c}nav,.controls{display:flex;gap:10px;flex-wrap:wrap;margin:16px 0;align-items:center}label{font-size:14px}.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}.person{border-top:2px solid #687461;padding-top:10px}.person h2{font-size:16px;margin:0 0 6px}.person p{font-size:12px;margin:6px 0}canvas{width:100%;height:auto;image-rendering:pixelated;display:block;background:#333b3c}.atlas{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.atlas img{width:100%;image-rendering:pixelated;background:#3b4140}.atlas figcaption{padding:8px 0;font-size:13px}figure{margin:0}.note{border-top:1px solid #697263;padding-top:10px}@media(max-width:780px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}main{padding:14px}}@media(max-width:460px){.grid,.atlas{grid-template-columns:1fr}}
+@import './tokens.css';
+
+* { box-sizing: border-box; }
+body { margin: 0; min-height: 100dvh; background:
+  radial-gradient(900px 480px at 10% -10%, #2a3a3140, transparent 55%),
+  var(--moss-ink); }
+main { max-width: 1260px; margin: auto; padding: 28px 24px; }
+h1 {
+  font: 36px/1.1 var(--font-brand);
+  letter-spacing: 0.06em;
+  margin: 16px 0 8px;
+  color: var(--paper);
+  text-shadow: 3px 3px 0 var(--shadow-ink);
+}
+p { font-size: 14px; line-height: 1.7; color: var(--paper-soft); }
+a { color: var(--lantern); }
+a:hover { color: var(--lantern-hot); }
+button, select {
+  font: inherit;
+  color: var(--paper);
+  background: var(--moss-mid);
+  border: 2px solid var(--tile);
+  border-radius: 0;
+  padding: 7px 10px;
+  box-shadow: 3px 3px 0 var(--shadow-ink);
+}
+button { cursor: pointer; transition: border-color var(--duration) var(--ease-out), background var(--duration) var(--ease-out); }
+button:hover, button:focus-visible { border-color: var(--lantern); outline: 2px solid var(--lantern); outline-offset: 2px; }
+button[aria-pressed=true] { background: #5a674c; border-color: var(--lantern); color: var(--lantern-hot); }
+nav, .controls {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 16px 0;
+  align-items: center;
+}
+label { font-size: 14px; color: var(--paper-soft); font-family: var(--font-mono); }
+.grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+.person { border-top: 2px solid var(--tile); padding-top: 10px; }
+.person h2 {
+  font: 16px/1.2 var(--font-mono);
+  margin: 0 0 6px;
+  color: var(--lantern);
+  letter-spacing: 0.04em;
+}
+.person p { font-size: 12px; margin: 6px 0; }
+canvas {
+  width: 100%;
+  height: auto;
+  image-rendering: pixelated;
+  display: block;
+  background: #333b3c;
+  border: 2px solid var(--tile);
+}
+.atlas {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+.atlas img {
+  width: 100%;
+  image-rendering: pixelated;
+  background: #3b4140;
+  border: 2px solid var(--tile);
+}
+.atlas figcaption {
+  padding: 8px 0;
+  font: 13px var(--font-mono);
+  color: var(--paper-soft);
+}
+figure { margin: 0; }
+.note {
+  border-top: 1px solid var(--tile);
+  padding-top: 10px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+@media (max-width: 780px) {
+  .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  main { padding: 14px; }
+  h1 { font-size: 28px; }
+}
+@media (max-width: 460px) {
+  .grid, .atlas { grid-template-columns: 1fr; }
+}
