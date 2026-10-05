@@ -9,36 +9,28 @@
   },
   "rewrites": [
     {
-      "source": "/cyber-hutong/api/:path*",
+      "source": "/cyber-hutong/api/(.*)",
       "destination": "/api/index"
     },
     {
-      "source": "/api/:path*",
+      "source": "/api/(.*)",
       "destination": "/api/index"
     },
     {
-      "source": "/cyber-hutong/moles",
+      "source": "/cyber-hutong/moles/?",
       "destination": "/moles.html"
     },
     {
-      "source": "/cyber-hutong/moles/",
+      "source": "/moles/?",
       "destination": "/moles.html"
     },
     {
-      "source": "/moles",
-      "destination": "/moles.html"
-    },
-    {
-      "source": "/moles/",
-      "destination": "/moles.html"
-    },
-    {
-      "source": "/cyber-hutong",
+      "source": "/cyber-hutong/?",
       "destination": "/index.html"
     },
     {
-      "source": "/cyber-hutong/:path*",
-      "destination": "/:path*"
+      "source": "/cyber-hutong/(.*)",
+      "destination": "/$1"
     }
   ],
   "headers": [
