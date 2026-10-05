@@ -120,7 +120,7 @@ export function createMvpServer({dbPath='data/mvp.sqlite',staticDir=resolve('dis
           checkControl(user,input.client);const p=players.get(user.id),id=p.scene+':'+input.device;
           const allowed={arcade:['mines','spider','claw','basketball','hockey'],gym:['run-0','run-1','run-2','curl'],rehearsal:['piano'],dance:['music']};
           if(!allowed[p.scene]?.includes(input.device))fail(400,'设备无效');
-          if(input.release){if(leases.get(id)?.account===user.id)leases.delete(id);}else{const at=interactions[p.scene].devices[input.device];if(Math.hypot(p.x-at[0],p.y-at[1])>40)fail(409,'请走到设备附近');if(store.byId(user.id).hand&&['gym','rehearsal'].includes(p.scene))fail(409,'先放下手中物品');const old=leases.get(id);if(old&&old.account!==user.id)fail(409,'设备有人使用');leases.set(id,{account:user.id,role:user.role,at:Date.now()});}dirty=true;json(res,200,{ok:true});return;
+          if(input.release){if(leases.get(id)?.account===user.id)leases.delete(id);}else{const at=interactions[p.scene].devices?.[input.device];if(!at)fail(400,'设备位置无效');if(Math.hypot(p.x-at[0],p.y-at[1])>40)fail(409,'请走到设备附近');if(store.byId(user.id).hand&&['gym','rehearsal'].includes(p.scene))fail(409,'先放下手中物品');const old=leases.get(id);if(old&&old.account!==user.id)fail(409,'设备有人使用');leases.set(id,{account:user.id,role:user.role,at:Date.now()});}dirty=true;json(res,200,{ok:true});return;
         }
         if(path==='/api/progress'){
           if(!['bead','score','draft'].includes(input.kind)||typeof input.key!=='string'||input.key.length>80)fail(400,'记录无效');
@@ -170,7 +170,9 @@ export function createMvpServer({dbPath='data/mvp.sqlite',staticDir=resolve('dis
         }
         fail(404,'没有这个接口');
       }
-      let file=resolve(staticDir,'.'+decodeURIComponent(path));if(path==='/')file=resolve(staticDir,'index.html');if(path==='/moles'||path==='/moles/')file=resolve(staticDir,'moles.html');if(!file.startsWith(resolve(staticDir)+sep))fail(403,'访问无效');
+      let filePath=path;
+      try{filePath=decodeURIComponent(path);}catch{fail(400,'路径无效');}
+      let file=resolve(staticDir,'.'+filePath);if(path==='/')file=resolve(staticDir,'index.html');if(path==='/moles'||path==='/moles/')file=resolve(staticDir,'moles.html');if(!file.startsWith(resolve(staticDir)+sep))fail(403,'访问无效');
       const content=await readFile(file).catch(()=>null);if(!content){json(res,404,{error:'文件不存在，请先构建'});return;}
       const mime={'.html':'text/html; charset=utf-8','.js':'text/javascript','.css':'text/css','.png':'image/png','.jpg':'image/jpeg','.json':'application/json'};
       res.writeHead(200,{'Content-Type':mime[extname(file)]||'application/octet-stream','X-Content-Type-Options':'nosniff'});res.end(content);

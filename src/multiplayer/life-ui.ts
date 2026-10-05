@@ -1,6 +1,6 @@
 import type {MultiplayerBridge} from './bridge';
 import {setupMemoryView,type MemoryEntry} from './memory-view';
-import {consumables,itemLabel} from '../player-inventory';
+import {consumables,itemLabel,playerInventory,type ItemName} from '../player-inventory';
 import {ensureCollectible,itemIcon} from '../collectible-art';
 import {registerGachaTextures} from '../gacha-assets';
 import {registerProductTextures} from '../product-textures';
@@ -26,7 +26,7 @@ export function setupLifeUI(bridge:MultiplayerBridge,request:(path:string,input?
   const quick=root.querySelector<HTMLElement>('#hand-actions')!;quick.hidden=!(edible||collectible)||!!document.querySelector('#arcade-game[open],#perler-workshop[open]');const label=root.querySelector<HTMLElement>('#hand-item')!;label.replaceChildren();label.textContent=hand?itemLabel(hand):'';if(hand)icon(label,hand);const use=root.querySelector<HTMLButtonElement>('#hand-use')!;use.textContent=edible?['咖啡','可乐','气泡水','冰红茶','水'].includes(hand!)?'喝掉':'吃掉':'收藏';use.disabled=loading;
   (root.querySelector('#collection-tab') as HTMLButtonElement).textContent='收藏 · '+collection.reduce((n,s)=>n+(s?.count??0),0);
  }
- async function inventory(action:string,slot?:number){if(loading)return;loading=true;drawBag();const hand=bridge.user?.hand;try{await publish();const input={action,slot,client,revision:bridge.user?.revision,requestId:crypto.randomUUID()};let result;try{result=await request('inventory',input);}catch(e){if((e as any).status)throw e;result=await request('inventory',input);}bridge.user=result.self;bag=result.bag;collection=result.collection??collection;if(action==='consume')notice(`享用了${hand}。`);if(action==='collect')notice('已收进收藏，随时可以拿回。');}catch(e){notice((e as Error).message);}finally{loading=false;drawBag();}}
+ async function inventory(action:string,slot?:number){if(loading)return;loading=true;drawBag();const hand=bridge.user?.hand;try{await publish();const input={action,slot,client,revision:bridge.user?.revision,requestId:crypto.randomUUID()};let result;try{result=await request('inventory',input);}catch(e){if((e as any).status)throw e;result=await request('inventory',input);}bridge.user=result.self;playerInventory.hand=result.self.hand as ItemName|null;playerInventory.noodleSeasoning=result.self.seasoning??[];const ui=document.getElementById('social-ui');if(ui)ui.dataset.revision=String(result.self.revision);bag=result.bag;collection=result.collection??collection;window.dispatchEvent(new Event('hutong:hand-changed'));if(action==='consume')notice(`享用了${hand}。`);if(action==='collect')notice('已收进收藏，随时可以拿回。');}catch(e){notice((e as Error).message);}finally{loading=false;drawBag();}}
  function tab(collect:boolean){collectionOpen=collect;for(const [id,hidden]of [['#bag-slots',collect],['#collection-slots',!collect],['#collection-help',!collect]] as const)(root.querySelector(id) as HTMLElement).hidden=hidden;root.querySelector('#bag-tab')!.setAttribute('aria-pressed',String(!collect));root.querySelector('#collection-tab')!.setAttribute('aria-pressed',String(collect));}
  root.querySelector('#bag-tab')!.addEventListener('click',()=>tab(false));root.querySelector('#collection-tab')!.addEventListener('click',()=>tab(true));
  root.querySelector('#journal-more')!.addEventListener('click',()=>void journal(true));
