@@ -17,15 +17,27 @@
       "destination": "/api/index"
     },
     {
-      "source": "/cyber-hutong/moles/?",
+      "source": "/cyber-hutong/moles",
       "destination": "/moles.html"
     },
     {
-      "source": "/moles/?",
+      "source": "/cyber-hutong/moles/",
       "destination": "/moles.html"
     },
     {
-      "source": "/cyber-hutong/?",
+      "source": "/moles",
+      "destination": "/moles.html"
+    },
+    {
+      "source": "/moles/",
+      "destination": "/moles.html"
+    },
+    {
+      "source": "/cyber-hutong",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/cyber-hutong/",
       "destination": "/index.html"
     },
     {
