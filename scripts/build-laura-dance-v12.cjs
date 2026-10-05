@@ -1,4 +1,4 @@
-const fs=require('node:fs');const {chromium}=require('D:/CodexHome/mcp/node/node_modules/playwright');
+const fs=require('node:fs');const {chromium}=require('./playwright.cjs').loadPlaywright();
 (async()=>{const browser=await chromium.launch({channel:'chrome',headless:true,args:['--disable-webgl']});try{
  const page=await browser.newPage();await page.goto('http://127.0.0.1:5173/members.html');
  const roles=process.argv.slice(2);const metadata=await page.evaluate(async roles=>{

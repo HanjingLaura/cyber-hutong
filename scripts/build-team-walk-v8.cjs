@@ -1,6 +1,6 @@
 // Register complete redraws as atlas frames; never alter their pixels.
 const fs=require('node:fs');
-const {chromium}=require('D:/CodexHome/mcp/node/node_modules/playwright');
+const {chromium}=require('./playwright.cjs').loadPlaywright();
 (async()=>{
  const browser=await chromium.launch({channel:'chrome',headless:true,args:['--disable-webgl']});
  try{

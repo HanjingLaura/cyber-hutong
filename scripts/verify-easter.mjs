@@ -1,4 +1,3 @@
-import {createRequire} from 'node:module';
 import assert from 'node:assert/strict';
 import {mkdtempSync} from 'node:fs';
 import {mkdir} from 'node:fs/promises';
@@ -7,7 +6,8 @@ import {join} from 'node:path';
 import {openStore} from '../server/store.mjs';
 import {createServer as createViteServer} from 'vite';
 import {createMvpServer} from '../server/app.mjs';
-const require=createRequire(import.meta.url),{chromium}=require('D:/CodexHome/mcp/node/node_modules/playwright');
+import {loadPlaywright} from './playwright.mjs';
+const {chromium}=loadPlaywright();
 const dbPath=join(mkdtempSync(join(tmpdir(),'hutong-eggs-')),'fixture.sqlite'),seed=openStore(dbPath),now=Date.now();seed.db.exec('CREATE TABLE world_npcs(id TEXT PRIMARY KEY,state TEXT NOT NULL)');seed.db.prepare('INSERT INTO world_npcs VALUES(?,?)').run('celine',JSON.stringify({scene:'hutong',started:now,nextVisit:now+600000,nextSpeech:now+90000,question:'',until:0}));seed.close();
 const app=createMvpServer({dbPath,llmOptions:{key:''}});await new Promise(r=>app.server.listen(0,'127.0.0.1',r));
 const vite=await createViteServer({server:{port:5194,strictPort:true,host:'127.0.0.1',proxy:{'/api':{target:'http://127.0.0.1:'+app.server.address().port}}}});await vite.listen();

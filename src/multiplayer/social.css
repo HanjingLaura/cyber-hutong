@@ -59,7 +59,7 @@ body.game-fullscreen{overflow:hidden;background:#333936;height:100dvh}
 #chat-panel .panel-heading{margin:0 0 3px;font-size:11px}#chat-panel .panel-heading button,#chat-room{font-size:10px;padding:3px 6px;border:0;background:#17231c80;box-shadow:none}
 #chat-history{height:110px;padding:2px 0;font-size:12px;scrollbar-width:thin}#chat-history p{margin:2px 0}
 #chat-input{padding:6px 8px;background:#15231dbc;border:0;border-bottom:1px solid #a6b38b;font-size:12px}#chat-form button{padding:5px 8px;border:0;background:#344a35;font-size:12px}
-#people-panel{left:auto;right:14px;bottom:16px;background:#17251de6;border:1px solid #889c6f;box-shadow:3px 3px 0 #142018;font-family:Consolas,"Microsoft YaHei",monospace}
+#people-panel{position:absolute;left:auto;right:14px;bottom:16px;background:#17251de6;border:1px solid #889c6f;box-shadow:3px 3px 0 #142018;font-family:Consolas,"Microsoft YaHei",monospace}
 .social-dialog:not(#account-dialog){background:#26332b;border:2px solid #95a279;box-shadow:4px 4px 0 #142018;font-family:Consolas,"Microsoft YaHei",monospace}
 .location-map{width:min(850px,94vw)}.location-map section{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.location-map section>strong{grid-column:1/-1;font-size:12px;color:#c5cdab}
 .location-map [data-place]{display:flex;flex-direction:column;align-items:stretch;padding:0;border:2px solid #5a705b;background:#16251d;gap:0;text-align:left;box-shadow:none}
@@ -68,7 +68,9 @@ body.game-fullscreen{overflow:hidden;background:#333936;height:100dvh}
 #blind-result img{object-fit:contain;image-rendering:pixelated;width:96px;height:96px}
 @media(max-width:650px){.location-map section{grid-template-columns:repeat(2,minmax(0,1fr))}#chat-panel{width:44vw;left:6px;bottom:8px}#chat-history{height:70px;font-size:10px}.game-fullscreen #play-guide{bottom:12px;left:auto;right:8px;transform:none;max-width:45%;font-size:10px}#game-tools{left:6px;top:6px}}
 
-#bag-slots{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:16px 0}#bag-slots button{min-height:72px;padding:8px;font-size:12px}#life-offers{left:auto;right:12px;bottom:80px;width:min(330px,calc(100vw - 24px))}.life-offer button{margin-right:8px}.life-offer p{line-height:1.6}
+#life-ui{position:absolute;inset:0;pointer-events:none;z-index:1025}
+#life-ui dialog,#life-ui button,#life-ui .social-panel,#life-ui #hand-actions{pointer-events:auto}
+#bag-slots{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:16px 0}#bag-slots button{min-height:72px;padding:8px;font-size:12px}#life-offers{position:absolute;left:auto;right:12px;bottom:80px;width:min(330px,calc(100vw - 24px));background:#17251de6;border:1px solid #889c6f;box-shadow:3px 3px 0 #142018}.life-offer button{margin-right:8px}.life-offer p{line-height:1.6}
 #journal-dialog.memory-dialog{width:min(880px,calc(100vw - 32px));padding:0;max-height:calc(100dvh - 32px);background:#152024;border:2px solid #6c7973;box-shadow:4px 4px 0 #0b1214}
 .memory-stage{position:relative;background:#111a1c;aspect-ratio:16/9}
 #memory-canvas{display:block;width:100%;height:100%;image-rendering:pixelated}

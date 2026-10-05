@@ -1,6 +1,6 @@
 // Read complete generated poses as atlas frames; never recombine body parts.
 const fs=require('node:fs');
-const {chromium}=require('D:/CodexHome/mcp/node/node_modules/playwright');
+const {chromium}=require('./playwright.cjs').loadPlaywright();
 const roles=['suki','sid','jilly','laura','kay','franco','cora','amber','celine'];
 (async()=>{
  const browser=await chromium.launch({headless:true,channel:'chrome'});
