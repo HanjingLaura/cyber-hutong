@@ -1,11 +1,68 @@
 {
-  "rewrites": [
-    { "source": "/(.*)", "destination": "/api" }
-  ],
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
   "functions": {
     "api/index.mjs": {
-      "maxDuration": 30,
-      "includeFiles": "{src/client/**,src/shared/**,characters/**,assets/scenes/*.png,assets/props/*.png,assets/npcs/*.png,examples/login/login-office-background.png,examples/mvp-behavior/**}"
+      "maxDuration": 300
     }
-  }
+  },
+  "rewrites": [
+    {
+      "source": "/cyber-hutong/api/(.*)",
+      "destination": "/api/index"
+    },
+    {
+      "source": "/api/(.*)",
+      "destination": "/api/index"
+    },
+    {
+      "source": "/cyber-hutong/moles",
+      "destination": "/moles.html"
+    },
+    {
+      "source": "/cyber-hutong/moles/",
+      "destination": "/moles.html"
+    },
+    {
+      "source": "/moles",
+      "destination": "/moles.html"
+    },
+    {
+      "source": "/moles/",
+      "destination": "/moles.html"
+    },
+    {
+      "source": "/cyber-hutong",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/cyber-hutong/",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/cyber-hutong/(.*)",
+      "destination": "/$1"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/assets/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/cyber-hutong/assets/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    }
+  ]
 }

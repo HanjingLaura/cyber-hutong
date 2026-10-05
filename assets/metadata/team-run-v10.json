@@ -1,0 +1,2481 @@
+{
+  "sources": {
+    "suki-run-v10": {
+      "file": "team/v10/suki-run.png",
+      "size": [
+        1536,
+        1024
+      ]
+    },
+    "sid-run-v10": {
+      "file": "team/v10/sid-run.png",
+      "size": [
+        1536,
+        1024
+      ]
+    },
+    "jilly-run-v10": {
+      "file": "team/v10/jilly-run.png",
+      "size": [
+        1536,
+        1024
+      ]
+    },
+    "laura-run-v10": {
+      "file": "team/v10/laura-run.png",
+      "size": [
+        1536,
+        1024
+      ]
+    },
+    "kay-run-v10": {
+      "file": "team/v10/kay-run.png",
+      "size": [
+        1536,
+        1024
+      ]
+    },
+    "franco-run-v10": {
+      "file": "team/v10/franco-run.png",
+      "size": [
+        1536,
+        1024
+      ]
+    },
+    "cora-run-v10": {
+      "file": "team/v10/cora-run.png",
+      "size": [
+        1774,
+        887
+      ]
+    },
+    "amber-run-v10": {
+      "file": "team/v10/amber-run.png",
+      "size": [
+        1536,
+        1024
+      ]
+    },
+    "celine-run-v10": {
+      "file": "team/v10/celine-run.png",
+      "size": [
+        1536,
+        1024
+      ]
+    }
+  },
+  "members": {
+    "suki": {
+      "frames": [
+        {
+          "name": "run-side-v10-0",
+          "source": "suki-run-v10",
+          "rect": [
+            59,
+            41,
+            289,
+            449
+          ],
+          "referenceHeight": 435.41013824884794,
+          "pivotX": 0.5570934256055363,
+          "foot": [
+            161,
+            449
+          ],
+          "seat": [
+            144.5,
+            323.28
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 0.9992480188188111,
+          "offsetYRatio": 0.0312116337157613,
+          "headMetrics": {
+            "headWidth": 239,
+            "landmarkHeight": 158,
+            "centerX": 161,
+            "originalReferenceHeight": 449
+          }
+        },
+        {
+          "name": "run-side-v10-1",
+          "source": "suki-run-v10",
+          "rect": [
+            433,
+            41,
+            282,
+            449
+          ],
+          "referenceHeight": 435.41013824884794,
+          "pivotX": 0.5762411347517731,
+          "foot": [
+            162.5,
+            449
+          ],
+          "seat": [
+            141,
+            323.28
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 1.003446539906285,
+          "offsetYRatio": 0.0312116337157613,
+          "headMetrics": {
+            "headWidth": 238,
+            "landmarkHeight": 158,
+            "centerX": 162.5,
+            "originalReferenceHeight": 449
+          }
+        },
+        {
+          "name": "run-side-v10-2",
+          "source": "suki-run-v10",
+          "rect": [
+            815,
+            41,
+            277,
+            449
+          ],
+          "referenceHeight": 435.41013824884794,
+          "pivotX": 0.5685920577617328,
+          "foot": [
+            157.5,
+            449
+          ],
+          "seat": [
+            138.5,
+            323.28
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 1.003446539906285,
+          "offsetYRatio": 0.0312116337157613,
+          "headMetrics": {
+            "headWidth": 238,
+            "landmarkHeight": 158,
+            "centerX": 157.5,
+            "originalReferenceHeight": 449
+          }
+        },
+        {
+          "name": "run-side-v10-3",
+          "source": "suki-run-v10",
+          "rect": [
+            1201,
+            41,
+            286,
+            449
+          ],
+          "referenceHeight": 435.41013824884794,
+          "pivotX": 0.5681818181818182,
+          "foot": [
+            162.50000000000003,
+            449
+          ],
+          "seat": [
+            143,
+            323.28
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 1.003446539906285,
+          "offsetYRatio": 0.0312116337157613,
+          "headMetrics": {
+            "headWidth": 238,
+            "landmarkHeight": 158,
+            "centerX": 162.5,
+            "originalReferenceHeight": 449
+          }
+        },
+        {
+          "name": "run-side-v10-4",
+          "source": "suki-run-v10",
+          "rect": [
+            44,
+            534,
+            289,
+            452
+          ],
+          "referenceHeight": 440.92165898617515,
+          "pivotX": 0.5570934256055363,
+          "foot": [
+            161,
+            452
+          ],
+          "seat": [
+            144.5,
+            325.44
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 1.0204359408116044,
+          "offsetYRatio": 0.02512541806020052,
+          "headMetrics": {
+            "headWidth": 237,
+            "landmarkHeight": 160,
+            "centerX": 161,
+            "originalReferenceHeight": 456
+          }
+        },
+        {
+          "name": "run-side-v10-5",
+          "source": "suki-run-v10",
+          "rect": [
+            429,
+            530,
+            279,
+            456
+          ],
+          "referenceHeight": 443.6774193548387,
+          "pivotX": 0.5716845878136201,
+          "foot": [
+            159.5,
+            456
+          ],
+          "seat": [
+            139.5,
+            328.32
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 1.0224993223095689,
+          "offsetYRatio": 0.02777373854878573,
+          "headMetrics": {
+            "headWidth": 238,
+            "landmarkHeight": 161,
+            "centerX": 159.5,
+            "originalReferenceHeight": 456
+          }
+        },
+        {
+          "name": "run-side-v10-6",
+          "source": "suki-run-v10",
+          "rect": [
+            810,
+            532,
+            276,
+            454
+          ],
+          "referenceHeight": 438.1658986175116,
+          "pivotX": 0.5688405797101449,
+          "foot": [
+            157,
+            454
+          ],
+          "seat": [
+            138,
+            326.88
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 1.014058216181532,
+          "offsetYRatio": 0.03613722891819671,
+          "headMetrics": {
+            "headWidth": 237,
+            "landmarkHeight": 159,
+            "centerX": 157,
+            "originalReferenceHeight": 456
+          }
+        },
+        {
+          "name": "run-side-v10-7",
+          "source": "suki-run-v10",
+          "rect": [
+            1187,
+            532,
+            304,
+            454
+          ],
+          "referenceHeight": 440.92165898617515,
+          "pivotX": 0.5361842105263158,
+          "foot": [
+            163,
+            454
+          ],
+          "seat": [
+            152,
+            326.88
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 1.0118967279177835,
+          "offsetYRatio": 0.029661371237458045,
+          "headMetrics": {
+            "headWidth": 239,
+            "landmarkHeight": 160,
+            "centerX": 163,
+            "originalReferenceHeight": 456
+          }
+        }
+      ],
+      "runLoop": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "runFrameMs": 75,
+      "headTarget": {
+        "width": 0.5484949832775919,
+        "landmark": 0.362876254180602,
+        "top": 1
+      }
+    },
+    "sid": {
+      "frames": [
+        {
+          "name": "run-side-v10-0",
+          "source": "sid-run-v10",
+          "rect": [
+            56,
+            48,
+            286,
+            450
+          ],
+          "referenceHeight": 465.2803347280335,
+          "pivotX": 0.5594405594405595,
+          "foot": [
+            160,
+            450
+          ],
+          "seat": [
+            143,
+            324
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 1.0068451182577338,
+          "offsetYRatio": -0.0328411359507923,
+          "headMetrics": {
+            "headWidth": 239,
+            "landmarkHeight": 182,
+            "centerX": 160,
+            "originalReferenceHeight": 450
+          }
+        },
+        {
+          "name": "run-side-v10-1",
+          "source": "sid-run-v10",
+          "rect": [
+            458,
+            48,
+            261,
+            450
+          ],
+          "referenceHeight": 465.2803347280335,
+          "pivotX": 0.5421455938697318,
+          "foot": [
+            141.5,
+            450
+          ],
+          "seat": [
+            130.5,
+            324
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 1.0110755599310857,
+          "offsetYRatio": -0.0328411359507923,
+          "headMetrics": {
+            "headWidth": 238,
+            "landmarkHeight": 182,
+            "centerX": 141.5,
+            "originalReferenceHeight": 450
+          }
+        },
+        {
+          "name": "run-side-v10-2",
+          "source": "sid-run-v10",
+          "rect": [
+            856,
+            49,
+            238,
+            449
+          ],
+          "referenceHeight": 465.2803347280335,
+          "pivotX": 0.49789915966386555,
+          "foot": [
+            118.5,
+            449
+          ],
+          "seat": [
+            119,
+            323.28
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 1.0110755599310857,
+          "offsetYRatio": -0.034990377870901646,
+          "headMetrics": {
+            "headWidth": 238,
+            "landmarkHeight": 182,
+            "centerX": 118.5,
+            "originalReferenceHeight": 450
+          }
+        },
+        {
+          "name": "run-side-v10-3",
+          "source": "sid-run-v10",
+          "rect": [
+            1199,
+            50,
+            294,
+            448
+          ],
+          "referenceHeight": 465.2803347280335,
+          "pivotX": 0.5680272108843537,
+          "foot": [
+            167,
+            448
+          ],
+          "seat": [
+            147,
+            322.56
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 1.023982907504674,
+          "offsetYRatio": -0.03713961979101099,
+          "headMetrics": {
+            "headWidth": 235,
+            "landmarkHeight": 182,
+            "centerX": 167,
+            "originalReferenceHeight": 450
+          }
+        },
+        {
+          "name": "run-side-v10-4",
+          "source": "sid-run-v10",
+          "rect": [
+            57,
+            528,
+            288,
+            451
+          ],
+          "referenceHeight": 465.2803347280335,
+          "pivotX": 0.5607638888888888,
+          "foot": [
+            161.5,
+            451
+          ],
+          "seat": [
+            144,
+            324.71999999999997
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 1.0026499302649932,
+          "offsetYRatio": -0.030691894030682954,
+          "headMetrics": {
+            "headWidth": 240,
+            "landmarkHeight": 182,
+            "centerX": 161.5,
+            "originalReferenceHeight": 451
+          }
+        },
+        {
+          "name": "run-side-v10-5",
+          "source": "sid-run-v10",
+          "rect": [
+            458,
+            528,
+            264,
+            451
+          ],
+          "referenceHeight": 465.2803347280335,
+          "pivotX": 0.5435606060606061,
+          "foot": [
+            143.5,
+            451
+          ],
+          "seat": [
+            132,
+            324.71999999999997
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 1.0026499302649932,
+          "offsetYRatio": -0.030691894030682954,
+          "headMetrics": {
+            "headWidth": 240,
+            "landmarkHeight": 182,
+            "centerX": 143.5,
+            "originalReferenceHeight": 451
+          }
+        },
+        {
+          "name": "run-side-v10-6",
+          "source": "sid-run-v10",
+          "rect": [
+            856,
+            528,
+            239,
+            451
+          ],
+          "referenceHeight": 462.7238493723849,
+          "pivotX": 0.497907949790795,
+          "foot": [
+            119,
+            451
+          ],
+          "seat": [
+            119.5,
+            324.71999999999997
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 1.0013130022233505,
+          "offsetYRatio": -0.025336600627537398,
+          "headMetrics": {
+            "headWidth": 239,
+            "landmarkHeight": 181,
+            "centerX": 119,
+            "originalReferenceHeight": 451
+          }
+        },
+        {
+          "name": "run-side-v10-7",
+          "source": "sid-run-v10",
+          "rect": [
+            1191,
+            528,
+            287,
+            451
+          ],
+          "referenceHeight": 465.2803347280335,
+          "pivotX": 0.5365853658536586,
+          "foot": [
+            154,
+            451
+          ],
+          "seat": [
+            143.5,
+            324.71999999999997
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 1.0068451182577338,
+          "offsetYRatio": -0.030691894030682954,
+          "headMetrics": {
+            "headWidth": 239,
+            "landmarkHeight": 182,
+            "centerX": 154,
+            "originalReferenceHeight": 451
+          }
+        }
+      ],
+      "runLoop": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "runFrameMs": 75,
+      "headTarget": {
+        "width": 0.5171849427168577,
+        "landmark": 0.3911620294599018,
+        "top": 1
+      }
+    },
+    "jilly": {
+      "frames": [
+        {
+          "name": "run-side-v10-0",
+          "source": "jilly-run-v10",
+          "rect": [
+            50,
+            45,
+            282,
+            434
+          ],
+          "referenceHeight": 434.84210526315786,
+          "pivotX": 0.5691489361702128,
+          "foot": [
+            160.5,
+            434
+          ],
+          "seat": [
+            141,
+            312.47999999999996
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 1.029455741626794,
+          "offsetYRatio": -0.0019365770999757448,
+          "headMetrics": {
+            "headWidth": 224,
+            "landmarkHeight": 153,
+            "centerX": 160.5,
+            "originalReferenceHeight": 434
+          }
+        },
+        {
+          "name": "run-side-v10-1",
+          "source": "jilly-run-v10",
+          "rect": [
+            447,
+            45,
+            258,
+            434
+          ],
+          "referenceHeight": 432,
+          "pivotX": 0.5658914728682171,
+          "foot": [
+            146,
+            434
+          ],
+          "seat": [
+            129,
+            312.47999999999996
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 1.0273134936812065,
+          "offsetYRatio": 0.004629629629629539,
+          "headMetrics": {
+            "headWidth": 223,
+            "landmarkHeight": 152,
+            "centerX": 146,
+            "originalReferenceHeight": 434
+          }
+        },
+        {
+          "name": "run-side-v10-2",
+          "source": "jilly-run-v10",
+          "rect": [
+            824,
+            46,
+            261,
+            433
+          ],
+          "referenceHeight": 432,
+          "pivotX": 0.5651340996168582,
+          "foot": [
+            147.5,
+            433
+          ],
+          "seat": [
+            130.5,
+            311.76
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 1.0136765888978276,
+          "offsetYRatio": 0.0023148148148148806,
+          "headMetrics": {
+            "headWidth": 226,
+            "landmarkHeight": 152,
+            "centerX": 147.5,
+            "originalReferenceHeight": 434
+          }
+        },
+        {
+          "name": "run-side-v10-3",
+          "source": "jilly-run-v10",
+          "rect": [
+            1196,
+            46,
+            299,
+            433
+          ],
+          "referenceHeight": 432,
+          "pivotX": 0.5334448160535117,
+          "foot": [
+            159.5,
+            433
+          ],
+          "seat": [
+            149.5,
+            311.76
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 1.0136765888978276,
+          "offsetYRatio": 0.0023148148148148806,
+          "headMetrics": {
+            "headWidth": 226,
+            "landmarkHeight": 152,
+            "centerX": 159.5,
+            "originalReferenceHeight": 434
+          }
+        },
+        {
+          "name": "run-side-v10-4",
+          "source": "jilly-run-v10",
+          "rect": [
+            50,
+            546,
+            269,
+            437
+          ],
+          "referenceHeight": 434.84210526315786,
+          "pivotX": 0.5780669144981413,
+          "foot": [
+            155.5,
+            437
+          ],
+          "seat": [
+            134.5,
+            314.64
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 1.020345513824787,
+          "offsetYRatio": 0.004962478818687943,
+          "headMetrics": {
+            "headWidth": 226,
+            "landmarkHeight": 153,
+            "centerX": 155.5,
+            "originalReferenceHeight": 437
+          }
+        },
+        {
+          "name": "run-side-v10-5",
+          "source": "jilly-run-v10",
+          "rect": [
+            442,
+            546,
+            261,
+            437
+          ],
+          "referenceHeight": 434.84210526315786,
+          "pivotX": 0.5651340996168582,
+          "foot": [
+            147.5,
+            437
+          ],
+          "seat": [
+            130.5,
+            314.64
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 1.020345513824787,
+          "offsetYRatio": 0.004962478818687943,
+          "headMetrics": {
+            "headWidth": 226,
+            "landmarkHeight": 153,
+            "centerX": 147.5,
+            "originalReferenceHeight": 437
+          }
+        },
+        {
+          "name": "run-side-v10-6",
+          "source": "jilly-run-v10",
+          "rect": [
+            820,
+            546,
+            264,
+            437
+          ],
+          "referenceHeight": 434.84210526315786,
+          "pivotX": 0.5662878787878788,
+          "foot": [
+            149.5,
+            437
+          ],
+          "seat": [
+            132,
+            314.64
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 1.01139511458071,
+          "offsetYRatio": 0.004962478818687943,
+          "headMetrics": {
+            "headWidth": 228,
+            "landmarkHeight": 153,
+            "centerX": 149.5,
+            "originalReferenceHeight": 437
+          }
+        },
+        {
+          "name": "run-side-v10-7",
+          "source": "jilly-run-v10",
+          "rect": [
+            1206,
+            546,
+            285,
+            437
+          ],
+          "referenceHeight": 434.84210526315786,
+          "pivotX": 0.5298245614035088,
+          "foot": [
+            151,
+            437
+          ],
+          "seat": [
+            142.5,
+            314.64
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 1.0248803827751194,
+          "offsetYRatio": 0.004962478818687943,
+          "headMetrics": {
+            "headWidth": 225,
+            "landmarkHeight": 153,
+            "centerX": 151,
+            "originalReferenceHeight": 437
+          }
+        }
+      ],
+      "runLoop": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "runFrameMs": 75,
+      "headTarget": {
+        "width": 0.5303030303030303,
+        "landmark": 0.35185185185185186,
+        "top": 1
+      }
+    },
+    "laura": {
+      "frames": [
+        {
+          "name": "run-side-v10-0",
+          "source": "laura-run-v10",
+          "rect": [
+            48,
+            48,
+            307,
+            453
+          ],
+          "referenceHeight": 437.830985915493,
+          "pivotX": 0.5830618892508144,
+          "foot": [
+            179,
+            453
+          ],
+          "seat": [
+            153.5,
+            326.15999999999997
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 0.9878830382015469,
+          "offsetYRatio": 0.03464582127002491,
+          "headMetrics": {
+            "headWidth": 241,
+            "landmarkHeight": 157,
+            "centerX": 179,
+            "originalReferenceHeight": 455
+          }
+        },
+        {
+          "name": "run-side-v10-1",
+          "source": "laura-run-v10",
+          "rect": [
+            439,
+            46,
+            284,
+            455
+          ],
+          "referenceHeight": 443.4084507042254,
+          "pivotX": 0.5721830985915493,
+          "foot": [
+            162.5,
+            455
+          ],
+          "seat": [
+            142,
+            327.59999999999997
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 0.9963333721336284,
+          "offsetYRatio": 0.026141922368337456,
+          "headMetrics": {
+            "headWidth": 242,
+            "landmarkHeight": 159,
+            "centerX": 162.5,
+            "originalReferenceHeight": 455
+          }
+        },
+        {
+          "name": "run-side-v10-2",
+          "source": "laura-run-v10",
+          "rect": [
+            821,
+            47,
+            283,
+            454
+          ],
+          "referenceHeight": 440.6197183098592,
+          "pivotX": 0.5724381625441696,
+          "foot": [
+            162,
+            454
+          ],
+          "seat": [
+            141.5,
+            326.88
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 0.9941752868525121,
+          "offsetYRatio": 0.030366960746707417,
+          "headMetrics": {
+            "headWidth": 241,
+            "landmarkHeight": 158,
+            "centerX": 162,
+            "originalReferenceHeight": 455
+          }
+        },
+        {
+          "name": "run-side-v10-3",
+          "source": "laura-run-v10",
+          "rect": [
+            1183,
+            48,
+            304,
+            453
+          ],
+          "referenceHeight": 437.830985915493,
+          "pivotX": 0.5542763157894737,
+          "foot": [
+            168.5,
+            453
+          ],
+          "seat": [
+            152,
+            326.15999999999997
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 1.000335345405768,
+          "offsetYRatio": 0.03464582127002491,
+          "headMetrics": {
+            "headWidth": 238,
+            "landmarkHeight": 157,
+            "centerX": 168.5,
+            "originalReferenceHeight": 455
+          }
+        },
+        {
+          "name": "run-side-v10-4",
+          "source": "laura-run-v10",
+          "rect": [
+            47,
+            539,
+            307,
+            453
+          ],
+          "referenceHeight": 437.830985915493,
+          "pivotX": 0.5944625407166124,
+          "foot": [
+            182.5,
+            453
+          ],
+          "seat": [
+            153.5,
+            326.15999999999997
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 0.9919992175273866,
+          "offsetYRatio": 0.03464582127002491,
+          "headMetrics": {
+            "headWidth": 240,
+            "landmarkHeight": 157,
+            "centerX": 182.5,
+            "originalReferenceHeight": 454
+          }
+        },
+        {
+          "name": "run-side-v10-5",
+          "source": "laura-run-v10",
+          "rect": [
+            441,
+            538,
+            285,
+            454
+          ],
+          "referenceHeight": 443.4084507042254,
+          "pivotX": 0.5719298245614035,
+          "foot": [
+            163,
+            454
+          ],
+          "seat": [
+            142.5,
+            326.88
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 0.9922332347997451,
+          "offsetYRatio": 0.023886665396099183,
+          "headMetrics": {
+            "headWidth": 243,
+            "landmarkHeight": 159,
+            "centerX": 163,
+            "originalReferenceHeight": 454
+          }
+        },
+        {
+          "name": "run-side-v10-6",
+          "source": "laura-run-v10",
+          "rect": [
+            821,
+            538,
+            285,
+            454
+          ],
+          "referenceHeight": 443.4084507042254,
+          "pivotX": 0.5719298245614035,
+          "foot": [
+            163,
+            454
+          ],
+          "seat": [
+            142.5,
+            326.88
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 0.9922332347997451,
+          "offsetYRatio": 0.023886665396099183,
+          "headMetrics": {
+            "headWidth": 243,
+            "landmarkHeight": 159,
+            "centerX": 163,
+            "originalReferenceHeight": 454
+          }
+        },
+        {
+          "name": "run-side-v10-7",
+          "source": "laura-run-v10",
+          "rect": [
+            1179,
+            538,
+            312,
+            454
+          ],
+          "referenceHeight": 440.6197183098592,
+          "pivotX": 0.5641025641025641,
+          "foot": [
+            176,
+            454
+          ],
+          "seat": [
+            156,
+            326.88
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 1.0024947453198971,
+          "offsetYRatio": 0.030366960746707417,
+          "headMetrics": {
+            "headWidth": 239,
+            "landmarkHeight": 158,
+            "centerX": 176,
+            "originalReferenceHeight": 454
+          }
+        }
+      ],
+      "runLoop": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "runFrameMs": 75,
+      "headTarget": {
+        "width": 0.5437710437710438,
+        "landmark": 0.35858585858585856,
+        "top": 1
+      }
+    },
+    "kay": {
+      "frames": [
+        {
+          "name": "run-side-v10-0",
+          "source": "kay-run-v10",
+          "rect": [
+            41,
+            66,
+            306,
+            454
+          ],
+          "referenceHeight": 455.9142857142857,
+          "pivotX": 0.5555555555555556,
+          "foot": [
+            170,
+            454
+          ],
+          "seat": [
+            153,
+            326.88
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 0.9962984384037016,
+          "offsetYRatio": -0.004198784232625208,
+          "headMetrics": {
+            "headWidth": 247,
+            "landmarkHeight": 162,
+            "centerX": 170,
+            "originalReferenceHeight": 454
+          }
+        },
+        {
+          "name": "run-side-v10-1",
+          "source": "kay-run-v10",
+          "rect": [
+            424,
+            66,
+            295,
+            454
+          ],
+          "referenceHeight": 458.7285714285714,
+          "pivotX": 0.5813559322033899,
+          "foot": [
+            171.50000000000003,
+            454
+          ],
+          "seat": [
+            147.5,
+            326.88
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 1.006523422377081,
+          "offsetYRatio": -0.010307994145308363,
+          "headMetrics": {
+            "headWidth": 246,
+            "landmarkHeight": 163,
+            "centerX": 171.5,
+            "originalReferenceHeight": 454
+          }
+        },
+        {
+          "name": "run-side-v10-2",
+          "source": "kay-run-v10",
+          "rect": [
+            800,
+            66,
+            296,
+            454
+          ],
+          "referenceHeight": 455.9142857142857,
+          "pivotX": 0.581081081081081,
+          "foot": [
+            171.99999999999997,
+            454
+          ],
+          "seat": [
+            148,
+            326.88
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 0.9962984384037016,
+          "offsetYRatio": -0.004198784232625208,
+          "headMetrics": {
+            "headWidth": 247,
+            "landmarkHeight": 162,
+            "centerX": 172,
+            "originalReferenceHeight": 454
+          }
+        },
+        {
+          "name": "run-side-v10-3",
+          "source": "kay-run-v10",
+          "rect": [
+            1185,
+            66,
+            321,
+            454
+          ],
+          "referenceHeight": 455.9142857142857,
+          "pivotX": 0.5342679127725857,
+          "foot": [
+            171.5,
+            454
+          ],
+          "seat": [
+            160.5,
+            326.88
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 0.9922811059907835,
+          "offsetYRatio": -0.004198784232625208,
+          "headMetrics": {
+            "headWidth": 248,
+            "landmarkHeight": 162,
+            "centerX": 171.5,
+            "originalReferenceHeight": 454
+          }
+        },
+        {
+          "name": "run-side-v10-4",
+          "source": "kay-run-v10",
+          "rect": [
+            45,
+            545,
+            295,
+            455
+          ],
+          "referenceHeight": 458.7285714285714,
+          "pivotX": 0.5644067796610169,
+          "foot": [
+            166.5,
+            455
+          ],
+          "seat": [
+            147.5,
+            327.59999999999997
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 0.9984062980030722,
+          "offsetYRatio": -0.008128055806421397,
+          "headMetrics": {
+            "headWidth": 248,
+            "landmarkHeight": 163,
+            "centerX": 166.5,
+            "originalReferenceHeight": 455
+          }
+        },
+        {
+          "name": "run-side-v10-5",
+          "source": "kay-run-v10",
+          "rect": [
+            432,
+            545,
+            287,
+            455
+          ],
+          "referenceHeight": 461.54285714285714,
+          "pivotX": 0.5644599303135889,
+          "foot": [
+            162,
+            455
+          ],
+          "seat": [
+            143.5,
+            327.59999999999997
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 1.0004972270032513,
+          "offsetYRatio": -0.014176055466138426,
+          "headMetrics": {
+            "headWidth": 249,
+            "landmarkHeight": 164,
+            "centerX": 162,
+            "originalReferenceHeight": 455
+          }
+        },
+        {
+          "name": "run-side-v10-6",
+          "source": "kay-run-v10",
+          "rect": [
+            806,
+            545,
+            291,
+            455
+          ],
+          "referenceHeight": 458.7285714285714,
+          "pivotX": 0.5721649484536082,
+          "foot": [
+            166.5,
+            455
+          ],
+          "seat": [
+            145.5,
+            327.59999999999997
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 0.9984062980030722,
+          "offsetYRatio": -0.008128055806421397,
+          "headMetrics": {
+            "headWidth": 248,
+            "landmarkHeight": 163,
+            "centerX": 166.5,
+            "originalReferenceHeight": 455
+          }
+        },
+        {
+          "name": "run-side-v10-7",
+          "source": "kay-run-v10",
+          "rect": [
+            1191,
+            545,
+            319,
+            455
+          ],
+          "referenceHeight": 458.7285714285714,
+          "pivotX": 0.5172413793103449,
+          "foot": [
+            165,
+            455
+          ],
+          "seat": [
+            159.5,
+            327.59999999999997
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 0.9943966341556704,
+          "offsetYRatio": -0.008128055806421397,
+          "headMetrics": {
+            "headWidth": 249,
+            "landmarkHeight": 163,
+            "centerX": 165,
+            "originalReferenceHeight": 455
+          }
+        }
+      ],
+      "runLoop": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "runFrameMs": 75,
+      "headTarget": {
+        "width": 0.5397631133671743,
+        "landmark": 0.3553299492385787,
+        "top": 1
+      }
+    },
+    "franco": {
+      "frames": [
+        {
+          "name": "run-side-v10-0",
+          "source": "franco-run-v10",
+          "rect": [
+            31,
+            39,
+            298,
+            458
+          ],
+          "referenceHeight": 462.0909090909091,
+          "pivotX": 0.552013422818792,
+          "foot": [
+            164.5,
+            458
+          ],
+          "seat": [
+            149,
+            329.76
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 0.9925548589341693,
+          "offsetYRatio": -0.0021640763328744095,
+          "headMetrics": {
+            "headWidth": 232,
+            "landmarkHeight": 170,
+            "centerX": 164.5,
+            "originalReferenceHeight": 458
+          }
+        },
+        {
+          "name": "run-side-v10-1",
+          "source": "franco-run-v10",
+          "rect": [
+            443,
+            39,
+            253,
+            458
+          ],
+          "referenceHeight": 464.8090909090909,
+          "pivotX": 0.5375494071146245,
+          "foot": [
+            136,
+            458
+          ],
+          "seat": [
+            126.5,
+            329.76
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 0.9941084666406554,
+          "offsetYRatio": -0.007960257388175074,
+          "headMetrics": {
+            "headWidth": 233,
+            "landmarkHeight": 171,
+            "centerX": 136,
+            "originalReferenceHeight": 458
+          }
+        },
+        {
+          "name": "run-side-v10-2",
+          "source": "franco-run-v10",
+          "rect": [
+            841,
+            39,
+            232,
+            458
+          ],
+          "referenceHeight": 462.0909090909091,
+          "pivotX": 0.4978448275862069,
+          "foot": [
+            115.5,
+            458
+          ],
+          "seat": [
+            116,
+            329.76
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 0.9925548589341693,
+          "offsetYRatio": -0.0021640763328744095,
+          "headMetrics": {
+            "headWidth": 232,
+            "landmarkHeight": 170,
+            "centerX": 115.5,
+            "originalReferenceHeight": 458
+          }
+        },
+        {
+          "name": "run-side-v10-3",
+          "source": "franco-run-v10",
+          "rect": [
+            1176,
+            39,
+            322,
+            458
+          ],
+          "referenceHeight": 462.0909090909091,
+          "pivotX": 0.5496894409937888,
+          "foot": [
+            177,
+            458
+          ],
+          "seat": [
+            161,
+            329.76
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 0.9798839458413927,
+          "offsetYRatio": -0.0021640763328744095,
+          "headMetrics": {
+            "headWidth": 235,
+            "landmarkHeight": 170,
+            "centerX": 177,
+            "originalReferenceHeight": 458
+          }
+        },
+        {
+          "name": "run-side-v10-4",
+          "source": "franco-run-v10",
+          "rect": [
+            30,
+            544,
+            299,
+            450
+          ],
+          "referenceHeight": 459.3727272727273,
+          "pivotX": 0.5535117056856187,
+          "foot": [
+            165.5,
+            450
+          ],
+          "seat": [
+            149.5,
+            324
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 0.9867163009404388,
+          "offsetYRatio": -0.013714353565138282,
+          "headMetrics": {
+            "headWidth": 232,
+            "landmarkHeight": 169,
+            "centerX": 165.5,
+            "originalReferenceHeight": 450
+          }
+        },
+        {
+          "name": "run-side-v10-5",
+          "source": "franco-run-v10",
+          "rect": [
+            442,
+            544,
+            254,
+            450
+          ],
+          "referenceHeight": 459.3727272727273,
+          "pivotX": 0.5393700787401575,
+          "foot": [
+            137,
+            450
+          ],
+          "seat": [
+            127,
+            324
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 0.9824814670308232,
+          "offsetYRatio": -0.013714353565138282,
+          "headMetrics": {
+            "headWidth": 233,
+            "landmarkHeight": 169,
+            "centerX": 137,
+            "originalReferenceHeight": 450
+          }
+        },
+        {
+          "name": "run-side-v10-6",
+          "source": "franco-run-v10",
+          "rect": [
+            843,
+            544,
+            235,
+            450
+          ],
+          "referenceHeight": 459.3727272727273,
+          "pivotX": 0.4978723404255319,
+          "foot": [
+            117,
+            450
+          ],
+          "seat": [
+            117.5,
+            324
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 0.9741199226305609,
+          "offsetYRatio": -0.013714353565138282,
+          "headMetrics": {
+            "headWidth": 235,
+            "landmarkHeight": 169,
+            "centerX": 117,
+            "originalReferenceHeight": 450
+          }
+        },
+        {
+          "name": "run-side-v10-7",
+          "source": "franco-run-v10",
+          "rect": [
+            1193,
+            544,
+            311,
+            450
+          ],
+          "referenceHeight": 462.0909090909091,
+          "pivotX": 0.5241157556270096,
+          "foot": [
+            163,
+            450
+          ],
+          "seat": [
+            155.5,
+            324
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 0.9882949668357394,
+          "offsetYRatio": -0.019476686995868686,
+          "headMetrics": {
+            "headWidth": 233,
+            "landmarkHeight": 170,
+            "centerX": 163,
+            "originalReferenceHeight": 450
+          }
+        }
+      ],
+      "runLoop": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "runFrameMs": 75,
+      "headTarget": {
+        "width": 0.4983277591973244,
+        "landmark": 0.36789297658862874,
+        "top": 0.9933110367892977
+      }
+    },
+    "cora": {
+      "frames": [
+        {
+          "name": "run-side-v10-0",
+          "source": "cora-run-v10",
+          "rect": [
+            83,
+            27,
+            284,
+            407
+          ],
+          "referenceHeight": 403.8317757009346,
+          "pivotX": 0.5862676056338029,
+          "foot": [
+            166.50000000000003,
+            407
+          ],
+          "seat": [
+            142,
+            293.03999999999996
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 1.0131286159323543,
+          "offsetYRatio": 0.009523258504975596,
+          "headMetrics": {
+            "headWidth": 210,
+            "landmarkHeight": 145,
+            "centerX": 166.5,
+            "originalReferenceHeight": 407
+          }
+        },
+        {
+          "name": "run-side-v10-1",
+          "source": "cora-run-v10",
+          "rect": [
+            522,
+            30,
+            271,
+            404
+          ],
+          "referenceHeight": 395.4766355140187,
+          "pivotX": 0.6070110701107011,
+          "foot": [
+            164.5,
+            404
+          ],
+          "seat": [
+            135.5,
+            290.88
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 0.9828072650326222,
+          "offsetYRatio": 0.02322998393042819,
+          "headMetrics": {
+            "headWidth": 212,
+            "landmarkHeight": 142,
+            "centerX": 164.5,
+            "originalReferenceHeight": 407
+          }
+        },
+        {
+          "name": "run-side-v10-2",
+          "source": "cora-run-v10",
+          "rect": [
+            957,
+            28,
+            272,
+            406
+          ],
+          "referenceHeight": 401.04672897196264,
+          "pivotX": 0.6102941176470589,
+          "foot": [
+            166,
+            406
+          ],
+          "seat": [
+            136,
+            292.32
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 1.0013730787970059,
+          "offsetYRatio": 0.014028709917971671,
+          "headMetrics": {
+            "headWidth": 211,
+            "landmarkHeight": 144,
+            "centerX": 166,
+            "originalReferenceHeight": 407
+          }
+        },
+        {
+          "name": "run-side-v10-3",
+          "source": "cora-run-v10",
+          "rect": [
+            1397,
+            27,
+            295,
+            407
+          ],
+          "referenceHeight": 401.04672897196264,
+          "pivotX": 0.5610169491525424,
+          "foot": [
+            165.5,
+            407
+          ],
+          "seat": [
+            147.5,
+            293.03999999999996
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 1.0061415220293726,
+          "offsetYRatio": 0.016522184936614392,
+          "headMetrics": {
+            "headWidth": 210,
+            "landmarkHeight": 144,
+            "centerX": 165.5,
+            "originalReferenceHeight": 407
+          }
+        },
+        {
+          "name": "run-side-v10-4",
+          "source": "cora-run-v10",
+          "rect": [
+            83,
+            465,
+            288,
+            402
+          ],
+          "referenceHeight": 403.8317757009346,
+          "pivotX": 0.578125,
+          "foot": [
+            166.5,
+            402
+          ],
+          "seat": [
+            144,
+            289.44
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 1.0131286159323543,
+          "offsetYRatio": -0.00285813469104379,
+          "headMetrics": {
+            "headWidth": 210,
+            "landmarkHeight": 145,
+            "centerX": 166.5,
+            "originalReferenceHeight": 404
+          }
+        },
+        {
+          "name": "run-side-v10-5",
+          "source": "cora-run-v10",
+          "rect": [
+            522,
+            465,
+            272,
+            402
+          ],
+          "referenceHeight": 401.04672897196264,
+          "pivotX": 0.6102941176470589,
+          "foot": [
+            166,
+            402
+          ],
+          "seat": [
+            136,
+            289.44
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 1.0013730787970059,
+          "offsetYRatio": 0.004054809843400342,
+          "headMetrics": {
+            "headWidth": 211,
+            "landmarkHeight": 144,
+            "centerX": 166,
+            "originalReferenceHeight": 404
+          }
+        },
+        {
+          "name": "run-side-v10-6",
+          "source": "cora-run-v10",
+          "rect": [
+            964,
+            463,
+            271,
+            404
+          ],
+          "referenceHeight": 406.61682242990656,
+          "pivotX": 0.6088560885608856,
+          "foot": [
+            165,
+            404
+          ],
+          "seat": [
+            135.5,
+            290.88
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 1.015281038224742,
+          "offsetYRatio": -0.004757745701939875,
+          "headMetrics": {
+            "headWidth": 211,
+            "landmarkHeight": 146,
+            "centerX": 165,
+            "originalReferenceHeight": 404
+          }
+        },
+        {
+          "name": "run-side-v10-7",
+          "source": "cora-run-v10",
+          "rect": [
+            1397,
+            465,
+            291,
+            402
+          ],
+          "referenceHeight": 401.04672897196264,
+          "pivotX": 0.5687285223367697,
+          "foot": [
+            165.5,
+            402
+          ],
+          "seat": [
+            145.5,
+            289.44
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 1.0061415220293726,
+          "offsetYRatio": 0.004054809843400342,
+          "headMetrics": {
+            "headWidth": 210,
+            "landmarkHeight": 144,
+            "centerX": 165.5,
+            "originalReferenceHeight": 404
+          }
+        }
+      ],
+      "runLoop": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "runFrameMs": 75,
+      "headTarget": {
+        "width": 0.5268456375838926,
+        "landmark": 0.35906040268456374,
+        "top": 0.9983221476510067
+      }
+    },
+    "amber": {
+      "frames": [
+        {
+          "name": "run-side-v10-0",
+          "source": "amber-run-v10",
+          "rect": [
+            48,
+            53,
+            285,
+            432
+          ],
+          "referenceHeight": 428.5450236966825,
+          "pivotX": 0.5614035087719298,
+          "foot": [
+            160,
+            432
+          ],
+          "seat": [
+            142.5,
+            311.03999999999996
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 1.021611374407583,
+          "offsetYRatio": 0.009754155469294146,
+          "headMetrics": {
+            "headWidth": 225,
+            "landmarkHeight": 153,
+            "centerX": 160,
+            "originalReferenceHeight": 432
+          }
+        },
+        {
+          "name": "run-side-v10-1",
+          "source": "amber-run-v10",
+          "rect": [
+            432,
+            54,
+            274,
+            431
+          ],
+          "referenceHeight": 422.9431279620853,
+          "pivotX": 0.5857664233576643,
+          "foot": [
+            160.5,
+            431
+          ],
+          "seat": [
+            137,
+            310.32
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 1.0037956632974039,
+          "offsetYRatio": 0.02074158738696341,
+          "headMetrics": {
+            "headWidth": 226,
+            "landmarkHeight": 151,
+            "centerX": 160.5,
+            "originalReferenceHeight": 432
+          }
+        },
+        {
+          "name": "run-side-v10-2",
+          "source": "amber-run-v10",
+          "rect": [
+            817,
+            54,
+            273,
+            431
+          ],
+          "referenceHeight": 422.9431279620853,
+          "pivotX": 0.5842490842490843,
+          "foot": [
+            159.5,
+            431
+          ],
+          "seat": [
+            136.5,
+            310.32
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 1.0037956632974039,
+          "offsetYRatio": 0.02074158738696341,
+          "headMetrics": {
+            "headWidth": 226,
+            "landmarkHeight": 151,
+            "centerX": 159.5,
+            "originalReferenceHeight": 432
+          }
+        },
+        {
+          "name": "run-side-v10-3",
+          "source": "amber-run-v10",
+          "rect": [
+            1200,
+            54,
+            307,
+            431
+          ],
+          "referenceHeight": 425.7440758293839,
+          "pivotX": 0.5211726384364821,
+          "foot": [
+            160,
+            431
+          ],
+          "seat": [
+            153.5,
+            310.32
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 1.0149341758820434,
+          "offsetYRatio": 0.014037314097426146,
+          "headMetrics": {
+            "headWidth": 225,
+            "landmarkHeight": 152,
+            "centerX": 160,
+            "originalReferenceHeight": 432
+          }
+        },
+        {
+          "name": "run-side-v10-4",
+          "source": "amber-run-v10",
+          "rect": [
+            48,
+            566,
+            274,
+            433
+          ],
+          "referenceHeight": 425.7440758293839,
+          "pivotX": 0.5784671532846716,
+          "foot": [
+            158.5,
+            433
+          ],
+          "seat": [
+            137,
+            311.76
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 1.0015797788309637,
+          "offsetYRatio": 0.018734971947635515,
+          "headMetrics": {
+            "headWidth": 228,
+            "landmarkHeight": 152,
+            "centerX": 158.5,
+            "originalReferenceHeight": 433
+          }
+        },
+        {
+          "name": "run-side-v10-5",
+          "source": "amber-run-v10",
+          "rect": [
+            432,
+            566,
+            274,
+            433
+          ],
+          "referenceHeight": 425.7440758293839,
+          "pivotX": 0.5802919708029197,
+          "foot": [
+            159,
+            433
+          ],
+          "seat": [
+            137,
+            311.76
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 0.9972060680063743,
+          "offsetYRatio": 0.018734971947635515,
+          "headMetrics": {
+            "headWidth": 229,
+            "landmarkHeight": 152,
+            "centerX": 159,
+            "originalReferenceHeight": 433
+          }
+        },
+        {
+          "name": "run-side-v10-6",
+          "source": "amber-run-v10",
+          "rect": [
+            817,
+            566,
+            272,
+            433
+          ],
+          "referenceHeight": 425.7440758293839,
+          "pivotX": 0.5790441176470589,
+          "foot": [
+            157.5,
+            433
+          ],
+          "seat": [
+            136,
+            311.76
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 1.0015797788309637,
+          "offsetYRatio": 0.018734971947635515,
+          "headMetrics": {
+            "headWidth": 228,
+            "landmarkHeight": 152,
+            "centerX": 157.5,
+            "originalReferenceHeight": 433
+          }
+        },
+        {
+          "name": "run-side-v10-7",
+          "source": "amber-run-v10",
+          "rect": [
+            1200,
+            566,
+            286,
+            433
+          ],
+          "referenceHeight": 425.7440758293839,
+          "pivotX": 0.5541958041958042,
+          "foot": [
+            158.5,
+            433
+          ],
+          "seat": [
+            143,
+            311.76
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 1.0015797788309637,
+          "offsetYRatio": 0.018734971947635515,
+          "headMetrics": {
+            "headWidth": 228,
+            "landmarkHeight": 152,
+            "centerX": 158.5,
+            "originalReferenceHeight": 433
+          }
+        }
+      ],
+      "runLoop": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "runFrameMs": 75,
+      "headTarget": {
+        "width": 0.5363790186125211,
+        "landmark": 0.3570219966159052,
+        "top": 0.9983079526226735
+      }
+    },
+    "celine": {
+      "frames": [
+        {
+          "name": "run-side-v10-0",
+          "source": "celine-run-v10",
+          "rect": [
+            62,
+            48,
+            280,
+            434
+          ],
+          "referenceHeight": 415.8,
+          "pivotX": 0.5910714285714286,
+          "foot": [
+            165.5,
+            434
+          ],
+          "seat": [
+            140,
+            312.47999999999996
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 0.9824561403508771,
+          "offsetYRatio": 0.04377104377104368,
+          "headMetrics": {
+            "headWidth": 228,
+            "landmarkHeight": 154,
+            "centerX": 165.5,
+            "originalReferenceHeight": 435
+          }
+        },
+        {
+          "name": "run-side-v10-1",
+          "source": "celine-run-v10",
+          "rect": [
+            438,
+            47,
+            280,
+            435
+          ],
+          "referenceHeight": 415.8,
+          "pivotX": 0.5910714285714286,
+          "foot": [
+            165.5,
+            435
+          ],
+          "seat": [
+            140,
+            313.2
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 0.9824561403508771,
+          "offsetYRatio": 0.04617604617604609,
+          "headMetrics": {
+            "headWidth": 228,
+            "landmarkHeight": 154,
+            "centerX": 165.5,
+            "originalReferenceHeight": 435
+          }
+        },
+        {
+          "name": "run-side-v10-2",
+          "source": "celine-run-v10",
+          "rect": [
+            813,
+            47,
+            282,
+            435
+          ],
+          "referenceHeight": 418.5,
+          "pivotX": 0.5904255319148937,
+          "foot": [
+            166.5,
+            435
+          ],
+          "seat": [
+            141,
+            313.2
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 0.9802371541501975,
+          "offsetYRatio": 0.03942652329749108,
+          "headMetrics": {
+            "headWidth": 230,
+            "landmarkHeight": 155,
+            "centerX": 166.5,
+            "originalReferenceHeight": 435
+          }
+        },
+        {
+          "name": "run-side-v10-3",
+          "source": "celine-run-v10",
+          "rect": [
+            1199,
+            47,
+            295,
+            435
+          ],
+          "referenceHeight": 418.5,
+          "pivotX": 0.5542372881355933,
+          "foot": [
+            163.5,
+            435
+          ],
+          "seat": [
+            147.5,
+            313.2
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 0.9888357256778308,
+          "offsetYRatio": 0.03942652329749108,
+          "headMetrics": {
+            "headWidth": 228,
+            "landmarkHeight": 155,
+            "centerX": 163.5,
+            "originalReferenceHeight": 435
+          }
+        },
+        {
+          "name": "run-side-v10-4",
+          "source": "celine-run-v10",
+          "rect": [
+            63,
+            536,
+            281,
+            440
+          ],
+          "referenceHeight": 413.1,
+          "pivotX": 0.5907473309608541,
+          "foot": [
+            166,
+            440
+          ],
+          "seat": [
+            140.5,
+            316.8
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 0.9718142119888845,
+          "offsetYRatio": 0.06511740498668606,
+          "headMetrics": {
+            "headWidth": 229,
+            "landmarkHeight": 153,
+            "centerX": 166,
+            "originalReferenceHeight": 443
+          }
+        },
+        {
+          "name": "run-side-v10-5",
+          "source": "celine-run-v10",
+          "rect": [
+            440,
+            534,
+            282,
+            442
+          ],
+          "referenceHeight": 415.8,
+          "pivotX": 0.5886524822695035,
+          "foot": [
+            166,
+            442
+          ],
+          "seat": [
+            141,
+            318.24
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 0.9696969696969697,
+          "offsetYRatio": 0.06301106301106296,
+          "headMetrics": {
+            "headWidth": 231,
+            "landmarkHeight": 154,
+            "centerX": 166,
+            "originalReferenceHeight": 443
+          }
+        },
+        {
+          "name": "run-side-v10-6",
+          "source": "celine-run-v10",
+          "rect": [
+            814,
+            533,
+            284,
+            443
+          ],
+          "referenceHeight": 421.20000000000005,
+          "pivotX": 0.5897887323943662,
+          "foot": [
+            167.5,
+            443
+          ],
+          "seat": [
+            142,
+            318.96
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 0.9780564263322885,
+          "offsetYRatio": 0.05175688509021836,
+          "headMetrics": {
+            "headWidth": 232,
+            "landmarkHeight": 156,
+            "centerX": 167.5,
+            "originalReferenceHeight": 443
+          }
+        },
+        {
+          "name": "run-side-v10-7",
+          "source": "celine-run-v10",
+          "rect": [
+            1195,
+            533,
+            298,
+            443
+          ],
+          "referenceHeight": 418.5,
+          "pivotX": 0.5620805369127517,
+          "foot": [
+            167.50000000000003,
+            443
+          ],
+          "seat": [
+            149,
+            318.96
+          ],
+          "grip": null,
+          "gripSide": 0,
+          "slot": null,
+          "scaleXRatio": 0.9717868338557993,
+          "offsetYRatio": 0.05854241338112298,
+          "headMetrics": {
+            "headWidth": 232,
+            "landmarkHeight": 155,
+            "centerX": 167.5,
+            "originalReferenceHeight": 443
+          }
+        }
+      ],
+      "runLoop": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "runFrameMs": 75,
+      "headTarget": {
+        "width": 0.5387205387205387,
+        "landmark": 0.37037037037037035,
+        "top": 1
+      }
+    }
+  }
+}

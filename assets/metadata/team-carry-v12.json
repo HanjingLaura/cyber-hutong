@@ -1,0 +1,2398 @@
+{
+  "sources": {
+    "suki-carry-walk-v12": {
+      "file": "team/v12/suki-carry-walk.png",
+      "size": [
+        1536,
+        1024
+      ]
+    },
+    "sid-carry-walk-v12": {
+      "file": "team/v12/sid-carry-walk.png",
+      "size": [
+        1536,
+        1024
+      ]
+    },
+    "jilly-carry-walk-v12": {
+      "file": "team/v12/jilly-carry-walk.png",
+      "size": [
+        1536,
+        1024
+      ]
+    },
+    "laura-carry-walk-v12": {
+      "file": "team/v12/laura-carry-walk.png",
+      "size": [
+        1536,
+        1024
+      ]
+    },
+    "kay-carry-walk-v12": {
+      "file": "team/v12/kay-carry-walk.png",
+      "size": [
+        1536,
+        1024
+      ]
+    },
+    "franco-carry-walk-v12": {
+      "file": "team/v12/franco-carry-walk.png",
+      "size": [
+        1536,
+        1024
+      ]
+    },
+    "cora-carry-walk-v12": {
+      "file": "team/v12/cora-carry-walk.png",
+      "size": [
+        1774,
+        887
+      ]
+    },
+    "amber-carry-walk-v12": {
+      "file": "team/v12/amber-carry-walk.png",
+      "size": [
+        1536,
+        1024
+      ]
+    }
+  },
+  "members": {
+    "suki": {
+      "frames": [
+        {
+          "name": "carry-walk-side-v12-0",
+          "source": "suki-carry-walk-v12",
+          "rect": [
+            36,
+            51,
+            277,
+            442
+          ],
+          "referenceHeight": 432.65437788018437,
+          "pivotX": 0.5523465703971119,
+          "foot": [
+            153,
+            442
+          ],
+          "seat": [
+            138.5,
+            318.24
+          ],
+          "grip": [
+            212,
+            246.5
+          ],
+          "gripSide": 1,
+          "slot": null,
+          "scaleXRatio": 1.0098244925973134,
+          "offsetYRatio": 0.021600664635834876,
+          "headMetrics": {
+            "headWidth": 235,
+            "landmarkHeight": 157,
+            "centerX": 153,
+            "originalReferenceHeight": 442
+          }
+        },
+        {
+          "name": "carry-walk-side-v12-1",
+          "source": "suki-carry-walk-v12",
+          "rect": [
+            419,
+            51,
+            271,
+            442
+          ],
+          "referenceHeight": 432.65437788018437,
+          "pivotX": 0.5645756457564576,
+          "foot": [
+            153,
+            442
+          ],
+          "seat": [
+            135.5,
+            318.24
+          ],
+          "grip": [
+            210.5,
+            243
+          ],
+          "gripSide": 1,
+          "slot": null,
+          "scaleXRatio": 1.0098244925973134,
+          "offsetYRatio": 0.021600664635834876,
+          "headMetrics": {
+            "headWidth": 235,
+            "landmarkHeight": 157,
+            "centerX": 153,
+            "originalReferenceHeight": 442
+          }
+        },
+        {
+          "name": "carry-walk-side-v12-2",
+          "source": "suki-carry-walk-v12",
+          "rect": [
+            801,
+            51,
+            271,
+            442
+          ],
+          "referenceHeight": 432.65437788018437,
+          "pivotX": 0.566420664206642,
+          "foot": [
+            153.5,
+            442
+          ],
+          "seat": [
+            135.5,
+            318.24
+          ],
+          "grip": [
+            210,
+            244.5
+          ],
+          "gripSide": 1,
+          "slot": null,
+          "scaleXRatio": 1.0141399818819175,
+          "offsetYRatio": 0.021600664635834876,
+          "headMetrics": {
+            "headWidth": 234,
+            "landmarkHeight": 157,
+            "centerX": 153.5,
+            "originalReferenceHeight": 442
+          }
+        },
+        {
+          "name": "carry-walk-side-v12-3",
+          "source": "suki-carry-walk-v12",
+          "rect": [
+            1185,
+            51,
+            309,
+            442
+          ],
+          "referenceHeight": 432.65437788018437,
+          "pivotX": 0.4967637540453074,
+          "foot": [
+            153.5,
+            442
+          ],
+          "seat": [
+            154.5,
+            318.24
+          ],
+          "grip": [
+            223.5,
+            249.5
+          ],
+          "gripSide": 1,
+          "slot": null,
+          "scaleXRatio": 1.0055455752557996,
+          "offsetYRatio": 0.021600664635834876,
+          "headMetrics": {
+            "headWidth": 236,
+            "landmarkHeight": 157,
+            "centerX": 153.5,
+            "originalReferenceHeight": 442
+          }
+        },
+        {
+          "name": "carry-walk-side-v12-4",
+          "source": "suki-carry-walk-v12",
+          "rect": [
+            38,
+            544,
+            275,
+            439
+          ],
+          "referenceHeight": 435.41013824884794,
+          "pivotX": 0.5709090909090909,
+          "foot": [
+            157,
+            439
+          ],
+          "seat": [
+            137.5,
+            316.08
+          ],
+          "grip": [
+            214.5,
+            230.5
+          ],
+          "gripSide": 1,
+          "slot": null,
+          "scaleXRatio": 1.016256495734876,
+          "offsetYRatio": 0.008244782185343524,
+          "headMetrics": {
+            "headWidth": 235,
+            "landmarkHeight": 158,
+            "centerX": 157,
+            "originalReferenceHeight": 439
+          }
+        },
+        {
+          "name": "carry-walk-side-v12-5",
+          "source": "suki-carry-walk-v12",
+          "rect": [
+            421,
+            544,
+            275,
+            439
+          ],
+          "referenceHeight": 435.41013824884794,
+          "pivotX": 0.5709090909090909,
+          "foot": [
+            157,
+            439
+          ],
+          "seat": [
+            137.5,
+            316.08
+          ],
+          "grip": [
+            214,
+            230.5
+          ],
+          "gripSide": 1,
+          "slot": null,
+          "scaleXRatio": 1.016256495734876,
+          "offsetYRatio": 0.008244782185343524,
+          "headMetrics": {
+            "headWidth": 235,
+            "landmarkHeight": 158,
+            "centerX": 157,
+            "originalReferenceHeight": 439
+          }
+        },
+        {
+          "name": "carry-walk-side-v12-6",
+          "source": "suki-carry-walk-v12",
+          "rect": [
+            804,
+            544,
+            274,
+            439
+          ],
+          "referenceHeight": 438.1658986175116,
+          "pivotX": 0.5711678832116789,
+          "foot": [
+            156.5,
+            439
+          ],
+          "seat": [
+            137,
+            316.08
+          ],
+          "grip": [
+            210.5,
+            230.5
+          ],
+          "gripSide": 1,
+          "slot": null,
+          "scaleXRatio": 1.0270589625428337,
+          "offsetYRatio": 0.001903620033234299,
+          "headMetrics": {
+            "headWidth": 234,
+            "landmarkHeight": 159,
+            "centerX": 156.5,
+            "originalReferenceHeight": 439
+          }
+        },
+        {
+          "name": "carry-walk-side-v12-7",
+          "source": "suki-carry-walk-v12",
+          "rect": [
+            1190,
+            544,
+            298,
+            439
+          ],
+          "referenceHeight": 438.1658986175116,
+          "pivotX": 0.5218120805369127,
+          "foot": [
+            155.5,
+            439
+          ],
+          "seat": [
+            149,
+            316.08
+          ],
+          "grip": [
+            220.5,
+            229
+          ],
+          "gripSide": 1,
+          "slot": null,
+          "scaleXRatio": 1.0270589625428337,
+          "offsetYRatio": 0.001903620033234299,
+          "headMetrics": {
+            "headWidth": 234,
+            "landmarkHeight": 159,
+            "centerX": 155.5,
+            "originalReferenceHeight": 439
+          }
+        }
+      ],
+      "carryLoop": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "carrySideFrameMs": 100,
+      "headTarget": {
+        "width": 0.5484949832775919,
+        "landmark": 0.362876254180602,
+        "top": 1
+      }
+    },
+    "sid": {
+      "frames": [
+        {
+          "name": "carry-walk-side-v12-0",
+          "source": "sid-carry-walk-v12",
+          "rect": [
+            48,
+            23,
+            270,
+            474
+          ],
+          "referenceHeight": 467.836820083682,
+          "pivotX": 0.5592592592592592,
+          "foot": [
+            151,
+            474
+          ],
+          "seat": [
+            135,
+            341.28
+          ],
+          "grip": [
+            205,
+            250.5
+          ],
+          "gripSide": 1,
+          "slot": null,
+          "scaleXRatio": 1.0209205020920502,
+          "offsetYRatio": 0.013173781224007808,
+          "headMetrics": {
+            "headWidth": 237,
+            "landmarkHeight": 183,
+            "centerX": 151,
+            "originalReferenceHeight": 474
+          }
+        },
+        {
+          "name": "carry-walk-side-v12-1",
+          "source": "sid-carry-walk-v12",
+          "rect": [
+            440,
+            23,
+            262,
+            474
+          ],
+          "referenceHeight": 467.836820083682,
+          "pivotX": 0.5458015267175572,
+          "foot": [
+            143,
+            474
+          ],
+          "seat": [
+            131,
+            341.28
+          ],
+          "grip": [
+            198.5,
+            250.5
+          ],
+          "gripSide": 1,
+          "slot": null,
+          "scaleXRatio": 1.0209205020920502,
+          "offsetYRatio": 0.013173781224007808,
+          "headMetrics": {
+            "headWidth": 237,
+            "landmarkHeight": 183,
+            "centerX": 143,
+            "originalReferenceHeight": 474
+          }
+        },
+        {
+          "name": "carry-walk-side-v12-2",
+          "source": "sid-carry-walk-v12",
+          "rect": [
+            849,
+            23,
+            237,
+            474
+          ],
+          "referenceHeight": 467.836820083682,
+          "pivotX": 0.4978902953586498,
+          "foot": [
+            118,
+            474
+          ],
+          "seat": [
+            118.5,
+            341.28
+          ],
+          "grip": [
+            177.5,
+            250.5
+          ],
+          "gripSide": 1,
+          "slot": null,
+          "scaleXRatio": 1.0209205020920502,
+          "offsetYRatio": 0.013173781224007808,
+          "headMetrics": {
+            "headWidth": 237,
+            "landmarkHeight": 183,
+            "centerX": 118,
+            "originalReferenceHeight": 474
+          }
+        },
+        {
+          "name": "carry-walk-side-v12-3",
+          "source": "sid-carry-walk-v12",
+          "rect": [
+            1202,
+            23,
+            285,
+            474
+          ],
+          "referenceHeight": 467.836820083682,
+          "pivotX": 0.5210526315789473,
+          "foot": [
+            148.5,
+            474
+          ],
+          "seat": [
+            142.5,
+            341.28
+          ],
+          "grip": [
+            208.5,
+            250.5
+          ],
+          "gripSide": 1,
+          "slot": null,
+          "scaleXRatio": 1.016630920150487,
+          "offsetYRatio": 0.013173781224007808,
+          "headMetrics": {
+            "headWidth": 238,
+            "landmarkHeight": 183,
+            "centerX": 148.5,
+            "originalReferenceHeight": 474
+          }
+        },
+        {
+          "name": "carry-walk-side-v12-4",
+          "source": "sid-carry-walk-v12",
+          "rect": [
+            51,
+            526,
+            268,
+            473
+          ],
+          "referenceHeight": 465.2803347280335,
+          "pivotX": 0.5541044776119403,
+          "foot": [
+            148.5,
+            473
+          ],
+          "seat": [
+            134,
+            340.56
+          ],
+          "grip": [
+            202,
+            250
+          ],
+          "gripSide": 1,
+          "slot": null,
+          "scaleXRatio": 1.0110755599310857,
+          "offsetYRatio": 0.01659142821172277,
+          "headMetrics": {
+            "headWidth": 238,
+            "landmarkHeight": 182,
+            "centerX": 148.5,
+            "originalReferenceHeight": 473
+          }
+        },
+        {
+          "name": "carry-walk-side-v12-5",
+          "source": "sid-carry-walk-v12",
+          "rect": [
+            443,
+            526,
+            260,
+            473
+          ],
+          "referenceHeight": 465.2803347280335,
+          "pivotX": 0.5384615384615384,
+          "foot": [
+            140,
+            473
+          ],
+          "seat": [
+            130,
+            340.56
+          ],
+          "grip": [
+            195.5,
+            250
+          ],
+          "gripSide": 1,
+          "slot": null,
+          "scaleXRatio": 1.0068451182577338,
+          "offsetYRatio": 0.01659142821172277,
+          "headMetrics": {
+            "headWidth": 239,
+            "landmarkHeight": 182,
+            "centerX": 140,
+            "originalReferenceHeight": 473
+          }
+        },
+        {
+          "name": "carry-walk-side-v12-6",
+          "source": "sid-carry-walk-v12",
+          "rect": [
+            848,
+            527,
+            239,
+            472
+          ],
+          "referenceHeight": 462.7238493723849,
+          "pivotX": 0.497907949790795,
+          "foot": [
+            119,
+            472
+          ],
+          "seat": [
+            119.5,
+            339.84
+          ],
+          "grip": [
+            178.5,
+            249
+          ],
+          "gripSide": 1,
+          "slot": null,
+          "scaleXRatio": 1.0013130022233505,
+          "offsetYRatio": 0.02004683925455053,
+          "headMetrics": {
+            "headWidth": 239,
+            "landmarkHeight": 181,
+            "centerX": 119,
+            "originalReferenceHeight": 473
+          }
+        },
+        {
+          "name": "carry-walk-side-v12-7",
+          "source": "sid-carry-walk-v12",
+          "rect": [
+            1204,
+            526,
+            283,
+            473
+          ],
+          "referenceHeight": 465.2803347280335,
+          "pivotX": 0.519434628975265,
+          "foot": [
+            147,
+            473
+          ],
+          "seat": [
+            141.5,
+            340.56
+          ],
+          "grip": [
+            206.5,
+            250
+          ],
+          "gripSide": 1,
+          "slot": null,
+          "scaleXRatio": 1.0068451182577338,
+          "offsetYRatio": 0.01659142821172277,
+          "headMetrics": {
+            "headWidth": 239,
+            "landmarkHeight": 182,
+            "centerX": 147,
+            "originalReferenceHeight": 473
+          }
+        }
+      ],
+      "carryLoop": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "carrySideFrameMs": 100,
+      "headTarget": {
+        "width": 0.5171849427168577,
+        "landmark": 0.3911620294599018,
+        "top": 1
+      }
+    },
+    "jilly": {
+      "frames": [
+        {
+          "name": "carry-walk-side-v12-0",
+          "source": "jilly-carry-walk-v12",
+          "rect": [
+            48,
+            52,
+            258,
+            436
+          ],
+          "referenceHeight": 429.1578947368421,
+          "pivotX": 0.562015503875969,
+          "foot": [
+            145,
+            436
+          ],
+          "seat": [
+            129,
+            313.92
+          ],
+          "grip": [
+            202,
+            231.5
+          ],
+          "gripSide": 1,
+          "slot": null,
+          "scaleXRatio": 1.0114832535885168,
+          "offsetYRatio": 0.015943095413294195,
+          "headMetrics": {
+            "headWidth": 225,
+            "landmarkHeight": 151,
+            "centerX": 145,
+            "originalReferenceHeight": 436
+          }
+        },
+        {
+          "name": "carry-walk-side-v12-1",
+          "source": "jilly-carry-walk-v12",
+          "rect": [
+            431,
+            52,
+            258,
+            436
+          ],
+          "referenceHeight": 429.1578947368421,
+          "pivotX": 0.563953488372093,
+          "foot": [
+            145.5,
+            436
+          ],
+          "seat": [
+            129,
+            313.92
+          ],
+          "grip": [
+            203,
+            233
+          ],
+          "gripSide": 1,
+          "slot": null,
+          "scaleXRatio": 1.0159988038277512,
+          "offsetYRatio": 0.015943095413294195,
+          "headMetrics": {
+            "headWidth": 224,
+            "landmarkHeight": 151,
+            "centerX": 145.5,
+            "originalReferenceHeight": 436
+          }
+        },
+        {
+          "name": "carry-walk-side-v12-2",
+          "source": "jilly-carry-walk-v12",
+          "rect": [
+            815,
+            52,
+            259,
+            436
+          ],
+          "referenceHeight": 429.1578947368421,
+          "pivotX": 0.5637065637065637,
+          "foot": [
+            146,
+            436
+          ],
+          "seat": [
+            129.5,
+            313.92
+          ],
+          "grip": [
+            202,
+            231.5
+          ],
+          "gripSide": 1,
+          "slot": null,
+          "scaleXRatio": 1.0114832535885168,
+          "offsetYRatio": 0.015943095413294195,
+          "headMetrics": {
+            "headWidth": 225,
+            "landmarkHeight": 151,
+            "centerX": 146,
+            "originalReferenceHeight": 436
+          }
+        },
+        {
+          "name": "carry-walk-side-v12-3",
+          "source": "jilly-carry-walk-v12",
+          "rect": [
+            1199,
+            52,
+            282,
+            436
+          ],
+          "referenceHeight": 429.1578947368421,
+          "pivotX": 0.5177304964539007,
+          "foot": [
+            146,
+            436
+          ],
+          "seat": [
+            141,
+            313.92
+          ],
+          "grip": [
+            212.5,
+            247.5
+          ],
+          "gripSide": 1,
+          "slot": null,
+          "scaleXRatio": 1.0114832535885168,
+          "offsetYRatio": 0.015943095413294195,
+          "headMetrics": {
+            "headWidth": 225,
+            "landmarkHeight": 151,
+            "centerX": 146,
+            "originalReferenceHeight": 436
+          }
+        },
+        {
+          "name": "carry-walk-side-v12-4",
+          "source": "jilly-carry-walk-v12",
+          "rect": [
+            48,
+            556,
+            263,
+            428
+          ],
+          "referenceHeight": 423.4736842105263,
+          "pivotX": 0.5684410646387833,
+          "foot": [
+            149.5,
+            428
+          ],
+          "seat": [
+            131.5,
+            308.15999999999997
+          ],
+          "grip": [
+            203.5,
+            228.5
+          ],
+          "gripSide": 1,
+          "slot": null,
+          "scaleXRatio": 0.9936698141169495,
+          "offsetYRatio": 0.010688540889883136,
+          "headMetrics": {
+            "headWidth": 226,
+            "landmarkHeight": 149,
+            "centerX": 149.5,
+            "originalReferenceHeight": 428
+          }
+        },
+        {
+          "name": "carry-walk-side-v12-5",
+          "source": "jilly-carry-walk-v12",
+          "rect": [
+            434,
+            556,
+            260,
+            428
+          ],
+          "referenceHeight": 423.4736842105263,
+          "pivotX": 0.5673076923076923,
+          "foot": [
+            147.5,
+            428
+          ],
+          "seat": [
+            130,
+            308.15999999999997
+          ],
+          "grip": [
+            202.5,
+            227.5
+          ],
+          "gripSide": 1,
+          "slot": null,
+          "scaleXRatio": 1.002541866028708,
+          "offsetYRatio": 0.010688540889883136,
+          "headMetrics": {
+            "headWidth": 224,
+            "landmarkHeight": 149,
+            "centerX": 147.5,
+            "originalReferenceHeight": 428
+          }
+        },
+        {
+          "name": "carry-walk-side-v12-6",
+          "source": "jilly-carry-walk-v12",
+          "rect": [
+            818,
+            556,
+            260,
+            428
+          ],
+          "referenceHeight": 423.4736842105263,
+          "pivotX": 0.5653846153846154,
+          "foot": [
+            147,
+            428
+          ],
+          "seat": [
+            130,
+            308.15999999999997
+          ],
+          "grip": [
+            203,
+            229
+          ],
+          "gripSide": 1,
+          "slot": null,
+          "scaleXRatio": 0.9980861244019138,
+          "offsetYRatio": 0.010688540889883136,
+          "headMetrics": {
+            "headWidth": 225,
+            "landmarkHeight": 149,
+            "centerX": 147,
+            "originalReferenceHeight": 428
+          }
+        },
+        {
+          "name": "carry-walk-side-v12-7",
+          "source": "jilly-carry-walk-v12",
+          "rect": [
+            1202,
+            556,
+            283,
+            428
+          ],
+          "referenceHeight": 423.4736842105263,
+          "pivotX": 0.519434628975265,
+          "foot": [
+            147,
+            428
+          ],
+          "seat": [
+            141.5,
+            308.15999999999997
+          ],
+          "grip": [
+            210,
+            241.5
+          ],
+          "gripSide": 1,
+          "slot": null,
+          "scaleXRatio": 0.9980861244019138,
+          "offsetYRatio": 0.010688540889883136,
+          "headMetrics": {
+            "headWidth": 225,
+            "landmarkHeight": 149,
+            "centerX": 147,
+            "originalReferenceHeight": 428
+          }
+        }
+      ],
+      "carryLoop": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "carrySideFrameMs": 100,
+      "headTarget": {
+        "width": 0.5303030303030303,
+        "landmark": 0.35185185185185186,
+        "top": 1
+      }
+    },
+    "laura": {
+      "frames": [
+        {
+          "name": "carry-walk-side-v12-0",
+          "source": "laura-carry-walk-v12",
+          "rect": [
+            56,
+            48,
+            259,
+            426
+          ],
+          "referenceHeight": 396,
+          "pivotX": 0.5424710424710425,
+          "foot": [
+            140.5,
+            426
+          ],
+          "seat": [
+            129.5,
+            306.71999999999997
+          ],
+          "grip": [
+            201.5,
+            235
+          ],
+          "gripSide": 1,
+          "slot": null,
+          "scaleXRatio": 0.9877675840978594,
+          "offsetYRatio": 0.07575757575757569,
+          "headMetrics": {
+            "headWidth": 218,
+            "landmarkHeight": 142,
+            "centerX": 140.5,
+            "originalReferenceHeight": 426
+          }
+        },
+        {
+          "name": "carry-walk-side-v12-1",
+          "source": "laura-carry-walk-v12",
+          "rect": [
+            440,
+            48,
+            252,
+            426
+          ],
+          "referenceHeight": 396,
+          "pivotX": 0.5654761904761905,
+          "foot": [
+            142.5,
+            426
+          ],
+          "seat": [
+            126,
+            306.71999999999997
+          ],
+          "grip": [
+            194.5,
+            222
+          ],
+          "gripSide": 1,
+          "slot": null,
+          "scaleXRatio": 0.9877675840978594,
+          "offsetYRatio": 0.07575757575757569,
+          "headMetrics": {
+            "headWidth": 218,
+            "landmarkHeight": 142,
+            "centerX": 142.5,
+            "originalReferenceHeight": 426
+          }
+        },
+        {
+          "name": "carry-walk-side-v12-2",
+          "source": "laura-carry-walk-v12",
+          "rect": [
+            823,
+            48,
+            250,
+            426
+          ],
+          "referenceHeight": 396,
+          "pivotX": 0.564,
+          "foot": [
+            141,
+            426
+          ],
+          "seat": [
+            125,
+            306.71999999999997
+          ],
+          "grip": [
+            199.5,
+            235
+          ],
+          "gripSide": 1,
+          "slot": null,
+          "scaleXRatio": 0.9923195084485408,
+          "offsetYRatio": 0.07575757575757569,
+          "headMetrics": {
+            "headWidth": 217,
+            "landmarkHeight": 142,
+            "centerX": 141,
+            "originalReferenceHeight": 426
+          }
+        },
+        {
+          "name": "carry-walk-side-v12-3",
+          "source": "laura-carry-walk-v12",
+          "rect": [
+            1207,
+            48,
+            277,
+            426
+          ],
+          "referenceHeight": 396,
+          "pivotX": 0.5108303249097473,
+          "foot": [
+            141.5,
+            426
+          ],
+          "seat": [
+            138.5,
+            306.71999999999997
+          ],
+          "grip": [
+            203,
+            235
+          ],
+          "gripSide": 1,
+          "slot": null,
+          "scaleXRatio": 0.9877675840978594,
+          "offsetYRatio": 0.07575757575757569,
+          "headMetrics": {
+            "headWidth": 218,
+            "landmarkHeight": 142,
+            "centerX": 141.5,
+            "originalReferenceHeight": 426
+          }
+        },
+        {
+          "name": "carry-walk-side-v12-4",
+          "source": "laura-carry-walk-v12",
+          "rect": [
+            49,
+            537,
+            262,
+            427
+          ],
+          "referenceHeight": 393.21126760563385,
+          "pivotX": 0.5553435114503816,
+          "foot": [
+            145.5,
+            427
+          ],
+          "seat": [
+            131,
+            307.44
+          ],
+          "grip": [
+            207,
+            230.5
+          ],
+          "gripSide": 1,
+          "slot": null,
+          "scaleXRatio": 0.9718950064020488,
+          "offsetYRatio": 0.08593022422809637,
+          "headMetrics": {
+            "headWidth": 220,
+            "landmarkHeight": 141,
+            "centerX": 145.5,
+            "originalReferenceHeight": 427
+          }
+        },
+        {
+          "name": "carry-walk-side-v12-5",
+          "source": "laura-carry-walk-v12",
+          "rect": [
+            436,
+            537,
+            256,
+            427
+          ],
+          "referenceHeight": 393.21126760563385,
+          "pivotX": 0.56640625,
+          "foot": [
+            145,
+            427
+          ],
+          "seat": [
+            128,
+            307.44
+          ],
+          "grip": [
+            197.5,
+            220
+          ],
+          "gripSide": 1,
+          "slot": null,
+          "scaleXRatio": 0.9674972914409536,
+          "offsetYRatio": 0.08593022422809637,
+          "headMetrics": {
+            "headWidth": 221,
+            "landmarkHeight": 141,
+            "centerX": 145,
+            "originalReferenceHeight": 427
+          }
+        },
+        {
+          "name": "carry-walk-side-v12-6",
+          "source": "laura-carry-walk-v12",
+          "rect": [
+            817,
+            537,
+            255,
+            427
+          ],
+          "referenceHeight": 393.21126760563385,
+          "pivotX": 0.5666666666666667,
+          "foot": [
+            144.5,
+            427
+          ],
+          "seat": [
+            127.5,
+            307.44
+          ],
+          "grip": [
+            197.5,
+            219
+          ],
+          "gripSide": 1,
+          "slot": null,
+          "scaleXRatio": 0.9718950064020488,
+          "offsetYRatio": 0.08593022422809637,
+          "headMetrics": {
+            "headWidth": 220,
+            "landmarkHeight": 141,
+            "centerX": 144.5,
+            "originalReferenceHeight": 427
+          }
+        },
+        {
+          "name": "carry-walk-side-v12-7",
+          "source": "laura-carry-walk-v12",
+          "rect": [
+            1203,
+            537,
+            282,
+            427
+          ],
+          "referenceHeight": 393.21126760563385,
+          "pivotX": 0.5159574468085106,
+          "foot": [
+            145.5,
+            427
+          ],
+          "seat": [
+            141,
+            307.44
+          ],
+          "grip": [
+            206,
+            233
+          ],
+          "gripSide": 1,
+          "slot": null,
+          "scaleXRatio": 0.963139195533562,
+          "offsetYRatio": 0.08593022422809637,
+          "headMetrics": {
+            "headWidth": 222,
+            "landmarkHeight": 141,
+            "centerX": 145.5,
+            "originalReferenceHeight": 427
+          }
+        }
+      ],
+      "carryLoop": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "carrySideFrameMs": 100,
+      "headTarget": {
+        "width": 0.5437710437710438,
+        "landmark": 0.35858585858585856,
+        "top": 1
+      }
+    },
+    "kay": {
+      "frames": [
+        {
+          "name": "carry-walk-side-v12-0",
+          "source": "kay-carry-walk-v12",
+          "rect": [
+            49,
+            46,
+            273,
+            444
+          ],
+          "referenceHeight": 419.3285714285714,
+          "pivotX": 0.5604395604395604,
+          "foot": [
+            153,
+            444
+          ],
+          "seat": [
+            136.5,
+            319.68
+          ],
+          "grip": [
+            210,
+            255
+          ],
+          "gripSide": 1,
+          "slot": null,
+          "scaleXRatio": 0.9883759617384071,
+          "offsetYRatio": 0.05883555343576474,
+          "headMetrics": {
+            "headWidth": 229,
+            "landmarkHeight": 149,
+            "centerX": 153,
+            "originalReferenceHeight": 444
+          }
+        },
+        {
+          "name": "carry-walk-side-v12-1",
+          "source": "kay-carry-walk-v12",
+          "rect": [
+            433,
+            46,
+            268,
+            444
+          ],
+          "referenceHeight": 419.3285714285714,
+          "pivotX": 0.5708955223880597,
+          "foot": [
+            153,
+            444
+          ],
+          "seat": [
+            134,
+            319.68
+          ],
+          "grip": [
+            208.5,
+            243.5
+          ],
+          "gripSide": 1,
+          "slot": null,
+          "scaleXRatio": 0.9883759617384071,
+          "offsetYRatio": 0.05883555343576474,
+          "headMetrics": {
+            "headWidth": 229,
+            "landmarkHeight": 149,
+            "centerX": 153,
+            "originalReferenceHeight": 444
+          }
+        },
+        {
+          "name": "carry-walk-side-v12-2",
+          "source": "kay-carry-walk-v12",
+          "rect": [
+            817,
+            46,
+            267,
+            444
+          ],
+          "referenceHeight": 419.3285714285714,
+          "pivotX": 0.5711610486891385,
+          "foot": [
+            152.5,
+            444
+          ],
+          "seat": [
+            133.5,
+            319.68
+          ],
+          "grip": [
+            207.5,
+            244
+          ],
+          "gripSide": 1,
+          "slot": null,
+          "scaleXRatio": 0.9927109440267334,
+          "offsetYRatio": 0.05883555343576474,
+          "headMetrics": {
+            "headWidth": 228,
+            "landmarkHeight": 149,
+            "centerX": 152.5,
+            "originalReferenceHeight": 444
+          }
+        },
+        {
+          "name": "carry-walk-side-v12-3",
+          "source": "kay-carry-walk-v12",
+          "rect": [
+            1201,
+            46,
+            300,
+            444
+          ],
+          "referenceHeight": 419.3285714285714,
+          "pivotX": 0.5066666666666667,
+          "foot": [
+            152,
+            444
+          ],
+          "seat": [
+            150,
+            319.68
+          ],
+          "grip": [
+            218.5,
+            245
+          ],
+          "gripSide": 1,
+          "slot": null,
+          "scaleXRatio": 0.9883759617384071,
+          "offsetYRatio": 0.05883555343576474,
+          "headMetrics": {
+            "headWidth": 229,
+            "landmarkHeight": 149,
+            "centerX": 152,
+            "originalReferenceHeight": 444
+          }
+        },
+        {
+          "name": "carry-walk-side-v12-4",
+          "source": "kay-carry-walk-v12",
+          "rect": [
+            49,
+            548,
+            273,
+            442
+          ],
+          "referenceHeight": 419.3285714285714,
+          "pivotX": 0.5604395604395604,
+          "foot": [
+            153,
+            442
+          ],
+          "seat": [
+            136.5,
+            318.24
+          ],
+          "grip": [
+            210.5,
+            253
+          ],
+          "gripSide": 1,
+          "slot": null,
+          "scaleXRatio": 0.9883759617384071,
+          "offsetYRatio": 0.054066023915783745,
+          "headMetrics": {
+            "headWidth": 229,
+            "landmarkHeight": 149,
+            "centerX": 153,
+            "originalReferenceHeight": 442
+          }
+        },
+        {
+          "name": "carry-walk-side-v12-5",
+          "source": "kay-carry-walk-v12",
+          "rect": [
+            433,
+            548,
+            268,
+            442
+          ],
+          "referenceHeight": 419.3285714285714,
+          "pivotX": 0.5708955223880597,
+          "foot": [
+            153,
+            442
+          ],
+          "seat": [
+            134,
+            318.24
+          ],
+          "grip": [
+            208.5,
+            247
+          ],
+          "gripSide": 1,
+          "slot": null,
+          "scaleXRatio": 0.9883759617384071,
+          "offsetYRatio": 0.054066023915783745,
+          "headMetrics": {
+            "headWidth": 229,
+            "landmarkHeight": 149,
+            "centerX": 153,
+            "originalReferenceHeight": 442
+          }
+        },
+        {
+          "name": "carry-walk-side-v12-6",
+          "source": "kay-carry-walk-v12",
+          "rect": [
+            817,
+            548,
+            267,
+            442
+          ],
+          "referenceHeight": 419.3285714285714,
+          "pivotX": 0.5711610486891385,
+          "foot": [
+            152.5,
+            442
+          ],
+          "seat": [
+            133.5,
+            318.24
+          ],
+          "grip": [
+            207.5,
+            243.5
+          ],
+          "gripSide": 1,
+          "slot": null,
+          "scaleXRatio": 0.9927109440267334,
+          "offsetYRatio": 0.054066023915783745,
+          "headMetrics": {
+            "headWidth": 228,
+            "landmarkHeight": 149,
+            "centerX": 152.5,
+            "originalReferenceHeight": 442
+          }
+        },
+        {
+          "name": "carry-walk-side-v12-7",
+          "source": "kay-carry-walk-v12",
+          "rect": [
+            1201,
+            548,
+            300,
+            442
+          ],
+          "referenceHeight": 419.3285714285714,
+          "pivotX": 0.5083333333333333,
+          "foot": [
+            152.5,
+            442
+          ],
+          "seat": [
+            150,
+            318.24
+          ],
+          "grip": [
+            219,
+            244.5
+          ],
+          "gripSide": 1,
+          "slot": null,
+          "scaleXRatio": 0.9927109440267334,
+          "offsetYRatio": 0.054066023915783745,
+          "headMetrics": {
+            "headWidth": 228,
+            "landmarkHeight": 149,
+            "centerX": 152.5,
+            "originalReferenceHeight": 442
+          }
+        }
+      ],
+      "carryLoop": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "carrySideFrameMs": 100,
+      "headTarget": {
+        "width": 0.5397631133671743,
+        "landmark": 0.3553299492385787,
+        "top": 1
+      }
+    },
+    "franco": {
+      "frames": [
+        {
+          "name": "carry-walk-side-v12-0",
+          "source": "franco-carry-walk-v12",
+          "rect": [
+            46,
+            30,
+            265,
+            471
+          ],
+          "referenceHeight": 459.3727272727273,
+          "pivotX": 0.5641509433962264,
+          "foot": [
+            149.5,
+            471
+          ],
+          "seat": [
+            132.5,
+            339.12
+          ],
+          "grip": [
+            195,
+            270.5
+          ],
+          "gripSide": 1,
+          "slot": null,
+          "scaleXRatio": 1.0040271132376395,
+          "offsetYRatio": 0.03200015831865577,
+          "headMetrics": {
+            "headWidth": 228,
+            "landmarkHeight": 169,
+            "centerX": 149.5,
+            "originalReferenceHeight": 471
+          }
+        },
+        {
+          "name": "carry-walk-side-v12-1",
+          "source": "franco-carry-walk-v12",
+          "rect": [
+            450,
+            30,
+            244,
+            471
+          ],
+          "referenceHeight": 459.3727272727273,
+          "pivotX": 0.5307377049180327,
+          "foot": [
+            129.5,
+            471
+          ],
+          "seat": [
+            122,
+            339.12
+          ],
+          "grip": [
+            178,
+            271
+          ],
+          "gripSide": 1,
+          "slot": null,
+          "scaleXRatio": 1.0040271132376395,
+          "offsetYRatio": 0.03200015831865577,
+          "headMetrics": {
+            "headWidth": 228,
+            "landmarkHeight": 169,
+            "centerX": 129.5,
+            "originalReferenceHeight": 471
+          }
+        },
+        {
+          "name": "carry-walk-side-v12-2",
+          "source": "franco-carry-walk-v12",
+          "rect": [
+            851,
+            30,
+            227,
+            471
+          ],
+          "referenceHeight": 459.3727272727273,
+          "pivotX": 0.4977973568281938,
+          "foot": [
+            113,
+            471
+          ],
+          "seat": [
+            113.5,
+            339.12
+          ],
+          "grip": [
+            164.5,
+            270.5
+          ],
+          "gripSide": 1,
+          "slot": null,
+          "scaleXRatio": 1.0084501401682018,
+          "offsetYRatio": 0.03200015831865577,
+          "headMetrics": {
+            "headWidth": 227,
+            "landmarkHeight": 169,
+            "centerX": 113,
+            "originalReferenceHeight": 471
+          }
+        },
+        {
+          "name": "carry-walk-side-v12-3",
+          "source": "franco-carry-walk-v12",
+          "rect": [
+            1196,
+            30,
+            290,
+            471
+          ],
+          "referenceHeight": 459.3727272727273,
+          "pivotX": 0.5224137931034483,
+          "foot": [
+            151.5,
+            471
+          ],
+          "seat": [
+            145,
+            339.12
+          ],
+          "grip": [
+            204.5,
+            271
+          ],
+          "gripSide": 1,
+          "slot": null,
+          "scaleXRatio": 1.0040271132376395,
+          "offsetYRatio": 0.03200015831865577,
+          "headMetrics": {
+            "headWidth": 228,
+            "landmarkHeight": 169,
+            "centerX": 151.5,
+            "originalReferenceHeight": 471
+          }
+        },
+        {
+          "name": "carry-walk-side-v12-4",
+          "source": "franco-carry-walk-v12",
+          "rect": [
+            46,
+            528,
+            268,
+            467
+          ],
+          "referenceHeight": 459.3727272727273,
+          "pivotX": 0.5578358208955224,
+          "foot": [
+            149.5,
+            467
+          ],
+          "seat": [
+            134,
+            336.24
+          ],
+          "grip": [
+            203,
+            243.5
+          ],
+          "gripSide": 1,
+          "slot": null,
+          "scaleXRatio": 1.0040271132376395,
+          "offsetYRatio": 0.023292632245552225,
+          "headMetrics": {
+            "headWidth": 228,
+            "landmarkHeight": 169,
+            "centerX": 149.5,
+            "originalReferenceHeight": 467
+          }
+        },
+        {
+          "name": "carry-walk-side-v12-5",
+          "source": "franco-carry-walk-v12",
+          "rect": [
+            449,
+            529,
+            245,
+            466
+          ],
+          "referenceHeight": 456.6545454545455,
+          "pivotX": 0.5326530612244897,
+          "foot": [
+            130.5,
+            466
+          ],
+          "seat": [
+            122.5,
+            335.52
+          ],
+          "grip": [
+            187.5,
+            267.5
+          ],
+          "gripSide": 1,
+          "slot": null,
+          "scaleXRatio": 0.998086124401914,
+          "offsetYRatio": 0.027154005414874893,
+          "headMetrics": {
+            "headWidth": 228,
+            "landmarkHeight": 168,
+            "centerX": 130.5,
+            "originalReferenceHeight": 467
+          }
+        },
+        {
+          "name": "carry-walk-side-v12-6",
+          "source": "franco-carry-walk-v12",
+          "rect": [
+            851,
+            528,
+            227,
+            467
+          ],
+          "referenceHeight": 462.0909090909091,
+          "pivotX": 0.4977973568281938,
+          "foot": [
+            113,
+            467
+          ],
+          "seat": [
+            113.5,
+            336.24
+          ],
+          "grip": [
+            170,
+            243.5
+          ],
+          "gripSide": 1,
+          "slot": null,
+          "scaleXRatio": 1.0144173007609132,
+          "offsetYRatio": 0.017312610662994166,
+          "headMetrics": {
+            "headWidth": 227,
+            "landmarkHeight": 170,
+            "centerX": 113,
+            "originalReferenceHeight": 467
+          }
+        },
+        {
+          "name": "carry-walk-side-v12-7",
+          "source": "franco-carry-walk-v12",
+          "rect": [
+            1199,
+            528,
+            291,
+            467
+          ],
+          "referenceHeight": 462.0909090909091,
+          "pivotX": 0.5103092783505154,
+          "foot": [
+            148.5,
+            467
+          ],
+          "seat": [
+            145.5,
+            336.24
+          ],
+          "grip": [
+            210,
+            243.5
+          ],
+          "gripSide": 1,
+          "slot": null,
+          "scaleXRatio": 1.0099681020733653,
+          "offsetYRatio": 0.017312610662994166,
+          "headMetrics": {
+            "headWidth": 228,
+            "landmarkHeight": 170,
+            "centerX": 148.5,
+            "originalReferenceHeight": 467
+          }
+        }
+      ],
+      "carryLoop": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "carrySideFrameMs": 100,
+      "headTarget": {
+        "width": 0.4983277591973244,
+        "landmark": 0.36789297658862874,
+        "top": 0.9933110367892977
+      }
+    },
+    "cora": {
+      "frames": [
+        {
+          "name": "carry-walk-side-v12-0",
+          "source": "cora-carry-walk-v12",
+          "rect": [
+            66,
+            39,
+            277,
+            414
+          ],
+          "referenceHeight": 440.0373831775701,
+          "pivotX": 0.592057761732852,
+          "foot": [
+            164,
+            414
+          ],
+          "seat": [
+            138.5,
+            298.08
+          ],
+          "grip": [
+            211,
+            226
+          ],
+          "gripSide": 1,
+          "slot": null,
+          "scaleXRatio": 1.0303634475597092,
+          "offsetYRatio": -0.057492991249681435,
+          "headMetrics": {
+            "headWidth": 225,
+            "landmarkHeight": 158,
+            "centerX": 164,
+            "originalReferenceHeight": 414
+          }
+        },
+        {
+          "name": "carry-walk-side-v12-1",
+          "source": "cora-carry-walk-v12",
+          "rect": [
+            510,
+            39,
+            276,
+            414
+          ],
+          "referenceHeight": 440.0373831775701,
+          "pivotX": 0.5905797101449275,
+          "foot": [
+            163,
+            414
+          ],
+          "seat": [
+            138,
+            298.08
+          ],
+          "grip": [
+            210,
+            226
+          ],
+          "gripSide": 1,
+          "slot": null,
+          "scaleXRatio": 1.0303634475597092,
+          "offsetYRatio": -0.057492991249681435,
+          "headMetrics": {
+            "headWidth": 225,
+            "landmarkHeight": 158,
+            "centerX": 163,
+            "originalReferenceHeight": 414
+          }
+        },
+        {
+          "name": "carry-walk-side-v12-2",
+          "source": "cora-carry-walk-v12",
+          "rect": [
+            953,
+            39,
+            276,
+            414
+          ],
+          "referenceHeight": 440.0373831775701,
+          "pivotX": 0.5905797101449275,
+          "foot": [
+            163,
+            414
+          ],
+          "seat": [
+            138,
+            298.08
+          ],
+          "grip": [
+            210,
+            226
+          ],
+          "gripSide": 1,
+          "slot": null,
+          "scaleXRatio": 1.0303634475597092,
+          "offsetYRatio": -0.057492991249681435,
+          "headMetrics": {
+            "headWidth": 225,
+            "landmarkHeight": 158,
+            "centerX": 163,
+            "originalReferenceHeight": 414
+          }
+        },
+        {
+          "name": "carry-walk-side-v12-3",
+          "source": "cora-carry-walk-v12",
+          "rect": [
+            1386,
+            39,
+            309,
+            414
+          ],
+          "referenceHeight": 440.0373831775701,
+          "pivotX": 0.5453074433656958,
+          "foot": [
+            168.5,
+            414
+          ],
+          "seat": [
+            154.5,
+            298.08
+          ],
+          "grip": [
+            226,
+            226
+          ],
+          "gripSide": 1,
+          "slot": null,
+          "scaleXRatio": 1.0168060337760287,
+          "offsetYRatio": -0.057492991249681435,
+          "headMetrics": {
+            "headWidth": 228,
+            "landmarkHeight": 158,
+            "centerX": 168.5,
+            "originalReferenceHeight": 414
+          }
+        },
+        {
+          "name": "carry-walk-side-v12-4",
+          "source": "cora-carry-walk-v12",
+          "rect": [
+            69,
+            461,
+            278,
+            414
+          ],
+          "referenceHeight": 428.89719626168227,
+          "pivotX": 0.591726618705036,
+          "foot": [
+            164.5,
+            414
+          ],
+          "seat": [
+            139,
+            298.08
+          ],
+          "grip": [
+            211.5,
+            222.5
+          ],
+          "gripSide": 1,
+          "slot": null,
+          "scaleXRatio": 0.9998345877098669,
+          "offsetYRatio": -0.033055870304192436,
+          "headMetrics": {
+            "headWidth": 226,
+            "landmarkHeight": 154,
+            "centerX": 164.5,
+            "originalReferenceHeight": 414
+          }
+        },
+        {
+          "name": "carry-walk-side-v12-5",
+          "source": "cora-carry-walk-v12",
+          "rect": [
+            513,
+            461,
+            278,
+            414
+          ],
+          "referenceHeight": 428.89719626168227,
+          "pivotX": 0.591726618705036,
+          "foot": [
+            164.5,
+            414
+          ],
+          "seat": [
+            139,
+            298.08
+          ],
+          "grip": [
+            211.5,
+            222.5
+          ],
+          "gripSide": 1,
+          "slot": null,
+          "scaleXRatio": 0.9998345877098669,
+          "offsetYRatio": -0.033055870304192436,
+          "headMetrics": {
+            "headWidth": 226,
+            "landmarkHeight": 154,
+            "centerX": 164.5,
+            "originalReferenceHeight": 414
+          }
+        },
+        {
+          "name": "carry-walk-side-v12-6",
+          "source": "cora-carry-walk-v12",
+          "rect": [
+            953,
+            461,
+            276,
+            414
+          ],
+          "referenceHeight": 428.89719626168227,
+          "pivotX": 0.5887681159420289,
+          "foot": [
+            162.5,
+            414
+          ],
+          "seat": [
+            138,
+            298.08
+          ],
+          "grip": [
+            210.5,
+            221
+          ],
+          "gripSide": 1,
+          "slot": null,
+          "scaleXRatio": 0.9998345877098669,
+          "offsetYRatio": -0.033055870304192436,
+          "headMetrics": {
+            "headWidth": 226,
+            "landmarkHeight": 154,
+            "centerX": 162.5,
+            "originalReferenceHeight": 414
+          }
+        },
+        {
+          "name": "carry-walk-side-v12-7",
+          "source": "cora-carry-walk-v12",
+          "rect": [
+            1383,
+            461,
+            309,
+            414
+          ],
+          "referenceHeight": 431.68224299065423,
+          "pivotX": 0.5388349514563107,
+          "foot": [
+            166.5,
+            414
+          ],
+          "seat": [
+            154.5,
+            298.08
+          ],
+          "grip": [
+            227,
+            222.5
+          ],
+          "gripSide": 1,
+          "slot": null,
+          "scaleXRatio": 0.9974995900967372,
+          "offsetYRatio": -0.03928339467417197,
+          "headMetrics": {
+            "headWidth": 228,
+            "landmarkHeight": 155,
+            "centerX": 166.5,
+            "originalReferenceHeight": 414
+          }
+        }
+      ],
+      "carryLoop": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "carrySideFrameMs": 100,
+      "headTarget": {
+        "width": 0.5268456375838926,
+        "landmark": 0.35906040268456374,
+        "top": 0.9983221476510067
+      }
+    },
+    "amber": {
+      "frames": [
+        {
+          "name": "carry-walk-side-v12-0",
+          "source": "amber-carry-walk-v12",
+          "rect": [
+            40,
+            51,
+            282,
+            451
+          ],
+          "referenceHeight": 420.14218009478674,
+          "pivotX": 0.5673758865248227,
+          "foot": [
+            160,
+            451
+          ],
+          "seat": [
+            141,
+            324.71999999999997
+          ],
+          "grip": [
+            227.5,
+            244
+          ],
+          "gripSide": 1,
+          "slot": null,
+          "scaleXRatio": 0.9927552873875191,
+          "offsetYRatio": 0.07513818386914828,
+          "headMetrics": {
+            "headWidth": 227,
+            "landmarkHeight": 150,
+            "centerX": 160,
+            "originalReferenceHeight": 451
+          }
+        },
+        {
+          "name": "carry-walk-side-v12-1",
+          "source": "amber-carry-walk-v12",
+          "rect": [
+            423,
+            51,
+            274,
+            451
+          ],
+          "referenceHeight": 420.14218009478674,
+          "pivotX": 0.5857664233576643,
+          "foot": [
+            160.5,
+            451
+          ],
+          "seat": [
+            137,
+            324.71999999999997
+          ],
+          "grip": [
+            228.5,
+            244
+          ],
+          "gripSide": 1,
+          "slot": null,
+          "scaleXRatio": 0.9971480098980833,
+          "offsetYRatio": 0.07513818386914828,
+          "headMetrics": {
+            "headWidth": 226,
+            "landmarkHeight": 150,
+            "centerX": 160.5,
+            "originalReferenceHeight": 451
+          }
+        },
+        {
+          "name": "carry-walk-side-v12-2",
+          "source": "amber-carry-walk-v12",
+          "rect": [
+            807,
+            51,
+            274,
+            451
+          ],
+          "referenceHeight": 420.14218009478674,
+          "pivotX": 0.5857664233576643,
+          "foot": [
+            160.5,
+            451
+          ],
+          "seat": [
+            137,
+            324.71999999999997
+          ],
+          "grip": [
+            227.5,
+            244
+          ],
+          "gripSide": 1,
+          "slot": null,
+          "scaleXRatio": 0.9971480098980833,
+          "offsetYRatio": 0.07513818386914828,
+          "headMetrics": {
+            "headWidth": 226,
+            "landmarkHeight": 150,
+            "centerX": 160.5,
+            "originalReferenceHeight": 451
+          }
+        },
+        {
+          "name": "carry-walk-side-v12-3",
+          "source": "amber-carry-walk-v12",
+          "rect": [
+            1191,
+            51,
+            302,
+            451
+          ],
+          "referenceHeight": 420.14218009478674,
+          "pivotX": 0.5314569536423841,
+          "foot": [
+            160.5,
+            451
+          ],
+          "seat": [
+            151,
+            324.71999999999997
+          ],
+          "grip": [
+            228,
+            244
+          ],
+          "gripSide": 1,
+          "slot": null,
+          "scaleXRatio": 0.9971480098980833,
+          "offsetYRatio": 0.07513818386914828,
+          "headMetrics": {
+            "headWidth": 226,
+            "landmarkHeight": 150,
+            "centerX": 160.5,
+            "originalReferenceHeight": 451
+          }
+        },
+        {
+          "name": "carry-walk-side-v12-4",
+          "source": "amber-carry-walk-v12",
+          "rect": [
+            40,
+            535,
+            280,
+            450
+          ],
+          "referenceHeight": 420.14218009478674,
+          "pivotX": 0.5732142857142857,
+          "foot": [
+            160.5,
+            450
+          ],
+          "seat": [
+            140,
+            324
+          ],
+          "grip": [
+            229,
+            246.5
+          ],
+          "gripSide": 1,
+          "slot": null,
+          "scaleXRatio": 0.9971480098980833,
+          "offsetYRatio": 0.07275803722504226,
+          "headMetrics": {
+            "headWidth": 226,
+            "landmarkHeight": 150,
+            "centerX": 160.5,
+            "originalReferenceHeight": 450
+          }
+        },
+        {
+          "name": "carry-walk-side-v12-5",
+          "source": "amber-carry-walk-v12",
+          "rect": [
+            423,
+            535,
+            274,
+            450
+          ],
+          "referenceHeight": 420.14218009478674,
+          "pivotX": 0.5857664233576643,
+          "foot": [
+            160.5,
+            450
+          ],
+          "seat": [
+            137,
+            324
+          ],
+          "grip": [
+            229.5,
+            246.5
+          ],
+          "gripSide": 1,
+          "slot": null,
+          "scaleXRatio": 0.9971480098980833,
+          "offsetYRatio": 0.07275803722504226,
+          "headMetrics": {
+            "headWidth": 226,
+            "landmarkHeight": 150,
+            "centerX": 160.5,
+            "originalReferenceHeight": 450
+          }
+        },
+        {
+          "name": "carry-walk-side-v12-6",
+          "source": "amber-carry-walk-v12",
+          "rect": [
+            807,
+            535,
+            274,
+            450
+          ],
+          "referenceHeight": 420.14218009478674,
+          "pivotX": 0.5857664233576643,
+          "foot": [
+            160.5,
+            450
+          ],
+          "seat": [
+            137,
+            324
+          ],
+          "grip": [
+            229.5,
+            246.5
+          ],
+          "gripSide": 1,
+          "slot": null,
+          "scaleXRatio": 0.9971480098980833,
+          "offsetYRatio": 0.07275803722504226,
+          "headMetrics": {
+            "headWidth": 226,
+            "landmarkHeight": 150,
+            "centerX": 160.5,
+            "originalReferenceHeight": 450
+          }
+        },
+        {
+          "name": "carry-walk-side-v12-7",
+          "source": "amber-carry-walk-v12",
+          "rect": [
+            1191,
+            535,
+            302,
+            450
+          ],
+          "referenceHeight": 420.14218009478674,
+          "pivotX": 0.5314569536423841,
+          "foot": [
+            160.5,
+            450
+          ],
+          "seat": [
+            151,
+            324
+          ],
+          "grip": [
+            229,
+            246.5
+          ],
+          "gripSide": 1,
+          "slot": null,
+          "scaleXRatio": 0.9971480098980833,
+          "offsetYRatio": 0.07275803722504226,
+          "headMetrics": {
+            "headWidth": 226,
+            "landmarkHeight": 150,
+            "centerX": 160.5,
+            "originalReferenceHeight": 450
+          }
+        }
+      ],
+      "carryLoop": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "carrySideFrameMs": 100,
+      "headTarget": {
+        "width": 0.5363790186125211,
+        "landmark": 0.3570219966159052,
+        "top": 0.9983079526226735
+      }
+    }
+  }
+}

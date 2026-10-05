@@ -1,0 +1,34 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import vm from 'node:vm';
+import ts from 'typescript';
+const source=fs.readFileSync(new URL('../src/arcade-rules.ts',import.meta.url),'utf8');
+const code=ts.transpileModule(source,{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.CommonJS}}).outputText;
+const context={exports:{},structuredClone,Math,Set};vm.runInNewContext(code,context);
+const {Mines,Spider}=context.exports;
+for(let run=0;run<10;run++){
+  const game=new Mines();game.flag(55);game.reveal(55);assert.equal(game.bombs.size,0);
+  game.flag(55);game.reveal(55);assert.equal(game.bombs.size,15);assert.equal(game.number(55),0);
+  assert(!game.bombs.has(55));assert(game.nearby(55).every(i=>!game.bombs.has(i)));
+  for(let i=0;i<100;i++)if(!game.bombs.has(i))game.reveal(i);
+  assert.equal(game.outcome,'won');assert.equal(game.open.size,85);
+}
+const loss=new Mines();loss.reveal(55);loss.reveal([...loss.bombs][0]);assert.equal(loss.outcome,'lost');
+const cards=new Spider();
+assert.equal(cards.columns.reduce((n,c)=>n+c.length,0),54);assert.equal(cards.stock.length,5);
+assert.equal(cards.columns.flat().filter(c=>c.up).length,10);
+const all=[...cards.columns.flat().map(c=>c.rank),...cards.stock.flat()];
+for(let rank=1;rank<=13;rank++)assert.equal(all.filter(r=>r===rank).length,8);
+assert.equal(cards.move(0,0,1),false);assert.equal(cards.deal(),true);assert.equal(cards.stock.length,4);
+assert.equal(cards.columns.reduce((n,c)=>n+c.length,0),64);assert(cards.undo());assert.equal(cards.stock.length,5);
+cards.columns[0]=[];assert.equal(cards.deal(),false);
+const moves=new Spider();moves.columns=Array.from({length:10},()=>[]);
+moves.columns[0]=[{rank:8,up:false},{rank:5,up:true},{rank:4,up:true},{rank:3,up:true}];moves.columns[1]=[{rank:6,up:true}];moves.columns[2]=[{rank:7,up:true}];
+assert.equal(moves.move(0,1,2),false);assert.equal(moves.move(0,1,1),true);
+assert.equal(moves.columns[0][0].up,true);assert.equal(moves.columns[1].length,4);
+assert(moves.undo());assert.equal(moves.columns[0][0].up,false);assert.equal(moves.columns[0].length,4);
+const finish=new Spider();finish.columns=Array.from({length:10},()=>[]);
+finish.columns[0]=[{rank:1,up:true}];finish.columns[1]=[{rank:7,up:false},...Array.from({length:12},(_,i)=>({rank:13-i,up:true}))];
+assert(finish.move(0,0,1));assert.equal(finish.completed,1);assert.equal(finish.columns[1].length,1);assert.equal(finish.columns[1][0].up,true);
+assert(finish.undo());assert.equal(finish.completed,0);assert.equal(finish.columns[1].length,13);
+console.log('Arcade rules verified: mines safety, flags, flood fill, win/loss; spider deck, legal moves, deal, undo and complete runs.');

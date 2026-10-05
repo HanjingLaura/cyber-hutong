@@ -1,73 +1,44 @@
+// Vercel entry: the whole node:http game server runs inside one function.
+// Static files (dist/) are served by Vercel's CDN; only /api/* reaches this handler (see vercel.json).
 import { mkdirSync } from 'node:fs';
 import { join } from 'node:path';
-import { bailianComplete } from '../src/server/bailian.mjs';
-import { createApp } from '../src/server/app.mjs';
-import { loadEnv } from '../src/server/env.mjs';
-import { openStore } from '../src/server/store.mjs';
-import { openAuthStore } from '../src/server/auth-store.mjs';
+import { waitUntil } from '@vercel/functions';
+import { createMvpServer, stripBase } from '../server/app.mjs';
+import { prepareReplica } from '../server/replica.mjs';
 
-const root = process.cwd();
-loadEnv(join(root, '.env'));
-
-const dataDir = process.env.VERCEL ? '/tmp/cyber-hutong' : join(root, 'data');
+const dataDir = process.env.VERCEL ? '/tmp/hutong-online' : join(process.cwd(), 'data');
 mkdirSync(dataDir, { recursive: true });
+const dbPath = join(dataDir, 'mvp.sqlite');
 
-const model = process.env.BAILIAN_MODEL?.trim() || 'qwen-turbo';
-const store = openStore(join(dataDir, 'cyber-hutong.sqlite'));
-store.ensureRoster(join(dataDir, 'claim-codes.txt'), { claims: false });
-// Claim codes must not be printed into deployment logs.
-// Production never falls back to temporary credentials when configuration fails.
-const authStore = await openAuthStore({
-  url: process.env.TURSO_DATABASE_URL,
-  authToken: process.env.TURSO_AUTH_TOKEN,
-});
-
-const basePath = '/cyber-hutong';
-const server = createApp({
-  store,
-  authStore,
-  maxTurns: clampTurns(process.env.CHAT_AUTO_TURNS),
-  llm: { configured: Boolean(process.env.DASHSCOPE_API_KEY?.trim()), model },
-  clientDir: join(root, 'src', 'client'),
-  characterDir: join(root, 'characters'),
-  loginBackground: join(root, 'examples', 'login', 'login-office-background.png'),
-  sceneFile: join(root, 'assets', 'scenes', 'cyber-hutong-empty-view-1-office-faithful-v2-1280x720.png'),
-  sceneFiles: {
-    '/scenes/hutong.png': join(root, 'assets', 'scenes', 'cyber-hutong-empty-view-1-office-faithful-v2-1280x720.png'),
-    '/scenes/hutong-reverse.png': join(root, 'assets', 'scenes', 'cyber-hutong-empty-view-2-office-faithful-v2-1280x720.png'),
-    '/scenes/rest-area.png': join(root, 'assets', 'scenes', 'rest-area-v2-1280x720.png'),
-    '/scenes/elevator.png': join(root, 'assets', 'scenes', 'elevator-lobby-1280x720.png'),
-    '/scenes/restroom.png': join(root, 'assets', 'scenes', 'office-restroom-4-stalls-2-sinks-v2-1280x720.png'),
-    '/scenes/popmart.png': join(root, 'assets', 'scenes', 'popmart-store-1280x720.png'),
-    '/scenes/concert.png': join(root, 'assets', 'scenes', 'concert-arena-v2-1280x720.png'),
-    '/scenes/hawaii.png': join(root, 'assets', 'scenes', 'hawaii-room-empty-v3-1280x720.png'),
-    '/scenes/gym.png': join(root, 'assets', 'scenes', 'office-gym-1280x720.png'),
-    '/scenes/mixian.png': join(root, 'assets', 'scenes', 'mixian-restaurant-1280x720.png'),
-  },
-  npcDir: join(root, 'assets', 'npcs'),
-  basePath,
-  complete: (prompt, { signal } = {}) => bailianComplete(prompt, {
-    signal,
-    apiKey: process.env.DASHSCOPE_API_KEY ?? '',
-    baseUrl: process.env.BAILIAN_BASE_URL?.trim() || 'https://dashscope.aliyuncs.com/compatible-mode/v1',
-    model,
-    enableThinking: process.env.BAILIAN_ENABLE_THINKING === '1',
-    maxTokens: Number(process.env.BAILIAN_MAX_TOKENS || 120),
-  }),
-});
-
-export default function handler(req, res) {
-  const raw = req.url || '/';
-  const split = raw.indexOf('?');
-  const path = split === -1 ? raw : raw.slice(0, split);
-  const query = split === -1 ? '' : raw.slice(split);
-  const stripped = path === basePath || path.startsWith(`${basePath}/`) ? (path.slice(basePath.length) || '/') : path;
-  req.url = `${stripped}${query}`;
-  server.emit('request', req, res);
+let replica = null;
+const url = process.env.TURSO_DATABASE_URL?.trim();
+if (url) {
+  const { createClient } = await import('@libsql/client');
+  const client = createClient({ url, authToken: process.env.TURSO_AUTH_TOKEN?.trim() });
+  replica = await prepareReplica(dbPath, client, { prefix: process.env.HUTONG_TURSO_PREFIX || 'hutong_online' });
+} else {
+  console.warn('TURSO_DATABASE_URL missing: using ephemeral local SQLite (data is lost when the instance stops).');
 }
 
-function clampTurns(value) {
-  const turns = Number(value || 4);
-  if (!Number.isFinite(turns)) return 4;
-  return Math.max(1, Math.min(6, turns));
+const app = createMvpServer({ dbPath, staticDir: join(process.cwd(), 'dist') });
+replica?.attach(app.store.db);
+
+// End SSE streams before the function's maxDuration so EventSource reconnects cleanly.
+const sseMs = Number(process.env.HUTONG_SSE_MAX_MS || 240000);
+const fresh = /\/api\/(me|login|register|events|claim|logout)$/;
+
+export default async function handler(req, res) {
+  req.url = stripBase(req.url || '/');
+  const path = req.url.split('?')[0];
+  if (replica) {
+    try { await replica.pull({ maxAgeMs: fresh.test(path) ? 0 : 2000 }); } catch (e) { console.error('replica pull failed: ' + e.message); }
+  }
+  const done = new Promise(resolve => { res.once('finish', resolve); res.once('close', resolve); });
+  if (path === '/api/events') {
+    const timer = setTimeout(() => { if (!res.writableEnded) res.end(); }, sseMs);
+    res.once('close', () => clearTimeout(timer));
+  }
+  app.server.emit('request', req, res);
+  if (replica) waitUntil(done.then(() => replica.flush()).catch(e => console.error('replica flush failed: ' + e.message)));
+  await done;
 }

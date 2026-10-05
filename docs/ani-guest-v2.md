@@ -1,0 +1,7 @@
+# Ani Q 版调整
+
+2026-10-03。按用户反馈，用内置 imagegen 编辑 ani-v1.png，生成 assets/npcs/ani-v2.png。六个姿态统一加大头部、圆脸与眼睛，缩短身体和四肢，保留粉蓝头发、终端发夹、暖肤色与白裙。原生透明像素素材已替换进游戏，Sid 办公触发条件沿用原实现，未增加文字或装饰性界面元素。
+
+最终提示词：
+
+Edit this Ani game sprite sheet to make ALL SIX poses much cuter and more super-deformed Q chibi. Keep Ani's identity, coral pink ponytail with light blue bangs, warm tan skin, purple eyes, navy terminal hair clip, white asymmetrical dress and sandals. Strong 2-head-tall proportions: noticeably enlarged ROUND head and cheeks, huge expressive eyes, tiny short rounded torso, stubby arms, mitten-sized hands and very short legs. Sweet cheerful expression with small blush dots. Simplify dress into compact flowing white fabric with restrained pixel folds; no mature body shaping. Hair should be fluffy rounded pixel clusters, compact around the head rather than extending the figure's silhouette into long thin shapes. Preserve pixel art: crisp stepped edges, small palette, thin dark outline, no soft painted or smooth anime rendering. Preserve six full-body poses in order: front standing, back standing, right standing, right walking step, front seated, back seated. One horizontal row with each sprite centered strictly within its own equal-width one-sixth cell, generous transparent gutters, no touching, identical character scale, common foot baseline. Wide 16:9 transparent sheet, no text, no scenery, no shadow, no additional characters. Native transparent alpha.

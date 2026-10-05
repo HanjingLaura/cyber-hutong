@@ -1,0 +1,38 @@
+const fs=require('node:fs'),assert=require('node:assert/strict');
+const {chromium}=require('D:/CodexHome/mcp/node/node_modules/playwright');
+const roles=['suki','sid','jilly','laura','kay','franco','cora','amber'];
+(async()=>{
+ const browser=await chromium.launch({channel:'chrome',headless:true,args:['--disable-webgl']});
+ try{
+  const page=await browser.newPage({viewport:{width:1280,height:1100}}),errors=[];page.on('pageerror',e=>errors.push(e.message));
+  for(const [action,mode,version]of [['3','carry-walk','v12']]){
+   await page.goto(`http://127.0.0.1:5173/members.html?action=${action}&direction=1`);await page.waitForFunction(()=>window.__memberPreview?.getState().ready);
+   for(const direction of ['1','3']){
+    await page.locator('#team-direction').selectOption(direction);
+    for(let phase=0;phase<8;phase++){
+     await page.locator('#team-frame').fill(String(phase));await page.waitForTimeout(55);
+     const state=await page.evaluate(()=>window.__memberPreview.getState());assert.equal(state.frames.length,9);
+     state.frames.filter(frame=>frame.id!=='celine').forEach(frame=>{assert.equal(frame.ready,true);assert.equal(frame.pose,`${mode}-side-${version}-${phase}`,frame.id);});
+    }
+   }
+   await page.evaluate(async({roles,mode})=>{
+    const {default:Phaser}=await import('/node_modules/.vite/deps/phaser.js'),{TeamAvatar}=await import('/src/multiplayer/avatar.ts'),{characterRegistry}=await import('/src/character-assets.ts');
+    document.body.innerHTML='<div id="cycles"></div>';document.body.style.margin='0';document.querySelectorAll('style').forEach(el=>el.remove());
+    class Cycles extends Phaser.Scene{
+     preload(){this.load.image('rest-kit','/assets/drafts/rest-interaction-kit-v2.png');this.load.image('held-water','/assets/props/water-bottle-v1.png');}
+     create(){this.textures.get('rest-kit').add('coffee-cup',0,Math.floor(this.textures.get('rest-kit').getSourceImage().width*.76),0,Math.floor(this.textures.get('rest-kit').getSourceImage().width*.23),this.textures.get('rest-kit').getSourceImage().height);this.textures.get('held-water').add('bottle',0,6,2,6,11);this.views=[];roles.forEach((role,row)=>{for(let phase=0;phase<8;phase++){this.views.push({role,row,phase,view:new TeamAvatar(this,role)});}});window.__teamCycles={ready:()=>this.views.every(v=>v.view.ready),geometry:()=>this.views.map(({role,row,phase,view})=>{
+      const data=characterRegistry.members[role],frame=data.carryFrames[data.carryRightLoop[phase]],body=view.body,m=frame.headMetrics;
+      return {role,phase,headWidth:m.headWidth*body.scaleX,headHeight:m.landmarkHeight*body.scaleY,headTop:body.y-frame.rect[3]*body.scaleY-row*112,propVisible:view.prop.visible,propX:view.prop.x,expectedPropX:body.x+(frame.grip[0]-frame.rect[2]*body.originX)*body.scaleX,headCenter:body.x+(m.centerX-frame.rect[2]*body.originX)*body.scaleX-phase*150};
+     })};}
+     update(_time,delta){for(const v of this.views){const x=85+v.phase*150,y=106+v.row*112;v.view.draw({role:v.role,name:v.role,scene:'review',x,y,facing:1,moving:true,seat:null,hand:'咖啡',revision:0},x,y,1,delta,false,78,1,false,mode==='run'?'run':'',undefined,v.phase);}}
+    }
+    new Phaser.Game({type:Phaser.CANVAS,width:1280,height:1008,parent:'cycles',backgroundColor:'#343b3c',pixelArt:true,antialias:false,roundPixels:true,scene:Cycles,audio:{noAudio:true}});
+   },{roles,mode});
+   await page.waitForFunction(()=>window.__teamCycles?.ready());await page.waitForTimeout(150);
+   const geometry=await page.evaluate(()=>window.__teamCycles.geometry());
+   for(const g of geometry){assert.equal(g.propVisible,true);assert.ok(Math.abs(g.propX-g.expectedPropX)<.01,'prop grip drift');}for(const role of roles){const frames=geometry.filter(f=>f.role===role);for(const metric of ['headWidth','headHeight','headTop','headCenter']){const values=frames.map(f=>f[metric]);assert.ok(Math.max(...values)-Math.min(...values)<1.01,`${role} ${mode} ${metric} drifts`);}}
+   fs.mkdirSync('output/playwright',{recursive:true});await page.locator('#cycles canvas').screenshot({path:`output/playwright/team-${mode}-normalized.png`});
+  }
+  assert.deepEqual(errors,[]);console.log('Verified eight carry cycles, eight phases, both directions, stable head geometry and aligned coffee grip.');
+ }finally{await browser.close();}
+})().catch(e=>{console.error(e);process.exitCode=1;});

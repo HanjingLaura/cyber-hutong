@@ -1,0 +1,8 @@
+{
+ "ani":{"room":"hutong","x":234,"y":194,"height":61.44},
+ "buzz":{"room":"pop","x":430,"y":253,"height":62},
+ "zhu":{"room":"concert","x":320,"y":145,"height":54},
+ "ferret":{"room":"bathroom","x":400,"y":269,"height":45},
+ "lulu":{"room":"dance","x":470,"y":270,"height":47},
+ "tutu":{"room":"gym","x":476,"y":280,"height":36}
+}

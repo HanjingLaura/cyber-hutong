@@ -1,0 +1,2279 @@
+{
+  "retained": [
+    "assets/characters/laura/approved/curl.png",
+    "assets/characters/laura/approved/dance.png",
+    "assets/characters/laura/approved/hold.png",
+    "assets/characters/laura/approved/idle.png",
+    "assets/characters/laura/approved/seatHold.png",
+    "assets/characters/laura/approved/side.png",
+    "assets/characters/laura/approved/sit.png",
+    "assets/characters/laura/approved/walk.png",
+    "assets/characters/laura/v1/arms-v1.png",
+    "assets/characters/laura/v1/item-kit-candidate-v3.png",
+    "assets/characters/laura/v1/manifest.json",
+    "assets/characters/laura/v1/seat-kit-v2.png",
+    "assets/characters/laura/v1/seated-body-v3.png",
+    "assets/characters/laura/v1/standing-body-v2.png",
+    "assets/characters/laura/v2/manifest.json",
+    "assets/characters/laura/v2/poses-integrated-v2.png",
+    "assets/characters/laura/v2/seated-integrated-v4.png",
+    "assets/characters/laura/v2/walk-alpha-candidate-v4.png",
+    "assets/characters/laura/v5/run-a.png",
+    "assets/characters/laura/v5/run-b.png",
+    "assets/characters/laura/v5/walk-a.png",
+    "assets/characters/laura/v5/walk-b.png",
+    "assets/characters/laura/v7/walk-approved.png",
+    "assets/characters/laura/v7/walk-b.png",
+    "assets/characters/team/v10/amber-run.png",
+    "assets/characters/team/v10/celine-run.png",
+    "assets/characters/team/v10/cora-run.png",
+    "assets/characters/team/v10/franco-run.png",
+    "assets/characters/team/v10/jilly-run.png",
+    "assets/characters/team/v10/kay-run.png",
+    "assets/characters/team/v10/laura-run.png",
+    "assets/characters/team/v10/sid-run.png",
+    "assets/characters/team/v10/suki-run.png",
+    "assets/characters/team/v12/amber-carry-walk.png",
+    "assets/characters/team/v12/cora-carry-walk.png",
+    "assets/characters/team/v12/franco-carry-walk.png",
+    "assets/characters/team/v12/jilly-carry-walk.png",
+    "assets/characters/team/v12/kay-carry-walk.png",
+    "assets/characters/team/v12/laura-carry-walk.png",
+    "assets/characters/team/v12/laura-dance.png",
+    "assets/characters/team/v12/sid-carry-walk.png",
+    "assets/characters/team/v12/suki-carry-walk.png",
+    "assets/characters/team/v2/amber.png",
+    "assets/characters/team/v2/cora.png",
+    "assets/characters/team/v2/franco.png",
+    "assets/characters/team/v2/jilly.png",
+    "assets/characters/team/v2/kay.png",
+    "assets/characters/team/v2/laura.png",
+    "assets/characters/team/v2/sid.png",
+    "assets/characters/team/v2/suki.png",
+    "assets/characters/team/v3/amber-carry.png",
+    "assets/characters/team/v3/amber.png",
+    "assets/characters/team/v3/cora-carry.png",
+    "assets/characters/team/v3/cora.png",
+    "assets/characters/team/v3/franco-carry.png",
+    "assets/characters/team/v3/franco.png",
+    "assets/characters/team/v3/jilly-carry.png",
+    "assets/characters/team/v3/jilly.png",
+    "assets/characters/team/v3/kay-carry.png",
+    "assets/characters/team/v3/kay.png",
+    "assets/characters/team/v3/laura-carry.png",
+    "assets/characters/team/v3/laura.png",
+    "assets/characters/team/v3/sid-carry.png",
+    "assets/characters/team/v3/sid.png",
+    "assets/characters/team/v3/suki-carry.png",
+    "assets/characters/team/v3/suki.png",
+    "assets/characters/team/v4/amber-motion.png",
+    "assets/characters/team/v4/celine-motion.png",
+    "assets/characters/team/v4/cora-motion.png",
+    "assets/characters/team/v4/franco-motion.png",
+    "assets/characters/team/v4/jilly-motion.png",
+    "assets/characters/team/v4/kay-motion.png",
+    "assets/characters/team/v4/laura-motion.png",
+    "assets/characters/team/v4/sid-motion.png",
+    "assets/characters/team/v4/suki-motion.png",
+    "assets/characters/team/v8/amber-a.png",
+    "assets/characters/team/v8/amber-b.png",
+    "assets/characters/team/v8/celine-a.png",
+    "assets/characters/team/v8/celine-b.png",
+    "assets/characters/team/v8/cora-a.png",
+    "assets/characters/team/v8/cora-b.png",
+    "assets/characters/team/v8/franco-a.png",
+    "assets/characters/team/v8/franco-b.png",
+    "assets/characters/team/v8/jilly-a.png",
+    "assets/characters/team/v8/jilly-b.png",
+    "assets/characters/team/v8/kay-a.png",
+    "assets/characters/team/v8/kay-b.png",
+    "assets/characters/team/v8/laura-a.png",
+    "assets/characters/team/v8/laura-b.png",
+    "assets/characters/team/v8/sid-a.png",
+    "assets/characters/team/v8/sid-b.png",
+    "assets/characters/team/v8/suki-a.png",
+    "assets/characters/team/v8/suki-b.png",
+    "assets/drafts/arcade-props-v2.png",
+    "assets/drafts/arcade-room-v1.png",
+    "assets/drafts/bathroom-room-v4.png",
+    "assets/drafts/concert-chair-v1.png",
+    "assets/drafts/concert-room-v4.png",
+    "assets/drafts/dance-room-v1.png",
+    "assets/drafts/desk-decor-v1.png",
+    "assets/drafts/elevator-lobby-v1.png",
+    "assets/drafts/gym-room-v1.png",
+    "assets/drafts/hawaii-wall-v2.png",
+    "assets/drafts/hutong-furniture-kit-v5.png",
+    "assets/drafts/hutong-reverse-view-v5.png",
+    "assets/drafts/hutong-wall-view-v5.png",
+    "assets/drafts/login-office-background.png",
+    "assets/drafts/noodle-furniture-v1.png",
+    "assets/drafts/noodle-room-v3.png",
+    "assets/drafts/owner-carry-empty-v1.png",
+    "assets/drafts/owner-dance-v1.png",
+    "assets/drafts/owner-gym-curl-v1.png",
+    "assets/drafts/owner-seated-front-back-v2.png",
+    "assets/drafts/owner-seated-hold-empty-v1.png",
+    "assets/drafts/owner-side-walk-v2.png",
+    "assets/drafts/owner-standing-v2.png",
+    "assets/drafts/owner-walk-v1.png",
+    "assets/drafts/perler-furniture-v2.png",
+    "assets/drafts/perler-shop-v2.png",
+    "assets/drafts/popmart-props-v1.png",
+    "assets/drafts/popmart-stand-v2.png",
+    "assets/drafts/popmart-store-v3.png",
+    "assets/drafts/popmart-toys-v1.png",
+    "assets/drafts/rehearsal-kit-v1.png",
+    "assets/drafts/rehearsal-room-v1.png",
+    "assets/drafts/rest-interaction-kit-v2.png",
+    "assets/drafts/rest-props-v1.png",
+    "assets/drafts/rest-room-shell-v2.png",
+    "assets/drafts/wudaokou-station-v1.png",
+    "assets/maps/hawaii.png",
+    "assets/maps/hutong.png",
+    "assets/maps/rest.png",
+    "assets/metadata/celine-v1.json",
+    "assets/metadata/laura-dance-v12.json",
+    "assets/metadata/laura-motion-v5.json",
+    "assets/metadata/laura-walk-v7.json",
+    "assets/metadata/owner-grips.json",
+    "assets/metadata/team-carry-v12.json",
+    "assets/metadata/team-motion-v4.json",
+    "assets/metadata/team-run-v10.json",
+    "assets/metadata/team-v2.json",
+    "assets/metadata/team-v3.json",
+    "assets/metadata/team-walk-v8.json",
+    "assets/npcs/ani-v2.png",
+    "assets/npcs/buzz-lightyear-green.png",
+    "assets/npcs/celine-v1.png",
+    "assets/npcs/fuguidiao-green.png",
+    "assets/npcs/lulu-v1.png",
+    "assets/npcs/tutu-green-v1.png",
+    "assets/npcs/zhu-zhixin-green.png",
+    "assets/props/water-bottle-v1.png"
+  ],
+  "removed": [
+    {
+      "file": "assets/characters/laura/approved/grips.json",
+      "bytes": 7516
+    },
+    {
+      "file": "assets/characters/laura/approved/manifest.json",
+      "bytes": 1975
+    },
+    {
+      "file": "assets/characters/laura/v1/item-kit-candidate-v1.png",
+      "bytes": 936651
+    },
+    {
+      "file": "assets/characters/laura/v1/item-kit-candidate-v2.png",
+      "bytes": 970271
+    },
+    {
+      "file": "assets/characters/laura/v1/prompts/01-standing-v1.json",
+      "bytes": 1884
+    },
+    {
+      "file": "assets/characters/laura/v1/prompts/01-standing-v2.json",
+      "bytes": 1852
+    },
+    {
+      "file": "assets/characters/laura/v1/prompts/01-standing.json",
+      "bytes": 1933
+    },
+    {
+      "file": "assets/characters/laura/v1/prompts/02-seated-v2.json",
+      "bytes": 1592
+    },
+    {
+      "file": "assets/characters/laura/v1/prompts/02-seated-v3.json",
+      "bytes": 955
+    },
+    {
+      "file": "assets/characters/laura/v1/prompts/02-seated.json",
+      "bytes": 1830
+    },
+    {
+      "file": "assets/characters/laura/v1/prompts/03-arms.json",
+      "bytes": 2038
+    },
+    {
+      "file": "assets/characters/laura/v1/prompts/04-seat-kit-v2.json",
+      "bytes": 1005
+    },
+    {
+      "file": "assets/characters/laura/v1/prompts/04-seat-kit.json",
+      "bytes": 1240
+    },
+    {
+      "file": "assets/characters/laura/v1/prompts/05-item-kit-v2.json",
+      "bytes": 780
+    },
+    {
+      "file": "assets/characters/laura/v1/prompts/05-item-kit-v3.json",
+      "bytes": 1240
+    },
+    {
+      "file": "assets/characters/laura/v1/prompts/05-item-kit.json",
+      "bytes": 1224
+    },
+    {
+      "file": "assets/characters/laura/v1/seat-kit-candidate-v1.png",
+      "bytes": 535663
+    },
+    {
+      "file": "assets/characters/laura/v1/seated-body-v1.png",
+      "bytes": 441696
+    },
+    {
+      "file": "assets/characters/laura/v1/seated-body-v2.png",
+      "bytes": 393308
+    },
+    {
+      "file": "assets/characters/laura/v1/standing-body-v1.png",
+      "bytes": 442580
+    },
+    {
+      "file": "assets/characters/laura/v1/standing-candidate-v0.png",
+      "bytes": 482367
+    },
+    {
+      "file": "assets/characters/laura/v2/poses-cuff-candidate-v2.png",
+      "bytes": 879886
+    },
+    {
+      "file": "assets/characters/laura/v2/prompts/base.json",
+      "bytes": 3015
+    },
+    {
+      "file": "assets/characters/laura/v2/prompts/cuff.json",
+      "bytes": 1189
+    },
+    {
+      "file": "assets/characters/laura/v2/prompts/leg.json",
+      "bytes": 1694
+    },
+    {
+      "file": "assets/characters/laura/v2/prompts/leg2.json",
+      "bytes": 1060
+    },
+    {
+      "file": "assets/characters/laura/v2/prompts/legfinal.json",
+      "bytes": 888
+    },
+    {
+      "file": "assets/characters/laura/v2/prompts/seated.json",
+      "bytes": 2461
+    },
+    {
+      "file": "assets/characters/laura/v2/prompts/walk.json",
+      "bytes": 1990
+    },
+    {
+      "file": "assets/characters/laura/v2/prompts/walk2.json",
+      "bytes": 1614
+    },
+    {
+      "file": "assets/characters/laura/v2/prompts/walkalpha.json",
+      "bytes": 689
+    },
+    {
+      "file": "assets/characters/laura/v2/seated-candidate-v2.png",
+      "bytes": 636203
+    },
+    {
+      "file": "assets/characters/laura/v2/seated-integrated-v3.png",
+      "bytes": 663900
+    },
+    {
+      "file": "assets/characters/laura/v2/seated-longer-calves-v2.png",
+      "bytes": 649474
+    },
+    {
+      "file": "assets/characters/laura/v2/walk-candidate-v2.png",
+      "bytes": 1137764
+    },
+    {
+      "file": "assets/characters/laura/v2/walk-integrated-candidate-v3.png",
+      "bytes": 1720096
+    },
+    {
+      "file": "assets/characters/laura/v3/bottle-east.png",
+      "bytes": 116
+    },
+    {
+      "file": "assets/characters/laura/v3/bottle-west.png",
+      "bytes": 113
+    },
+    {
+      "file": "assets/characters/laura/v3/contact-proof-4x.png",
+      "bytes": 13623
+    },
+    {
+      "file": "assets/characters/laura/v3/contact-proof.png",
+      "bytes": 2880
+    },
+    {
+      "file": "assets/characters/laura/v3/cup-east.png",
+      "bytes": 116
+    },
+    {
+      "file": "assets/characters/laura/v3/cup-west.png",
+      "bytes": 116
+    },
+    {
+      "file": "assets/characters/laura/v3/dining-east-back.png",
+      "bytes": 221
+    },
+    {
+      "file": "assets/characters/laura/v3/dining-east-front.png",
+      "bytes": 100
+    },
+    {
+      "file": "assets/characters/laura/v3/dining-east-seat.png",
+      "bytes": 144
+    },
+    {
+      "file": "assets/characters/laura/v3/dining-west-back.png",
+      "bytes": 217
+    },
+    {
+      "file": "assets/characters/laura/v3/dining-west-front.png",
+      "bytes": 100
+    },
+    {
+      "file": "assets/characters/laura/v3/dining-west-seat.png",
+      "bytes": 142
+    },
+    {
+      "file": "assets/characters/laura/v3/geometry-checks.json",
+      "bytes": 1911
+    },
+    {
+      "file": "assets/characters/laura/v3/manifest.json",
+      "bytes": 23081
+    },
+    {
+      "file": "assets/characters/laura/v3/office-east-back.png",
+      "bytes": 248
+    },
+    {
+      "file": "assets/characters/laura/v3/office-east-front.png",
+      "bytes": 147
+    },
+    {
+      "file": "assets/characters/laura/v3/office-east-seat.png",
+      "bytes": 142
+    },
+    {
+      "file": "assets/characters/laura/v3/office-west-back.png",
+      "bytes": 252
+    },
+    {
+      "file": "assets/characters/laura/v3/office-west-front.png",
+      "bytes": 146
+    },
+    {
+      "file": "assets/characters/laura/v3/office-west-seat.png",
+      "bytes": 139
+    },
+    {
+      "file": "assets/characters/laura/v3/phone-east.png",
+      "bytes": 107
+    },
+    {
+      "file": "assets/characters/laura/v3/phone-west.png",
+      "bytes": 106
+    },
+    {
+      "file": "assets/characters/laura/v3/round-hand.png",
+      "bytes": 89
+    },
+    {
+      "file": "assets/characters/laura/v3/seated.png",
+      "bytes": 1249
+    },
+    {
+      "file": "assets/characters/laura/v3/standing.png",
+      "bytes": 1237
+    },
+    {
+      "file": "assets/characters/laura/v3/transition.png",
+      "bytes": 3039
+    },
+    {
+      "file": "assets/characters/laura/v3/walking.png",
+      "bytes": 5105
+    },
+    {
+      "file": "assets/characters/laura/v5/generation-prompts.json",
+      "bytes": 9592
+    },
+    {
+      "file": "assets/characters/laura/v6/generation-prompts.json",
+      "bytes": 2987
+    },
+    {
+      "file": "assets/characters/laura/v6/walk-approved.png",
+      "bytes": 1252262
+    },
+    {
+      "file": "assets/characters/laura/v6/walk-b.png",
+      "bytes": 861652
+    },
+    {
+      "file": "assets/characters/laura/v7/generation-prompts.json",
+      "bytes": 3156
+    },
+    {
+      "file": "assets/characters/team/v1/amber-carry-v1.png",
+      "bytes": 1070527
+    },
+    {
+      "file": "assets/characters/team/v1/amber-v2.png",
+      "bytes": 1444119
+    },
+    {
+      "file": "assets/characters/team/v1/amber.png",
+      "bytes": 1422477
+    },
+    {
+      "file": "assets/characters/team/v1/cora-carry-v1.png",
+      "bytes": 1788096
+    },
+    {
+      "file": "assets/characters/team/v1/cora-v2.png",
+      "bytes": 1926555
+    },
+    {
+      "file": "assets/characters/team/v1/cora.png",
+      "bytes": 1647054
+    },
+    {
+      "file": "assets/characters/team/v1/franco-carry-v1.png",
+      "bytes": 1179051
+    },
+    {
+      "file": "assets/characters/team/v1/franco.png",
+      "bytes": 1426268
+    },
+    {
+      "file": "assets/characters/team/v1/jilly-carry-v1.png",
+      "bytes": 1815712
+    },
+    {
+      "file": "assets/characters/team/v1/jilly.png",
+      "bytes": 1650441
+    },
+    {
+      "file": "assets/characters/team/v1/kay-carry-v1.png",
+      "bytes": 1121159
+    },
+    {
+      "file": "assets/characters/team/v1/kay.png",
+      "bytes": 1595643
+    },
+    {
+      "file": "assets/characters/team/v1/laura-carry-v1.png",
+      "bytes": 1731601
+    },
+    {
+      "file": "assets/characters/team/v1/laura.png",
+      "bytes": 1501528
+    },
+    {
+      "file": "assets/characters/team/v1/sid-carry-v1.png",
+      "bytes": 1818915
+    },
+    {
+      "file": "assets/characters/team/v1/sid.png",
+      "bytes": 1532861
+    },
+    {
+      "file": "assets/characters/team/v1/suki-carry-v1.png",
+      "bytes": 1849883
+    },
+    {
+      "file": "assets/characters/team/v1/suki-v2.png",
+      "bytes": 1990358
+    },
+    {
+      "file": "assets/characters/team/v1/suki.png",
+      "bytes": 1636064
+    },
+    {
+      "file": "assets/characters/team/v10/prompts.json",
+      "bytes": 26147
+    },
+    {
+      "file": "assets/characters/team/v10/repairs.json",
+      "bytes": 6239
+    },
+    {
+      "file": "assets/characters/team/v11/prompts.json",
+      "bytes": 17168
+    },
+    {
+      "file": "assets/characters/team/v12/prompts.json",
+      "bytes": 21448
+    },
+    {
+      "file": "assets/characters/team/v2/amber-carry.png",
+      "bytes": 1826791
+    },
+    {
+      "file": "assets/characters/team/v2/cora-carry.png",
+      "bytes": 2024213
+    },
+    {
+      "file": "assets/characters/team/v2/franco-carry.png",
+      "bytes": 1788808
+    },
+    {
+      "file": "assets/characters/team/v2/jilly-carry.png",
+      "bytes": 2003113
+    },
+    {
+      "file": "assets/characters/team/v2/kay-carry.png",
+      "bytes": 1877523
+    },
+    {
+      "file": "assets/characters/team/v2/laura-carry.png",
+      "bytes": 1998057
+    },
+    {
+      "file": "assets/characters/team/v2/office-typing-v2.png",
+      "bytes": 1927380
+    },
+    {
+      "file": "assets/characters/team/v2/office-typing.png",
+      "bytes": 1919959
+    },
+    {
+      "file": "assets/characters/team/v2/sid-carry.png",
+      "bytes": 1861088
+    },
+    {
+      "file": "assets/characters/team/v2/suki-carry.png",
+      "bytes": 1810418
+    },
+    {
+      "file": "assets/characters/team/v3/prompts.json",
+      "bytes": 47768
+    },
+    {
+      "file": "assets/characters/team/v4/generation-prompts.json",
+      "bytes": 4245
+    },
+    {
+      "file": "assets/characters/team/v8/prompts.json",
+      "bytes": 39116
+    },
+    {
+      "file": "assets/characters/team/v9/laura-run.png",
+      "bytes": 1716456
+    },
+    {
+      "file": "assets/drafts/bathroom-depth-kit-v2.png",
+      "bytes": 1028051
+    },
+    {
+      "file": "assets/drafts/bathroom-props-v1.png",
+      "bytes": 1325975
+    },
+    {
+      "file": "assets/drafts/bathroom-room-v1.png",
+      "bytes": 1287187
+    },
+    {
+      "file": "assets/drafts/bathroom-room-v2.png",
+      "bytes": 1329128
+    },
+    {
+      "file": "assets/drafts/bathroom-room-v3.png",
+      "bytes": 1349635
+    },
+    {
+      "file": "assets/drafts/chair-front-back-v2.png",
+      "bytes": 526300
+    },
+    {
+      "file": "assets/drafts/chair-side-views-v1.png",
+      "bytes": 484044
+    },
+    {
+      "file": "assets/drafts/concert-room-v1.png",
+      "bytes": 1474568
+    },
+    {
+      "file": "assets/drafts/concert-room-v2.png",
+      "bytes": 1457894
+    },
+    {
+      "file": "assets/drafts/concert-room-v3.png",
+      "bytes": 1977575
+    },
+    {
+      "file": "assets/drafts/desk-continuous-row-v3-prompt.json",
+      "bytes": 2439
+    },
+    {
+      "file": "assets/drafts/desk-decor-v1-prompt.json",
+      "bytes": 1769
+    },
+    {
+      "file": "assets/drafts/desk-front-back-v2-prompt.json",
+      "bytes": 1253
+    },
+    {
+      "file": "assets/drafts/desk-front-back-v2.png",
+      "bytes": 368600
+    },
+    {
+      "file": "assets/drafts/desk-wall-views-v1.png",
+      "bytes": 372292
+    },
+    {
+      "file": "assets/drafts/generation-prompts.json",
+      "bytes": 22720
+    },
+    {
+      "file": "assets/drafts/hawaii-wall-v1.png",
+      "bytes": 1072080
+    },
+    {
+      "file": "assets/drafts/hutong-base-v1.png",
+      "bytes": 1851975
+    },
+    {
+      "file": "assets/drafts/hutong-base-v2.png",
+      "bytes": 1198679
+    },
+    {
+      "file": "assets/drafts/hutong-furniture-kit-v4-prompt.json",
+      "bytes": 3383
+    },
+    {
+      "file": "assets/drafts/hutong-furniture-kit-v4.png",
+      "bytes": 600260
+    },
+    {
+      "file": "assets/drafts/hutong-furniture-kit-v5-prompt.json",
+      "bytes": 2800
+    },
+    {
+      "file": "assets/drafts/hutong-furniture-kit-v6-prompt.json",
+      "bytes": 2223
+    },
+    {
+      "file": "assets/drafts/hutong-furniture-kit-v6.png",
+      "bytes": 510286
+    },
+    {
+      "file": "assets/drafts/hutong-reverse-view-v3.png",
+      "bytes": 1950276
+    },
+    {
+      "file": "assets/drafts/hutong-reverse-view-v4-prompt.json",
+      "bytes": 1368
+    },
+    {
+      "file": "assets/drafts/hutong-reverse-view-v4.png",
+      "bytes": 937377
+    },
+    {
+      "file": "assets/drafts/hutong-reverse-view-v5-prompt.json",
+      "bytes": 1712
+    },
+    {
+      "file": "assets/drafts/hutong-wall-view-v3.png",
+      "bytes": 1729313
+    },
+    {
+      "file": "assets/drafts/hutong-wall-view-v4-prompt.json",
+      "bytes": 1713
+    },
+    {
+      "file": "assets/drafts/hutong-wall-view-v4.png",
+      "bytes": 1002302
+    },
+    {
+      "file": "assets/drafts/hutong-wall-view-v5-prompt.json",
+      "bytes": 1954
+    },
+    {
+      "file": "assets/drafts/laptop-front-back-v2-prompt.json",
+      "bytes": 1454
+    },
+    {
+      "file": "assets/drafts/laptop-front-back-v2.png",
+      "bytes": 510592
+    },
+    {
+      "file": "assets/drafts/laptop-side-states-v1.png",
+      "bytes": 483222
+    },
+    {
+      "file": "assets/drafts/noodle-room-v1.png",
+      "bytes": 1350230
+    },
+    {
+      "file": "assets/drafts/noodle-room-v2.png",
+      "bytes": 1508365
+    },
+    {
+      "file": "assets/drafts/owner-carry-coffee-v1.png",
+      "bytes": 838101
+    },
+    {
+      "file": "assets/drafts/owner-carry-coffee-v1.prompt.json",
+      "bytes": 1551
+    },
+    {
+      "file": "assets/drafts/owner-carry-empty-v1.prompt.json",
+      "bytes": 944
+    },
+    {
+      "file": "assets/drafts/owner-seated-carry-v1.png",
+      "bytes": 472991
+    },
+    {
+      "file": "assets/drafts/owner-seated-carry-v1.prompt.json",
+      "bytes": 1142
+    },
+    {
+      "file": "assets/drafts/owner-seated-front-back-v2-prompt.json",
+      "bytes": 1863
+    },
+    {
+      "file": "assets/drafts/owner-seated-hold-empty-v1.prompt.json",
+      "bytes": 763
+    },
+    {
+      "file": "assets/drafts/owner-seated-side-v1.png",
+      "bytes": 357888
+    },
+    {
+      "file": "assets/drafts/owner-seated-side-v1.prompt.json",
+      "bytes": 1047
+    },
+    {
+      "file": "assets/drafts/owner-seated-v1.png",
+      "bytes": 1250693
+    },
+    {
+      "file": "assets/drafts/owner-standing-v1.png",
+      "bytes": 723827
+    },
+    {
+      "file": "assets/drafts/owner-standing-v2.prompt.json",
+      "bytes": 1325
+    },
+    {
+      "file": "assets/drafts/perler-shop-v1.png",
+      "bytes": 1839391
+    },
+    {
+      "file": "assets/drafts/popmart-room-v1.png",
+      "bytes": 1555503
+    },
+    {
+      "file": "assets/drafts/rest-interaction-kit-v2.prompt.json",
+      "bytes": 1154
+    },
+    {
+      "file": "assets/drafts/rest-props-v1.prompt.json",
+      "bytes": 1433
+    },
+    {
+      "file": "assets/drafts/rest-room-shell-v1.png",
+      "bytes": 1168238
+    },
+    {
+      "file": "assets/drafts/rest-room-shell-v1.prompt.json",
+      "bytes": 1328
+    },
+    {
+      "file": "assets/drafts/rest-room-shell-v2.prompt.json",
+      "bytes": 1109
+    },
+    {
+      "file": "assets/metadata/laura-walk-v6.json",
+      "bytes": 4582
+    },
+    {
+      "file": "assets/metadata/q-v2-bounds.json",
+      "bytes": 61210
+    },
+    {
+      "file": "assets/metadata/q-v2-carry-prompts.json",
+      "bytes": 15083
+    },
+    {
+      "file": "assets/metadata/q-v2-prompts.json",
+      "bytes": 10766
+    },
+    {
+      "file": "assets/metadata/q-v2-typing-bounds.json",
+      "bytes": 1864
+    },
+    {
+      "file": "assets/metadata/team-v1.json",
+      "bytes": 318816
+    },
+    {
+      "file": "assets/metadata/team-v3-bounds.json",
+      "bytes": 45544
+    },
+    {
+      "file": "assets/npcs/ani-v1.png",
+      "bytes": 1161015
+    },
+    {
+      "file": "output/playwright/ani-q-v2.png",
+      "bytes": 318629
+    },
+    {
+      "file": "output/playwright/ani-sid-reverse-v1.png",
+      "bytes": 300737
+    },
+    {
+      "file": "output/playwright/ani-sid-work-v1.png",
+      "bytes": 314706
+    },
+    {
+      "file": "output/playwright/arcade-claw.png",
+      "bytes": 90198
+    },
+    {
+      "file": "output/playwright/arcade-final.png",
+      "bytes": 377326
+    },
+    {
+      "file": "output/playwright/arcade-mines.png",
+      "bytes": 10019
+    },
+    {
+      "file": "output/playwright/arcade-room.png",
+      "bytes": 329531
+    },
+    {
+      "file": "output/playwright/arcade-spider.png",
+      "bytes": 14252
+    },
+    {
+      "file": "output/playwright/arcade-v2-bench.png",
+      "bytes": 391490
+    },
+    {
+      "file": "output/playwright/arcade-v2-room.png",
+      "bytes": 391502
+    },
+    {
+      "file": "output/playwright/back-arm-occlusion.png",
+      "bytes": 279117
+    },
+    {
+      "file": "output/playwright/bathroom-closed-final.png",
+      "bytes": 346345
+    },
+    {
+      "file": "output/playwright/bathroom-depth-v2.png",
+      "bytes": 308429
+    },
+    {
+      "file": "output/playwright/bathroom-door-closed-draft.png",
+      "bytes": 269831
+    },
+    {
+      "file": "output/playwright/bathroom-door-closed-v3.png",
+      "bytes": 344753
+    },
+    {
+      "file": "output/playwright/bathroom-final.png",
+      "bytes": 285401
+    },
+    {
+      "file": "output/playwright/bathroom-layout-draft.png",
+      "bytes": 282704
+    },
+    {
+      "file": "output/playwright/bathroom-next.png",
+      "bytes": 305642
+    },
+    {
+      "file": "output/playwright/bathroom-seat-v3.png",
+      "bytes": 360455
+    },
+    {
+      "file": "output/playwright/bathroom-seat-v4.png",
+      "bytes": 359190
+    },
+    {
+      "file": "output/playwright/bathroom-seated-draft.png",
+      "bytes": 284658
+    },
+    {
+      "file": "output/playwright/bathroom-seated-final.png",
+      "bytes": 290598
+    },
+    {
+      "file": "output/playwright/bathroom-seated-held-cola.png",
+      "bytes": 267666
+    },
+    {
+      "file": "output/playwright/bathroom-seated-holding-draft.png",
+      "bytes": 276021
+    },
+    {
+      "file": "output/playwright/bathroom-wash-v2.png",
+      "bytes": 344120
+    },
+    {
+      "file": "output/playwright/bathroom-washing-draft.png",
+      "bytes": 283902
+    },
+    {
+      "file": "output/playwright/bathroom-washing-final.png",
+      "bytes": 289996
+    },
+    {
+      "file": "output/playwright/both-arms-left.png",
+      "bytes": 278647
+    },
+    {
+      "file": "output/playwright/both-arms-right.png",
+      "bytes": 278406
+    },
+    {
+      "file": "output/playwright/carry-culture.png",
+      "bytes": 286017
+    },
+    {
+      "file": "output/playwright/carry-office-back.png",
+      "bytes": 273884
+    },
+    {
+      "file": "output/playwright/carry-office-front-fixed.png",
+      "bytes": 285413
+    },
+    {
+      "file": "output/playwright/carry-office-front.png",
+      "bytes": 285752
+    },
+    {
+      "file": "output/playwright/carry-opposite.png",
+      "bytes": 274315
+    },
+    {
+      "file": "output/playwright/carry-shared-legs.png",
+      "bytes": 282958
+    },
+    {
+      "file": "output/playwright/celine-final.png",
+      "bytes": 350737
+    },
+    {
+      "file": "output/playwright/celine-hawaii-seat.png",
+      "bytes": 351677
+    },
+    {
+      "file": "output/playwright/celine-hawaii-walk.png",
+      "bytes": 352029
+    },
+    {
+      "file": "output/playwright/celine-question-amber.png",
+      "bytes": 309659
+    },
+    {
+      "file": "output/playwright/coffee-held.png",
+      "bytes": 283694
+    },
+    {
+      "file": "output/playwright/coffee-on-table.png",
+      "bytes": 278876
+    },
+    {
+      "file": "output/playwright/coffee-ready.png",
+      "bytes": 281079
+    },
+    {
+      "file": "output/playwright/concert-final.png",
+      "bytes": 336165
+    },
+    {
+      "file": "output/playwright/concert-seated.png",
+      "bytes": 334774
+    },
+    {
+      "file": "output/playwright/contact-seated-empty.png",
+      "bytes": 21795
+    },
+    {
+      "file": "output/playwright/contact-seated-front.png",
+      "bytes": 21022
+    },
+    {
+      "file": "output/playwright/contact-seated-left.png",
+      "bytes": 21596
+    },
+    {
+      "file": "output/playwright/contact-seated-right.png",
+      "bytes": 22026
+    },
+    {
+      "file": "output/playwright/contact-standing-front.png",
+      "bytes": 20420
+    },
+    {
+      "file": "output/playwright/counter-arm-left.png",
+      "bytes": 278771
+    },
+    {
+      "file": "output/playwright/counter-arm-right.png",
+      "bytes": 278754
+    },
+    {
+      "file": "output/playwright/current-coffee-ready.png",
+      "bytes": 281255
+    },
+    {
+      "file": "output/playwright/current-hutong-culture.png",
+      "bytes": 287658
+    },
+    {
+      "file": "output/playwright/current-hutong-opposite.png",
+      "bytes": 275524
+    },
+    {
+      "file": "output/playwright/current-rest.png",
+      "bytes": 283707
+    },
+    {
+      "file": "output/playwright/dance-bench.png",
+      "bytes": 287537
+    },
+    {
+      "file": "output/playwright/dance-final.png",
+      "bytes": 287510
+    },
+    {
+      "file": "output/playwright/dance-first.png",
+      "bytes": 287879
+    },
+    {
+      "file": "output/playwright/dance-held.png",
+      "bytes": 287652
+    },
+    {
+      "file": "output/playwright/dance-poses.png",
+      "bytes": 287400
+    },
+    {
+      "file": "output/playwright/delivery-hutong-culture.png",
+      "bytes": 105738
+    },
+    {
+      "file": "output/playwright/delivery-hutong-opposite.png",
+      "bytes": 101161
+    },
+    {
+      "file": "output/playwright/delivery-rest.png",
+      "bytes": 103998
+    },
+    {
+      "file": "output/playwright/easter-bathroom.png",
+      "bytes": 299056
+    },
+    {
+      "file": "output/playwright/easter-concert.png",
+      "bytes": 337959
+    },
+    {
+      "file": "output/playwright/easter-pop.png",
+      "bytes": 399545
+    },
+    {
+      "file": "output/playwright/eight-online.png",
+      "bytes": 349536
+    },
+    {
+      "file": "output/playwright/elevator-both-open.png",
+      "bytes": 365393
+    },
+    {
+      "file": "output/playwright/elevator-closed.png",
+      "bytes": 324550
+    },
+    {
+      "file": "output/playwright/elevator-final.png",
+      "bytes": 344230
+    },
+    {
+      "file": "output/playwright/elevator-left-open.png",
+      "bytes": 344203
+    },
+    {
+      "file": "output/playwright/fix-seat-right-close.png",
+      "bytes": 21640
+    },
+    {
+      "file": "output/playwright/fix-standing-close.png",
+      "bytes": 19998
+    },
+    {
+      "file": "output/playwright/fridge-upper-cabinet.png",
+      "bytes": 16374
+    },
+    {
+      "file": "output/playwright/gait-empty-left.png",
+      "bytes": 278857
+    },
+    {
+      "file": "output/playwright/gait-empty-right.png",
+      "bytes": 278905
+    },
+    {
+      "file": "output/playwright/gait-left-open.png",
+      "bytes": 279204
+    },
+    {
+      "file": "output/playwright/gait-right-open.png",
+      "bytes": 279169
+    },
+    {
+      "file": "output/playwright/gait-right-other-leg.png",
+      "bytes": 279437
+    },
+    {
+      "file": "output/playwright/grip-after.png",
+      "bytes": 279555
+    },
+    {
+      "file": "output/playwright/grip-before.png",
+      "bytes": 279921
+    },
+    {
+      "file": "output/playwright/grip-fixed.png",
+      "bytes": 280051
+    },
+    {
+      "file": "output/playwright/grip-seated-3.png",
+      "bytes": 282328
+    },
+    {
+      "file": "output/playwright/grip-seated-4.png",
+      "bytes": 281926
+    },
+    {
+      "file": "output/playwright/grip-seated-5.png",
+      "bytes": 281755
+    },
+    {
+      "file": "output/playwright/grip-standing.png",
+      "bytes": 283580
+    },
+    {
+      "file": "output/playwright/gym-curl-raised.png",
+      "bytes": 433853
+    },
+    {
+      "file": "output/playwright/gym-final.png",
+      "bytes": 432158
+    },
+    {
+      "file": "output/playwright/gym-left-bench.png",
+      "bytes": 431934
+    },
+    {
+      "file": "output/playwright/gym-right-bench.png",
+      "bytes": 432624
+    },
+    {
+      "file": "output/playwright/gym-room-first.png",
+      "bytes": 432158
+    },
+    {
+      "file": "output/playwright/gym-running.png",
+      "bytes": 433425
+    },
+    {
+      "file": "output/playwright/hawaii-back-seat.png",
+      "bytes": 279161
+    },
+    {
+      "file": "output/playwright/hawaii-curtain-down.png",
+      "bytes": 280965
+    },
+    {
+      "file": "output/playwright/hawaii-front-seat.png",
+      "bytes": 280235
+    },
+    {
+      "file": "output/playwright/hawaii-open.png",
+      "bytes": 282171
+    },
+    {
+      "file": "output/playwright/hawaii-window-v2-closed.png",
+      "bytes": 277639
+    },
+    {
+      "file": "output/playwright/hawaii-window-v2-open.png",
+      "bytes": 277344
+    },
+    {
+      "file": "output/playwright/hawaii-window-v3-closed.png",
+      "bytes": 278399
+    },
+    {
+      "file": "output/playwright/hawaii-window-v3.png",
+      "bytes": 278107
+    },
+    {
+      "file": "output/playwright/hawaii-window-v4-closed.png",
+      "bytes": 342320
+    },
+    {
+      "file": "output/playwright/hawaii-window-v4.png",
+      "bytes": 342801
+    },
+    {
+      "file": "output/playwright/holding-chips.png",
+      "bytes": 279807
+    },
+    {
+      "file": "output/playwright/hutong-composite-culture.png",
+      "bytes": 102165
+    },
+    {
+      "file": "output/playwright/hutong-composite-opposite.png",
+      "bytes": 93844
+    },
+    {
+      "file": "output/playwright/hutong-current-culture.png",
+      "bytes": 105321
+    },
+    {
+      "file": "output/playwright/hutong-current-opposite.png",
+      "bytes": 100715
+    },
+    {
+      "file": "output/playwright/hutong-current-walk-left.png",
+      "bytes": 105389
+    },
+    {
+      "file": "output/playwright/hutong-current-walk-review.png",
+      "bytes": 202913
+    },
+    {
+      "file": "output/playwright/hutong-current-walk-right.png",
+      "bytes": 105391
+    },
+    {
+      "file": "output/playwright/hutong-front-working-v2.png",
+      "bytes": 438993
+    },
+    {
+      "file": "output/playwright/hutong-front-working-v3.png",
+      "bytes": 152612
+    },
+    {
+      "file": "output/playwright/hutong-front-working-v4.png",
+      "bytes": 152373
+    },
+    {
+      "file": "output/playwright/hutong-initial-tool.png",
+      "bytes": 374325
+    },
+    {
+      "file": "output/playwright/hutong-initial.png",
+      "bytes": 374325
+    },
+    {
+      "file": "output/playwright/hutong-layers-v2.png",
+      "bytes": 12816
+    },
+    {
+      "file": "output/playwright/hutong-left-phase-2.png",
+      "bytes": 102428
+    },
+    {
+      "file": "output/playwright/hutong-left-phase-4.png",
+      "bytes": 102350
+    },
+    {
+      "file": "output/playwright/hutong-left-working.png",
+      "bytes": 372550
+    },
+    {
+      "file": "output/playwright/hutong-preview.png",
+      "bytes": 374325
+    },
+    {
+      "file": "output/playwright/hutong-reverse-working-v2.png",
+      "bytes": 480445
+    },
+    {
+      "file": "output/playwright/hutong-reverse-working-v3.png",
+      "bytes": 145905
+    },
+    {
+      "file": "output/playwright/hutong-reverse-working-v4.png",
+      "bytes": 145605
+    },
+    {
+      "file": "output/playwright/hutong-right-phase-2.png",
+      "bytes": 102452
+    },
+    {
+      "file": "output/playwright/hutong-right-phase-4.png",
+      "bytes": 102583
+    },
+    {
+      "file": "output/playwright/hutong-right-working.png",
+      "bytes": 372872
+    },
+    {
+      "file": "output/playwright/hutong-scale-v3.png",
+      "bytes": 152844
+    },
+    {
+      "file": "output/playwright/hutong-separated.png",
+      "bytes": 74116
+    },
+    {
+      "file": "output/playwright/hutong-space-reverse-v5.png",
+      "bytes": 96855
+    },
+    {
+      "file": "output/playwright/hutong-space-seated-v5.png",
+      "bytes": 103152
+    },
+    {
+      "file": "output/playwright/hutong-space-v5.png",
+      "bytes": 103588
+    },
+    {
+      "file": "output/playwright/hutong-walking-2-v2.png",
+      "bytes": 481040
+    },
+    {
+      "file": "output/playwright/hutong-walking-4-v2.png",
+      "bytes": 481104
+    },
+    {
+      "file": "output/playwright/hutong-wall-v2.png",
+      "bytes": 437721
+    },
+    {
+      "file": "output/playwright/immersive-gacha.png",
+      "bytes": 268748
+    },
+    {
+      "file": "output/playwright/immersive-held-toy.png",
+      "bytes": 474979
+    },
+    {
+      "file": "output/playwright/immersive-map-mobile.png",
+      "bytes": 210739
+    },
+    {
+      "file": "output/playwright/immersive-map.png",
+      "bytes": 507976
+    },
+    {
+      "file": "output/playwright/laura-action-hold-east.png",
+      "bytes": 6496
+    },
+    {
+      "file": "output/playwright/laura-action-seat-east.png",
+      "bytes": 6251
+    },
+    {
+      "file": "output/playwright/laura-assets-seated.png",
+      "bytes": 44096
+    },
+    {
+      "file": "output/playwright/laura-dance-0.png",
+      "bytes": 64099
+    },
+    {
+      "file": "output/playwright/laura-dance-2.png",
+      "bytes": 58940
+    },
+    {
+      "file": "output/playwright/laura-entry-white.png",
+      "bytes": 349369
+    },
+    {
+      "file": "output/playwright/laura-hold-east.png",
+      "bytes": 6489
+    },
+    {
+      "file": "output/playwright/laura-hold-north.png",
+      "bytes": 6926
+    },
+    {
+      "file": "output/playwright/laura-hold-south.png",
+      "bytes": 7131
+    },
+    {
+      "file": "output/playwright/laura-hold-west.png",
+      "bytes": 6420
+    },
+    {
+      "file": "output/playwright/laura-v2-contact-dining-holding.png",
+      "bytes": 21596
+    },
+    {
+      "file": "output/playwright/laura-v2-contact-dining-idle.png",
+      "bytes": 21416
+    },
+    {
+      "file": "output/playwright/laura-v2-contact-office-holding.png",
+      "bytes": 22392
+    },
+    {
+      "file": "output/playwright/laura-v2-contact-office-idle.png",
+      "bytes": 22203
+    },
+    {
+      "file": "output/playwright/laura-v2-idle-east.png",
+      "bytes": 4455
+    },
+    {
+      "file": "output/playwright/laura-v2-walk-east.png",
+      "bytes": 5513
+    },
+    {
+      "file": "output/playwright/laura-v5-cycle.png",
+      "bytes": 93921
+    },
+    {
+      "file": "output/playwright/laura-v6-cycle.png",
+      "bytes": 95571
+    },
+    {
+      "file": "output/playwright/laura-v7-cycle.png",
+      "bytes": 97001
+    },
+    {
+      "file": "output/playwright/left-shoes-fixed.png",
+      "bytes": 278794
+    },
+    {
+      "file": "output/playwright/login.png",
+      "bytes": 1064532
+    },
+    {
+      "file": "output/playwright/lulu-dance-v1.png",
+      "bytes": 323222
+    },
+    {
+      "file": "output/playwright/moles/desktop-hit.png",
+      "bytes": 58480
+    },
+    {
+      "file": "output/playwright/moles/desktop-playing.png",
+      "bytes": 59168
+    },
+    {
+      "file": "output/playwright/moles/desktop-result.png",
+      "bytes": 44364
+    },
+    {
+      "file": "output/playwright/moles/desktop-selection.png",
+      "bytes": 171109
+    },
+    {
+      "file": "output/playwright/moles/mobile-hit.png",
+      "bytes": 40311
+    },
+    {
+      "file": "output/playwright/moles/mobile-playing.png",
+      "bytes": 40735
+    },
+    {
+      "file": "output/playwright/moles/mobile-result.png",
+      "bytes": 36039
+    },
+    {
+      "file": "output/playwright/moles/mobile-selection.png",
+      "bytes": 112591
+    },
+    {
+      "file": "output/playwright/moles/original-home.png",
+      "bytes": 313328
+    },
+    {
+      "file": "output/playwright/mvp-fullscreen-guest.png",
+      "bytes": 302275
+    },
+    {
+      "file": "output/playwright/mvp-gift-fullscreen.png",
+      "bytes": 314793
+    },
+    {
+      "file": "output/playwright/mvp-two-players.png",
+      "bytes": 286562
+    },
+    {
+      "file": "output/playwright/nine-run.png",
+      "bytes": 50801
+    },
+    {
+      "file": "output/playwright/nine-standing.png",
+      "bytes": 45533
+    },
+    {
+      "file": "output/playwright/nine-typing-back.png",
+      "bytes": 61868
+    },
+    {
+      "file": "output/playwright/nine-typing-front.png",
+      "bytes": 73473
+    },
+    {
+      "file": "output/playwright/nine-walk.png",
+      "bytes": 48525
+    },
+    {
+      "file": "output/playwright/noodle-chicken-menu.png",
+      "bytes": 198505
+    },
+    {
+      "file": "output/playwright/noodle-drinks-held.png",
+      "bytes": 390425
+    },
+    {
+      "file": "output/playwright/noodle-final-served.png",
+      "bytes": 392869
+    },
+    {
+      "file": "output/playwright/noodle-room-first.png",
+      "bytes": 392878
+    },
+    {
+      "file": "output/playwright/noodle-seated-held.png",
+      "bytes": 393896
+    },
+    {
+      "file": "output/playwright/noodle-served.png",
+      "bytes": 392875
+    },
+    {
+      "file": "output/playwright/noodle-shop-final.png",
+      "bytes": 339063
+    },
+    {
+      "file": "output/playwright/noodle-v2-room.png",
+      "bytes": 405098
+    },
+    {
+      "file": "output/playwright/noodle-v2-seated.png",
+      "bytes": 401444
+    },
+    {
+      "file": "output/playwright/office-amber-reverse-fixed.png",
+      "bytes": 346057
+    },
+    {
+      "file": "output/playwright/office-amber-reverse.png",
+      "bytes": 322915
+    },
+    {
+      "file": "output/playwright/perler-aisle.png",
+      "bytes": 438945
+    },
+    {
+      "file": "output/playwright/perler-board.png",
+      "bytes": 18055
+    },
+    {
+      "file": "output/playwright/perler-final.png",
+      "bytes": 439788
+    },
+    {
+      "file": "output/playwright/perler-front-seated.png",
+      "bytes": 439237
+    },
+    {
+      "file": "output/playwright/perler-room.png",
+      "bytes": 440926
+    },
+    {
+      "file": "output/playwright/perler-seated.png",
+      "bytes": 439842
+    },
+    {
+      "file": "output/playwright/perler-v2-member-seat.png",
+      "bytes": 436917
+    },
+    {
+      "file": "output/playwright/perler-v2-room.png",
+      "bytes": 435257
+    },
+    {
+      "file": "output/playwright/perler-v2-seated.png",
+      "bytes": 435869
+    },
+    {
+      "file": "output/playwright/perler-verified.png",
+      "bytes": 18854
+    },
+    {
+      "file": "output/playwright/perler-work-final.png",
+      "bytes": 20191
+    },
+    {
+      "file": "output/playwright/popmart-box-reveal.png",
+      "bytes": 23977
+    },
+    {
+      "file": "output/playwright/popmart-box-selection.png",
+      "bytes": 19741
+    },
+    {
+      "file": "output/playwright/popmart-collision-check.png",
+      "bytes": 381419
+    },
+    {
+      "file": "output/playwright/popmart-gacha-capsule.png",
+      "bytes": 33809
+    },
+    {
+      "file": "output/playwright/popmart-gacha-final.png",
+      "bytes": 33809
+    },
+    {
+      "file": "output/playwright/popmart-gacha-idle.png",
+      "bytes": 33723
+    },
+    {
+      "file": "output/playwright/popmart-gacha-opened.png",
+      "bytes": 36544
+    },
+    {
+      "file": "output/playwright/popmart-gacha-scene.png",
+      "bytes": 396960
+    },
+    {
+      "file": "output/playwright/popmart-machine-reveal.png",
+      "bytes": 77457
+    },
+    {
+      "file": "output/playwright/popmart-machine-v3.png",
+      "bytes": 225362
+    },
+    {
+      "file": "output/playwright/popmart-machine-v4.png",
+      "bytes": 199457
+    },
+    {
+      "file": "output/playwright/popmart-mobile-selection.png",
+      "bytes": 39715
+    },
+    {
+      "file": "output/playwright/popmart-open-stand.png",
+      "bytes": 385681
+    },
+    {
+      "file": "output/playwright/popmart-open-themed-stand.png",
+      "bytes": 325740
+    },
+    {
+      "file": "output/playwright/popmart-real-product-reference.png",
+      "bytes": 74659
+    },
+    {
+      "file": "output/playwright/popmart-scene.png",
+      "bytes": 382594
+    },
+    {
+      "file": "output/playwright/popmart-store-v3.png",
+      "bytes": 398472
+    },
+    {
+      "file": "output/playwright/register.png",
+      "bytes": 987693
+    },
+    {
+      "file": "output/playwright/rehearsal-final.png",
+      "bytes": 306563
+    },
+    {
+      "file": "output/playwright/rehearsal-first.png",
+      "bytes": 332580
+    },
+    {
+      "file": "output/playwright/rehearsal-piano.png",
+      "bytes": 306375
+    },
+    {
+      "file": "output/playwright/rehearsal-podium.png",
+      "bytes": 332598
+    },
+    {
+      "file": "output/playwright/rehearsal-room-final.png",
+      "bytes": 332755
+    },
+    {
+      "file": "output/playwright/rest-coffee-front.png",
+      "bytes": 280041
+    },
+    {
+      "file": "output/playwright/rest-coffee-seated.png",
+      "bytes": 279083
+    },
+    {
+      "file": "output/playwright/rest-coffee-side.png",
+      "bytes": 279443
+    },
+    {
+      "file": "output/playwright/rest-current.png",
+      "bytes": 104467
+    },
+    {
+      "file": "output/playwright/rest-restored.png",
+      "bytes": 278334
+    },
+    {
+      "file": "output/playwright/rest-seated.png",
+      "bytes": 103715
+    },
+    {
+      "file": "output/playwright/rest-side-seated-4.png",
+      "bytes": 280903
+    },
+    {
+      "file": "output/playwright/rest-side-seated-5.png",
+      "bytes": 280582
+    },
+    {
+      "file": "output/playwright/rest-three-chairs.png",
+      "bytes": 283651
+    },
+    {
+      "file": "output/playwright/rest-water-front.png",
+      "bytes": 279980
+    },
+    {
+      "file": "output/playwright/rest-water-seated.png",
+      "bytes": 278999
+    },
+    {
+      "file": "output/playwright/round-hand-back.png",
+      "bytes": 279096
+    },
+    {
+      "file": "output/playwright/round-hand-front.png",
+      "bytes": 279971
+    },
+    {
+      "file": "output/playwright/round-hand-seated-3.png",
+      "bytes": 282296
+    },
+    {
+      "file": "output/playwright/round-hand-seated-4.png",
+      "bytes": 281905
+    },
+    {
+      "file": "output/playwright/round-hand-seated-5.png",
+      "bytes": 281728
+    },
+    {
+      "file": "output/playwright/round-hand-standing.png",
+      "bytes": 283492
+    },
+    {
+      "file": "output/playwright/run-0.png",
+      "bytes": 54389
+    },
+    {
+      "file": "output/playwright/run-3.png",
+      "bytes": 52815
+    },
+    {
+      "file": "output/playwright/scale80-culture.png",
+      "bytes": 288119
+    },
+    {
+      "file": "output/playwright/scale80-opposite.png",
+      "bytes": 275807
+    },
+    {
+      "file": "output/playwright/scale80-rest-coffee.png",
+      "bytes": 282461
+    },
+    {
+      "file": "output/playwright/scale80-rest-seated.png",
+      "bytes": 281268
+    },
+    {
+      "file": "output/playwright/scale80-rest.png",
+      "bytes": 283709
+    },
+    {
+      "file": "output/playwright/scale80-stopped-left.png",
+      "bytes": 287254
+    },
+    {
+      "file": "output/playwright/scale80-walking-left.png",
+      "bytes": 287884
+    },
+    {
+      "file": "output/playwright/seat-hip-carry-4.png",
+      "bytes": 281590
+    },
+    {
+      "file": "output/playwright/seat-hip-carry-5.png",
+      "bytes": 281553
+    },
+    {
+      "file": "output/playwright/seat-hip-empty-4.png",
+      "bytes": 281160
+    },
+    {
+      "file": "output/playwright/seat-hip-empty-5.png",
+      "bytes": 281052
+    },
+    {
+      "file": "output/playwright/shared-culture.png",
+      "bytes": 286550
+    },
+    {
+      "file": "output/playwright/shared-opposite.png",
+      "bytes": 274892
+    },
+    {
+      "file": "output/playwright/shared-rest.png",
+      "bytes": 280051
+    },
+    {
+      "file": "output/playwright/small-arms-left.png",
+      "bytes": 278763
+    },
+    {
+      "file": "output/playwright/small-arms-right.png",
+      "bytes": 278815
+    },
+    {
+      "file": "output/playwright/subway-closed.png",
+      "bytes": 309279
+    },
+    {
+      "file": "output/playwright/subway-final.png",
+      "bytes": 332989
+    },
+    {
+      "file": "output/playwright/subway-open.png",
+      "bytes": 330237
+    },
+    {
+      "file": "output/playwright/table-edge-fixed.png",
+      "bytes": 279633
+    },
+    {
+      "file": "output/playwright/table-multiple.png",
+      "bytes": 279795
+    },
+    {
+      "file": "output/playwright/table-six-items.png",
+      "bytes": 280399
+    },
+    {
+      "file": "output/playwright/team-carry-back-final.png",
+      "bytes": 79679
+    },
+    {
+      "file": "output/playwright/team-carry-front-final.png",
+      "bytes": 84116
+    },
+    {
+      "file": "output/playwright/team-carry-seat-final.png",
+      "bytes": 83949
+    },
+    {
+      "file": "output/playwright/team-carry-walk-normalized.png",
+      "bytes": 383627
+    },
+    {
+      "file": "output/playwright/team-final.png",
+      "bytes": 87665
+    },
+    {
+      "file": "output/playwright/team-hold-back-fixed.png",
+      "bytes": 80502
+    },
+    {
+      "file": "output/playwright/team-hold-back.png",
+      "bytes": 79808
+    },
+    {
+      "file": "output/playwright/team-hold-front-fixed.png",
+      "bytes": 84048
+    },
+    {
+      "file": "output/playwright/team-hold-front.png",
+      "bytes": 84110
+    },
+    {
+      "file": "output/playwright/team-run-normalized.png",
+      "bytes": 431240
+    },
+    {
+      "file": "output/playwright/team-seat-cafe.png",
+      "bytes": 85212
+    },
+    {
+      "file": "output/playwright/team-seated-hold.png",
+      "bytes": 83514
+    },
+    {
+      "file": "output/playwright/team-standing.png",
+      "bytes": 81826
+    },
+    {
+      "file": "output/playwright/team-walk-normalized.png",
+      "bytes": 436417
+    },
+    {
+      "file": "output/playwright/team-walk-v8-cycles.png",
+      "bytes": 445933
+    },
+    {
+      "file": "output/playwright/tutu-gym-v1.png",
+      "bytes": 466972
+    },
+    {
+      "file": "output/playwright/typing-back.png",
+      "bytes": 58522
+    },
+    {
+      "file": "output/playwright/typing-front-seated-lower.png",
+      "bytes": 92379
+    },
+    {
+      "file": "output/playwright/typing-front.png",
+      "bytes": 73214
+    },
+    {
+      "file": "output/playwright/up-holding-stable-0.png",
+      "bytes": 279163
+    },
+    {
+      "file": "output/playwright/up-holding-stable-4.png",
+      "bytes": 279022
+    },
+    {
+      "file": "output/playwright/vending-interior.png",
+      "bytes": 138985
+    },
+    {
+      "file": "output/playwright/vending-products.png",
+      "bytes": 188551
+    },
+    {
+      "file": "output/playwright/walk-0.png",
+      "bytes": 50595
+    },
+    {
+      "file": "output/playwright/walk-3.png",
+      "bytes": 48764
+    },
+    {
+      "file": "output/playwright/walk-left-cross.png",
+      "bytes": 278374
+    },
+    {
+      "file": "output/playwright/walk-right-cross.png",
+      "bytes": 278567
+    },
+    {
+      "file": "output/team-assets-v1/amber/amber-carry-v1.png",
+      "bytes": 1070527
+    },
+    {
+      "file": "output/team-assets-v1/amber/amber.png",
+      "bytes": 1422477
+    },
+    {
+      "file": "output/team-assets-v1/cora/cora-carry-v1.png",
+      "bytes": 1788096
+    },
+    {
+      "file": "output/team-assets-v1/cora/cora.png",
+      "bytes": 1647054
+    },
+    {
+      "file": "output/team-assets-v1/franco/franco-carry-v1.png",
+      "bytes": 1179051
+    },
+    {
+      "file": "output/team-assets-v1/franco/franco.png",
+      "bytes": 1426268
+    },
+    {
+      "file": "output/team-assets-v1/jilly/jilly-carry-v1.png",
+      "bytes": 1815712
+    },
+    {
+      "file": "output/team-assets-v1/jilly/jilly.png",
+      "bytes": 1650441
+    },
+    {
+      "file": "output/team-assets-v1/kay/kay-carry-v1.png",
+      "bytes": 1121159
+    },
+    {
+      "file": "output/team-assets-v1/kay/kay.png",
+      "bytes": 1595643
+    },
+    {
+      "file": "output/team-assets-v1/laura/laura-carry-v1.png",
+      "bytes": 1731601
+    },
+    {
+      "file": "output/team-assets-v1/laura/laura.png",
+      "bytes": 1501528
+    },
+    {
+      "file": "output/team-assets-v1/sid/sid-carry-v1.png",
+      "bytes": 1818915
+    },
+    {
+      "file": "output/team-assets-v1/sid/sid.png",
+      "bytes": 1532861
+    },
+    {
+      "file": "output/team-assets-v1/suki/suki-carry-v1.png",
+      "bytes": 1849883
+    },
+    {
+      "file": "output/team-assets-v1/suki/suki.png",
+      "bytes": 1636064
+    },
+    {
+      "file": "output/team-v3-hold.png",
+      "bytes": 64318
+    },
+    {
+      "file": "output/team-v3-office.png",
+      "bytes": 81696
+    },
+    {
+      "file": "output/team-v3-standing.png",
+      "bytes": 70228
+    },
+    {
+      "file": "output/visual-audit/arcade-seated.png",
+      "bytes": 354679
+    },
+    {
+      "file": "output/visual-audit/arcade-standing.png",
+      "bytes": 354960
+    },
+    {
+      "file": "output/visual-audit/concert-seated.png",
+      "bytes": 333990
+    },
+    {
+      "file": "output/visual-audit/concert-standing.png",
+      "bytes": 334795
+    },
+    {
+      "file": "output/visual-audit/contact-sheet.png",
+      "bytes": 30656
+    },
+    {
+      "file": "output/visual-audit/dance-seated.png",
+      "bytes": 300603
+    },
+    {
+      "file": "output/visual-audit/dance-standing.png",
+      "bytes": 301740
+    },
+    {
+      "file": "output/visual-audit/eight-office-typing.png",
+      "bytes": 67397
+    },
+    {
+      "file": "output/visual-audit/eight-perler.png",
+      "bytes": 201599
+    },
+    {
+      "file": "output/visual-audit/elevator-standing.png",
+      "bytes": 328252
+    },
+    {
+      "file": "output/visual-audit/fix-bathroom.png",
+      "bytes": 384687
+    },
+    {
+      "file": "output/visual-audit/fix-celine.png",
+      "bytes": 309161
+    },
+    {
+      "file": "output/visual-audit/fix-pop.png",
+      "bytes": 445858
+    },
+    {
+      "file": "output/visual-audit/front-bathroom.png",
+      "bytes": 369855
+    },
+    {
+      "file": "output/visual-audit/front-dance.png",
+      "bytes": 317690
+    },
+    {
+      "file": "output/visual-audit/front-hawaii.png",
+      "bytes": 308630
+    },
+    {
+      "file": "output/visual-audit/front-hutong.png",
+      "bytes": 333843
+    },
+    {
+      "file": "output/visual-audit/front-rest.png",
+      "bytes": 310166
+    },
+    {
+      "file": "output/visual-audit/gym-seated.png",
+      "bytes": 437388
+    },
+    {
+      "file": "output/visual-audit/gym-standing.png",
+      "bytes": 436092
+    },
+    {
+      "file": "output/visual-audit/hawaii-seated.png",
+      "bytes": 281611
+    },
+    {
+      "file": "output/visual-audit/hawaii-standing.png",
+      "bytes": 287603
+    },
+    {
+      "file": "output/visual-audit/hutong-seated.png",
+      "bytes": 289978
+    },
+    {
+      "file": "output/visual-audit/hutong-standing.png",
+      "bytes": 289659
+    },
+    {
+      "file": "output/visual-audit/noodle-seated.png",
+      "bytes": 363801
+    },
+    {
+      "file": "output/visual-audit/noodle-standing.png",
+      "bytes": 405723
+    },
+    {
+      "file": "output/visual-audit/perler-seated.png",
+      "bytes": 393601
+    },
+    {
+      "file": "output/visual-audit/perler-standing.png",
+      "bytes": 393290
+    },
+    {
+      "file": "output/visual-audit/pop-standing.png",
+      "bytes": 405723
+    },
+    {
+      "file": "output/visual-audit/q-cora-front.png",
+      "bytes": 336953
+    },
+    {
+      "file": "output/visual-audit/q-laura-front.png",
+      "bytes": 337718
+    },
+    {
+      "file": "output/visual-audit/q-v2-atlas-review.png",
+      "bytes": 1031089
+    },
+    {
+      "file": "output/visual-audit/q-v2-typing-analysis.png",
+      "bytes": 9345
+    },
+    {
+      "file": "output/visual-audit/rehearsal-seated.png",
+      "bytes": 331415
+    },
+    {
+      "file": "output/visual-audit/rehearsal-standing.png",
+      "bytes": 333221
+    },
+    {
+      "file": "output/visual-audit/rest-seated.png",
+      "bytes": 283704
+    },
+    {
+      "file": "output/visual-audit/rest-standing.png",
+      "bytes": 285329
+    },
+    {
+      "file": "output/visual-audit/reverse-hawaii.png",
+      "bytes": 308630
+    },
+    {
+      "file": "output/visual-audit/reverse-hutong.png",
+      "bytes": 315460
+    },
+    {
+      "file": "output/visual-audit/subway-standing.png",
+      "bytes": 313539
+    },
+    {
+      "file": "output/visual-audit/typing-keyboard-v3.png",
+      "bytes": 337529
+    },
+    {
+      "file": "output/visual-audit/typing-keyboard-v4.png",
+      "bytes": 11660
+    },
+    {
+      "file": "output/visual-audit/typing-occlusion-final.png",
+      "bytes": 11964
+    },
+    {
+      "file": "output/visual-audit/v4-arcade-bench.png",
+      "bytes": 390764
+    },
+    {
+      "file": "output/visual-audit/v4-bathroom-0.png",
+      "bytes": 384010
+    },
+    {
+      "file": "output/visual-audit/v4-concert-A1.png",
+      "bytes": 517808
+    },
+    {
+      "file": "output/visual-audit/v4-concert-C3.png",
+      "bytes": 517987
+    },
+    {
+      "file": "output/visual-audit/v4-dance-bench.png",
+      "bytes": 319694
+    },
+    {
+      "file": "output/visual-audit/v4-gym-bench-0.png",
+      "bytes": 465461
+    },
+    {
+      "file": "output/visual-audit/v4-gym-bench-1.png",
+      "bytes": 466348
+    },
+    {
+      "file": "output/visual-audit/v4-noodle-0.png",
+      "bytes": 395388
+    },
+    {
+      "file": "output/visual-audit/v4-perler-0.png",
+      "bytes": 435846
+    }
+  ],
+  "count": 530,
+  "bytes": 213215702
+}
