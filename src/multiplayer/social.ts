@@ -41,7 +41,7 @@ export function startSocial(game:Phaser.Game){
   let accountSignature='',peopleSignature='';
   function hardLogout(text?:string){
     events?.close();events=null;lifeUI.reset();npcUI.reset();shared.reset();
-    user=null;world=null;bridge.user=null;bridge.players=[];bridge.onlineRoles=[];bridge.controller=true;bridge.connected=false;
+    user=null;world=null;bridge.user=null;bridge.players=[];bridge.onlineRoles=[];bridge.controller=true;bridge.connected=false;bridge.clearTransition();
     playerInventory.hand=null;initializedRole=null;connected=false;$('social-ui').dataset.revision='-1';
     for(const b of bubbles.values())b.element.remove();bubbles.clear();messages.clear();
     $('connection-state').textContent='单人试玩';if(bridge.active?.input.keyboard)bridge.active.input.keyboard.enabled=true;

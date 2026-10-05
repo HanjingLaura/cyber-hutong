@@ -35,6 +35,7 @@ export class MultiplayerBridge{
   }
   apply(p:Player){const scene=this.active;if(!scene||scene.sys.settings.key!==p.scene)return;if('actorX' in scene){scene.actorX=p.x;scene.actorY=p.y;}else{scene.x=p.x;scene.y=p.y;}scene.facing=p.facing;}
   stand(){const s=this.active;if(!s)return;if(typeof s.stand==='function')s.stand();else if(typeof s.stop==='function')s.stop();}
+  clearTransition(){this.transitioning=false;this.pendingSpawn=null;if(this.syncTimer){clearTimeout(this.syncTimer);this.syncTimer=null;}}
   screen(p:Player){const scene=this.active,office=['hutong','hawaii'].includes(p.scene),reverse=office&&!!scene?.reverse;return {...project(p,reverse),facing:visualFacing(p.facing as Facing,reverse)};}
   private hideLegacy(scene:Room){const actor=scene.actor;if(actor?.hide)actor.hide();else actor?.setVisible(false);scene.actorUpper?.setVisible(false);scene.sideLegs?.hide();scene.heldItem?.hide();scene.curlActor?.setVisible(false);scene.dancer?.setVisible(false);scene.reflectedDancer?.setVisible(false);scene.reflection?.hide();}
   private draw(delta:number){
