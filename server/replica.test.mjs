@@ -38,6 +38,10 @@ test('Turso replica persists accounts, sessions and messages across serverless i
   assert.equal(a.app.store.session(reg.token), null, 'logout on B removes the session on A');
   assert.equal(a.app.store.session(login.token)?.role, 'laura');
 
+  // UPSERTs (ON CONFLICT DO UPDATE) and repeated updates of the same row must not trip the change log.
+  const position = { id: reg.user.id, scene: 'hutong', x: 100, y: 200, facing: 0, seat: null, activity: 'walk' };
+  a.app.life.savePosition(position); a.app.life.savePosition({ ...position, x: 120 }); a.app.life.savePosition({ ...position, x: 140 });
+  await a.replica.flush();
   // Local unflushed changes win over older remote versions during pull.
   a.app.store.db.prepare("UPDATE accounts SET hand='咖啡',revision=revision+1").run();
   await a.replica.pull();
@@ -49,6 +53,7 @@ test('Turso replica persists accounts, sessions and messages across serverless i
   assert.equal(c.app.store.db.prepare('SELECT COUNT(*) AS n FROM accounts').get().n, 1);
   assert.equal(c.app.store.byRole('laura').hand, '咖啡');
   assert.equal(c.app.store.history('laura', null, 'hutong').length, 1);
+  assert.equal(c.app.life.position(reg.user.id).x, 140, 'latest upserted position persisted');
   await c.close();
 });
 

@@ -61,7 +61,8 @@ export async function prepareReplica(path, client, { prefix = 'hutong_online', f
   const verRow = (await client.execute(`SELECT COALESCE(MAX(ver), 0) AS v FROM ${t.rows}`)).rows[0];
   let lastVer = Number(verRow?.v ?? 0);
   const loaded = new Set();
-  const db = new DatabaseSync(path);
+  // Rows arrive in version order, not dependency order: load them with foreign keys off.
+  const db = new DatabaseSync(path, { enableForeignKeyConstraints: false });
   try {
     db.exec('BEGIN');
     for (const kind of ['table', 'index']) for (const s of schema) if (s.type === kind) {
@@ -80,20 +81,22 @@ export async function prepareReplica(path, client, { prefix = 'hutong_online', f
 
   function attach(target) {
     db2 = target;
-    db2.exec(`CREATE TEMP TABLE IF NOT EXISTS _hto_dirty(tbl TEXT NOT NULL, pk TEXT NOT NULL, PRIMARY KEY(tbl, pk));
+    db2.exec(`CREATE TEMP TABLE IF NOT EXISTS _hto_dirty(tbl TEXT NOT NULL, pk TEXT NOT NULL); CREATE INDEX IF NOT EXISTS temp._hto_dirty_key ON _hto_dirty(tbl, pk);
       CREATE TEMP TABLE IF NOT EXISTS _hto_ctl(applying INTEGER NOT NULL); DELETE FROM temp._hto_ctl; INSERT INTO temp._hto_ctl VALUES(0);`);
     // Trigger bodies must use unqualified names (older SQLite builds reject schema-qualified targets).
     const when = 'WHEN (SELECT applying FROM _hto_ctl) = 0';
     for (const table of userTables(db2)) {
       const keys = keyColumns(db2, table), key = p => `json_array(${keys.map(k => p + '.' + q(k)).join(',')})`;
       const tag = table.replace(/[^A-Za-z0-9_]/g, '_');
-      const ins = p => `INSERT OR IGNORE INTO _hto_dirty(tbl, pk) VALUES(${"'" + table.replaceAll("'", "''") + "'"}, ${key(p)});`;
+      const name = "'" + table.replaceAll("'", "''") + "'";
+      // No UNIQUE constraint: an outer UPSERT's conflict policy overrides OR IGNORE inside trigger bodies.
+      const ins = p => `INSERT INTO _hto_dirty(tbl, pk) SELECT ${name}, ${key(p)} WHERE NOT EXISTS (SELECT 1 FROM _hto_dirty WHERE tbl = ${name} AND pk = ${key(p)});`;
       db2.exec(`DROP TRIGGER IF EXISTS temp._hto_i_${tag}; DROP TRIGGER IF EXISTS temp._hto_u_${tag}; DROP TRIGGER IF EXISTS temp._hto_d_${tag};
         CREATE TEMP TRIGGER _hto_i_${tag} AFTER INSERT ON main.${q(table)} ${when} BEGIN ${ins('NEW')} END;
         CREATE TEMP TRIGGER _hto_u_${tag} AFTER UPDATE ON main.${q(table)} ${when} BEGIN ${ins('OLD')} ${ins('NEW')} END;
         CREATE TEMP TRIGGER _hto_d_${tag} AFTER DELETE ON main.${q(table)} ${when} BEGIN ${ins('OLD')} END;`);
       // Rows created locally before attach (defaults written during startup) are not remote yet.
-      const mark = db2.prepare('INSERT OR IGNORE INTO temp._hto_dirty(tbl, pk) VALUES(?, ?)');
+      const mark = db2.prepare('INSERT INTO temp._hto_dirty(tbl, pk) SELECT ?1, ?2 WHERE NOT EXISTS (SELECT 1 FROM temp._hto_dirty WHERE tbl = ?1 AND pk = ?2)');
       for (const r of db2.prepare(`SELECT ${key(q(table))} AS k FROM main.${q(table)}`).all()) if (!loaded.has(table + '\u0000' + r.k)) mark.run(table, r.k);
     }
     // Keep AUTOINCREMENT keys (messages, experiences) from colliding across instances.
@@ -124,7 +127,7 @@ export async function prepareReplica(path, client, { prefix = 'hutong_online', f
   function flush() {
     return serial(async () => {
       if (!db2 || !db2.isOpen || db2.isTransaction) return 0;
-      const dirty = db2.prepare('SELECT tbl, pk FROM temp._hto_dirty').all();
+      const dirty = db2.prepare('SELECT DISTINCT tbl, pk FROM temp._hto_dirty').all();
       if (!dirty.length) return 0;
       db2.exec('DELETE FROM temp._hto_dirty');
       const statements = [];
@@ -136,7 +139,7 @@ export async function prepareReplica(path, client, { prefix = 'hutong_online', f
       try {
         for (let i = 0; i < statements.length; i += 200) await client.batch(statements.slice(i, i + 200), 'write');
       } catch (e) {
-        if (db2?.isOpen) { const back = db2.prepare('INSERT OR IGNORE INTO temp._hto_dirty(tbl, pk) VALUES(?, ?)'); for (const d of dirty) back.run(d.tbl, d.pk); }
+        if (db2?.isOpen) { const back = db2.prepare('INSERT INTO temp._hto_dirty(tbl, pk) SELECT ?1, ?2 WHERE NOT EXISTS (SELECT 1 FROM temp._hto_dirty WHERE tbl = ?1 AND pk = ?2)'); for (const d of dirty) back.run(d.tbl, d.pk); }
         log.error?.('replica: flush failed: ' + e.message);
         throw e;
       }
