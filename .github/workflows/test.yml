@@ -12,9 +12,8 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 24
       - run: npm ci
       - run: npm test
-      - run: node --check src/client/app.js
-      - run: node --check src/client/portraits.js
-      - run: node --check src/client/stage.js
+      - run: npm run test:moles
+      - run: npm run build
