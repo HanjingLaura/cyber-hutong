@@ -21,13 +21,13 @@ h2 { font-size: 21px; margin: 0; }
 canvas { image-rendering: pixelated; }
 .person b { margin-top: 12px; font: bold 14px Consolas, monospace; }
 .person small { color: #aab4a5; font: 11px Consolas, monospace; margin-top: 5px; }
-.check { visibility: hidden; position: absolute; top: 6px; right: 6px; font-size: 13px; background: #d1c78b; color: #202523; width: 19px; height: 19px; }
+.check { visibility: hidden; position: absolute; top: 6px; right: 6px; font-size: 13px; background: var(--hto-accent); color: var(--hto-bg); width: 19px; height: 19px; }
 .person[aria-pressed="true"] { border-color: #d1c78b; background: #354035; box-shadow: inset 0 -4px #69734e; }
 .person[aria-pressed="true"] .check { visibility: visible; }
 .selection-actions { display: flex; justify-content: space-between; gap: 12px; }
 .selection-actions > div { display: flex; gap: 10px; }
-.primary { background: #d1c78b; color: #202523; border-color: #d1c78b; font-weight: bold; box-shadow: 3px 3px #101713; }
-.primary:hover { background: #e3d799; color: #202523; }
+.primary { background: var(--hto-accent); color: var(--hto-bg); border-color: var(--hto-accent); font-weight: bold; box-shadow: 3px 3px var(--hto-shadow); }
+.primary:hover { background: var(--hto-accent-hot); color: var(--hto-bg); }
 #asset-status { color: #aab4a5; font-size: 12px; margin: 18px 0 34px; }
 .instructions { border-top: 1px solid #465046; margin-top: 34px; padding-top: 25px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
 .instructions b { font-size: 14px; color: #c9bd82; }.instructions p { color: #aab4a5; font-size: 13px; line-height: 1.8; }

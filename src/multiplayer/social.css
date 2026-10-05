@@ -3,7 +3,7 @@
 #account-dialog[data-entry="true"]{inset:0;width:100vw;max-width:none;height:100dvh;max-height:none;margin:0;padding:clamp(32px,9vh,88px) 20px 48px;border:0;background:#d1d4cd url('../../assets/drafts/login-office-background.png') center/cover no-repeat;color:#23372f;image-rendering:pixelated;box-shadow:none}
 #account-dialog[data-entry="true"] .account-wall{width:min(360px,100%);margin:0 auto;padding:20px 24px 24px;background:#edf0e6;border:2px solid #526556;box-shadow:6px 6px 0 #899585}
 .account-wordmark{display:none}
-#account-dialog[data-entry="true"] .account-wordmark{display:block;text-align:center;font-size:32px;letter-spacing:4px;margin:0 0 20px}
+#account-dialog[data-entry="true"] .account-wordmark{display:block;text-align:center;font:600 32px var(--hto-mono);letter-spacing:4px;margin:0 0 20px;color:#284c3e;text-shadow:none}
 #account-dialog[data-entry="true"] .panel-heading{margin-bottom:14px}
 #account-dialog[data-entry="true"] input{width:100%;height:46px;border:2px solid #526556;background:#f8faf3;color:#23372f;border-radius:0}
 #account-dialog[data-entry="true"] button{min-height:44px;border:2px solid #526556;background:#edf0e6;color:#23372f;box-shadow:3px 3px 0 #899585;border-radius:0}
@@ -50,18 +50,18 @@ body.game-fullscreen{overflow:hidden;background:#333936;height:100dvh}
 /* In-world HUD: retain the fixed 16:9 game projection at every window size. */
 .game-fullscreen #game>canvas{border:0;box-shadow:none}
 .game-fullscreen .world{border:0;box-shadow:none}
-#social-ui{position:absolute;inset:0;pointer-events:none;z-index:1000;font-family:Consolas,"Microsoft YaHei",monospace}
+#social-ui{position:absolute;inset:0;pointer-events:none;z-index:1000;font-family:var(--hto-mono)}
 #social-ui button,#social-ui input,#social-ui textarea,#social-ui dialog,#social-ui .social-panel{pointer-events:auto}
 #game-tools{position:absolute;top:12px;left:14px;right:14px;gap:3px}
 #game-tools button{border:0;border-bottom:2px solid #c2c5a3;background:#17231ccc;padding:7px 12px;box-shadow:none}
 #connection-state{font-size:11px;color:#e5e5c6;text-shadow:1px 1px #18251f}
-.game-fullscreen #play-guide{top:auto;bottom:16px;left:50%;transform:translateX(-50%);background:#152119a6;border:0;text-align:center;max-width:40%;font-family:Consolas,"Microsoft YaHei",monospace}
+.game-fullscreen #play-guide{top:auto;bottom:16px;left:50%;transform:translateX(-50%);background:#152119a6;border:0;text-align:center;max-width:40%;font-family:var(--hto-mono)}
 #chat-panel{position:absolute;bottom:16px;left:14px;width:min(320px,40vw);padding:8px;background:linear-gradient(0deg,#142219cf,#14221900);border:0;box-shadow:none;color:#fff6da;text-shadow:1px 1px #15231d}
 #chat-panel .panel-heading{margin:0 0 3px;font-size:11px}#chat-panel .panel-heading button,#chat-room{font-size:10px;padding:3px 6px;border:0;background:#17231c80;box-shadow:none}
 #chat-history{height:110px;padding:2px 0;font-size:12px;scrollbar-width:thin}#chat-history p{margin:2px 0}
 #chat-input{padding:6px 8px;background:#15231dbc;border:0;border-bottom:1px solid #a6b38b;font-size:12px}#chat-form button{padding:5px 8px;border:0;background:#344a35;font-size:12px}
 #people-panel{position:absolute;left:auto;right:14px;bottom:16px;width:min(320px,42vw);background:var(--hto-panel);border:1px solid var(--hto-panel-border);box-shadow:3px 3px 0 var(--hto-shadow);font-family:var(--hto-mono)}
-.social-dialog:not(#account-dialog){background:#26332b;border:2px solid #95a279;box-shadow:4px 4px 0 #142018;font-family:Consolas,"Microsoft YaHei",monospace}
+.social-dialog:not(#account-dialog){background:var(--hto-surface);border:2px solid var(--hto-panel-border);box-shadow:4px 4px 0 var(--hto-shadow);font-family:var(--hto-mono);color:var(--hto-panel-ink)}
 .location-map{width:min(850px,94vw)}.location-map section{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.location-map section>strong{grid-column:1/-1;font-size:12px;color:#c5cdab}
 .location-map [data-place]{display:flex;flex-direction:column;align-items:stretch;padding:0;border:2px solid #5a705b;background:#16251d;gap:0;text-align:left;box-shadow:none}
 .location-map [data-place] img{display:block;width:100%;aspect-ratio:16/9;object-fit:cover;image-rendering:pixelated}
