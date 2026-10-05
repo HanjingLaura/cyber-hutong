@@ -66,7 +66,7 @@
   line-height: 1.5;
   color: var(--ink-soft);
 }
-#account-dialog[data-entry="true"] .panel-heading { margin-bottom: 14px; }
+#account-dialog[data-entry="true"] .panel-heading button[data-close] { display: none; }
 #account-dialog[data-entry="true"] .panel-heading h2 {
   font: 600 15px/1.2 var(--font-mono);
   letter-spacing: 0.06em;
