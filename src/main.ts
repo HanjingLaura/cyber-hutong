@@ -22,6 +22,7 @@ import { ElevatorLobbyScene } from './elevator-lobby';
 import { SubwayScene } from './subway';
 import { HeldItemView, type GripSlot } from './held-item';
 import { markScene, setGuide } from './hud';
+import { openDeskComputer, closeDeskComputer, deskComputerOpen } from './desk-computer';
 import { playerInventory, items, type ItemName } from './player-inventory';
 import { registerProductTextures } from './product-textures';
 import gripRegistry from '../assets/metadata/owner-grips.json';
@@ -306,17 +307,27 @@ class HutongScene extends Phaser.Scene {
     // Phaser's queued down/up processing during a very short key tap.
     const actionKey = (event: KeyboardEvent) => {
       if (!acceptsInput() || event.repeat) return;
-      if (event.code === 'KeyE') { event.preventDefault(); this.interact(); }
-      else if (event.code === 'Escape') { event.preventDefault(); this.stand(); }
+      if (event.code === 'KeyE') {
+        event.preventDefault();
+        if (deskComputerOpen()) { closeDeskComputer(); return; }
+        this.interact();
+      }
+      else if (event.code === 'Escape') {
+        event.preventDefault();
+        if (deskComputerOpen()) { closeDeskComputer(); return; }
+        this.stand();
+      }
       else if (!this.isHawaii && event.code === 'KeyV') { event.preventDefault(); this.switchView(); }
     };
     window.addEventListener('keydown', actionKey);
     const clearKeys = () => this.input.keyboard?.resetKeys();
     world.addEventListener('blur', clearKeys); window.addEventListener('blur', clearKeys);
     this.events.once('shutdown', () => {
+      closeDeskComputer();
       world.removeEventListener('blur', clearKeys); window.removeEventListener('blur', clearKeys);
       window.removeEventListener('keydown', actionKey);
     });
+    this.events.on('sleep', () => closeDeskComputer());
     world.addEventListener('pointerdown', () => world.focus());
     interactButton.addEventListener('click', () => { if (this.sys.isActive()) { this.interact(); world.focus(); } });
     viewButton.addEventListener('click', () => { if (this.sys.isActive()) { this.switchView(); world.focus(); } });
@@ -423,6 +434,17 @@ class HutongScene extends Phaser.Scene {
       seat.laptop.setTexture('furniture', this.frames.laptop[computerIndex].name).setOrigin(.5, 1)
         .setScale(laptopScale.x, laptopScale.y).setPosition(computerPoint.x, computerPoint.y - 75 * HEIGHT_PROJECTION * CONTENT_SCALE)
         .setDepth(point.y + (far ? -2 : 6)).setVisible(this.layers.laptop);
+      const ownDesk = this.seatedAt === seat && this.mode === 'working' && this.sys.isActive();
+      seat.laptop.removeAllListeners('pointerdown');
+      if (ownDesk) {
+        seat.laptop.setInteractive({ useHandCursor: true }).on('pointerdown', (pointer: Phaser.Input.Pointer) => {
+          if (!this.sys.isActive() || deskComputerOpen()) return;
+          pointer.event?.stopPropagation?.();
+          openDeskComputer();
+        });
+      } else {
+        seat.laptop.disableInteractive();
+      }
       const stand = project(seat.stand, this.reverse);
       seat.label.setPosition(stand.x, stand.y + 4).setVisible(this.layers.anchors);
     }
@@ -437,6 +459,7 @@ class HutongScene extends Phaser.Scene {
     }
   }
   private interact() {
+    if (deskComputerOpen()) { closeDeskComputer(); return; }
     if (this.seatedAt) { this.stand(); return; }
     if(this.nearWindow()){this.toggleCurtain();return;}
     if(this.nearGuest()){this.officeGuest!.interact({x:this.actorX,y:this.actorY});this.lastHud='';this.drawFurniture();return;}
@@ -458,6 +481,7 @@ class HutongScene extends Phaser.Scene {
   private nearGuest(){if(!this.officeGuest?.near(this.actorX,this.actorY))return false;const guest=this.officeGuest.snapshot(),seat=this.findNearest();return !seat||Math.hypot(this.actorX-guest.x,this.actorY-guest.y)<Math.hypot(this.actorX-seat.stand.x,this.actorY-seat.stand.y);}
   private stand() {
     if (!this.seatedAt) return;
+    closeDeskComputer();
     const seat = this.seatedAt;
     this.actorX = seat.stand.x; this.actorY = seat.stand.y;
     if(this.officeGuest?.blocks(this.actorX,this.actorY)){
@@ -573,14 +597,14 @@ class HutongScene extends Phaser.Scene {
     if (hud !== this.lastHud) {
       this.lastHud = hud;
       modeElement.textContent = this.mode === 'working' ? `在 ${this.seatedAt!.id} 工位办公` : this.mode === 'sit' ? `坐在 ${this.seatedAt!.id} 休息` : this.mode === 'walking' ? '在胡同里走动' : '站在胡同里';
-      hintElement.textContent = this.seatedAt ? (this.mode==='working'?'在自己的工位办公。按 E 起身。':'坐下休息，只有自己的工位可以办公。按 E 起身。') : this.nearest ? `靠近 ${this.nearest.id}：按 E 坐下，自己的工位可办公。` : '沿中间通道走动，靠近椅子试坐。';
+      hintElement.textContent = this.seatedAt ? (this.mode==='working'?'在自己的工位办公。点击电脑屏幕放大查看 · E 起身。':'坐下休息，只有自己的工位可以办公。按 E 起身。') : this.nearest ? `靠近 ${this.nearest.id}：按 E 坐下，自己的工位可办公。` : '沿中间通道走动，靠近椅子试坐。';
       interactButton.disabled = !this.seatedAt && !this.nearest;
       interactButton.textContent = this.seatedAt ? '起身' : this.nearest ? `坐到 ${this.nearest.id}` : '靠近椅子坐下';
-      setGuide('WASD / 方向键移动 · V 换视角', this.seatedAt ? (this.mode==='working'?'自己的工位 · 办公中 · E / Esc 起身':'坐下休息 · E / Esc 起身') : this.nearest ? `E · ${this.nearest.id} ${canWorkAt(onlineWorld()?.bridge.user?.role??'laura',this.sys.settings.key,this.nearest.id)?'我的工位，坐下办公':'坐下休息'}` : '靠近工位，按 E 坐下');
+      setGuide('WASD / 方向键移动 · V 换视角', this.seatedAt ? (this.mode==='working'?'自己的工位 · 点击电脑放大 · E / Esc 起身':'坐下休息 · E / Esc 起身') : this.nearest ? `E · ${this.nearest.id} ${canWorkAt(onlineWorld()?.bridge.user?.role??'laura',this.sys.settings.key,this.nearest.id)?'我的工位，坐下办公':'坐下休息'}` : '靠近工位，按 E 坐下');
       document.querySelector('#seat-state')!.textContent = this.seatedAt ? `${this.seatedAt.id} 使用中 · 其余 ${this.seats.length-1} 位空闲` : this.isHawaii?'两排各三个座位 · 六个工位':'左墙 L1–L4 · 右墙 R1–R4 · 暂未分配';
       if(this.isHawaii){
         modeElement.textContent=this.mode==='working'?`在 ${this.seatedAt!.id} 办公`:this.mode==='sit'?`坐在 ${this.seatedAt!.id} 休息`:this.mode==='walking'?'在夏威夷走动':'站在夏威夷';
-        setGuide('WASD / 方向键移动', this.seatedAt ? (this.mode==='working'?'自己的工位 · 办公中 · E / Esc 起身':'坐下休息 · E / Esc 起身') : this.nearest ? `E · ${this.nearest.id} ${canWorkAt(onlineWorld()?.bridge.user?.role??'laura',this.sys.settings.key,this.nearest.id)?'我的工位，坐下办公':'坐下休息'}` : '靠近工位，按 E 坐下');
+        setGuide('WASD / 方向键移动', this.seatedAt ? (this.mode==='working'?'自己的工位 · 点击电脑放大 · E / Esc 起身':'坐下休息 · E / Esc 起身') : this.nearest ? `E · ${this.nearest.id} ${canWorkAt(onlineWorld()?.bridge.user?.role??'laura',this.sys.settings.key,this.nearest.id)?'我的工位，坐下办公':'坐下休息'}` : '靠近工位，按 E 坐下');
         if(this.nearWindow()){
           interactButton.disabled=false;interactButton.textContent=this.curtainDown?'卷起窗帘':'拉下窗帘';
           hintElement.textContent=`靠近窗边：按 E ${interactButton.textContent}。`;
