@@ -209,4 +209,12 @@ body.game-fullscreen{overflow:hidden;background:#333936;height:100dvh}
 #memory-strip img,#memory-strip canvas{display:block;width:100%;aspect-ratio:16/9;object-fit:cover;image-rendering:pixelated}
 #memory-strip span{position:absolute;left:5px;bottom:4px;font-size:10px;color:#eee5d0;text-shadow:1px 1px #111}
 #journal-more{margin:0 18px 16px}
+#game-tools button[data-badge]:not([data-badge=""]){position:relative}
+#game-tools button[data-badge]:not([data-badge=""])::after{content:attr(data-badge);position:absolute;top:-4px;right:-2px;min-width:14px;height:14px;padding:0 3px;border-radius:0;background:#c45a3a;color:#fff6da;font-size:9px;line-height:14px;text-align:center;pointer-events:none}
+#near-social{position:absolute;left:50%;bottom:52px;transform:translateX(-50%);z-index:1120;display:flex;flex-wrap:wrap;gap:4px;align-items:center;justify-content:center;max-width:min(420px,86vw);padding:10px 12px 8px;background:linear-gradient(0deg,#142219d0 0%,#14221955 70%,#14221900 100%);border:0;pointer-events:auto;font-family:var(--hto-mono);color:#fff6da;text-shadow:1px 1px #15231d}
+#near-social[hidden]{display:none}
+#near-label{font-size:11px;color:#e8dfbf;margin-right:4px}
+#near-social button{font-size:11px;padding:3px 7px;border:0;background:#17231c80;color:#eee8d8;box-shadow:none}
+#near-social button:disabled{opacity:.4}
+@media(max-width:650px){#near-social{bottom:64px;padding:8px 8px 6px}#near-social button{padding:3px 5px;font-size:10px}}
 @media(max-height:650px){#journal-dialog.memory-dialog{width:min(720px,calc((100dvh - 155px)*16/9),calc(100vw - 24px))}#memory-strip{display:none}.memory-footer{padding:9px 12px}}

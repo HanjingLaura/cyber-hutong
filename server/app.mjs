@@ -127,7 +127,7 @@ export function createMvpServer({dbPath='data/mvp.sqlite',staticDir=resolve('dis
           life.recordGroup([user.id],'easter',`${name(user.role)} 与${({ani:'Ani',lulu:'噜噜',tutu:'图图',buzz:'巴斯光年',zhu:'朱志鑫',ferret:'富贵貂'})[rule.id]}打了个招呼。`,rule.room,Date.now(),reaction.id);dirty=true;json(res,200,{ok:true,reaction});return;
         }
         if(path==='/api/offer'){checkControl(user,input.client);const result=life.respond(user.id,input.id,input.answer);dirty=true;json(res,200,{offer:result});return;}
-        if(path==='/api/invite'){checkControl(user,input.client);limited('invite:'+user.id,10,10000);const b=store.byRole(input.peer);if(!b)fail(400,'对方尚未领取角色');const result=life.send(user.id,input.peer,'meet',input.requestId,roomFor(user.id));dirty=true;json(res,200,{offer:result});return;}
+        if(path==='/api/invite'){checkControl(user,input.client);limited('invite:'+user.id,10,10000);const b=store.byRole(input.peer);if(!b)fail(400,'对方尚未领取角色');const result=life.send(user.id,input.peer,'meet',input.requestId,roomFor(user.id),undefined,input.place||'rest');dirty=true;json(res,200,{offer:result});return;}
         if(path==='/api/object'){
           if(['hutong:celine','hawaii:celine'].includes(input.object))fail(403,'Celine 会自己活动');
           checkControl(user,input.client);limited('object:'+user.id,60,10000);const result=world.interact(user,players.get(user.id),input,players);dirty=true;json(res,200,result);return;
@@ -141,7 +141,11 @@ export function createMvpServer({dbPath='data/mvp.sqlite',staticDir=resolve('dis
         if(path==='/api/progress'){
           if(!['bead','score','draft'].includes(input.kind)||typeof input.key!=='string'||input.key.length>80)fail(400,'记录无效');
           if(input.kind==='bead'||input.kind==='draft'){if(!Array.isArray(input.data?.cells)||input.data.cells.length!==256||input.data.cells.some(c=>!Number.isInteger(c)||c< -1||c>15))fail(400,'作品无效');}
-          if(input.kind==='score'){if(!['mines','spider','basketball','hockey'].includes(input.key)||!Number.isFinite(input.data?.value)||input.data.value<0||input.data.value>100000)fail(400,'成绩无效');const old=world.progress(user.id).find(p=>p.kind==='score'&&p.key===input.key);if(old?.data.value>=input.data.value){json(res,200,{progress:world.progress(user.id),progressVersion:store.byId(user.id).progress_revision});return;}}
+          if(input.kind==='score'){if(!['mines','spider','basketball','hockey'].includes(input.key)||!Number.isFinite(input.data?.value)||input.data.value<0||input.data.value>100000)fail(400,'成绩无效');const old=world.progress(user.id).find(p=>p.kind==='score'&&p.key===input.key);if(old?.data.value>=input.data.value){json(res,200,{progress:world.progress(user.id),progressVersion:store.byId(user.id).progress_revision});return;}
+            const labels={mines:'扫雷',spider:'蜘蛛纸牌',basketball:'投篮',hockey:'冰球'};
+            world.write(user.id,input.kind,input.key,input.data);dirty=true;
+            publishMessage(store.message(user.role,null,roomFor(user.id),`${name(user.role)} 刷新了${labels[input.key]}纪录：${Math.floor(input.data.value)}！`,'score:'+input.key+':'+Math.floor(input.data.value)));
+            json(res,200,{progress:world.progress(user.id),progressVersion:store.byId(user.id).progress_revision});return;}
           world.write(user.id,input.kind,input.key,input.data);dirty=true;json(res,200,{progress:world.progress(user.id),progressVersion:store.byId(user.id).progress_revision});return;
         }
         if(path==='/api/presence'){
@@ -183,7 +187,14 @@ export function createMvpServer({dbPath='data/mvp.sqlite',staticDir=resolve('dis
         }
         if(path==='/api/interact'){
           limited('interact:'+user.id,10,10000);checkControl(user,input.client);
-          const a=players.get(user.id),b=live(input.peer)||autonomy.all().find(p=>p.role===input.peer);if(!b||b.id===a.id||a.scene!==b.scene||Math.hypot(a.x-b.x,a.y-b.y)>55)fail(409,'请走到对方附近');
+          const a=players.get(user.id);
+          if(input.action==='emote'){
+            const emotes={wave:'👋 挥手',cheer:'🙌 加油',bow:'🙇 点头'};
+            const body=emotes[input.emote];if(!body)fail(400,'表情无效');
+            if(typeof input.requestId!=='string'||input.requestId.length>120)fail(400,'操作编号无效');
+            const message=store.message(user.role,null,a.scene,body,input.requestId);publishMessage(message);json(res,200,{ok:true});return;
+          }
+          const b=live(input.peer)||autonomy.all().find(p=>p.role===input.peer);if(!b||b.id===a.id||a.scene!==b.scene||Math.hypot(a.x-b.x,a.y-b.y)>55)fail(409,'请走到对方附近');
           if(input.action==='greet'){const duplicate=store.db.prepare('SELECT seq FROM messages WHERE id=?').get(user.role+':'+input.requestId);const message=store.message(user.role,null,a.scene,`嗨，${name(b.role)}！`,input.requestId);publishMessage(message);if(!duplicate){const pair=[user.role,b.role].sort().join(':');life.record(user.id,'greet',`向 ${name(b.role)} 打了招呼。`,a.scene,Date.now(),{key:`greet:${pair}`,cooldown:memoryPolicy.encounterCooldown});life.record(b.id,'greet',`${name(user.role)} 向你打了招呼。`,a.scene,Date.now(),{key:`greet:${pair}:peer`,cooldown:memoryPolicy.encounterCooldown});}json(res,200,{ok:true});return;}
           if(input.action==='gift'){if(typeof input.requestId!=='string'||input.requestId.length>120)fail(400,'操作编号无效');const result=life.send(user.id,b.role,'gift',input.requestId,a.scene,input.revision);dirty=true;flush();json(res,200,result);return;}
           fail(400,'互动无效');

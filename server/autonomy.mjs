@@ -2,6 +2,7 @@ import rooms from '../shared/rooms.json' with {type:'json'};
 import geometry from '../shared/interactions.json' with {type:'json'};
 import desks from '../shared/workstations.json' with {type:'json'};
 import {habits} from './personas.mjs';
+import {meetPlaces} from './life.mjs';
 export const activityPause=(kind='rest')=>(kind==='work'?30*60000:10*60000)+Math.random()*(kind==='work'?60*60000:15*60000);
 
 export function walkable(scene,x,y){
@@ -40,8 +41,9 @@ export function createAutonomy(store,life,players,leases=new Map()){
   const favorites=/米线/.test(fact)?['noodle']:/健身/.test(fact)?['gym']:/演唱会/.test(fact)?['concert']:/POP|下楼/.test(fact)?['pop','rest']:['rest'];
   const roll=Math.random(),pair=p.role==='amber'?'cora':p.role==='cora'?'amber':p.role==='laura'?'amber':null,friend=all().find(o=>o.role===pair);
   const occupied=onlineScenes();
+  const meetPlace=meeting&&meetPlaces[meeting.item]?meeting.item:'rest';
   // When humans are online, prefer their rooms so offline doubles stay visible rather than vanishing into empty scenes.
-  let destination=meeting?'rest':roll<.45?'hutong':roll<.65?'rest':roll<.8?p.scene:friend&&roll>.95?friend.scene:favorites[Math.floor(Math.random()*favorites.length)];
+  let destination=meeting?meetPlace:roll<.45?'hutong':roll<.65?'rest':roll<.8?p.scene:friend&&roll>.95?friend.scene:favorites[Math.floor(Math.random()*favorites.length)];
   if(!meeting&&occupied.length&&roll>=.35&&roll<.8)destination=occupied[Math.floor(Math.random()*occupied.length)];
   const recipient=deliveryCandidate(p,now);
   const task={scene:recipient&&!meeting?recipient.scene:destination,kind:meeting?'meet':roll>=.65&&roll<.8?'walk':destination==='hutong'?'work':destination==='rest'?'coffee':destination==='noodle'?'noodle':destination==='gym'?'exercise':'visit',phase:'exit'};
@@ -50,7 +52,7 @@ export function createAutonomy(store,life,players,leases=new Map()){
   if(p.scene===task.scene)task.phase='arrive';p.task=task;p.path=route(p.scene,[p.x,p.y],task.phase==='exit'?rooms[p.scene].exit:target(p,task));if(!p.path.length&&Math.hypot(p.x-target(p,task)[0],p.y-target(p,task)[1])>12){p.task=null;p.next=now+60000;}
  }
  function target(p,task){if(task.storyId)return task.point;if(task.kind==='deliver'){const peer=all().find(o=>o.role===task.peer);if(peer?.seat)return geometry[peer.scene].seats[peer.seat].approach;if(peer){const candidates=[[peer.x-24,peer.y],[peer.x+24,peer.y],[peer.x,peer.y-24],[peer.x,peer.y+24]];return candidates.find(([x,y])=>walkable(peer.scene,x,y))??rooms[task.scene].exit;}return rooms[task.scene].exit;}if(task.kind==='walk'){task.point??=(p.scene==='hutong'||p.scene==='hawaii'?[100+Math.random()*450,194]:[150+Math.random()*380,190]);return task.point;}if(task.kind==='exercise')return geometry.gym.devices[task.device];if(task.kind==='work')return geometry.hutong.seats[desks.hutong[p.role]].approach;
-  if(task.kind==='coffee')return[314,156];if(task.kind==='meet')return[320,190];if(task.kind==='noodle')return[280,190];
+  if(task.kind==='coffee')return[314,156];if(task.kind==='meet')return({rest:[320,190],arcade:[320,220],dance:[320,280],gym:[320,230]})[task.scene]||[320,190];if(task.kind==='noodle')return[280,190];
   return task.scene==='pop'?[438,162]:task.scene==='gym'?[320,230]:[320,320];}
  function arrived(p,now){const task=p.task;if(task.phase==='exit'){p.scene=task.scene;[p.x,p.y]=rooms[p.scene].exit;task.phase='arrive';p.path=route(p.scene,[p.x,p.y],target(p,task));if(!p.path.length){p.task=null;p.next=now+60000;}return;}
   if(task.storyId){director?.arrived(p,task,now);return;}

@@ -93,3 +93,21 @@ test('origin protection and untrusted inputs fail without altering another accou
   const request=await fetch(root+'/api/profile',{method:'POST',headers:{Cookie:a.cookie,Origin:'http://evil.example','Content-Type':'application/json'},body:JSON.stringify({habits:'overwrite'})});assert.equal(request.status,403);
   assert.equal((await api('chat',{peer:'celine',text:'hi',requestId:'x'},a.cookie)).status,400);assert.equal((await api('profile',{memberId:'sid',habits:'自己的资料'},a.cookie)).status,404);
 });
+
+test('emotes play invites and score shouts keep co-play lively without leaving the room',async t=>{
+  const {api,account,stream,app}=await setup(t),a=await account('fun_a','laura'),b=await account('fun_b','sid');
+  await stream(a,'a');await stream(b,'b');
+  for(const p of app.players.values())Object.assign(p,{scene:'arcade',x:300,y:200,at:Date.now()-3000});
+  assert.equal((await api('interact',{action:'emote',emote:'wave',client:'a',requestId:'wave-1'},a.cookie)).status,200);
+  assert.equal((await api('interact',{action:'emote',emote:'shrug',client:'a',requestId:'bad-emote'},a.cookie)).status,400);
+  const room=await api('history',undefined,a.cookie);assert.ok(room.data.messages.some(m=>m.body.includes('挥手')));
+  const invite=await api('invite',{peer:'sid',place:'arcade',client:'a',requestId:'play-arcade'},a.cookie);assert.equal(invite.status,200);assert.equal(invite.data.offer.item,'arcade');
+  assert.equal((await api('offer',{client:'b',id:invite.data.offer.id,answer:'accept'},b.cookie)).status,200);
+  for(const p of app.players.values())Object.assign(p,{scene:'arcade',x:300,y:200});
+  app.autonomy.tick();assert.equal(app.life.meeting(a.id),undefined);
+  assert.ok(app.life.journal(a.id).some(e=>e.body.includes('娱乐室')));
+  assert.equal((await api('progress',{kind:'score',key:'basketball',data:{value:12},client:'a'},a.cookie)).status,200);
+  assert.ok((await api('history',undefined,a.cookie)).data.messages.some(m=>m.body.includes('投篮纪录')));
+  assert.equal((await api('progress',{kind:'score',key:'basketball',data:{value:10},client:'a'},a.cookie)).status,200);
+  assert.equal((await api('history',undefined,a.cookie)).data.messages.filter(m=>m.body.includes('投篮纪录')).length,1);
+});
