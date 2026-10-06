@@ -6,6 +6,7 @@ import {seatSurface} from '../seating';
 import {canWorkAt} from '../workstations';
 import { TeamAvatar } from './avatar';
 import type { Player,Role,User } from './types';
+import {onlineWorld} from './world-client';
 // Existing rooms retain their local object/gameplay controllers. This adapter is
 // the sole boundary between their coordinates and the multiplayer presentation.
 type Room=Phaser.Scene&Record<string,any>;
@@ -18,7 +19,8 @@ export class MultiplayerBridge{
   private views=new Map<Phaser.Scene,Map<Role,TeamAvatar>>();private previous=new Map<string,{x:number;y:number}>();private mirrors=new Map<Phaser.Scene,Map<Role,TeamAvatar>>();
   private movedAt=new Map<string,number>();
   private remotePositions=new Map<Role,{x:number;y:number;scene:string;seat:string|null}>();
-  constructor(readonly game:Phaser.Game){game.events.on(Phaser.Core.Events.POST_STEP,(_time:number,delta:number)=>this.draw(delta||16));const gate=(e:KeyboardEvent)=>{if(this.user?.role&&(!this.controller||!this.connected)&&[document.querySelector('.world'),game.canvas].includes(document.activeElement)&&['KeyE','KeyF','Space','KeyV'].includes(e.code)){e.preventDefault();e.stopImmediatePropagation();}};window.addEventListener('keydown',gate,true);game.events.once('destroy',()=>window.removeEventListener('keydown',gate,true));}
+  private syncTimer:ReturnType<typeof setTimeout>|null=null;
+  constructor(readonly game:Phaser.Game){game.events.on(Phaser.Core.Events.POST_STEP,(_time:number,delta:number)=>this.draw(delta||16));const gate=(e:KeyboardEvent)=>{if(this.user?.role&&(!this.controller||!this.connected)&&[document.querySelector('.world'),game.canvas].includes(document.activeElement)&&['KeyE','KeyF','Space','KeyV'].includes(e.code)){e.preventDefault();e.stopImmediatePropagation();}};window.addEventListener('keydown',gate,true);game.events.once('destroy',()=>{window.removeEventListener('keydown',gate,true);if(this.syncTimer)clearTimeout(this.syncTimer);});}
   get active(){return this.game.scene.getScenes(true).find(s=>s.sys.settings.key in previewKeys) as Room|undefined;}
   state():Player|null{
     const scene=this.active;if(!scene)return null;
@@ -33,21 +35,30 @@ export class MultiplayerBridge{
   }
   apply(p:Player){const scene=this.active;if(!scene||scene.sys.settings.key!==p.scene)return;if('actorX' in scene){scene.actorX=p.x;scene.actorY=p.y;}else{scene.x=p.x;scene.y=p.y;}scene.facing=p.facing;}
   stand(){const s=this.active;if(!s)return;if(typeof s.stand==='function')s.stand();else if(typeof s.stop==='function')s.stop();}
+  clearTransition(){this.transitioning=false;this.pendingSpawn=null;if(this.syncTimer){clearTimeout(this.syncTimer);this.syncTimer=null;}}
   screen(p:Player){const scene=this.active,office=['hutong','hawaii'].includes(p.scene),reverse=office&&!!scene?.reverse;return {...project(p,reverse),facing:visualFacing(p.facing as Facing,reverse)};}
   private hideLegacy(scene:Room){const actor=scene.actor;if(actor?.hide)actor.hide();else actor?.setVisible(false);scene.actorUpper?.setVisible(false);scene.sideLegs?.hide();scene.heldItem?.hide();scene.curlActor?.setVisible(false);scene.dancer?.setVisible(false);scene.reflectedDancer?.setVisible(false);scene.reflection?.hide();}
   private draw(delta:number){
     const scene=this.active;let local=this.state();if(!scene||!local)return;
     // The legacy actor wears the old outfit. Hide it while the claimed avatar loads too.
     if(this.user?.role)this.hideLegacy(scene);
-    if(this.pendingSpawn?.scene===local.scene){this.apply(this.pendingSpawn);local=this.state()!;this.pendingSpawn=null;}
+    if(this.pendingSpawn?.scene===local.scene){this.apply(this.pendingSpawn);local=this.state()!;this.pendingSpawn=null;this.transitioning=false;if(this.syncTimer){clearTimeout(this.syncTimer);this.syncTimer=null;}}
     const self=this.players.find(p=>p.role===this.user?.role);
     scene.input.enabled=!this.user?.role||this.controller&&this.connected;
     if(scene.input.keyboard){const enabled=this.controller&&(!this.user?.role||this.connected)&&!document.querySelector('dialog[open]')&&!/^(INPUT|TEXTAREA)$/.test(document.activeElement?.tagName||'');if(!enabled&&scene.input.keyboard.enabled)scene.input.keyboard.resetKeys();scene.input.keyboard.enabled=enabled;}
-    if(this.user?.role&&self&&self.scene!==local.scene&&!this.transitioning){window.dispatchEvent(new CustomEvent('hutong:navigate',{detail:self.scene==='hutong'?'culture':self.scene}));return;}
+    if(this.user?.role&&self&&self.scene!==local.scene&&!this.transitioning){
+      this.transitioning=true;this.pendingSpawn=self;
+      if(this.syncTimer)clearTimeout(this.syncTimer);
+      this.syncTimer=setTimeout(()=>{this.transitioning=false;this.syncTimer=null;},12000);
+      window.dispatchEvent(new CustomEvent('hutong:navigate',{detail:self.scene==='hutong'?'culture':self.scene}));return;
+    }
     if(this.user?.role&&!this.controller&&self?.scene===local.scene){this.apply(self);local={...self};}
     // Small feet footprints block entry, while an overlapping spawn can move out.
     const prev=this.previous.get(local.scene);
-    if(prev&&this.controller&&local.seat===null&&this.players.some(p=>p.role!==this.user?.role&&p.scene===local!.scene&&Math.abs(p.x-local!.x)<18&&Math.abs(p.y-local!.y)<10&&Math.hypot(local!.x-p.x,local!.y-p.y)<Math.hypot(prev.x-p.x,prev.y-p.y))){this.apply({...local,...prev});local={...local,...prev,moving:false};}
+    const atX=local.x,atY=local.y;
+    const belt=local.scene==='gym'&&atY<143&&[225,320,415].some(cx=>Math.abs(atX-cx)<31);
+    const deviceLock=scene.mode==='run'||scene.mode==='curl'||scene.mode==='piano'||belt;
+    if(prev&&this.controller&&local.seat===null&&!deviceLock&&this.players.some(p=>p.role!==this.user?.role&&p.scene===local!.scene&&Math.abs(p.x-local!.x)<18&&Math.abs(p.y-local!.y)<10&&Math.hypot(local!.x-p.x,local!.y-p.y)<Math.hypot(prev.x-p.x,prev.y-p.y))){this.apply({...local,...prev});local={...local,...prev,moving:false};}
     this.previous.set(local.scene,{x:local.x,y:local.y});
     if(!this.views.has(scene)){this.views.set(scene,new Map());scene.events.once('shutdown',()=>{this.views.get(scene)?.forEach(v=>v.destroy());this.views.delete(scene);});}
     const views=this.views.get(scene)!;const visible=this.players.filter(p=>p.scene===local!.scene&&p.role!==this.user?.role);
@@ -60,7 +71,8 @@ export class MultiplayerBridge{
       let rendered=p;
       if(!own){const old=this.remotePositions.get(p.role);const alpha=1-Math.exp(-Math.min(delta,100)/80);const continuous=old&&old.scene===p.scene&&old.seat===p.seat&&Math.hypot(p.x-old.x,p.y-old.y)<80;const position={x:continuous?old.x+(p.x-old.x)*alpha:p.x,y:continuous?old.y+(p.y-old.y)*alpha:p.y,scene:p.scene,seat:p.seat};this.remotePositions.set(p.role,position);rendered={...p,...position};}
       const point=this.screen(rendered),office=['hutong','hawaii'].includes(p.scene);
-      const showName=!(p.scene==='bathroom'&&p.seat&&!scene.open[Number(p.seat)]);
+      const doorOpen=p.scene==='bathroom'&&p.seat?(onlineWorld()?.objects.get('bathroom:door-'+p.seat)?.open??scene.open?.[Number(p.seat)]??false):true;
+      const showName=!(p.scene==='bathroom'&&p.seat&&!doorOpen);
       const height=p.scene==='concert'&&p.seat?({A:54,B:61.44,C:66}[p.seat[0]]??61.44):['perler','noodle','arcade'].includes(p.scene)&&p.seat?54:61.44;
       view.draw(p,point.x,point.y,point.facing,delta,office,height,p.scene==='bathroom'&&p.seat?196:point.y+(p.scene==='arcade'&&p.seat?7:p.scene==='perler'&&p.seat?6:p.scene==='noodle'&&p.seat?4:1),showName,own&&this.controller?scene.mode:p.activity??'',office&&p.seat?point.y-(point.facing===0?17:27):seatSurface(p.scene,p.seat));
       if(p.scene==='dance'&&view.ready){

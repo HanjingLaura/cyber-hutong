@@ -17,7 +17,7 @@ export function personalProgress(){return service?.progress??[];}
 export function onlineWorld(){return service;}
 const heldDevices=new Set<string>();
 const pendingDevices=new Set<string>();
-export function useDevice(device:string,start:()=>void){if(!service?.bridge.user?.role)return false;const key=service.bridge.active?.sys.settings.key+':'+device;if(heldDevices.has(key))return false;if(pendingDevices.has(key))return true;pendingDevices.add(key);void service.lease(device).then(()=>{if(!service?.bridge.connected||!service.bridge.controller){void service?.lease(device,true).catch(()=>{});return;}heldDevices.add(key);start();}).catch(e=>service?.notice(e.message)).finally(()=>pendingDevices.delete(key));return true;}
+export function useDevice(device:string,start:()=>void){if(!service?.bridge.user?.role)return false;const key=service.bridge.active?.sys.settings.key+':'+device;if(heldDevices.has(key))return false;if(pendingDevices.has(key))return true;pendingDevices.add(key);void service.lease(device).then(()=>{if(!service?.bridge.connected||!service.bridge.controller){void service?.lease(device,true).catch(()=>{});return;}if(service.bridge.active?.sys.settings.key+':'+device!==key){void service.lease(device,true).catch(()=>{});return;}heldDevices.add(key);start();}).catch(e=>service?.notice(e.message)).finally(()=>pendingDevices.delete(key));return true;}
 export function releaseDevice(device:string){if(!service?.bridge.user?.role)return;heldDevices.delete(service.bridge.active?.sys.settings.key+':'+device);void service.lease(device,true).catch(()=>{});}
 export class WorldClient{
  objects=new Map<string,RoomObject>();progress:Progress[]=[];busy=false;
@@ -27,14 +27,19 @@ export class WorldClient{
  private appliedScene:unknown;private appliedVersions=new Map<string,number>();private saves=new Map<string,ReturnType<typeof setTimeout>>();
  constructor(readonly bridge:MultiplayerBridge,private request:(path:string,input?:any)=>Promise<any>,private publish:()=>Promise<void>,readonly client:string,readonly notice:(message:string)=>void){service=this;bridge.game.events.on('poststep',()=>{const s=bridge.active;if(s?.actor&&s!==this.appliedScene){heldDevices.clear();pendingDevices.clear();this.appliedVersions.clear();this.appliedScene=s;this.apply();}});}
  pause(){const s=this.bridge.active;if(s){const mode=s.mode;if((s.sys.settings.key==='gym'&&['run','curl'].includes(mode))||mode==='piano'||s.sys.settings.key==='dance')this.bridge.stand();s.piano?.stop();s.beat?.stop();s.input.keyboard?.resetKeys();}for(const id of ['arcade-game','perler-workshop','gym-storage']){const d=document.getElementById(id);if(d instanceof HTMLDialogElement&&d.open)d.close();}heldDevices.clear();pendingDevices.clear();}
- reset(){this.pause();this.bridge.pendingSpawn=null;setGuestPresence();this.objects.clear();this.progress=[];this.hydrated='';this.progressSignature='';this.progressVersion=-1;this.appliedVersions.clear();heldDevices.clear();pendingDevices.clear();this.saves.forEach(clearTimeout);this.saves.clear();}
+ reset(){this.pause();this.bridge.clearTransition();setGuestPresence();this.objects.clear();this.progress=[];this.hydrated='';this.progressSignature='';this.progressVersion=-1;this.appliedVersions.clear();heldDevices.clear();pendingDevices.clear();this.saves.forEach(clearTimeout);this.saves.clear();}
  receive(data:any){
   if(data.celine)this.celine=data.celine;
   if(data.self&&data.self.id!==this.bridge.user?.id)return;
   if(data.npcs)setGuestPresence(data.npcs);
   if(data.clock)this.clockOffset=data.clock-Date.now();
   const scene=this.bridge.active;if(scene)for(const name of [data.self?.hand,...(data.players??[]).map((p:any)=>p.hand),...(data.objects??[]).flatMap((o:any)=>(o.slots??[]).map((s:any)=>typeof s==='string'?s:s?.name))])if(name)void ensureCollectible(scene,name).catch(()=>{});
-  if(data.self&&this.bridge.user?.id===data.self.id&&data.self.revision>=(this.bridge.user?.revision??0)){this.bridge.user=data.self;playerInventory.hand=data.self.hand as ItemName|null;playerInventory.noodleSeasoning=data.self.seasoning??[];}
+  if(data.self&&this.bridge.user?.id===data.self.id&&data.self.revision>(this.bridge.user?.revision??-1)){
+    const previous=playerInventory.hand;
+    this.bridge.user=data.self;playerInventory.hand=data.self.hand as ItemName|null;playerInventory.noodleSeasoning=data.self.seasoning??[];
+    const ui=document.getElementById('social-ui');if(ui)ui.dataset.revision=String(data.self.revision);
+    if(previous!==playerInventory.hand)window.dispatchEvent(new Event('hutong:hand-changed'));
+  }
   for(const o of data.objects??[])if(o.version>=(this.objects.get(o.id)?.version??-1))this.objects.set(o.id,o);
   const version=data.progressVersion??data.self?.progressVersion??0;
   if(data.progress&&version>=this.progressVersion){this.progressVersion=version;this.progress=data.progress;const signature=JSON.stringify(data.progress),id=this.bridge.user?.id??'';if(signature!==this.progressSignature||this.hydrated!==id){
@@ -56,7 +61,7 @@ export class WorldClient{
    if((key==='dance'||key==='perler')&&id==='stash')s.stored=o.slots?.[0]??null;
    if(key==='hawaii'&&id==='curtain'){s.curtainDown=o.open;s.curtainProgress=o.open?1:0;}
    if(key==='bathroom'&&id.startsWith('door-')){const i=Number(id.split('-')[1]);if(s.doors[i])s.setDoorOpen(i,o.open);}
-   if(key==='elevator'&&id.startsWith('door-'))s.doors[Number(id.split('-')[1])].open=o.open;
+   if(key==='elevator'&&id.startsWith('door-')){const door=s.doors?.[Number(id.split('-')[1])];if(door)door.open=!!o.open;}
    if(key==='subway'&&id==='doors')s.open=o.open;
    if(key==='pop'&&o.stock)blindBoxes.data.shelf[id as keyof typeof blindBoxes.data.shelf]=o.stock.map(v=>v?0:null);
   }

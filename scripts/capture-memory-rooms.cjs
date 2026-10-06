@@ -1,6 +1,6 @@
 // Render the real game's scenery without any live avatars or interaction hints.
 const fs=require('node:fs');
-const {chromium}=require('D:/CodexHome/mcp/node/node_modules/playwright');
+const {chromium}=require('./playwright.cjs').loadPlaywright();
 (async()=>{const browser=await chromium.launch({channel:'chrome',headless:true,args:['--disable-webgl']});try{
  const page=await browser.newPage({viewport:{width:1280,height:720}});await page.goto('http://127.0.0.1:5173/');await page.waitForFunction(()=>window.__hutongPreview?.getState().ready&&window.__socialPreview);
  await page.evaluate(()=>{

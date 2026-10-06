@@ -83,6 +83,22 @@ test('eight players with 32 SSE connections: bounded movement, single controller
   assert.equal((await api('login',{username:'load_0',password})).data.user.role,'suki');channels.forEach(c=>c.abort.abort());
 });
 
+test('controller is stored in sqlite so a second instance can eat with the same window',async t=>{
+  const dir=mkdtempSync(join(tmpdir(),'hutong-ctrl-')),path=join(dir,'ctrl.sqlite');
+  t.after(()=>{rmSync(dir,{recursive:true,force:true});});
+  const listen=async app=>{app.server.listen(0,'127.0.0.1');await once(app.server,'listening');return 'http://127.0.0.1:'+app.server.address().port;};
+  const a=createMvpServer({dbPath:path,llmOptions:{key:''}}),rootA=await listen(a);t.after(()=>{a.close();a.server.closeAllConnections();});
+  const post=async(root,path,input,cookie)=>{const res=await fetch(root+'/api/'+path,{method:'POST',headers:{Cookie:cookie,'Content-Type':'application/json'},body:JSON.stringify(input)});return {status:res.status,data:await res.json(),cookie:res.headers.get('set-cookie')?.split(';')[0]};};
+  const reg=await post(rootA,'register',{username:'ctrl_laura',password,role:'laura'});assert.equal(reg.status,200);
+  const abort=new AbortController();t.after(()=>abort.abort());
+  const sse=await fetch(rootA+'/api/events?client=window-a',{headers:{Cookie:reg.cookie},signal:abort.signal});assert.equal(sse.status,200);
+  a.store.hand(reg.data.user.id,'米线',reg.data.user.revision);
+  const b=createMvpServer({dbPath:path,llmOptions:{key:''}}),rootB=await listen(b);t.after(()=>{b.close();b.server.closeAllConnections();});
+  const eat=await post(rootB,'inventory',{action:'consume',client:'window-a',revision:a.store.byId(reg.data.user.id).revision,requestId:'eat-across'},reg.cookie);
+  assert.equal(eat.status,200);assert.equal(eat.data.self.hand,null);
+  const other=await post(rootB,'inventory',{action:'consume',client:'window-b',revision:0,requestId:'wrong-window'},reg.cookie);
+  assert.equal(other.status,409);
+});
 test('account, session, role profile, held item and private history survive a database reopen',async t=>{
   const dir=mkdtempSync(join(tmpdir(),'hutong-mvp-'));const path=join(dir,'test.sqlite');let store=openStore(path);t.after(()=>{store.close();assert.ok(dir.startsWith(join(tmpdir(),'hutong-mvp-')));rmSync(dir,{recursive:true,force:true});});
   const registered=await store.register('persist_user',password),id=registered.user.id;store.claim(id,'amber');store.profile(id,{habits:'喜欢和 Cora 逛店',voice:'简短',confirmed:true,autoReply:false});store.hand(id,'咖啡',0);store.message('amber','cora','pop','下次一起逛','persist-message');store.close();store=openStore(path);
@@ -92,4 +108,22 @@ test('origin protection and untrusted inputs fail without altering another accou
   const {api,account,root}=await setup(t),a=await account('boundary_a','cora');
   const request=await fetch(root+'/api/profile',{method:'POST',headers:{Cookie:a.cookie,Origin:'http://evil.example','Content-Type':'application/json'},body:JSON.stringify({habits:'overwrite'})});assert.equal(request.status,403);
   assert.equal((await api('chat',{peer:'celine',text:'hi',requestId:'x'},a.cookie)).status,400);assert.equal((await api('profile',{memberId:'sid',habits:'自己的资料'},a.cookie)).status,404);
+});
+
+test('emotes play invites and score shouts keep co-play lively without leaving the room',async t=>{
+  const {api,account,stream,app}=await setup(t),a=await account('fun_a','laura'),b=await account('fun_b','sid');
+  await stream(a,'a');await stream(b,'b');
+  for(const p of app.players.values())Object.assign(p,{scene:'arcade',x:300,y:200,at:Date.now()-3000});
+  assert.equal((await api('interact',{action:'emote',emote:'wave',client:'a',requestId:'wave-1'},a.cookie)).status,200);
+  assert.equal((await api('interact',{action:'emote',emote:'shrug',client:'a',requestId:'bad-emote'},a.cookie)).status,400);
+  const room=await api('history',undefined,a.cookie);assert.ok(room.data.messages.some(m=>m.body.includes('挥手')));
+  const invite=await api('invite',{peer:'sid',place:'arcade',client:'a',requestId:'play-arcade'},a.cookie);assert.equal(invite.status,200);assert.equal(invite.data.offer.item,'arcade');
+  assert.equal((await api('offer',{client:'b',id:invite.data.offer.id,answer:'accept'},b.cookie)).status,200);
+  for(const p of app.players.values())Object.assign(p,{scene:'arcade',x:300,y:200});
+  app.autonomy.tick();assert.equal(app.life.meeting(a.id),undefined);
+  assert.ok(app.life.journal(a.id).some(e=>e.body.includes('娱乐室')));
+  assert.equal((await api('progress',{kind:'score',key:'basketball',data:{value:12},client:'a'},a.cookie)).status,200);
+  assert.ok((await api('history',undefined,a.cookie)).data.messages.some(m=>m.body.includes('投篮纪录')));
+  assert.equal((await api('progress',{kind:'score',key:'basketball',data:{value:10},client:'a'},a.cookie)).status,200);
+  assert.equal((await api('history',undefined,a.cookie)).data.messages.filter(m=>m.body.includes('投篮纪录')).length,1);
 });

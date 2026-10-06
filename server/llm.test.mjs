@@ -14,5 +14,5 @@ test('Bailian chooses only a backend candidate and keeps other private chats out
 test('model failures, invalid JSON and daily call budget safely fall back without holding game transactions',async t=>{
  const store=openStore(':memory:');t.after(()=>store.close());await store.register('fallback_sid','test-password-123','sid');const life=createLife(store);let calls=0;
  const llm=createBailian(store,life,{key:'test-only',dailyLimit:2,fetchImpl:async()=>{calls++;return Response.json({choices:[{message:{content:'not JSON'}}]});}});t.after(()=>llm.close());
- assert.ok(await llm.reply('sid','你好','laura','hutong'));assert.ok(await llm.reply('sid','你好','laura','hutong'));assert.ok(await llm.reply('sid','你好','laura','hutong'));assert.equal(calls,2);assert.equal(llm.status().status,'daily_limit');assert.equal(store.db.isTransaction,false);
+ assert.ok(await llm.reply('sid','你好','laura','hutong'));assert.ok(await llm.reply('sid','你好','laura','hutong'));assert.ok(await llm.reply('sid','你好','laura','hutong'));assert.equal(calls,2);assert.equal(llm.status().status,'daily_limit');assert.ok(!store.db.isTransaction,'game transactions must not remain open after LLM fallback');
 });

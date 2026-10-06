@@ -13,7 +13,7 @@ export class ArcadeSports{
     if(kind==='basketball'){this.aim=Math.max(100,Math.min(540,this.aim+dx*dt*240));if(this.flight!==null){this.flight+=ms;if(this.flight>=900){if(Math.abs(this.shotX-this.hoop())<30)this.score+=3;this.flight=null;}}return;}
     if(Math.max(...this.goals)>=5)return;
     this.player.x=Math.max(70,Math.min(570,this.player.x+dx*dt*280));const dy=Number(keys.has('ArrowDown')||keys.has('KeyS'))-Number(keys.has('ArrowUp')||keys.has('KeyW'));this.player.y=Math.max(238,Math.min(345,this.player.y+dy*dt*220));
-    this.bot.x+=Math.max(-dt*175,Math.min(dt*175,this.puck.x-this.bot.x));
+    this.bot.x=Math.max(70,Math.min(570,this.bot.x+Math.max(-dt*175,Math.min(dt*175,this.puck.x-this.bot.x))));
     // Small substeps keep a fast puck from passing through a paddle.
     for(let i=0;i<4;i++){
       const p=this.puck;p.x+=p.vx*dt/4;p.y+=p.vy*dt/4;

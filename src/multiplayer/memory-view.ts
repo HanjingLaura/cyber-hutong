@@ -26,11 +26,10 @@ async function paint(canvas:HTMLCanvasElement,e:MemoryEntry,bridge:MultiplayerBr
   const front=p.facing===0,back=p.facing===2,office=['hutong','hawaii'].includes(e.scene);let list=d.frames,index=front?0:back?2:1;
   if(p.hand){list=d.carryFrames;index=p.seat?(front?4:back?5:25):p.moving?(front?d.carryFrontLoop[0]:back?d.carryBackLoop[0]:d.carryRightLoop[0]):front?0:back?2:24;}
   else if(p.activity==='working'&&p.seat&&office){list=d.officeFrames;index=back?2:0;}
-  else if(p.activity==='piano'){list=d.officeFrames;index=back?2:0;}
+  else if(p.activity==='piano'){list=d.frames;index=6;}
   else if(p.seat)index=front?4:back?5:39;
-  else if(p.activity==='run')index=d.runLoop?.[0]??62;
+  else if(p.activity==='run')index=back?16:front?8:d.runLoop?.[0]??62;
   else if(['dance','practice'].includes(p.activity))index=back?54:46;
-  else if(p.activity==='piano')index=6;
   else if(p.activity==='curl')index=30;
   else if(p.moving)index=front?8:back?16:d.sideWalkLoop?.[0]??24;
   const frame=list[index];if(!frame)return null;return{p,frame,image:await characterImage(frame.source),office};
@@ -99,11 +98,12 @@ async function paint(canvas:HTMLCanvasElement,e:MemoryEntry,bridge:MultiplayerBr
   const p0=actor.p,depth=p0.seat?(e.scene==='bathroom'?196:p0.y+(e.scene==='arcade'?7:e.scene==='perler'?6:e.scene==='noodle'?4:1)):p0.y+1;
   layers.push({depth,draw:()=>{
   const {p,frame,image,office}=actor,[sx,sy,w,h]=frame.rect;
-  const height=p.seat?(e.scene==='concert'?({A:54,B:61.44,C:66}[p.seat[0]]??61.44):['perler','noodle','arcade'].includes(e.scene)?54:characterRegistry.seatedHeight):61.44,scale=height/frame.referenceHeight,flip=p.facing===3;
+  const height=p.seat?(e.scene==='concert'?({A:54,B:61.44,C:66}[p.seat[0]]??61.44):['perler','noodle','arcade'].includes(e.scene)?54:characterRegistry.seatedHeight):61.44;
+  const fillCarry=!!p.hand&&!p.seat,scale=height/(fillCarry?h:frame.referenceHeight),flip=p.facing===3;
   const surface=office&&p.seat?p.y-(p.facing===0?17:27):seatSurface(e.scene,p.seat);
   let y=p.seat&&surface!==undefined?surface+(h-frame.seat[1])*scale:p.y;
   if(p.seat&&office&&!p.hand&&p.facing===0)y-=height*.03+1;
-  y+=height*(frame.offsetYRatio??0);
+  if(!fillCarry)y+=height*(frame.offsetYRatio??0);
   context.save();context.translate(Math.round(p.x),Math.round(y));context.scale(flip?-1:1,1);
   const width=w*scale*(frame.scaleXRatio??1),visibleHeight=p.seat&&office&&p.facing===2?Math.round(h*.72):h;context.drawImage(image,sx,sy,w,visibleHeight,-width*frame.pivotX,-h*scale,width,visibleHeight*scale);
   const item=p.hand?items[p.hand]:null;

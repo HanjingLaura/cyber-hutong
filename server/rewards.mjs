@@ -12,7 +12,7 @@ export function createRewards(store,life,world,leases){
  const interact=(user,p,input)=>{
   if(typeof input.requestId!=='string'||!input.requestId||input.requestId.length>120)fail(400,'操作编号无效');
   const old=db.prepare('SELECT result FROM operations WHERE account=? AND id=?').get(user.id,input.requestId);if(old)return JSON.parse(old.result);
-  db.exec('BEGIN IMMEDIATE');
+  let ownedTx=true;try{if(typeof db.isTransaction==='boolean'?db.isTransaction:false)ownedTx=false;else db.exec('BEGIN IMMEDIATE');}catch(e){if(String(e?.message||e).includes('within a transaction'))ownedTx=false;else throw e;}
   try{
    const a=store.byId(user.id);if(a.revision!==input.revision)fail(409,'物品已改变，请重试');life.unlocked(a.id);
    let item=null,result={};
@@ -52,8 +52,8 @@ export function createRewards(store,life,world,leases){
     result={...result,item,collected};
    }
    result={...result,self:store.publicAccount(store.byId(a.id)),bag:life.bag(a.id),collection:life.collection(a.id),progress:world.progress(a.id),progressVersion:store.byId(a.id).progress_revision};
-   db.prepare('INSERT INTO operations VALUES(?,?,?)').run(input.requestId,a.id,JSON.stringify(result));db.exec('COMMIT');return result;
-  }catch(e){db.exec('ROLLBACK');world.invalidate?.(user.id);throw e;}
+   db.prepare('INSERT INTO operations VALUES(?,?,?)').run(input.requestId,a.id,JSON.stringify(result));if(ownedTx)db.exec('COMMIT');return result;
+  }catch(e){if(ownedTx)db.exec('ROLLBACK');world.invalidate?.(user.id);throw e;}
  };
  return{art,state,interact};
 }

@@ -115,7 +115,7 @@ export class PerlerShopScene extends Phaser.Scene{
     document.querySelector('#perler-hand')!.textContent=`手中：${playerInventory.hand??'空'} · 储物格：${this.stored?.name??'空'}`;
     document.querySelector('#perler-count')!.textContent=`作品 ${this.workshop.works.length} 件 · 八张独立底板`;
     (document.querySelector('#perler-continue') as HTMLButtonElement).hidden=this.seated===null;
-    document.querySelector('#guide-title')!.textContent='拼豆店 · WASD / 方向键移动';
+    document.querySelector('#guide-title')!.textContent='WASD / 方向键移动';
     document.querySelector('#guide-action')!.textContent=this.seated!==null?'E / Esc 结束拼豆':t?`E · ${button.textContent}`:'靠近圆凳按 E 拼豆';
   }
 }

@@ -38,7 +38,9 @@ export function createWorld(store,life){
  function interact(user,p,input,players,options={}){
   if(typeof input.requestId!=='string'||input.requestId.length>120)fail(400,'操作编号无效');
   const replay=db.prepare('SELECT result FROM operations WHERE account=? AND id=?').get(user.id,input.requestId);if(replay)return JSON.parse(replay.result);
-  checkNear(p,input.object,input.action);if(['supply','put','take','consume','gacha'].includes(input.action))life?.unlocked(user.id);db.exec('BEGIN IMMEDIATE');
+  checkNear(p,input.object,input.action);if(['supply','put','take','consume','gacha'].includes(input.action))life?.unlocked(user.id);
+  // Older node:sqlite may lack isTransaction; avoid nested BEGIN when already transactional.
+  let ownedTx=true;try{if(typeof db.isTransaction==='boolean'?db.isTransaction:false)ownedTx=false;else db.exec('BEGIN IMMEDIATE');}catch(e){if(String(e?.message||e).includes('within a transaction'))ownedTx=false;else throw e;}
   try{
    const account=store.byId(user.id);if(account.revision!==input.revision)fail(409,'手中物品已改变，请重试');
    let hand=account.hand,seasoning=JSON.parse(account.seasoning||'[]');const spec=supplies[input.object];let o=spec?null:load(input.object);const slot=input.slot;
@@ -51,7 +53,7 @@ export function createWorld(store,life){
     if(input.action==='put'){if(!hand||o.slots[slot])fail(409,'空手或位置已被占用');o.slots[slot]={name:hand,seasoning};hand=null;seasoning=[];}
     if(input.action==='take'){if(hand||!o.slots[slot])fail(409,'物品已被拿走或手中已有物品');hand=typeof o.slots[slot]==='string'?o.slots[slot]:o.slots[slot].name;seasoning=o.slots[slot].seasoning??[];o.slots[slot]=null;}
     if(input.action==='consume'){if(!p.seat||!input.object.startsWith('noodle:'))fail(409,'先坐下用餐');if(input.fromHand){if(!['米线','鸡柳','炸鸡'].includes(hand))fail(400,'不能食用');hand=null;}else{const dish=o.slots[slot];if(!dish||!['米线','鸡柳','炸鸡'].includes(dish.name??dish))fail(409,'食物已被拿走');o.slots[slot]=null;}}
-    if(input.action==='season'){const dish=o.slots[slot];if(!dish||dish.name!=='米线'||!['醋','麻油'].includes(input.item))fail(400,'先放米线再加调料');if(!dish.seasoning.includes(input.item))dish.seasoning.push(input.item);}
+    if(input.action==='season'){const dish=o.slots[slot];if(!dish||dish.name!=='米线'||!['醋','麻油'].includes(input.item))fail(400,'先放米线再加调料');dish.seasoning??=[];if(!dish.seasoning.includes(input.item))dish.seasoning.push(input.item);}
     save(o);
    }else if(input.action==='toggle'){
     if(!o||typeof o.open!=='boolean')fail(400,'不能开关');
@@ -69,8 +71,8 @@ export function createWorld(store,life){
    if(hand!==account.hand)db.prepare('UPDATE accounts SET hand=?,seasoning=?,revision=revision+1 WHERE id=?').run(hand,JSON.stringify(hand?seasoning:[]),user.id);
    if(!options.skipRecord&&['supply','put','take','consume','draw','gacha'].includes(input.action))life?.record(user.id,'object',({supply:'领取了'+input.item,put:'放下了'+account.hand,take:'从储物处拿起了'+hand,consume:'享用了食物',draw:'打开了一盒盲盒',gacha:'抽到了'+hand}[input.action])+'。',p.scene);
    const result={self:store.publicAccount(store.byId(user.id)),objects:snapshot(p.scene),progress:progress(user.id)};
-   db.prepare('INSERT INTO operations VALUES(?,?,?)').run(input.requestId,user.id,JSON.stringify(result));db.exec('COMMIT');return result;
-  }catch(e){db.exec('ROLLBACK');progressCache.delete(user.id);throw e;}
+   db.prepare('INSERT INTO operations VALUES(?,?,?)').run(input.requestId,user.id,JSON.stringify(result));if(ownedTx)db.exec('COMMIT');return result;
+  }catch(e){if(ownedTx)db.exec('ROLLBACK');progressCache.delete(user.id);throw e;}
  }
  return{snapshot,progress,interact,write,invalidate:id=>progressCache.delete(id)};
 }

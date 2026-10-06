@@ -57,7 +57,7 @@ export class ShopActor {
     }
     if(seated&&seatSurface!==undefined)y=seatSurface+this.actor.displayHeight*.28;
     this.actor.setPosition(Math.round(x), Math.round(y)).setDepth(depth);
-    if (moving && (facing === 1 || facing === 3)) this.legs.draw(this.actor, frame, height, facing, this.time);
+    if (moving && (facing === 1 || facing === 3) && !hand) this.legs.draw(this.actor, frame, height, facing, this.time);
     if (hand && items[hand]) this.held.draw(this.actor, holdKey, frame,
       frontSeat ? gripRegistry['rest-seated-hold'].slots[frame.name as keyof typeof gripRegistry['rest-seated-hold']['slots']] : this.grips.get(frame.name)!,
       height, renderHeight ? { ...items[hand], width: items[hand].width * height / METRICS.standing, height: items[hand].height * height / METRICS.standing } : items[hand], this.actor.depth, facing);

@@ -4,7 +4,7 @@ import {canWorkAt} from '../workstations';
 import Phaser from 'phaser';
 import {characterRegistry,characterImage,type AvatarRole} from '../character-assets';
 import {items,type ItemName} from '../player-inventory';
-import {SideWalkLegs,sideUpperFrame,heldSideFrame} from '../side-walk-legs';
+import {SideWalkLegs,sideUpperFrame} from '../side-walk-legs';
 import {HeldItemView} from '../held-item';
 import type {SpriteFrame} from '../frames';
 import type {Player} from './types';
@@ -43,29 +43,38 @@ export class TeamAvatar{
   let part=0,index=front?0:back?2:1;
   if(holding){part=1;index=seated?(back?5:front?4:25):moving?(front?data.carryFrontLoop[phase%4]:back?data.carryBackLoop[phase%4]:data.carryRightLoop[(previewPhase??Math.floor(performance.now()/(data.carrySideFrameMs??125)))%data.carryRightLoop.length]):(front?0:back?2:24);}
   else if(working){part=2;index=(back?2:0)+(previewPhase===undefined?Math.floor(performance.now()/250):previewPhase)%2;}
-  else if(mode==='piano'){part=2;index=(back?2:0)+(previewPhase===undefined?Math.floor(performance.now()/250):previewPhase)%2;}
+  else if(mode==='piano'){part=0;index=6+(previewPhase===undefined?Math.floor(performance.now()/250):previewPhase)%2;}
   else if(seated)index=back?5:front?4:39;
-  else if(mode==='run')index=data.runLoop?data.runLoop[(previewPhase??Math.floor(this.time/(data.runFrameMs??170)))%data.runLoop.length]:62+(previewPhase===undefined?Math.floor(performance.now()/140):previewPhase)%2;
+  else if(mode==='run'){
+    // Treadmills face the console (away from camera). Side-run loops are left/right
+    // only; using them with facing=back makes the avatar stride across the belt.
+    const runPhase=previewPhase??Math.floor(this.time/(data.runFrameMs??125));
+    if(back)index=16+runPhase%4;
+    else if(front)index=8+runPhase%4;
+    else index=data.runLoop?data.runLoop[runPhase%data.runLoop.length]:62+runPhase%2;
+  }
   else if(mode==='dance'||mode==='practice')index=(back?54:46)+(previewPhase===undefined?Math.floor(performance.now()/400):previewPhase)%2;
   else if(mode==='curl')index=30+(previewPhase===undefined?Math.floor(performance.now()/650):previewPhase)%2;
   else if(moving)index=front?8+phase%4:back?16+phase%4:data.sideWalkLoop?data.sideWalkLoop[(previewPhase??Math.floor(this.time/(data.sideWalkFrameMs??250)))%data.sideWalkLoop.length]:24+(data.approvedLegacy?sideUpperFrame(this.time):Math.floor(this.time/125)%6);
-  if(data.approvedLegacy&&holding&&moving&&!front&&!back)index=18+heldSideFrame(this.time);
   const frame=(part===2?data.officeFrames:part?data.carryFrames:data.frames)[index],key='team-v3-'+frame.source,[sx,sy,w,h]=frame.rect;
-  // Locomotion scale follows the head landmark across the entire cycle.
+  // Standing hold must share one on-screen height. Side-carry v12 is head-normalized
+  // (taller crop than referenceHeight); front/back carry uses the atlas max. Fill the
+  // crop to the standing height so left/right hold matches hold-walk and idle hold.
   if(seated&&height===61.44)height=characterRegistry.seatedHeight;
-  const scale=height/frame.referenceHeight,flip=direction===3,pivot=flip?1-frame.pivotX:frame.pivotX;
+  const fillCarry=part===1&&!seated;
+  const scale=height/(fillCarry?h:frame.referenceHeight),flip=direction===3,pivot=flip?1-frame.pivotX:frame.pivotX;
   if(seated&&seatSurface!==undefined)y=seatSurface+(h-frame.seat[1])*scale;
   // Move the front-facing seated worker toward the desk; the monitor covers part of the hands.
   if(seated&&office&&!holding&&front)y-=height*.03+1;
-  y+=height*(frame.offsetYRatio??0);
+  if(!fillCarry)y+=height*(frame.offsetYRatio??0);
   this.hide();this.frameName=frame.name;
   this.body.setTexture(key,'pose-'+part+'-'+index).setOrigin(pivot,1).setScale(scale*(frame.scaleXRatio??1),scale).setFlipX(flip).setPosition(Math.round(x),Math.round(y)).setDepth(depth).setVisible(true);
   if(seated&&office){
    if(back)this.body.setTexture(key,'upper-'+part+'-'+index).setOrigin(pivot,h/Math.round(h*.72));
    else this.upper.setTexture(key,'upper-'+part+'-'+index).setOrigin(pivot,0).setScale(scale).setFlipX(flip).setPosition(Math.round(x),Math.round(y-h*scale)).setDepth(depth+3).setVisible(true);
   }
-  const nativeFrame:SpriteFrame={name:'pose-'+part+'-'+index,x:sx,y:sy,width:w,height:h,referenceHeight:frame.referenceHeight,pivotX:frame.pivotX};
-  if(data.approvedLegacy&&moving&&!front&&!back&&!this.masked)this.legs.draw(this.body,nativeFrame,height,direction,this.time);
+  const nativeFrame:SpriteFrame={name:'pose-'+part+'-'+index,x:sx,y:sy,width:w,height:h,referenceHeight:fillCarry?h:frame.referenceHeight,pivotX:frame.pivotX};
+  if(data.approvedLegacy&&!holding&&moving&&!front&&!back&&!this.masked)this.legs.draw(this.body,nativeFrame,height,direction,this.time);
   if(player.hand?.startsWith('拼豆·')&&!this.scene.textures.exists('bead-item-'+player.hand.slice(3)))void ensureCollectible(this.scene,player.hand).catch(()=>{});
   const item=items[player.hand as ItemName];
   if(item&&frame.grip&&sceneTexture(this.scene,item.texture)){

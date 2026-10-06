@@ -1,5 +1,5 @@
 const fs=require('node:fs'),assert=require('node:assert/strict');
-const {chromium}=require('D:/CodexHome/mcp/node/node_modules/playwright');
+const {chromium}=require('./playwright.cjs').loadPlaywright();
 const roles=['suki','sid','jilly','laura','kay','franco','cora','amber'];
 (async()=>{
  const browser=await chromium.launch({channel:'chrome',headless:true,args:['--disable-webgl']});

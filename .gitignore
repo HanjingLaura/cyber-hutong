@@ -3,6 +3,7 @@ dist/
 .env
 .env.*
 !.env.example
+.dev.vars
 data/
 *.sqlite*
 references/private/
@@ -12,3 +13,4 @@ output/
 .vercel/
 .agents/
 skills-lock.json
+.partykit/

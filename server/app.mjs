@@ -9,13 +9,16 @@ import interactions from '../shared/interactions.json' with {type:'json'};
 import npcRules from '../shared/npcs.json' with {type:'json'};
 import guestPositions from '../shared/guests.json' with {type:'json'};
 import {createWorld} from './world.mjs';
-import {createLife} from './life.mjs';
+import {createLife,memoryPolicy} from './life.mjs';
 import {createAutonomy} from './autonomy.mjs';
 import {createBailian} from './llm.mjs';
 import {createDirector} from './director.mjs';
 import {createRewards,plushNames} from './rewards.mjs';
 import {createCeline} from './celine.mjs';
+import {issueTicket} from '../shared/party-ticket.mjs';
+import {PARTY_ROOM_ID} from '../shared/party-room.mjs';
 export const scenes=['hutong','hawaii','rest','pop','bathroom','concert','arcade','noodle','gym','dance','perler','rehearsal','elevator','subway'];
+const partySecret=()=>process.env.PARTY_AUTH_SECRET||'';
 const items=['咖啡','可乐','气泡水','薯片','面包','火腿肠','辣条','马卡龙','蛋糕','冰红茶','碗筷','米线','鸡柳','炸鸡','水','扭蛋·粉色小熊','扭蛋·薄荷兔子','扭蛋·蓝色机器人','扭蛋·橘猫','扭蛋·紫色小巫师','扭蛋·皇冠小熊'];
 const json=(res,status,value)=>{res.writeHead(status,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'});res.end(JSON.stringify(value));};
 const cookie=req=>String(req.headers.cookie||'').split(';').map(v=>v.trim()).find(v=>v.startsWith('hutong_session='))?.slice(15);
@@ -27,7 +30,9 @@ export const stripBase=url=>{const i=url.indexOf('?'),path=i===-1?url:url.slice(
 const allowedHosts=()=>String(process.env.HUTONG_ALLOWED_HOSTS||'').split(',').map(v=>v.trim().toLowerCase()).filter(Boolean);
 const clientAddress=req=>process.env.VERCEL?String(req.headers['x-forwarded-for']||'').split(',')[0].trim()||req.socket.remoteAddress:req.socket.remoteAddress;
 export function createMvpServer({dbPath='data/mvp.sqlite',staticDir=resolve('dist'),llmOptions={}}={}){
-  const store=openStore(dbPath),players=new Map(),streams=new Set(),controls=new Map(),rates=new Map();
+  const store=openStore(dbPath),players=new Map(),streams=new Set(),rates=new Map();
+  const controlStmt={get:store.db.prepare('SELECT client FROM controllers WHERE account=?'),set:store.db.prepare('INSERT INTO controllers(account,client,at) VALUES(?,?,?) ON CONFLICT(account) DO UPDATE SET client=excluded.client,at=excluded.at'),del:store.db.prepare('DELETE FROM controllers WHERE account=?')};
+  const controls={get(id){return controlStmt.get.get(id)?.client;},has(id){return !!controlStmt.get.get(id);},set(id,client){controlStmt.set.run(id,client,Date.now());return this;},delete(id){controlStmt.del.run(id);return true;}};
   const leases=new Map();const life=createLife(store),autonomy=createAutonomy(store,life,players,leases);
   const world=createWorld(store,life),replyCooldown=new Map(),llm=createBailian(store,life,llmOptions);
   const rewards=createRewards(store,life,world,leases);
@@ -45,8 +50,9 @@ export function createMvpServer({dbPath='data/mvp.sqlite',staticDir=resolve('dis
   const director=createDirector(store,life,autonomy,world,llm,{publish:publishMessage});autonomy.setDirector(director);
   const flush=()=>{if(dirty){dirty=false;for(const s of streams)emit(s,'world',snapshot(s));}};
   const limited=(key,max,ms=60000)=>{const now=Date.now(),entry=rates.get(key);if(!entry||entry.until<now){rates.set(key,{n:1,until:now+ms});return;}if(++entry.n>max)fail(429,'操作太快，请稍后重试');};
-  const setSession=(res,token)=>res.setHeader('Set-Cookie',`hutong_session=${token}; HttpOnly; SameSite=Strict; Path=/; Max-Age=604800${process.env.COOKIE_SECURE==='1'||process.env.VERCEL==='1'?'; Secure':''}`);
-  const checkControl=(user,client)=>{if(typeof client!=='string'||controls.get(user.id)!==client)fail(409,'角色在另一个窗口操作，请点击接管');};
+  const cookieFlags=()=>`HttpOnly; SameSite=Strict; Path=/${process.env.COOKIE_SECURE==='1'||process.env.VERCEL==='1'?'; Secure':''}`;
+  const setSession=(res,token)=>res.setHeader('Set-Cookie',`hutong_session=${token}; ${cookieFlags()}; Max-Age=604800`);
+  const checkControl=(user,client)=>{if(typeof client!=='string'||client.length>80)fail(409,'角色在另一个窗口操作，请点击接管');const current=controls.get(user.id);if(!current){controls.set(user.id,client);return;}if(current!==client)fail(409,'角色在另一个窗口操作，请点击接管');};
   const startPlayer=user=>{if(!user.role||players.has(user.id))return;const homes={suki:[288,207],sid:[192,207],jilly:[192,182],laura:[384,207],kay:[480,207],franco:[480,182],cora:[288,182],amber:[384,182]};const [x,y]=homes[user.role];const previous=autonomy.reclaim(user.id)||life.position(user.id);const p={id:user.id,role:user.role,scene:'hutong',x,y,facing:0,moving:false,seat:null,activity:'walk',...previous,at:Date.now()};if(p.seat){const seat=interactions[p.scene].seats[p.seat];if(seat)[p.x,p.y]=seat.approach;p.seat=null;}const oldActivity=interactions[p.scene].activities[p.activity]?.find(a=>Math.hypot(p.x-a.at[0],p.y-a.at[1])<8);if(oldActivity)[p.x,p.y]=oldActivity.approach;p.activity='walk';p.moving=false;players.set(user.id,p);dirty=true;};
   const server=createServer(async(req,res)=>{
     try{
@@ -54,9 +60,22 @@ export function createMvpServer({dbPath='data/mvp.sqlite',staticDir=resolve('dis
       if(path.startsWith('/api/')){
         // Vite proxy and production must preserve the browser-facing Host header.
         const origin=req.headers.origin;if(req.method!=='GET'&&origin){let host='';try{host=new URL(origin).host.toLowerCase();}catch{fail(403,'请求来源不正确');}if(host!==String(req.headers.host||'').toLowerCase()&&!allowedHosts().includes(host))fail(403,'请求来源不正确');}
-        if(path==='/api/health'){json(res,200,{ok:true,version:2,online:players.size,llm:llm.status()});return;}
+        if(path==='/api/health'){json(res,200,{ok:true,version:2,online:players.size,llm:llm.status(),party:!!partySecret()});return;}
         const token=cookie(req),user=store.session(token);
         if(path==='/api/me'){json(res,200,{user,roster:store.roster()});return;}
+        if(path==='/api/party-ticket'){
+          if(req.method!=='POST')fail(405,'请使用 POST');
+          if(!user)fail(401,'请先登录');
+          if(!user.role)fail(409,'请先领取角色');
+          if(!partySecret())fail(503,'未配置 PARTY_AUTH_SECRET');
+          const input=await body(req);
+          if(typeof input.client!=='string'||input.client.length>80)fail(400,'连接编号无效');
+          startPlayer(user);
+          if(!controls.has(user.id))controls.set(user.id,input.client);
+          const controller=controls.get(user.id)===input.client;
+          const issued=await issueTicket(partySecret(),{userId:user.id,role:user.role,username:user.username,client:input.client,controller},60_000);
+          json(res,200,{...issued,room:process.env.PARTY_ROOM||PARTY_ROOM_ID,host:process.env.PARTYKIT_HOST||null,controller});return;
+        }
         if(path==='/api/register'||path==='/api/login'){
           if(req.method!=='POST')fail(405,'请使用 POST');limited('auth:'+clientAddress(req),30);
           const input=await body(req);
@@ -85,7 +104,7 @@ export function createMvpServer({dbPath='data/mvp.sqlite',staticDir=resolve('dis
         const input=await body(req);
         if(path==='/api/logout'){
           store.logout(token);for(const s of [...streams])if(s.token===token){emit(s,'logout',{});s.res.end();streams.delete(s);}if(![...streams].some(s=>s.user===user.id)){const p=players.get(user.id);if(p)life.savePosition(p);release(user.id);players.delete(user.id);controls.delete(user.id);}dirty=true;
-          res.setHeader('Set-Cookie','hutong_session=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0');json(res,200,{ok:true});return;
+          res.setHeader('Set-Cookie',`hutong_session=; ${cookieFlags()}; Max-Age=0`);json(res,200,{ok:true});return;
         }
         if(path==='/api/claim'){limited('claim:'+user.id,15);const next=store.claim(user.id,input.role);startPlayer(next);dirty=true;json(res,200,{user:next});return;}
         if(!user.role)fail(409,'请先领取角色');
@@ -110,7 +129,7 @@ export function createMvpServer({dbPath='data/mvp.sqlite',staticDir=resolve('dis
           life.recordGroup([user.id],'easter',`${name(user.role)} 与${({ani:'Ani',lulu:'噜噜',tutu:'图图',buzz:'巴斯光年',zhu:'朱志鑫',ferret:'富贵貂'})[rule.id]}打了个招呼。`,rule.room,Date.now(),reaction.id);dirty=true;json(res,200,{ok:true,reaction});return;
         }
         if(path==='/api/offer'){checkControl(user,input.client);const result=life.respond(user.id,input.id,input.answer);dirty=true;json(res,200,{offer:result});return;}
-        if(path==='/api/invite'){checkControl(user,input.client);limited('invite:'+user.id,10,10000);const b=store.byRole(input.peer);if(!b)fail(400,'对方尚未领取角色');const result=life.send(user.id,input.peer,'meet',input.requestId,roomFor(user.id));dirty=true;json(res,200,{offer:result});return;}
+        if(path==='/api/invite'){checkControl(user,input.client);limited('invite:'+user.id,10,10000);const b=store.byRole(input.peer);if(!b)fail(400,'对方尚未领取角色');const result=life.send(user.id,input.peer,'meet',input.requestId,roomFor(user.id),undefined,input.place||'rest');dirty=true;json(res,200,{offer:result});return;}
         if(path==='/api/object'){
           if(['hutong:celine','hawaii:celine'].includes(input.object))fail(403,'Celine 会自己活动');
           checkControl(user,input.client);limited('object:'+user.id,60,10000);const result=world.interact(user,players.get(user.id),input,players);dirty=true;json(res,200,result);return;
@@ -119,12 +138,16 @@ export function createMvpServer({dbPath='data/mvp.sqlite',staticDir=resolve('dis
           checkControl(user,input.client);const p=players.get(user.id),id=p.scene+':'+input.device;
           const allowed={arcade:['mines','spider','claw','basketball','hockey'],gym:['run-0','run-1','run-2','curl'],rehearsal:['piano'],dance:['music']};
           if(!allowed[p.scene]?.includes(input.device))fail(400,'设备无效');
-          if(input.release){if(leases.get(id)?.account===user.id)leases.delete(id);}else{const at=interactions[p.scene].devices[input.device];if(Math.hypot(p.x-at[0],p.y-at[1])>40)fail(409,'请走到设备附近');if(store.byId(user.id).hand&&['gym','rehearsal'].includes(p.scene))fail(409,'先放下手中物品');const old=leases.get(id);if(old&&old.account!==user.id)fail(409,'设备有人使用');leases.set(id,{account:user.id,role:user.role,at:Date.now()});}dirty=true;json(res,200,{ok:true});return;
+          if(input.release){if(leases.get(id)?.account===user.id)leases.delete(id);}else{const at=interactions[p.scene].devices?.[input.device];if(!at)fail(400,'设备位置无效');if(Math.hypot(p.x-at[0],p.y-at[1])>40)fail(409,'请走到设备附近');if(store.byId(user.id).hand&&['gym','rehearsal'].includes(p.scene))fail(409,'先放下手中物品');const old=leases.get(id);if(old&&old.account!==user.id)fail(409,'设备有人使用');leases.set(id,{account:user.id,role:user.role,at:Date.now()});}dirty=true;json(res,200,{ok:true});return;
         }
         if(path==='/api/progress'){
           if(!['bead','score','draft'].includes(input.kind)||typeof input.key!=='string'||input.key.length>80)fail(400,'记录无效');
           if(input.kind==='bead'||input.kind==='draft'){if(!Array.isArray(input.data?.cells)||input.data.cells.length!==256||input.data.cells.some(c=>!Number.isInteger(c)||c< -1||c>15))fail(400,'作品无效');}
-          if(input.kind==='score'){if(!['mines','spider','basketball','hockey'].includes(input.key)||!Number.isFinite(input.data?.value)||input.data.value<0||input.data.value>100000)fail(400,'成绩无效');const old=world.progress(user.id).find(p=>p.kind==='score'&&p.key===input.key);if(old?.data.value>=input.data.value){json(res,200,{progress:world.progress(user.id),progressVersion:store.byId(user.id).progress_revision});return;}}
+          if(input.kind==='score'){if(!['mines','spider','basketball','hockey'].includes(input.key)||!Number.isFinite(input.data?.value)||input.data.value<0||input.data.value>100000)fail(400,'成绩无效');const old=world.progress(user.id).find(p=>p.kind==='score'&&p.key===input.key);if(old?.data.value>=input.data.value){json(res,200,{progress:world.progress(user.id),progressVersion:store.byId(user.id).progress_revision});return;}
+            const labels={mines:'扫雷',spider:'蜘蛛纸牌',basketball:'投篮',hockey:'冰球'};
+            world.write(user.id,input.kind,input.key,input.data);dirty=true;
+            publishMessage(store.message(user.role,null,roomFor(user.id),`${name(user.role)} 刷新了${labels[input.key]}纪录：${Math.floor(input.data.value)}！`,'score:'+input.key+':'+Math.floor(input.data.value)));
+            json(res,200,{progress:world.progress(user.id),progressVersion:store.byId(user.id).progress_revision});return;}
           world.write(user.id,input.kind,input.key,input.data);dirty=true;json(res,200,{progress:world.progress(user.id),progressVersion:store.byId(user.id).progress_revision});return;
         }
         if(path==='/api/presence'){
@@ -149,7 +172,11 @@ export function createMvpServer({dbPath='data/mvp.sqlite',staticDir=resolve('dis
           for(const l of leases.values())if(l.account===user.id)l.at=now;
           const previousActivity=p.activity;
           Object.assign(p,{scene:input.scene,x:input.x,y:input.y,facing:input.facing,moving:input.moving===true,seat:input.seat,activity:activity.slice(0,20),at:now});if(now-(p.savedAt||0)>5000){life.savePosition(p);p.savedAt=now;}
-          if(previousActivity!==activity){if(activity==='working')life.record(user.id,'work','开始在自己的工位办公。',p.scene);else if(activity==='sit')life.record(user.id,'rest','坐在椅子上休息。',p.scene);else if(previousActivity==='working')life.record(user.id,'work','离开工位，结束了这段办公。',p.scene);}
+          if(previousActivity!==activity){
+            if(activity==='working')life.record(user.id,'work','开始在自己的工位办公。',p.scene,Date.now(),{routine:true,key:`work:start:${p.scene}`});
+            else if(activity==='sit')life.record(user.id,'rest','坐在椅子上休息。',p.scene,Date.now(),{routine:true,key:`rest:sit:${p.scene}`});
+            else if(previousActivity==='working')life.record(user.id,'work','离开工位，结束了这段办公。',p.scene,Date.now(),{routine:true,key:`work:end:${p.scene}`});
+          }
           dirty=true;json(res,200,{self:next,player:cleanPlayer(p)});return;
         }
         if(path==='/api/chat'){
@@ -162,19 +189,28 @@ export function createMvpServer({dbPath='data/mvp.sqlite',staticDir=resolve('dis
         }
         if(path==='/api/interact'){
           limited('interact:'+user.id,10,10000);checkControl(user,input.client);
-          const a=players.get(user.id),b=live(input.peer)||autonomy.all().find(p=>p.role===input.peer);if(!b||b.id===a.id||a.scene!==b.scene||Math.hypot(a.x-b.x,a.y-b.y)>55)fail(409,'请走到对方附近');
-          if(input.action==='greet'){const duplicate=store.db.prepare('SELECT seq FROM messages WHERE id=?').get(user.role+':'+input.requestId);const message=store.message(user.role,null,a.scene,`嗨，${name(b.role)}！`,input.requestId);publishMessage(message);if(!duplicate){life.record(user.id,'greet',`向 ${name(b.role)} 打了招呼。`,a.scene);life.record(b.id,'greet',`${name(user.role)} 向你打了招呼。`,a.scene);}json(res,200,{ok:true});return;}
+          const a=players.get(user.id);
+          if(input.action==='emote'){
+            const emotes={wave:'👋 挥手',cheer:'🙌 加油',bow:'🙇 点头'};
+            const body=emotes[input.emote];if(!body)fail(400,'表情无效');
+            if(typeof input.requestId!=='string'||input.requestId.length>120)fail(400,'操作编号无效');
+            const message=store.message(user.role,null,a.scene,body,input.requestId);publishMessage(message);json(res,200,{ok:true});return;
+          }
+          const b=live(input.peer)||autonomy.all().find(p=>p.role===input.peer);if(!b||b.id===a.id||a.scene!==b.scene||Math.hypot(a.x-b.x,a.y-b.y)>55)fail(409,'请走到对方附近');
+          if(input.action==='greet'){const duplicate=store.db.prepare('SELECT seq FROM messages WHERE id=?').get(user.role+':'+input.requestId);const message=store.message(user.role,null,a.scene,`嗨，${name(b.role)}！`,input.requestId);publishMessage(message);if(!duplicate){const pair=[user.role,b.role].sort().join(':');life.record(user.id,'greet',`向 ${name(b.role)} 打了招呼。`,a.scene,Date.now(),{key:`greet:${pair}`,cooldown:memoryPolicy.encounterCooldown});life.record(b.id,'greet',`${name(user.role)} 向你打了招呼。`,a.scene,Date.now(),{key:`greet:${pair}:peer`,cooldown:memoryPolicy.encounterCooldown});}json(res,200,{ok:true});return;}
           if(input.action==='gift'){if(typeof input.requestId!=='string'||input.requestId.length>120)fail(400,'操作编号无效');const result=life.send(user.id,b.role,'gift',input.requestId,a.scene,input.revision);dirty=true;flush();json(res,200,result);return;}
           fail(400,'互动无效');
         }
         fail(404,'没有这个接口');
       }
-      let file=resolve(staticDir,'.'+decodeURIComponent(path));if(path==='/')file=resolve(staticDir,'index.html');if(path==='/moles'||path==='/moles/')file=resolve(staticDir,'moles.html');if(!file.startsWith(resolve(staticDir)+sep))fail(403,'访问无效');
+      let filePath=path;
+      try{filePath=decodeURIComponent(path);}catch{fail(400,'路径无效');}
+      let file=resolve(staticDir,'.'+filePath);if(path==='/')file=resolve(staticDir,'index.html');if(path==='/moles'||path==='/moles/')file=resolve(staticDir,'moles.html');if(!file.startsWith(resolve(staticDir)+sep))fail(403,'访问无效');
       const content=await readFile(file).catch(()=>null);if(!content){json(res,404,{error:'文件不存在，请先构建'});return;}
       const mime={'.html':'text/html; charset=utf-8','.js':'text/javascript','.css':'text/css','.png':'image/png','.jpg':'image/jpeg','.json':'application/json'};
       res.writeHead(200,{'Content-Type':mime[extname(file)]||'application/octet-stream','X-Content-Type-Options':'nosniff'});res.end(content);
     }catch(e){if(!res.headersSent)json(res,e.status||500,{error:e.status?e.message:'服务暂时不可用'});else res.end();if(!e.status)console.error(e.message);}
   });
-  const timer=setInterval(()=>{if(autonomy.tick())dirty=true;const v=celine.snapshot(autonomy.all()),signature=JSON.stringify([v.scene,v.mode,v.seat,Math.round(v.x),Math.round(v.y),v.question]);if(signature!==visitorSignature){visitorSignature=signature;dirty=true;}flush();},100),heartbeat=setInterval(()=>{for(const [key,value] of rates)if(value.until<Date.now())rates.delete(key);for(const s of [...streams]){if(!store.session(s.token)){emit(s,'logout',{});s.res.end();}else s.res.write(': heartbeat\n\n');}for(const [id,p]of players){if(p.disconnectedAt&&Date.now()-p.disconnectedAt>45000){life.savePosition(p);players.delete(id);release(id);controls.delete(id);dirty=true;}else if(!p.disconnectedAt&&Date.now()-p.at>45000){p.seat=null;release(id);dirty=true;}}},15000);timer.unref();heartbeat.unref();
+  const timer=setInterval(()=>{if(autonomy.tick())dirty=true;const v=celine.snapshot(autonomy.all()),signature=JSON.stringify([v.scene,v.mode,v.seat,Math.round(v.x),Math.round(v.y),v.question]);if(signature!==visitorSignature){visitorSignature=signature;dirty=true;}flush();},100),heartbeat=setInterval(()=>{for(const [key,value] of rates)if(value.until<Date.now())rates.delete(key);for(const s of [...streams]){if(!store.session(s.token)){emit(s,'logout',{});s.res.end();streams.delete(s);if(![...streams].some(x=>x.user===s.user)){const p=players.get(s.user);if(p){p.disconnectedAt=Date.now();life.savePosition(p);}controls.delete(s.user);}dirty=true;}else s.res.write(': heartbeat\n\n');}for(const [id,p]of players){if(p.disconnectedAt&&Date.now()-p.disconnectedAt>45000){life.savePosition(p);players.delete(id);release(id);controls.delete(id);dirty=true;}else if(!p.disconnectedAt&&Date.now()-p.at>45000){p.seat=null;release(id);dirty=true;}}},15000);timer.unref();heartbeat.unref();
   return {server,store,life,autonomy,director,llm,players,streams,close(){if(closed)return;closed=true;director.close();llm.close();autonomy.saveAll();clearInterval(timer);clearInterval(heartbeat);for(const s of streams)s.res.end();streams.clear();server.close();store.close();}};
 }

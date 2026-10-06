@@ -1,7 +1,7 @@
 // Measure existing sprite pixels. Normalization is stored as rendering metadata;
 // the complete PNGs and approved limb overlaps remain untouched.
 const fs=require('node:fs');
-const {chromium}=require('D:/CodexHome/mcp/node/node_modules/playwright');
+const {chromium}=require('./playwright.cjs').loadPlaywright();
 async function measureHeads({metadata,targets}){
  const images=new Map();
  for(const [role,member]of Object.entries(metadata.members)){

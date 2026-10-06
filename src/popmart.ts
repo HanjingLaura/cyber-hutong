@@ -227,7 +227,7 @@ export class PopMartScene extends Phaser.Scene {
     button.disabled=!target; button.textContent=target?target.id==='machine'?'转动扭蛋机':'挑选陈列台盲盒':'靠近陈列台或扭蛋机';
     document.querySelector('#mode')!.textContent=moving?'在 POP MART 走动':'逛 POP MART';
     document.querySelector('#hint')!.textContent=target?.id==='machine'?'E 转动扭蛋机。':target?'E 挑一盒。':'沿通道逛逛。';
-    document.querySelector('#guide-title')!.textContent='POP MART · WASD / 方向键移动';
+    document.querySelector('#guide-title')!.textContent='WASD / 方向键移动';
     document.querySelector('#guide-action')!.textContent=target?`E · ${target.id==='machine'?'扭蛋机':'挑一盒'}`:'E 互动';
   }
 }

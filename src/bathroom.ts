@@ -176,7 +176,7 @@ export class BathroomScene extends Phaser.Scene {
     doorButton.textContent=doorIndex===null?'靠近隔间开关门':`${this.open[doorIndex]?'关':'开'}门 · F`;
     document.querySelector('#mode')!.textContent=this.seated!==null?`坐在 ${this.seated+1} 号马桶上`:this.washing!==null?'正在洗手':moving?'在厕所走动':'站在厕所';
     document.querySelector('#hint')!.textContent=this.message;
-    document.querySelector('#guide-title')!.textContent='厕所 · WASD / 方向键移动';
+    document.querySelector('#guide-title')!.textContent='WASD / 方向键移动';
     document.querySelector('#guide-action')!.textContent=this.seated!==null?'E / Esc 起身 · F 开关隔间门':target?`E · ${button.textContent}${target.kind==='toilet'?' · F 关门':''}`:'靠近隔间按 E 开门 / 坐下 · 洗手台 E 洗手';
     document.querySelector('#bathroom-state')!.textContent=centers.map((_,i)=>`${i+1} 号：${this.seated===i?'使用中':this.open[i]?'门开':'门关'}`).join(' · ');
   }

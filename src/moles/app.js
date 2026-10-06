@@ -55,8 +55,8 @@ function draw(canvas, id, hit = false, age = 0) {
 
 for (const [index, id] of IDS.entries()) {
   const button = document.createElement('button'); button.className = 'person'; button.dataset.id = id;
-  button.innerHTML = `<span class="check" aria-hidden="true">✓</span><canvas width="100" height="128" aria-hidden="true"></canvas><b>${names[index]}</b><small>${id}</small>`;
-  button.setAttribute('aria-label', `${id} ${names[index]}`);
+  button.innerHTML = `<span class="check" aria-hidden="true">✓</span><canvas width="100" height="128" aria-hidden="true"></canvas><b>${names[index]}</b>`;
+  button.setAttribute('aria-label', names[index]);
   button.onclick = () => { selected.has(id) ? selected.delete(id) : selected.add(id); updateSelection(); };
   $('people').append(button);
 }
@@ -64,7 +64,7 @@ const holeButtons = [];
 for (let hole = 0; hole < 6; hole++) {
   const button = document.createElement('button'); button.className = 'hole'; button.dataset.hole = hole;
   button.setAttribute('aria-label', `窗口 ${hole} · ${'QWEASD'[hole]}`);
-  button.innerHTML = `<span class="window"><span class="actor"><canvas width="120" height="144" aria-hidden="true"></canvas></span><span class="sill"></span></span><span class="hole-label"><b>0${hole}</b><kbd>${'QWEASD'[hole]}</kbd></span>`;
+  button.innerHTML = `<span class="window"><span class="actor"><canvas width="120" height="144" aria-hidden="true"></canvas></span><span class="sill"></span></span><span class="hole-label"><kbd>${'QWEASD'[hole]}</kbd></span>`;
   button.onclick = () => strike(hole); holeButtons.push(button); $('holes').append(button);
 }
 function updateSelection() {

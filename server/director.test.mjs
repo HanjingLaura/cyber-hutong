@@ -17,7 +17,9 @@ for(const kind of ['gacha','meet','gift'])test('offline '+kind+' follows actual 
 });
 
 test('one global clock controls eight offline people; participant cooldown and login interruption are enforced',async t=>{
- const s=await setup(t),{app}=s,next=app.director.status().nextAt;assert.ok(next>=s.now+20*60000&&next<=s.now+30*60000);s.step(1000);assert.equal(app.store.db.prepare('SELECT count(*) AS n FROM activities').get().n,0);
+ const s=await setup(t),{app}=s,next=app.director.status().nextAt;
+ assert.ok(next>=s.now+12*60000&&next<=s.now+18*60000,'empty world look-back uses 15min ±20%');
+ s.step(1000);assert.equal(app.store.db.prepare('SELECT count(*) AS n FROM activities').get().n,0);
  const candidate=app.director.candidates(s.now).find(c=>c.kind==='gift');app.director.start(candidate,s.now);const id=app.director.status().active.id;
  assert.equal(app.director.start(candidate,s.now),false);app.autonomy.reclaim(candidate.people[0]);assert.equal(app.director.status().active,null);assert.equal(app.store.db.prepare('SELECT status FROM activities WHERE id=?').get(id).status,'interrupted');assert.ok(!app.life.journal(candidate.people[0]).some(e=>e.eventId.endsWith(':completed')));
 });

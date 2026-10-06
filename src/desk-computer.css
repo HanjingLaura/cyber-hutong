@@ -1,0 +1,155 @@
+#desk-computer {
+  width: min(420px, calc(100vw - 28px));
+  max-width: 420px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #e8f0d8;
+  font-family: Consolas, "IBM Plex Mono", "Microsoft YaHei", monospace;
+}
+#desk-computer::backdrop {
+  background: #0a121099;
+  image-rendering: pixelated;
+}
+.desk-bezel {
+  border: 4px solid #2a3430;
+  background:
+    linear-gradient(180deg, #3a4540 0%, #2a332f 18%, #1d2622 100%);
+  box-shadow:
+    inset 0 0 0 2px #6d7a6a,
+    6px 6px 0 #0c1210;
+  padding: 10px 10px 12px;
+}
+.desk-titlebar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+  padding: 4px 2px 6px;
+  border-bottom: 2px solid #101714;
+}
+.desk-title {
+  font-size: 12px;
+  letter-spacing: .08em;
+  color: #d7e2c4;
+  text-shadow: 1px 1px #0d1411;
+}
+.desk-close {
+  width: 28px;
+  height: 24px;
+  padding: 0;
+  border: 2px solid #8a3f35;
+  background: #c45a3a;
+  color: #fff6da;
+  font-size: 16px;
+  line-height: 18px;
+  box-shadow: inset -1px -1px 0 #7a2f28, inset 1px 1px 0 #e08a6a;
+}
+.desk-close:hover,
+.desk-close:focus-visible {
+  background: #d46848;
+  outline: 2px solid #f1d36e;
+  outline-offset: 1px;
+}
+.desk-screen {
+  position: relative;
+  height: min(280px, 56dvh);
+  border: 3px solid #111814;
+  background: #1a2740;
+  box-shadow: inset 0 0 0 2px #4a6a8a;
+  overflow: hidden;
+  image-rendering: pixelated;
+}
+.desk-wallpaper {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, #24385c 0%, #1a2740 48%, #142033 100%),
+    repeating-linear-gradient(
+      0deg,
+      transparent 0 3px,
+      #00000014 3px 4px
+    );
+  pointer-events: none;
+}
+.desk-wallpaper::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 18% 22%, #6ec8ff33 0 10px, transparent 11px),
+    radial-gradient(circle at 78% 30%, #ffd27a22 0 14px, transparent 15px),
+    linear-gradient(90deg, transparent 0 12px, #ffffff08 12px 13px, transparent 13px);
+  opacity: .85;
+}
+.desk-icons {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px 8px;
+  padding: 18px 14px 42px;
+}
+.desk-app {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  text-decoration: none;
+  color: #f4f0de;
+  font-size: 11px;
+  text-shadow: 1px 1px #0c1418;
+  padding: 4px 2px;
+  border: 2px solid transparent;
+}
+.desk-app img {
+  width: 48px;
+  height: 48px;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  background: #10182088;
+  border: 2px solid #2c3a48;
+  box-shadow: 2px 2px 0 #0a1016;
+}
+.desk-app:hover,
+.desk-app:focus-visible {
+  border-color: #f1d36e;
+  background: #ffffff18;
+  outline: none;
+}
+.desk-taskbar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 28px;
+  padding: 0 8px;
+  background: linear-gradient(180deg, #3d4a40, #252e29);
+  border-top: 2px solid #6d7a66;
+  font-size: 11px;
+  color: #e8efd8;
+}
+.desk-start {
+  padding: 2px 8px;
+  border: 2px solid #889c6f;
+  background: #303b35;
+  box-shadow: inset 1px 1px 0 #5a6a55;
+}
+.desk-clock {
+  padding: 2px 6px;
+  border: 1px solid #4a5548;
+  background: #17231c;
+}
+
+@media (max-width: 520px) {
+  .desk-icons {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    padding-bottom: 48px;
+  }
+  .desk-screen { height: min(320px, 62dvh); }
+}

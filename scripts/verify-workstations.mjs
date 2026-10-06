@@ -1,10 +1,9 @@
-import {createRequire} from 'node:module';
 import {mkdir} from 'node:fs/promises';
 import assert from 'node:assert/strict';
 import {createServer as createViteServer} from 'vite';
 import {createMvpServer} from '../server/app.mjs';
-const require=createRequire(import.meta.url);
-const {chromium}=require('D:/CodexHome/mcp/node/node_modules/playwright');
+import {loadPlaywright} from './playwright.mjs';
+const {chromium}=loadPlaywright();
 const backend=createMvpServer({dbPath:':memory:'});
 await new Promise(resolve=>backend.server.listen(0,'127.0.0.1',resolve));
 const api=`http://127.0.0.1:${backend.server.address().port}`;

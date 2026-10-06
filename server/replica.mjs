@@ -17,6 +17,13 @@ const q = name => '"' + String(name).replaceAll('"', '""') + '"';
 const encode = row => JSON.stringify(row, (_k, v) => v instanceof Uint8Array ? { $b64: Buffer.from(v).toString('base64') } : typeof v === 'bigint' ? Number(v) : v);
 const decodeValue = v => v && typeof v === 'object' && typeof v.$b64 === 'string' ? new Uint8Array(Buffer.from(v.$b64, 'base64')) : v;
 const SKIP = new Set(['sqlite_sequence', 'sqlite_stat1']);
+// Node <22.17 may lack DatabaseSync.isOpen / isTransaction; probe instead of treating undefined as closed/idle.
+const dbIsOpen = db => {
+  if (!db) return false;
+  if (typeof db.isOpen === 'boolean') return db.isOpen;
+  try { db.prepare('SELECT 1').get(); return true; } catch { return false; }
+};
+const dbInTx = db => typeof db?.isTransaction === 'boolean' ? db.isTransaction : false;
 
 function tableColumns(db, table) {
   return db.prepare(`PRAGMA table_info(${q(table)})`).all();
@@ -96,8 +103,9 @@ export async function prepareReplica(path, client, { prefix = 'hutong_online', f
         CREATE TEMP TRIGGER _hto_u_${tag} AFTER UPDATE ON main.${q(table)} ${when} BEGIN ${ins('OLD')} ${ins('NEW')} END;
         CREATE TEMP TRIGGER _hto_d_${tag} AFTER DELETE ON main.${q(table)} ${when} BEGIN ${ins('OLD')} END;`);
       // Rows created locally before attach (defaults written during startup) are not remote yet.
-      const mark = db2.prepare('INSERT INTO temp._hto_dirty(tbl, pk) SELECT ?1, ?2 WHERE NOT EXISTS (SELECT 1 FROM temp._hto_dirty WHERE tbl = ?1 AND pk = ?2)');
-      for (const r of db2.prepare(`SELECT ${key(q(table))} AS k FROM main.${q(table)}`).all()) if (!loaded.has(table + '\u0000' + r.k)) mark.run(table, r.k);
+      // Positional ? (not ?1/?2): older node:sqlite rejects reused numbered params ("column index out of range").
+      const mark = db2.prepare('INSERT INTO temp._hto_dirty(tbl, pk) SELECT ?, ? WHERE NOT EXISTS (SELECT 1 FROM temp._hto_dirty WHERE tbl = ? AND pk = ?)');
+      for (const r of db2.prepare(`SELECT ${key(q(table))} AS k FROM main.${q(table)}`).all()) if (!loaded.has(table + '\u0000' + r.k)) mark.run(table, r.k, table, r.k);
     }
     // Keep AUTOINCREMENT keys (messages, experiences) from colliding across instances.
     const base = Date.now() * 1000 + Math.floor(Math.random() * 1000);
@@ -126,10 +134,9 @@ export async function prepareReplica(path, client, { prefix = 'hutong_online', f
 
   function flush() {
     return serial(async () => {
-      if (!db2 || !db2.isOpen || db2.isTransaction) return 0;
+      if (!dbIsOpen(db2) || dbInTx(db2)) return 0;
       const dirty = db2.prepare('SELECT DISTINCT tbl, pk FROM temp._hto_dirty').all();
       if (!dirty.length) return 0;
-      db2.exec('DELETE FROM temp._hto_dirty');
       const statements = [];
       for (const { tbl, pk } of dirty) {
         let row = null;
@@ -138,8 +145,11 @@ export async function prepareReplica(path, client, { prefix = 'hutong_online', f
       }
       try {
         for (let i = 0; i < statements.length; i += 200) await client.batch(statements.slice(i, i + 200), 'write');
+        if (dbIsOpen(db2)) {
+          const clear = db2.prepare('DELETE FROM temp._hto_dirty WHERE tbl = ? AND pk = ?');
+          for (const d of dirty) clear.run(d.tbl, d.pk);
+        }
       } catch (e) {
-        if (db2?.isOpen) { const back = db2.prepare('INSERT INTO temp._hto_dirty(tbl, pk) SELECT ?1, ?2 WHERE NOT EXISTS (SELECT 1 FROM temp._hto_dirty WHERE tbl = ?1 AND pk = ?2)'); for (const d of dirty) back.run(d.tbl, d.pk); }
         log.error?.('replica: flush failed: ' + e.message);
         throw e;
       }
@@ -150,19 +160,20 @@ export async function prepareReplica(path, client, { prefix = 'hutong_online', f
   function pull({ maxAgeMs = 0 } = {}) {
     if (Date.now() - lastPull < maxAgeMs) return Promise.resolve(0);
     return serial(async () => {
-      if (!db2 || !db2.isOpen) return 0;
+      if (!dbIsOpen(db2)) return 0;
       let applied = 0;
       for (;;) {
         const result = await client.execute({ sql: `SELECT tbl, pk, data, deleted, ver FROM ${t.rows} WHERE ver > ? ORDER BY ver LIMIT 500`, args: [lastVer] });
-        if (!result.rows.length || !db2.isOpen) break;
-        if (db2.isTransaction) break;
+        if (!result.rows.length || !dbIsOpen(db2)) break;
+        if (dbInTx(db2)) break;
         const local = new Set(userTables(db2)), pending = new Set(db2.prepare('SELECT tbl, pk FROM temp._hto_dirty').all().map(r => r.tbl + '\u0000' + r.pk));
         db2.exec('UPDATE temp._hto_ctl SET applying = 1; BEGIN; PRAGMA defer_foreign_keys = ON;');
+        let blocked = false;
         try {
           for (const r of result.rows) {
-            lastVer = Math.max(lastVer, Number(r.ver));
             const tbl = String(r.tbl), pk = String(r.pk);
-            if (!local.has(tbl) || pending.has(tbl + '\u0000' + pk)) continue;
+            if (!local.has(tbl)) { lastVer = Math.max(lastVer, Number(r.ver)); continue; }
+            if (pending.has(tbl + '\u0000' + pk)) { blocked = true; break; }
             try {
               if (Number(r.deleted)) {
                 const keys = keyColumns(db2, tbl);
@@ -170,10 +181,11 @@ export async function prepareReplica(path, client, { prefix = 'hutong_online', f
               } else upsertRow(db2, tbl, JSON.parse(String(r.data)));
               applied++;
             } catch (e) { log.warn?.(`replica: pull skipped ${tbl}: ${e.message}`); }
+            lastVer = Math.max(lastVer, Number(r.ver));
           }
           db2.exec('COMMIT');
         } catch (e) { try { db2.exec('ROLLBACK'); } catch {} throw e; } finally { db2.exec('UPDATE temp._hto_ctl SET applying = 0'); }
-        if (result.rows.length < 500) break;
+        if (blocked || result.rows.length < 500) break;
       }
       lastPull = Date.now();
       return applied;
