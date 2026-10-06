@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {openStore} from './store.mjs';
-import {createCeline,celineQuestion} from './celine.mjs';
+import {createCeline,celineQuestion,celineWalk} from './celine.mjs';
 import {createMvpServer} from './app.mjs';
 
 test('Celine is one persisted visitor; Hutong never seats her, Hawaii uses HL3 and speech has descending probabilities',()=>{
@@ -10,6 +10,9 @@ test('Celine is one persisted visitor; Hutong never seats her, Hawaii uses HL3 a
   let at=100000;const visitor=createCeline(store,{random:()=>.1,now:()=>at});const first=visitor.snapshot();assert.equal(first.scene,'hawaii');assert.equal(first.seat,'HL3');const occupied=visitor.snapshot([{scene:'hawaii',seat:'HL3'}]);assert.equal(occupied.seat,null);assert.equal(occupied.mode,'standing');
   at=first.nextSpeech;const talking=visitor.snapshot();assert.equal(talking.question,'Amber 呢？');assert.ok(talking.nextSpeech-at>=90000);at+=6001;assert.equal(visitor.snapshot().question,'');const reopened=createCeline(store,{random:()=>.99,now:()=>at});assert.equal(reopened.snapshot().scene,'hawaii');
   store.db.prepare("DELETE FROM world_npcs WHERE id='celine'").run();const hutong=createCeline(store,{random:()=>.5,now:()=>at});const arrived=hutong.snapshot();assert.equal(arrived.scene,'hutong');for(let seconds=0;seconds<90;seconds++){const p=hutong.snapshot([],at+seconds*1000);assert.equal(p.seat,null);assert.notEqual(p.mode,'seated');}
+  const start=hutong.snapshot([],at+45000);assert.equal(start.mode,'walking');assert.equal(start.x,480);
+  const step=hutong.snapshot([],at+45250);assert.ok(start.x-step.x>celineWalk*.25-1);assert.ok(start.x-step.x<celineWalk*.25+1);
+  assert.equal(hutong.snapshot([],at+46000).x,420);assert.equal(hutong.snapshot([],at+46000).mode,'standing');
  }finally{store.close();}
 });
 test('personal eggs are visible to observers but only their owner can interact; Celine cannot be controlled',async t=>{

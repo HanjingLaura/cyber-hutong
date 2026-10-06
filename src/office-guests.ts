@@ -6,6 +6,8 @@ import {onlineWorld} from './multiplayer/world-client';
 
 type Identity='celine';
 type Pose={rect:number[];name:string};
+/** World px/s. Keep in sync with server/celine.mjs `celineWalk`. */
+const WALK=108;
 const urls={celine:new URL('../assets/npcs/celine-v1.png',import.meta.url).href};
 export function pickOfficeGuest(roll:number):Identity|null{return roll<.1?'celine':null;}
 export function pickCelineQuestion(roll:number){return roll<.60?'Amber 呢？':roll<.85?'Jilly 呢？':'Amber 这孩子。';}
@@ -86,7 +88,7 @@ export class OfficeGuest{
     const dt=Math.min(delta,50);this.remaining-=dt;
     this.speechVisible=Math.max(0,this.speechVisible-dt);this.speechRemaining-=dt;
     if(this.speechRemaining<=0){this.lastQuestion=pickCelineQuestion(Math.random());this.speech.setText(this.lastQuestion);this.speechVisible=6000;this.speechRemaining=90000+Math.random()*90000;}
-    if(!this.hawaii){if(this.mode==='standing'&&this.remaining<=0){this.mode='walking';this.target={x:this.x>450?420:480,y:194};}if(this.mode==='walking'){const dx=this.target.x-this.x;if(Math.abs(dx)<1){this.mode='standing';this.remaining=15000+Math.random()*25000;}else{this.x+=Math.sign(dx)*Math.min(Math.abs(dx),dt*.035);this.facing=dx>0?1:3;this.motion+=dt;}}return;}
+    if(!this.hawaii){if(this.mode==='standing'&&this.remaining<=0){this.mode='walking';this.target={x:this.x>450?420:480,y:194};}if(this.mode==='walking'){const dx=this.target.x-this.x;if(Math.abs(dx)<1){this.mode='standing';this.remaining=15000+Math.random()*25000;}else{this.x+=Math.sign(dx)*Math.min(Math.abs(dx),dt*WALK/1000);this.facing=dx>0?1:3;this.motion+=dt;}}return;}
     if(this.mode==='seated'){if(this.remaining<=0&&Math.hypot(player.x-this.seat.stand.x,player.y-this.seat.stand.y)>25)this.leave();return;}
     if(this.mode==='standing'){
       if(this.remaining<=0){this.mode='walking';this.returning=true;this.target={...this.seat.stand};}return;
@@ -100,7 +102,7 @@ export class OfficeGuest{
       }else{this.mode='standing';this.remaining=3500+Math.random()*3000;}
       return;
     }
-    const step=Math.min(d,dt*.035),next={x:this.x+dx/d*step,y:this.y+dy/d*step};
+    const step=Math.min(d,dt*WALK/1000),next={x:this.x+dx/d*step,y:this.y+dy/d*step};
     if(canWalk(next,this.seats)&&Math.hypot(player.x-next.x,player.y-next.y)>22){
       this.x=next.x;this.y=next.y;this.motion+=dt;this.facing=(Math.abs(dx)>Math.abs(dy)?dx>0?1:3:dy>0?0:2) as Facing;
     }
@@ -109,7 +111,7 @@ export class OfficeGuest{
     this.reverse=reverse;this.visible=visible;
     if(!this.id||this.suppressed){this.body.setVisible(false);this.upper.setVisible(false);this.speech.setVisible(false);this.speechBox.setVisible(false);return;}
     const id=this.id,d=visualFacing(this.facing,reverse),walking=this.mode==='walking',seated=this.mode==='seated';
-    let index=0;const phase=Math.floor(this.motion/170)%2;
+    let index=0;const phase=Math.floor(this.motion/125)%2;
     index=seated?(d===2?11:10):walking?(d===0?6+phase:d===2?8+phase:4+phase):d===0?0:d===2?1:2;
     const registry=celine,frame=registry.frames[index] as Pose,[, ,w,h]=frame.rect;
     const scale=61.44/(walking?h:registry.referenceHeight),p=project({x:this.x,y:this.y},reverse),key=`office-${id}`;
