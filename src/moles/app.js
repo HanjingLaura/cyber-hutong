@@ -55,8 +55,8 @@ function draw(canvas, id, hit = false, age = 0) {
 
 for (const [index, id] of IDS.entries()) {
   const button = document.createElement('button'); button.className = 'person'; button.dataset.id = id;
-  button.innerHTML = `<span class="check" aria-hidden="true">✓</span><canvas width="100" height="128" aria-hidden="true"></canvas><b>${names[index]}</b><small>${id}</small>`;
-  button.setAttribute('aria-label', `${id} ${names[index]}`);
+  button.innerHTML = `<span class="check" aria-hidden="true">✓</span><canvas width="100" height="128" aria-hidden="true"></canvas><b>${names[index]}</b>`;
+  button.setAttribute('aria-label', names[index]);
   button.onclick = () => { selected.has(id) ? selected.delete(id) : selected.add(id); updateSelection(); };
   $('people').append(button);
 }

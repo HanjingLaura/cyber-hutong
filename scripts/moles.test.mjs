@@ -90,5 +90,5 @@ test('production server serves /moles and /moles/ publicly and keeps the origina
     assert.match(await response.text(), /胡同地鼠/);
   }
   const home = await fetch(root + '/'); assert.equal(home.status, 200);
-  assert.match(await home.text(), /<title>Hutong Online<\/title>/);
+  assert.match(await home.text(), /<title>赛博胡同<\/title>/);
 });
