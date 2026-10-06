@@ -87,7 +87,7 @@ test('production server serves /moles and /moles/ publicly and keeps the origina
   const root = `http://127.0.0.1:${app.server.address().port}`;
   for (const path of ['/moles', '/moles/', '/moles?test=1']) {
     const response = await fetch(root + path); assert.equal(response.status, 200);
-    assert.match(await response.text(), /胡同地鼠 · Hutong Moles/);
+    assert.match(await response.text(), /胡同地鼠/);
   }
   const home = await fetch(root + '/'); assert.equal(home.status, 200);
   assert.match(await home.text(), /<title>Hutong Online<\/title>/);

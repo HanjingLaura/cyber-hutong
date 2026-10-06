@@ -64,7 +64,7 @@ interface PreviewState {
 declare global { interface Window { __hawaiiPreview?: { getState: () => PreviewState & {curtainDown:boolean;curtainProgress:number;nearWindow:boolean} }; __hutongPreview?: { getState: () => PreviewState } } }
 
 document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
-  <header><h1>hutong-online</h1><p>WASD 移动 · E 互动 · <a href="${BASE}members.html">八人动作素材</a></p></header>
+  <header><h1>hutong-online</h1><p>WASD 移动 · E 互动 · <a href="${BASE}members.html">动作检查</a></p></header>
   <nav class="scene-nav" aria-label="场景视角"><button data-scene="culture" aria-pressed="true">胡同 · 文化墙</button><button data-scene="opposite" aria-pressed="false">胡同 · 另一侧</button><button data-scene="rest" aria-pressed="false">休息室 · 设备墙</button><button data-scene="pop" aria-pressed="false">POP MART · 盲盒店</button><button data-scene="hawaii" aria-pressed="false">夏威夷 · 窗边工位</button><button data-scene="bathroom" aria-pressed="false">厕所 · 从右往左</button><button data-scene="concert" aria-pressed="false">演唱会 · 内场</button><button data-scene="arcade" aria-pressed="false">娱乐室 · 电玩城</button><button data-scene="noodle" aria-pressed="false">米线店</button><button data-scene="gym" aria-pressed="false">健身房</button><button data-scene="dance" aria-pressed="false">舞室</button><button data-scene="perler" aria-pressed="false">拼豆店</button><button data-scene="rehearsal" aria-pressed="false">排练厅</button><button data-scene="elevator" aria-pressed="false">电梯间</button><button data-scene="subway" aria-pressed="false">五道口站</button></nav>
   <main>
     <div class="stage-column">
@@ -77,18 +77,18 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
           <div class="fridge-heading"><h2 id="fridge-title">冰箱 · 上层冷藏柜</h2><button id="fridge-close" type="button">关门 · Esc</button></div>
           <div class="fridge-cabinet"><div id="fridge-items"></div><div class="fridge-door-bins" aria-hidden="true"><span></span><span></span><span></span></div></div>
           <div class="fridge-actions"><p id="fridge-hand"></p><button id="fridge-store" type="button">放入手中物品 · F</button><p id="fridge-message" aria-live="polite">点击或按 1–9 取出物品，F 存入。</p></div>
-        </dialog><dialog id="blind-menu" class="blind-menu" aria-labelledby="blind-title"><div class="blind-heading"><h2 id="blind-title">挑选盲盒</h2><button id="blind-close" type="button">关闭</button></div><div id="blind-machine-art" hidden><canvas id="gacha-art" width="82" height="190" aria-label="扭蛋机与取物口"></canvas></div><div id="blind-themes" aria-label="盲盒主题"></div><p id="blind-help"></p><div class="blind-glass"><div id="blind-boxes"></div></div><div class="blind-pickup"><button id="blind-extract" type="button" disabled>先选择一盒</button><button id="blind-refill" type="button">补货</button></div><div id="blind-result" aria-live="polite"></div></dialog><dialog id="arcade-game" class="arcade-game" aria-labelledby="arcade-title"><header><h2 id="arcade-title"></h2><button id="arcade-close" type="button">返回 · Esc</button></header><canvas id="arcade-screen" width="640" height="420" aria-label="像素小游戏"></canvas><footer><span id="arcade-help"></span><button id="arcade-undo" type="button" hidden>撤销</button><button id="arcade-action" type="button" hidden></button><button id="arcade-new" type="button">重开</button></footer></dialog><dialog id="noodle-menu" class="noodle-menu" aria-labelledby="noodle-title"><div class="noodle-heading"><h2 id="noodle-title"></h2><button id="noodle-close" type="button">关闭 · Esc</button></div><p id="noodle-menu-hand"></p><div id="noodle-choices"></div></dialog><dialog id="gym-storage" class="gym-storage" aria-labelledby="gym-storage-title"><div class="gym-storage-heading"><h2 id="gym-storage-title">储物架</h2><button id="gym-storage-close" type="button">关闭 · Esc</button></div><div id="gym-storage-items"></div></dialog><dialog id="perler-workshop" class="perler-workshop" aria-labelledby="perler-title"><div class="perler-heading"><h2 id="perler-title">拼豆</h2><button id="perler-close" type="button">返回 · Esc</button></div><div class="perler-workspace"><canvas id="perler-board" width="360" height="360" aria-label="16乘16拼豆底板，点击或拖动放豆，右键擦除"></canvas><div class="perler-tools"><label for="perler-pattern">底图</label><select id="perler-pattern"></select><div id="perler-palette" aria-label="豆子颜色"></div><button id="perler-eraser" type="button" aria-pressed="false">橡皮擦</button><div class="perler-history"><button id="perler-undo" type="button">撤销</button><button id="perler-redo" type="button">重做</button></div><button id="perler-iron" type="button">熨烫作品</button><button id="perler-new" type="button">换新底板</button><p id="perler-progress"></p></div></div><p id="perler-message" aria-live="polite"></p><div id="perler-collection" hidden><h3>作品</h3><div id="perler-gallery"></div></div></dialog><div id="game"></div><div class="loading">正在载入像素素材…</div>
+        </dialog><dialog id="blind-menu" class="blind-menu" aria-labelledby="blind-title"><div class="blind-heading"><h2 id="blind-title">挑选盲盒</h2><button id="blind-close" type="button">关闭</button></div><div id="blind-machine-art" hidden><canvas id="gacha-art" width="82" height="190" aria-label="扭蛋机与取物口"></canvas></div><div id="blind-themes" aria-label="盲盒主题"></div><p id="blind-help"></p><div class="blind-glass"><div id="blind-boxes"></div></div><div class="blind-pickup"><button id="blind-extract" type="button" disabled>先选择一盒</button><button id="blind-refill" type="button">补货</button></div><div id="blind-result" aria-live="polite"></div></dialog><dialog id="arcade-game" class="arcade-game" aria-labelledby="arcade-title"><header><h2 id="arcade-title"></h2><button id="arcade-close" type="button">返回 · Esc</button></header><canvas id="arcade-screen" width="640" height="420" aria-label="像素小游戏"></canvas><footer><span id="arcade-help"></span><button id="arcade-undo" type="button" hidden>撤销</button><button id="arcade-action" type="button" hidden></button><button id="arcade-new" type="button">重开</button></footer></dialog><dialog id="noodle-menu" class="noodle-menu" aria-labelledby="noodle-title"><div class="noodle-heading"><h2 id="noodle-title"></h2><button id="noodle-close" type="button">关闭 · Esc</button></div><p id="noodle-menu-hand"></p><div id="noodle-choices"></div></dialog><dialog id="gym-storage" class="gym-storage" aria-labelledby="gym-storage-title"><div class="gym-storage-heading"><h2 id="gym-storage-title">储物架</h2><button id="gym-storage-close" type="button">关闭 · Esc</button></div><div id="gym-storage-items"></div></dialog><dialog id="perler-workshop" class="perler-workshop" aria-labelledby="perler-title"><div class="perler-heading"><h2 id="perler-title">拼豆</h2><button id="perler-close" type="button">返回 · Esc</button></div><div class="perler-workspace"><canvas id="perler-board" width="360" height="360" aria-label="16乘16拼豆底板，点击或拖动放豆，右键擦除"></canvas><div class="perler-tools"><label for="perler-pattern">底图</label><select id="perler-pattern"></select><div id="perler-palette" aria-label="豆子颜色"></div><button id="perler-eraser" type="button" aria-pressed="false">橡皮擦</button><div class="perler-history"><button id="perler-undo" type="button">撤销</button><button id="perler-redo" type="button">重做</button></div><button id="perler-iron" type="button">熨烫作品</button><button id="perler-new" type="button">换新底板</button><p id="perler-progress"></p></div></div><p id="perler-message" aria-live="polite"></p><div id="perler-collection" hidden><h3>作品</h3><div id="perler-gallery"></div></div></dialog><div id="game"></div><div class="loading">载入中…</div>
         <div id="play-guide" aria-live="polite"><strong id="guide-title">胡同 · WASD / 方向键移动</strong><span id="guide-action">靠近工位按 E 坐下 · V 换视角</span></div>
         <div id="rehearsal-piano" hidden><div class="piano-heading"><span>钢琴 · C3–C6</span><span id="piano-range"></span><button id="rehearsal-piano-close" type="button">起身 · Esc</button></div><div id="rehearsal-keyboard" aria-label="钢琴琴键"></div><p class="piano-help">鼠标 / 触屏演奏 · Z 行低音，Q 行高音 · ↑↓ 切换键盘音区 · 支持和弦</p></div>
         <button id="view" aria-pressed="false">换个视角 · V</button>
       </section>
-      <div class="scene-caption"><span id="view-label">文化墙一侧</span><span>八个靠墙工位 · 中间通道</span></div>
+      <div class="scene-caption"><span id="view-label">文化墙一侧</span><span></span></div>
       <figure id="walk-review" hidden><canvas id="walk-sheet" width="768" height="224" role="img" aria-label="本人左右步行的六帧循环，包含迈步、抬脚、双腿交叉和换脚"></canvas>
         <figcaption>右向／左向各六帧：迈步 → 抬脚 → 经过身体下方 → 换脚迈步 → 抬脚 → 回步。游戏里按固定尺度播放。</figcaption>
       </figure>
     </div>
     <aside>
-      <div class="status"><h2>你的角色</h2><strong id="mode">准备进入胡同</strong>
+      <div class="status"><h2>你的角色</h2><strong id="mode">未登录</strong>
         <p id="hint" class="hint" aria-live="polite">载入后点击场景开始。</p>
         <button id="interact" disabled>靠近椅子坐下</button><button id="table-action" hidden>放到桌上</button>
       </div>
@@ -105,21 +105,22 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
         <label><input type="checkbox" data-layer="anchors">座位交互点</label>
       </div>
       <button id="curtain-control" type="button" hidden>拉下窗帘</button><div class="seat-state" id="seat-state">左墙 L1–L4 · 右墙 R1–R4</div>
-      <p class="note">L／R 按进入真实胡同时的左右墙定义；从中国结所在的尽头向入口编号。切换视角保持同一座位和位置。</p>
+      <p class="note" hidden></p>
       <div class="review-actions"><button id="walk-toggle" aria-expanded="false">查看步行动作</button><button id="reset">回到入口</button></div>
-      <p class="note">八个座位均可试坐；电脑与椅子对准桌下空位。</p></div>
-      <div id="rest-controls" hidden><h2>休息室</h2><p>从 Go! 墙朝设备墙看。靠近物件按 E，也可点击侧栏操作。</p><p id="rest-inventory">手中：空</p><p id="rest-message" aria-live="polite">试试接一杯咖啡，再放到餐桌上。</p><div class="layers"><label><input type="checkbox" data-rest-layer="equipment" checked>贩卖机、冰箱、咖啡台</label><label><input type="checkbox" data-rest-layer="tables" checked>独立餐桌</label><label><input type="checkbox" data-rest-layer="chairs" checked>独立椅子</label></div><button id="rest-reset">重置休息室试玩</button><p class="note">贩卖机产品免费领取。物品可放到餐桌上，也可带去胡同；状态保留到刷新前。</p></div>
-      <div id="pop-controls" hidden><h2>盲盒收藏</h2><p>陈列台挑盒，扭蛋机转动抽取。</p><p id="pop-count">收藏：0 件</p><div id="pop-collection"></div><p id="pop-legacy" class="note"></p><p class="note"></p></div>
-      <div id="bathroom-controls" hidden><h2>厕所</h2><p>四个独立隔间，两个洗手台。</p><p id="bathroom-state"></p><button id="bathroom-door" type="button" disabled>靠近隔间开关门</button><p class="note">E 开门 / 坐下，E 或 Esc 起身；F 开关门。靠近洗手台按 E 洗手。门和座位状态在切换场景时保留。</p></div>
-      <div id="concert-controls" hidden><h2>演唱会内场</h2><p id="concert-state">三排共十八席</p><p>靠近座位按 E 坐下，面向舞台观看。E / Esc 起身。中央与两侧通道可以通行。</p></div>
-      <div id="arcade-controls" hidden><h2>娱乐室</h2><p>扫雷 · 蜘蛛纸牌 · 抓娃娃 · 投篮 · 空气曲棍球</p><p>靠近机器按 E，Esc 返回。长椅可以坐下休息，关闭游戏会保留本局进度。</p></div>
-      <div id="noodle-controls" hidden><h2>米线店</h2><p id="noodle-hand">手中：空</p><p>左侧拿碗筷，前方取米线，右侧买鸡柳或炸鸡。</p><p>饮料柜有可乐、冰红茶。靠近餐桌按 F 放下、拿回或加醋、麻油；坐下可以吃东西。</p></div>
-      <div id="gym-controls" hidden><h2>健身房</h2><p id="gym-hand"></p><p id="gym-stats"></p><button id="gym-speed" type="button" hidden>切换速度 · F</button><button id="gym-rep" type="button" hidden>举一次 · Space</button><p id="gym-breath"></p><p>跑步机调速跑步，哑铃举起后放下计一次。训练需空手，物品可存到左侧储物架。训练凳可以休息，瑜伽垫练习呼吸。</p></div>
-      <div id="dance-controls" hidden><h2>舞室</h2><p id="dance-hand"></p><button id="dance-music" type="button">播放节拍</button><button id="dance-tempo" type="button">120 BPM · F 调速</button><button id="dance-start" type="button">对镜跳舞</button><button id="dance-practice" type="button">跟拍练习</button><p id="dance-sequence" aria-live="polite"></p><p id="dance-score"></p><p>镜子前跳舞，中央空地跟拍。右侧储物格可存放物品，左侧长凳可以休息。</p></div>
-      <div id="perler-controls" hidden><h2>拼豆店</h2><p id="perler-hand"></p><p id="perler-count"></p><button id="perler-continue" type="button" hidden>继续拼豆 · F</button><p>选色放豆、擦除、撤销；也可以照着底图拼。熨烫后收进作品架，底板和作品会保存在当前浏览器。</p></div>
-      <div id="rehearsal-controls" hidden><h2>排练厅</h2><p id="rehearsal-state"></p><p>十组椅子与谱台都可以试坐。右侧琴凳按 E 弹琴，可以点击琴键或用键盘弹奏和弦。</p></div>
-      <div id="subway-controls" hidden><h2>五道口站</h2><p id="subway-state"></p><p>靠近车门按 E，打开或关闭列车车门。</p></div>
-      <div id="elevator-controls" hidden><h2>电梯间</h2><p id="elevator-state"></p><p>靠近电梯按 E，分别打开或关闭两扇电梯门。</p></div>
+      <p class="note" hidden></p>
+      </div>
+      <div id="rest-controls" hidden><h2>休息室</h2><p id="rest-inventory">手中：空</p><p id="rest-message" aria-live="polite">试试接一杯咖啡，再放到餐桌上。</p><div class="layers"><label><input type="checkbox" data-rest-layer="equipment" checked>贩卖机、冰箱、咖啡台</label><label><input type="checkbox" data-rest-layer="tables" checked>独立餐桌</label><label><input type="checkbox" data-rest-layer="chairs" checked>独立椅子</label></div><button id="rest-reset">重置休息室试玩</button></div>
+      <div id="pop-controls" hidden><h2>盲盒收藏</h2><p id="pop-count">收藏：0 件</p><div id="pop-collection"></div><p id="pop-legacy" class="note"></p></div>
+      <div id="bathroom-controls" hidden><h2>厕所</h2><p id="bathroom-state"></p><button id="bathroom-door" type="button" disabled>靠近隔间开关门</button></div>
+      <div id="concert-controls" hidden><h2>演唱会内场</h2><p id="concert-state"></p></div>
+      <div id="arcade-controls" hidden><h2>娱乐室</h2></div>
+      <div id="noodle-controls" hidden><h2>米线店</h2><p id="noodle-hand">手中：空</p></div>
+      <div id="gym-controls" hidden><h2>健身房</h2><p id="gym-hand"></p><p id="gym-stats"></p><button id="gym-speed" type="button" hidden>切换速度 · F</button><button id="gym-rep" type="button" hidden>举一次 · Space</button><p id="gym-breath"></p></div>
+      <div id="dance-controls" hidden><h2>舞室</h2><p id="dance-hand"></p><button id="dance-music" type="button">播放节拍</button><button id="dance-tempo" type="button">120 BPM · F 调速</button><button id="dance-start" type="button">对镜跳舞</button><button id="dance-practice" type="button">跟拍练习</button><p id="dance-sequence" aria-live="polite"></p><p id="dance-score"></p></div>
+      <div id="perler-controls" hidden><h2>拼豆店</h2><p id="perler-hand"></p><p id="perler-count"></p><button id="perler-continue" type="button" hidden>继续拼豆 · F</button></div>
+      <div id="rehearsal-controls" hidden><h2>排练厅</h2><p id="rehearsal-state"></p></div>
+      <div id="subway-controls" hidden><h2>五道口站</h2><p id="subway-state"></p></div>
+      <div id="elevator-controls" hidden><h2>电梯间</h2><p id="elevator-state"></p></div>
     </aside>
   </main>`;
 
@@ -623,8 +624,8 @@ for (const button of document.querySelectorAll<HTMLButtonElement>('[data-scene]'
   };
   updateLayerLabel('chair',hawaii?'六把独立网椅':'八把独立网椅');
   updateLayerLabel('laptop',hawaii?'六台独立电脑':'八台独立电脑');
-  document.querySelector('#hutong-controls .review-actions + .note')!.textContent=hawaii?'六个座位均可试坐；三段桌架的腿部空间与椅子对齐。':'八个座位均可试坐；电脑与椅子对准桌下空位。';
-  document.querySelector('#hutong-controls .seat-state + .note')!.textContent=hawaii?'固定使用文化墙同向视角；左側窗边按 E 拉下或卷起窗帘。':'L／R 按进入真实胡同时的左右墙定义；从中国结所在的尽头向入口编号。切换视角保持同一座位和位置。';
+  document.querySelector('#hutong-controls .review-actions + .note')!.textContent='';
+  document.querySelector('#hutong-controls .seat-state + .note')!.textContent='';
   document.querySelector<HTMLElement>('#hutong-controls')!.hidden = rest || pop || bathroom || concert || arcade || noodle || gym || dance || perler || rehearsal || elevator || subway;
   document.querySelector<HTMLElement>('#rest-controls')!.hidden = !rest;
   document.querySelector<HTMLElement>('#pop-controls')!.hidden = !pop;
@@ -632,66 +633,66 @@ for (const button of document.querySelectorAll<HTMLButtonElement>('[data-scene]'
   document.querySelector<HTMLButtonElement>('#table-action')!.hidden = true;
   document.querySelector<HTMLElement>('#walk-review')!.hidden = true;
   document.querySelector('#view-label')!.textContent = hawaii?'夏威夷 · 文化墙同向视角':pop ? 'POP MART · 盲盒店' : rest ? '休息室 · 从 Go! 墙看向设备墙' : target === 'culture' ? '文化墙一侧' : '另一侧 · 同一个胡同';
-  document.querySelector('.scene-caption span:last-child')!.textContent = hawaii?'两排各三席 · 窗边卷帘 · E 互动':pop ? '中央陈列台、扭蛋机 · E 互动' : rest ? '独立设备、桌椅 · E 互动' : '八个靠墙工位 · 中间通道';
+  document.querySelector('.scene-caption span:last-child')!.textContent='';
   document.querySelector('.keys')!.innerHTML = hawaii?'WASD / 方向键移动<br>E 坐下 / 起身 · 窗边 E 卷帘<br>Esc 起身':pop ? 'WASD / 方向键移动<br>E 挑盒 / 转动扭蛋机<br>点击选盒 · Esc 关闭' : rest ? 'WASD / 方向键移动<br>E 与物件互动 · Esc 起身<br>坐着时 F 放下 / 拿回物品' : 'WASD / 方向键移动<br>E 坐下办公 / 起身 · V 换视角';
   document.querySelector<HTMLElement>('#bathroom-controls')!.hidden=!bathroom;
   if(bathroom){
     document.querySelector('#view-label')!.textContent='厕所 · 从右往左';
-    document.querySelector('.scene-caption span:last-child')!.textContent='四个隔间 · 两个洗手台';
+    document.querySelector('.scene-caption span:last-child')!.textContent='';
     document.querySelector('.keys')!.innerHTML='WASD / 方向键移动<br>E 开门 / 坐下 / 起身<br>F 开关门 · Esc 起身<br>洗手台 E 洗手';
   }
   document.querySelector<HTMLElement>('#concert-controls')!.hidden=!concert;
   if(concert){
     document.querySelector('#view-label')!.textContent='演唱会 · 内场朝向舞台';
-    document.querySelector('.scene-caption span:last-child')!.textContent='保留顶部标志 · 三排可坐座位';
+    document.querySelector('.scene-caption span:last-child')!.textContent='';
     document.querySelector('.keys')!.innerHTML='WASD / 方向键移动<br>E 坐下 / 起身 · Esc 起身';
   }
   document.querySelector<HTMLElement>('#arcade-controls')!.hidden=!arcade;
   if(arcade){
     document.querySelector('#view-label')!.textContent='娱乐室 · 电玩城';
-    document.querySelector('.scene-caption span:last-child')!.textContent='五台可玩的机器 · 休息长椅';
+    document.querySelector('.scene-caption span:last-child')!.textContent='';
     document.querySelector('.keys')!.innerHTML='WASD / 方向键移动<br>E 玩游戏 · Esc 返回';
   }
   document.querySelector<HTMLElement>('#noodle-controls')!.hidden=!noodle;
   if(noodle){
     document.querySelector('#view-label')!.textContent='米线店';
-    document.querySelector('.scene-caption span:last-child')!.textContent='米线 · 鸡柳大人 · 饮料柜';
+    document.querySelector('.scene-caption span:last-child')!.textContent='';
     document.querySelector('.keys')!.innerHTML='WASD / 方向键移动<br>E 取餐 / 坐下 / 起身<br>F 桌上物品 / 调料 · Esc 起身';
   }
   document.querySelector<HTMLElement>('#gym-controls')!.hidden=!gym;
   if(gym){
     document.querySelector('#view-label')!.textContent='健身房';
-    document.querySelector('.scene-caption span:last-child')!.textContent='跑步机 · 哑铃 · 训练凳 · 瑜伽垫';
+    document.querySelector('.scene-caption span:last-child')!.textContent='';
     document.querySelector('.keys')!.innerHTML='WASD / 方向键移动<br>E 使用 / 结束 · Esc 结束<br>跑步 F 调速 · 哑铃 Space 举起';
   }
   document.querySelector<HTMLElement>('#dance-controls')!.hidden=!dance;
   if(dance){
     document.querySelector('#view-label')!.textContent='舞室';
-    document.querySelector('.scene-caption span:last-child')!.textContent='镜子 · 音响 · 跟拍练习';
+    document.querySelector('.scene-caption span:last-child')!.textContent='';
     document.querySelector('.keys')!.innerHTML='WASD / 方向键移动<br>E 跳舞 / 互动 · Esc 结束<br>F 调速 · 跟拍时按方向键';
   }
   document.querySelector<HTMLElement>('#perler-controls')!.hidden=!perler;
   if(perler){
     document.querySelector('#view-label')!.textContent='拼豆店';
-    document.querySelector('.scene-caption span:last-child')!.textContent='彩豆架 · 八个座位 · 熨烫台';
+    document.querySelector('.scene-caption span:last-child')!.textContent='';
     document.querySelector('.keys')!.innerHTML='WASD / 方向键移动<br>E 坐下 / 互动 · Esc 返回 / 起身<br>F 继续拼豆 · 点击或拖动放豆';
   }
   document.querySelector<HTMLElement>('#rehearsal-controls')!.hidden=!rehearsal;
   if(rehearsal){
     document.querySelector('#view-label')!.textContent='排练厅';
-    document.querySelector('.scene-caption span:last-child')!.textContent='前排四席 · 后排六席 · 指挥台 · 钢琴';
+    document.querySelector('.scene-caption span:last-child')!.textContent='';
     document.querySelector('.keys')!.innerHTML='WASD / 方向键移动<br>E 坐下 / 互动 · Esc 起身<br>弹琴时 A W S R D F T G Y H U J K';
   }
   document.querySelector<HTMLElement>('#elevator-controls')!.hidden=!elevator;
   if(elevator){
     document.querySelector('#view-label')!.textContent='电梯间 · 从左往右';
-    document.querySelector('.scene-caption span:last-child')!.textContent='两部独立电梯 · E 开关门';
+    document.querySelector('.scene-caption span:last-child')!.textContent='';
     document.querySelector('.keys')!.innerHTML='WASD / 方向键移动<br>E 开关附近电梯门';
   }
   document.querySelector<HTMLElement>('#subway-controls')!.hidden=!subway;
   if(subway){
     document.querySelector('#view-label')!.textContent='五道口站 · 站台';
-    document.querySelector('.scene-caption span:last-child')!.textContent='停靠列车 · E 开关车门';
+    document.querySelector('.scene-caption span:last-child')!.textContent='';
     document.querySelector('.keys')!.innerHTML='WASD / 方向键移动<br>E 开关列车车门';
   }
   const activeKey = subway?'subway':elevator?'elevator':rehearsal?'rehearsal' :perler?'perler' :dance?'dance' :gym?'gym' :noodle?'noodle':arcade?'arcade':concert?'concert':bathroom?'bathroom':hawaii?'hawaii':pop ? 'pop' : rest ? 'rest' : 'hutong';
