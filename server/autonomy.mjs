@@ -59,7 +59,7 @@ export function createAutonomy(store,life,players,leases=new Map()){
   if(task.kind==='work'){const seatId=desks.hutong[p.role],seat=geometry.hutong.seats[seatId];if(!all().some(o=>o.id!==p.id&&o.scene===p.scene&&o.seat===seatId)){[p.x,p.y]=seat.at;p.seat=seatId;p.facing=seatId[0]==='R'?2:0;p.activity='working';}}
   else if(task.kind==='coffee'){p.activity='walk';p.task={...task,phase:'brew',until:now+3000};return;}
   else if(task.kind==='deliver'){const peer=all().find(o=>o.role===task.peer);if(peer?.scene===p.scene&&Math.hypot(peer.x-p.x,peer.y-p.y)<55){life.send(p.id,peer.role,'gift','morning-coffee:'+Math.floor((now+28800000)/86400000),p.scene,store.byId(p.id).revision);life.record(p.id,'delivery','给 Sid 带了咖啡，正在等待他收下。',p.scene,now);}}
-  else if(task.kind==='exercise'){const anchor=geometry.gym.activities.run.find(a=>a.device===task.device);if(!leases.has('gym:'+task.device)){leases.set('gym:'+task.device,{account:p.id,role:p.role,at:now});[p.x,p.y]=anchor.at;p.activity='run';}}
+  else if(task.kind==='exercise'){const anchor=geometry.gym.activities.run.find(a=>a.device===task.device);if(!leases.has('gym:'+task.device)){leases.set('gym:'+task.device,{account:p.id,role:p.role,at:now});[p.x,p.y]=anchor.at;p.facing=2;p.activity='run';}}
   p.task=null;p.next=now+activityPause(task.kind);save(p);
  }
  function tick(now=Date.now(),delta=100){let changed=false;

@@ -28,7 +28,7 @@ async function paint(canvas:HTMLCanvasElement,e:MemoryEntry,bridge:MultiplayerBr
   else if(p.activity==='working'&&p.seat&&office){list=d.officeFrames;index=back?2:0;}
   else if(p.activity==='piano'){list=d.frames;index=6;}
   else if(p.seat)index=front?4:back?5:39;
-  else if(p.activity==='run')index=d.runLoop?.[0]??62;
+  else if(p.activity==='run')index=back?16:front?8:d.runLoop?.[0]??62;
   else if(['dance','practice'].includes(p.activity))index=back?54:46;
   else if(p.activity==='curl')index=30;
   else if(p.moving)index=front?8:back?16:d.sideWalkLoop?.[0]??24;

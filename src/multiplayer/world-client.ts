@@ -34,7 +34,10 @@ export class WorldClient{
   if(data.npcs)setGuestPresence(data.npcs);
   if(data.clock)this.clockOffset=data.clock-Date.now();
   const scene=this.bridge.active;if(scene)for(const name of [data.self?.hand,...(data.players??[]).map((p:any)=>p.hand),...(data.objects??[]).flatMap((o:any)=>(o.slots??[]).map((s:any)=>typeof s==='string'?s:s?.name))])if(name)void ensureCollectible(scene,name).catch(()=>{});
-  if(data.self&&this.bridge.user?.id===data.self.id&&data.self.revision>=(this.bridge.user?.revision??0)){this.bridge.user=data.self;playerInventory.hand=data.self.hand as ItemName|null;playerInventory.noodleSeasoning=data.self.seasoning??[];}
+  if(data.self&&this.bridge.user?.id===data.self.id&&data.self.revision>=(this.bridge.user?.revision??0)){
+    this.bridge.user=data.self;playerInventory.hand=data.self.hand as ItemName|null;playerInventory.noodleSeasoning=data.self.seasoning??[];
+    const ui=document.getElementById('social-ui');if(ui)ui.dataset.revision=String(data.self.revision);
+  }
   for(const o of data.objects??[])if(o.version>=(this.objects.get(o.id)?.version??-1))this.objects.set(o.id,o);
   const version=data.progressVersion??data.self?.progressVersion??0;
   if(data.progress&&version>=this.progressVersion){this.progressVersion=version;this.progress=data.progress;const signature=JSON.stringify(data.progress),id=this.bridge.user?.id??'';if(signature!==this.progressSignature||this.hydrated!==id){

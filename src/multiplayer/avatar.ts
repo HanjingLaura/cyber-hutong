@@ -45,7 +45,14 @@ export class TeamAvatar{
   else if(working){part=2;index=(back?2:0)+(previewPhase===undefined?Math.floor(performance.now()/250):previewPhase)%2;}
   else if(mode==='piano'){part=0;index=6+(previewPhase===undefined?Math.floor(performance.now()/250):previewPhase)%2;}
   else if(seated)index=back?5:front?4:39;
-  else if(mode==='run')index=data.runLoop?data.runLoop[(previewPhase??Math.floor(this.time/(data.runFrameMs??170)))%data.runLoop.length]:62+(previewPhase===undefined?Math.floor(performance.now()/140):previewPhase)%2;
+  else if(mode==='run'){
+    // Treadmills face the console (away from camera). Side-run loops are left/right
+    // only; using them with facing=back makes the avatar stride across the belt.
+    const runPhase=previewPhase??Math.floor(this.time/(data.runFrameMs??125));
+    if(back)index=16+runPhase%4;
+    else if(front)index=8+runPhase%4;
+    else index=data.runLoop?data.runLoop[runPhase%data.runLoop.length]:62+runPhase%2;
+  }
   else if(mode==='dance'||mode==='practice')index=(back?54:46)+(previewPhase===undefined?Math.floor(performance.now()/400):previewPhase)%2;
   else if(mode==='curl')index=30+(previewPhase===undefined?Math.floor(performance.now()/650):previewPhase)%2;
   else if(moving)index=front?8+phase%4:back?16+phase%4:data.sideWalkLoop?data.sideWalkLoop[(previewPhase??Math.floor(this.time/(data.sideWalkFrameMs??250)))%data.sideWalkLoop.length]:24+(data.approvedLegacy?sideUpperFrame(this.time):Math.floor(this.time/125)%6);

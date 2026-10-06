@@ -35,6 +35,12 @@ export function startSocial(game:Phaser.Game){
   dockPrompt(document.getElementById('game-notice'));
   requestAnimationFrame(()=>game.scale.refresh());
   const $=<T extends HTMLElement=HTMLElement>(id:string)=>document.getElementById(id) as T;
+  const applySelf=(self:User|null|undefined)=>{
+    if(!self||(user&&self.id===user.id&&self.revision<user.revision))return false;
+    user=self;bridge.user=self;
+    playerInventory.hand=self.hand as ItemName|null;playerInventory.noodleSeasoning=self.seasoning??[];
+    $('social-ui').dataset.revision=String(self.revision);return true;
+  };
   const focus=()=>document.querySelector<HTMLElement>('.world')!.focus();
   let noticeTimer:ReturnType<typeof setTimeout>;
   function notice(text:string){$('game-notice').textContent=text;$('game-notice').hidden=false;clearTimeout(noticeTimer);noticeTimer=setTimeout(()=>$('game-notice').hidden=true,4000);}
@@ -81,10 +87,8 @@ export function startSocial(game:Phaser.Game){
   }
   async function refresh(){const result=await api('me');user=result.user||null;bridge.user=user;if(!world)world={self:user!,controller:true,players:[],online:[],roster:result.roster||[]};else world.roster=result.roster||world.roster;account();people();}
   function connect(){events?.close();if(!user)return;events=new EventSource(apiUrl('events?client='+encodeURIComponent(client)));
-    events.addEventListener('world',e=>{let next:World;try{next=JSON.parse((e as MessageEvent).data) as World;}catch{notice('联机数据异常');return;}const previousController=bridge.controller;world=next;user=next.self;bridge.user=user;bridge.controller=next.controller;if(previousController&&!next.controller)shared.pause();if(next.controller&&!previousController){bridge.stand();const self=next.players.find(p=>p.role===user?.role);if(self)bridge.apply(self);if(party.enabled)void party.connect();}bridge.connected=true;connected=true;
-      if(user.role&&initializedRole!==user.role){const self=next.players.find(p=>p.role===user!.role);if(self){bridge.pendingSpawn=self;initializedRole=user.role;}playerInventory.hand=user.hand as ItemName|null;if(party.enabled){party.reopen();void party.connect();}}
-      else if(user.revision>Number($('social-ui').dataset.revision||-1))playerInventory.hand=user.hand as ItemName|null;
-      $('social-ui').dataset.revision=String(user.revision);
+    events.addEventListener('world',e=>{let next:World;try{next=JSON.parse((e as MessageEvent).data) as World;}catch{notice('联机数据异常');return;}const previousController=bridge.controller;world=next;applySelf(next.self);bridge.controller=next.controller;if(previousController&&!next.controller)shared.pause();if(next.controller&&!previousController){bridge.stand();const self=next.players.find(p=>p.role===user?.role);if(self)bridge.apply(self);if(party.enabled)void party.connect();}bridge.connected=true;connected=true;
+      if(user?.role&&initializedRole!==user.role){const self=next.players.find(p=>p.role===user!.role);if(self){bridge.pendingSpawn=self;initializedRole=user.role;}if(party.enabled){party.reopen();void party.connect();}}
       const partyHint=party.enabled?(party.connected?' · PartyKit':' · PartyKit…'):'';
       $('connection-state').textContent=(next.controller?'已连接':'在另一个窗口操作')+partyHint;$('take-control').hidden=next.controller;
       bridge.claimedRoles=next.roster.filter(p=>p.claimed).map(p=>p.role);account();applyPartyView();const keyboard=bridge.active?.input.keyboard;if(keyboard)keyboard.enabled=next.controller;
@@ -127,7 +131,7 @@ export function startSocial(game:Phaser.Game){
     if(e.key==='Escape'&&!($('account-dialog') as HTMLDialogElement).open){$('people-panel').hidden=true;$('chat-panel').hidden=true;document.body.classList.remove('show-scene-picker','show-game-details');}
     if(user?.role&&!bridge.controller&&[document.querySelector('.world'),game.canvas].includes(document.activeElement)&&/^(Arrow|Key[WASDEFV]|Space|Escape)/.test(e.code)){e.stopImmediatePropagation();e.preventDefault();}
   },true);
-  async function publishPresence(force=false){if(force&&sendingPresence){const deadline=Date.now()+3000;while(sendingPresence&&Date.now()<deadline)await new Promise(r=>setTimeout(r,20));if(sendingPresence)throw new Error('连接恢复后再操作');}if(!user?.role||!connected||!bridge.controller||sendingPresence)return;const state=bridge.state();if(!state)return;party.publish(state,force);const signature=JSON.stringify(state);if(!force&&signature===lastSent)return;sendingPresence=true;try{const result=await api<{self:User;player:Player}>('presence',{...state,client});if(user?.id!==result.self.id)return;user=result.self;bridge.user=user;if(user.revision>Number($('social-ui').dataset.revision||-1)){playerInventory.hand=user.hand as ItemName|null;$('social-ui').dataset.revision=String(user.revision);}lastSent=signature;}catch(e){const err=e as Error&{status?:number};if(err.status===409){bridge.stand();const self=world?.players.find(p=>p.role===user?.role);if(self)bridge.apply(self);notice(err.message);}else if(err.status===401){hardLogout('登录已结束');}else if(err.status!==429)notice(err.message);}finally{sendingPresence=false;}}
+  async function publishPresence(force=false){if(force&&sendingPresence){const deadline=Date.now()+3000;while(sendingPresence&&Date.now()<deadline)await new Promise(r=>setTimeout(r,20));if(sendingPresence)throw new Error('连接恢复后再操作');}if(!user?.role||!connected||!bridge.controller||sendingPresence)return;const state=bridge.state();if(!state)return;party.publish(state,force);const signature=JSON.stringify(state);if(!force&&signature===lastSent)return;sendingPresence=true;try{const result=await api<{self:User;player:Player}>('presence',{...state,client});if(user?.id!==result.self.id)return;applySelf(result.self);lastSent=signature;}catch(e){const err=e as Error&{status?:number};if(err.status===409){bridge.stand();const self=world?.players.find(p=>p.role===user?.role);if(self)bridge.apply(self);notice(err.message);}else if(err.status===401){hardLogout('登录已结束');}else if(err.status!==429)notice(err.message);}finally{sendingPresence=false;}}
   let sendingPresence=false,lastPulse=0,lastPartyMove=0;
   function livePlayers(){return (party.enabled&&party.connected?party.list():null)||world?.players||[];}
   function updateNear(){const hud=$('near-social'),state=bridge.state();if(!user?.role||!state||!bridge.controller){nearRole=null;hud.hidden=true;return;}let best:Role|null=null,bestDist=55;for(const p of livePlayers()){if(p.role===user.role||p.scene!==state.scene)continue;const d=Math.hypot(p.x-state.x,p.y-state.y);if(d<=bestDist){bestDist=d;best=p.role;}}nearRole=best;hud.hidden=!best;if(best){$('near-label').textContent=title(best);($('near-social').querySelector('[data-near="gift"]') as HTMLButtonElement).disabled=!playerInventory.hand;const inviteBtn=$('near-social').querySelector('[data-near="invite"]') as HTMLButtonElement;inviteBtn.textContent=`去${meetPlaces[playPlaceFor(best)]}`;}

@@ -66,6 +66,13 @@ export class GymScene extends Phaser.Scene {
   private changeSpeed(){if(this.mode==='run')this.speedIndex=(this.speedIndex+1)%this.speeds.length;}
   private lift(){if(this.mode==='curl'&&this.liftStart===null){this.liftStart=this.time.now;this.message='举起，再慢慢放下。';}}
   private stop(){if(this.mode==='run'||this.mode==='curl')releaseDevice(this.mode==='run'?`run-${this.machine}`:'curl');this.mode='walk';this.liftStart=null;this.breathTime=0;this.x=this.returnPoint.x;this.y=this.returnPoint.y;this.facing=0;this.message='训练结束。';this.belt.clear();}
+  private begin(kind:Mode,index:number){
+    this.returnPoint={x:this.x,y:this.y};this.machine=index;this.mode=kind;this.input.keyboard?.resetKeys();
+    if(kind==='run'){this.x=treadmills[index];this.y=127;this.facing=2;this.message='F 切换速度，E / Esc 下机。';}
+    if(kind==='curl'){this.x=123;this.y=115;this.facing=0;this.message='Space 举一次哑铃，E / Esc 放回。';}
+    if(kind==='rest'){this.x=benches[index].x;this.y=benches[index].y;this.facing=0;this.message='E / Esc 起身。';}
+    if(kind==='breathe'){this.x=561;this.y=297;this.facing=0;this.breathTime=0;this.message='跟着节奏吸气、呼气，E / Esc 结束。';}
+  }
   private storage(){
     const list=document.querySelector('#gym-storage-items')!;list.replaceChildren();
     const make=(label:string,disabled:boolean,run:()=>void)=>{const button=document.createElement('button');button.type='button';button.textContent=label;button.disabled=disabled;button.addEventListener('click',()=>{run();this.dialog.close();});list.append(button);};
@@ -77,20 +84,19 @@ export class GymScene extends Phaser.Scene {
     if(this.mode!=='walk'){this.stop();return;}
     const target=this.nearest();if(!target)return;
     if(playerInventory.hand&&['run','curl'].includes(target.kind)){this.message='训练需要空手，先存放物品。';return;}
-    if(['run','curl'].includes(target.kind)&&useDevice(target.kind==='run'?`run-${target.index}`:'curl',()=>this.interact()))return;
+    if(['run','curl'].includes(target.kind)){
+      const kind=target.kind as 'run'|'curl';
+      const device=kind==='run'?`run-${target.index}`:'curl';
+      if(useDevice(device,()=>this.begin(kind,target.index)))return;
+      this.begin(kind,target.index);return;
+    }
     if(target.kind==='stash'){this.storage();return;}
     if(target.kind==='water'){
       if(playerInventory.hand){this.message='手里已有物品，先存到旁边储物架。';return;}
       if(sharedAction('gym:water','supply',{item:'水'}))return;
       playerInventory.hand='水';playerInventory.noodleSeasoning=[];this.message='接了一瓶水，可以带去其他场景。';return;
     }
-    if(playerInventory.hand&&['run','curl'].includes(target.kind)){this.message='训练需要空手，先把物品放到左侧储物架。';return;}
-    this.returnPoint={x:this.x,y:this.y};this.machine=target.index;this.mode=target.kind;
-    if(target.kind==='run'){this.x=treadmills[target.index];this.y=127;this.facing=2;this.message='F 切换速度，E / Esc 下机。';}
-    if(target.kind==='curl'){this.x=123;this.y=115;this.facing=0;this.message='Space 举一次哑铃，E / Esc 放回。';}
-    if(target.kind==='rest'){this.x=benches[target.index].x;this.y=benches[target.index].y;this.facing=0;this.message='E / Esc 起身。';}
-    if(target.kind==='breathe'){this.x=561;this.y=297;this.facing=0;this.breathTime=0;this.message='跟着节奏吸气、呼气，E / Esc 结束。';}
-    this.input.keyboard?.resetKeys();
+    this.begin(target.kind,target.index);
   }
   private canWalk(x:number,y:number){
     if(guestBlocks('tutu',x,y))return false;
