@@ -30,6 +30,9 @@ export class PartyPresence {
   private helloAt = 0;
   private lastMove = '';
   private closed = false;
+  private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+  private reconnectAttempt = 0;
+  private connecting = false;
 
   constructor(
     private bridge: MultiplayerBridge,
@@ -55,19 +58,25 @@ export class PartyPresence {
 
   async connect() {
     const host = partyHost();
-    if (!host || this.closed) return;
+    if (!host || this.closed || this.connecting) return;
+    this.connecting = true;
+    this.clearReconnect();
     this.disconnectSocket();
     try {
       const ticket = await this.request<{ ticket: string; room: string; expires: number }>('party-ticket', { client: this.clientId });
+      if (this.closed) return;
       const character = this.bridge.state();
       this.socket = new PartySocket({
         host,
         room: ticket.room || DEFAULT_ROOM,
         id: this.clientId,
-        maxRetries: 12,
+        // Keep trying under flaky mobile / high-latency links (8 concurrent clients).
+        maxRetries: 24,
+        startClosed: false,
       });
       this.socket.addEventListener('open', () => {
         this.connected = true;
+        this.reconnectAttempt = 0;
         this.helloAt = Date.now();
         this.socket?.send(JSON.stringify({
           type: 'hello',
@@ -80,6 +89,7 @@ export class PartyPresence {
       this.socket.addEventListener('close', () => {
         this.connected = false;
         this.onChange();
+        this.scheduleReconnect();
       });
       this.socket.addEventListener('error', () => {
         this.connected = false;
@@ -89,7 +99,26 @@ export class PartyPresence {
       this.connected = false;
       this.notice((e as Error).message || 'PartyKit 连接失败');
       this.onChange();
+      this.scheduleReconnect();
+    } finally {
+      this.connecting = false;
     }
+  }
+
+  private clearReconnect() {
+    if (this.reconnectTimer) {
+      clearTimeout(this.reconnectTimer);
+      this.reconnectTimer = null;
+    }
+  }
+
+  private scheduleReconnect() {
+    if (this.closed || !this.enabled || this.reconnectTimer) return;
+    const delay = Math.min(15_000, 800 * Math.pow(1.6, this.reconnectAttempt++));
+    this.reconnectTimer = setTimeout(() => {
+      this.reconnectTimer = null;
+      void this.connect();
+    }, delay);
   }
 
   private receive(raw: string) {
@@ -153,11 +182,13 @@ export class PartyPresence {
 
   disconnect() {
     this.closed = true;
+    this.clearReconnect();
     this.disconnectSocket();
     this.players.clear();
   }
 
   reopen() {
     this.closed = false;
+    this.reconnectAttempt = 0;
   }
 }
