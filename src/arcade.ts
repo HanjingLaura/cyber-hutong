@@ -71,7 +71,7 @@ export class ArcadeScene extends Phaser.Scene {
     button.disabled=!target&&!this.nearBench()&&!this.seated;button.textContent=this.seated?'起身':this.nearBench()?'坐下休息':target?`玩${target.name}`:'靠近机器';
     document.querySelector('#mode')!.textContent=this.games.dialog.open?'正在玩游戏':this.seated?'坐着休息':moving?'在娱乐室走动':'站在娱乐室';
     document.querySelector('#hint')!.textContent=this.seated?'E / Esc 起身':this.nearBench()?'E · 坐下休息':target?`E · ${target.name}`:'大飞机、章鱼接龙、胡同地鼠 · 靠近游戏机按 E';
-    document.querySelector('#guide-title')!.textContent='娱乐室 · WASD / 方向键移动';
+    document.querySelector('#guide-title')!.textContent='WASD / 方向键移动';
     document.querySelector('#guide-action')!.textContent=this.seated?'E / Esc 起身':this.nearBench()?'E · 坐下休息':target?`E · ${target.name}`:'靠近机器按 E';
   }
 }

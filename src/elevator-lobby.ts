@@ -74,7 +74,7 @@ export class ElevatorLobbyScene extends Phaser.Scene{
     document.querySelector('#mode')!.textContent=moving?'在电梯间走动':'站在电梯间';
     document.querySelector('#hint')!.textContent='靠近电梯按 E 开关门；暂不进入轿厢。';
     document.querySelector('#elevator-state')!.textContent=`1 号 · ${this.state(0)}　2 号 · ${this.state(1)}`;
-    document.querySelector('#guide-title')!.textContent='电梯间 · 从左往右 · WASD / 方向键移动';
+    document.querySelector('#guide-title')!.textContent='WASD / 方向键移动';
     document.querySelector('#guide-action')!.textContent=index===undefined?'靠近电梯按 E 开关门':`E · ${button.textContent}`;
   }
 }

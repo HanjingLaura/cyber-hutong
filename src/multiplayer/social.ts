@@ -8,6 +8,7 @@ import {WorldClient} from './world-client';
 import {setupLifeUI} from './life-ui';
 import {setupNPCUI} from './npc-ui';
 import {setupNavigation} from '../room-navigation';
+import {dockPrompt} from '../hud';
 import {PartyPresence,mergePartyPlayers} from './party-client';
 const title=(role:string)=>role[0].toUpperCase()+role.slice(1);
 const meetPlaces={rest:'休息室',arcade:'娱乐室',dance:'舞室',gym:'健身房'} as const;
@@ -30,6 +31,8 @@ export function startSocial(game:Phaser.Game){
     <dialog id="account-dialog" class="social-dialog"><div class="account-wall"><h1 class="account-wordmark">赛博胡同</h1><div class="panel-heading"><h2 id="account-title">登录</h2><button data-close="account-dialog">关闭</button></div><nav id="account-tabs" aria-label="账号操作"><button id="account-login" type="button" aria-current="true">登录</button><button id="account-register" type="button">注册</button></nav><form id="account-form"><label>英文名 / 用户名<input id="account-name" list="account-names" autocomplete="username" minlength="2" maxlength="24" required/><datalist id="account-names">${roles.map(role=>`<option value="${title(role)}"></option>`).join('')}</datalist></label><label id="invite-label" hidden>领取码<input id="account-invite" autocomplete="off"/></label><label>密码<input id="account-password" type="password" autocomplete="current-password" minlength="10" maxlength="128" required/></label><label id="confirm-label" hidden>确认密码<input id="account-confirm" type="password" autocomplete="new-password" minlength="10" maxlength="128"/></label><button id="account-submit">登录</button><button id="account-mode" type="button" hidden>注册新账号</button></form><div id="claim-section" hidden><div id="claim-roles"></div></div><div id="account-session" hidden><p id="account-summary"></p><button id="logout">退出账号</button></div><p id="account-error" role="alert"></p></div></dialog>
     <div id="speech-layer" aria-hidden="true"></div><p id="game-notice" role="status" hidden></p>`;
   document.querySelector('.world')!.append(root);
+  dockPrompt(document.getElementById('near-social'));
+  dockPrompt(document.getElementById('game-notice'));
   requestAnimationFrame(()=>game.scale.refresh());
   const $=<T extends HTMLElement=HTMLElement>(id:string)=>document.getElementById(id) as T;
   const focus=()=>document.querySelector<HTMLElement>('.world')!.focus();

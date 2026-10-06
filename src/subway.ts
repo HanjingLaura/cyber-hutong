@@ -75,7 +75,7 @@ export class SubwayScene extends Phaser.Scene {
     document.querySelector('#mode')!.textContent=moving?'在站台走动':'站在五道口站';
     document.querySelector('#hint')!.textContent='靠近车门按 E 开关；人物暂不进入列车。';
     document.querySelector('#subway-state')!.textContent=this.state();
-    document.querySelector('#guide-title')!.textContent='五道口站 · WASD / 方向键移动';
+    document.querySelector('#guide-title')!.textContent='WASD / 方向键移动';
     document.querySelector('#guide-action')!.textContent=near?`E · ${button.textContent}`:'靠近车门按 E';
   }
 }

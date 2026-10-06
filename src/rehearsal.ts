@@ -113,7 +113,7 @@ export class RehearsalScene extends Phaser.Scene{
     document.querySelector('#mode')!.textContent={walk:moving?'在排练厅走动':'站在排练厅',seat:`坐在 ${this.seated===null?'':seats[this.seated].id}`,piano:'正在弹钢琴',podium:'站在指挥台'}[this.mode];
     document.querySelector('#hint')!.textContent=this.message;
     document.querySelector('#rehearsal-state')!.textContent=`前排 4 席 · 后排 6 席 · 钢琴 ${this.piano.notesPlayed} 次触键`;
-    document.querySelector('#guide-title')!.textContent='排练厅 · WASD / 方向键移动';
+    document.querySelector('#guide-title')!.textContent='WASD / 方向键移动';
     document.querySelector('#guide-action')!.textContent=this.mode==='piano'?'Z / Q 两排弹琴 · ↑↓ 切换音区 · Esc 起身':this.mode!=='walk'?'E / Esc 起身':t?`E · ${button.textContent}`:'前排四席 · 后排六席 · 右侧钢琴';
   }
 }

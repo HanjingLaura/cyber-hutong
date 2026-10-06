@@ -4,6 +4,7 @@ import {consumables,itemLabel,playerInventory,type ItemName} from '../player-inv
 import {ensureCollectible,itemIcon} from '../collectible-art';
 import {registerGachaTextures} from '../gacha-assets';
 import {registerProductTextures} from '../product-textures';
+import {dockPrompt} from '../hud';
 
 type Entry=MemoryEntry;
 type Slot={name:string;count:number;seasoning:string[]}|null;
@@ -11,6 +12,7 @@ type Offer={id:string;sender:string;recipient:string;kind:string;item:string;sta
 export function setupLifeUI(bridge:MultiplayerBridge,request:(path:string,input?:any)=>Promise<any>,publish:()=>Promise<void>,client:string,notice:(s:string)=>void){
  const root=document.createElement('div');root.id='life-ui';root.innerHTML=`<dialog id="journal-dialog" class="social-dialog memory-dialog"></dialog><dialog id="bag-dialog" class="social-dialog"><div class="panel-heading"><h2>随身物品</h2><button data-close-life>关闭</button></div><p id="bag-hand"></p><div class="bag-tabs"><button id="bag-tab" aria-pressed="true">背包 · 四格</button><button id="collection-tab" aria-pressed="false">收藏</button></div><div id="bag-slots"></div><div id="collection-slots" hidden></div><p id="collection-help" hidden>点击收藏的物件，拿回手里。</p><div class="settings-actions"><button id="bag-stow">收进背包</button><button id="bag-consume">吃 / 喝</button><button id="bag-collect">收进收藏</button></div></dialog><section id="hand-actions" hidden aria-label="手中物品"><span id="hand-item"></span><button id="hand-use"></button></section><section id="life-offers" class="social-panel" aria-live="polite" hidden></section>`;
  document.querySelector('.world')!.append(root);
+ dockPrompt(root.querySelector('#hand-actions'));
  const tools=document.getElementById('game-tools')!;
  let bag:Slot[]=[null,null,null,null],collection:Slot[]=[],collectionOpen=false,offers:Offer[]=[],entries:Entry[]=[],owner='',signature='',clockOffset=0,loading=false,loadingJournal=false;
  let bagSignature='';

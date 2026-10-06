@@ -392,7 +392,7 @@ export class RestRoomScene extends Phaser.Scene {
     button.disabled = this.brewing || (this.seated === null && !target);
     button.textContent = this.seated !== null ? '起身' : target?.kind === 'fridge' ? '打开冰箱上门' : target?.kind === 'vending' ? '挑选产品' : target?.kind === 'coffee' ? this.coffeeReady ? '拿起咖啡' : '冲一杯咖啡' : target?.kind === 'chair' ? '坐下休息' : target?.kind === 'table' ? this.hand ? `放下${this.hand}` : this.tableCount(target.index!) ? `选择桌上物品（${this.tableCount(target.index!)} 件）` : '查看餐桌' : '靠近物件互动';
     document.querySelector('#rest-inventory')!.textContent = `手中：${this.hand ?? '空'}`;
-    document.querySelector('#guide-title')!.textContent = '休息室 · WASD / 方向键移动';
+    document.querySelector('#guide-title')!.textContent = 'WASD / 方向键移动';
     document.querySelector('#guide-action')!.textContent = this.seated !== null ? tableButton.disabled ? '桌面空 · E / Esc 起身' : `F · ${tableButton.textContent} · E / Esc 起身` : this.brewing ? '正在冲泡咖啡…' : target ? `E · ${button.textContent}` : '靠近设备或桌椅，按 E 互动';
   }
 }

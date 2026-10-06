@@ -10,24 +10,51 @@ main { max-width: 1480px; margin: auto; display: grid; grid-template-columns: mi
 [hidden] { display: none !important; }
 .world { position: relative; background: var(--hto-bg-stage); border: 1px solid var(--hto-line-strong); aspect-ratio: 16 / 9; width: 100%; }
 #view { position: absolute; top: 10px; right: 10px; padding: 7px 11px; font-size: 13px; background: #17231ccc; border: 0; border-bottom: 2px solid #c2c5a3; color: #fff6da; text-shadow: 1px 1px #15231d; font-family: var(--hto-mono); }
-#play-guide {
+#hud-rail {
   position: absolute;
-  left: 50%;
-  bottom: 12px;
-  top: auto;
-  transform: translateX(-50%);
-  width: min(360px, 70%);
-  padding: 16px 14px 8px;
-  border: 0;
-  background: linear-gradient(0deg, #142219d8 0%, #14221966 55%, #14221900 100%);
+  top: 48px;
+  left: 14px;
+  z-index: 1125;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  max-width: min(280px, 46vw);
+  pointer-events: none;
+}
+#hud-rail > * {
+  flex: 0 0 auto;
+  width: max-content;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+#scene-mark {
+  padding: 6px 10px;
+  background: #1c2c22f0;
+  border: 1px solid #c2c5a3;
   color: #fff6da;
   text-shadow: 1px 1px #15231d;
-  text-align: center;
+  font: 13px/1.35 var(--hto-mono);
+  letter-spacing: .05em;
+}
+#play-guide {
+  position: static;
+  left: auto;
+  bottom: auto;
+  top: auto;
+  transform: none;
+  padding: 8px 10px;
+  border: 1px solid #5d6f5a;
+  background: #142219e8;
+  color: #fff6da;
+  text-shadow: 1px 1px #15231d;
+  text-align: left;
   pointer-events: none;
-  font: 12px/1.55 var(--hto-mono);
+  font: 12px/1.5 var(--hto-mono);
 }
 #play-guide strong, #play-guide span { display: block; font-weight: normal; }
 #play-guide strong { opacity: .72; font-size: 11px; }
+#play-guide span { margin-top: 4px; }
 .scene-caption { display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; color: #aab4a5; font-size: 13px; }
 #walk-review { margin: 18px 0 0; padding: 12px; background: #303632; border-top: 1px solid #5c675c; }
 #walk-review canvas { width: 768px; max-width: 100%; height: auto; display: block; image-rendering: pixelated; }
@@ -128,7 +155,6 @@ input[type=checkbox] { accent-color: #bbc997; width: 16px; height: 16px; }
 #blind-themes button { font-size:13px;padding:7px 10px; }
 #blind-themes [aria-pressed="true"] { background:#5d5841;border-color:#ebcd65; }
 .blind-slot img { width:42px;height:58px; }
-.world[data-area="hawaii"] #play-guide { left: 50%; }
 #blind-machine-art { text-align:center; }
 #blind-machine-art img { height:260px;max-width:100%;object-fit:contain;image-rendering:pixelated; }
 .blind-menu[data-source="machine"] { width:min(350px,90vw);padding:14px;background:#242831;border:5px solid #dfb65b;box-shadow:inset 0 0 0 3px #10131b; }
@@ -209,12 +235,12 @@ input[type=checkbox] { accent-color: #bbc997; width: 16px; height: 16px; }
 #bag-slots button,#collection-slots button { min-height:72px;display:flex;align-items:center;gap:12px;font-size:12px; }
 #bag-slots img,#collection-slots img { width:40px;height:44px;object-fit:contain;image-rendering:pixelated; }
 #collection-help { font-size:12px;color:#bfc4b0; }
-#hand-actions { position:absolute;left:50%;right:auto;bottom:52px;transform:translateX(-50%);display:flex;align-items:center;justify-content:center;gap:10px;padding:10px 14px 8px;background:linear-gradient(0deg,#142219d0 0%,#14221955 70%,#14221900 100%);border:0;box-shadow:none;z-index:1120;font-size:12px;font-family:var(--hto-mono);color:#fff6da;text-shadow:1px 1px #15231d; }
+#hand-actions { position:static;left:auto;right:auto;bottom:auto;top:auto;transform:none;display:flex;align-items:center;justify-content:flex-start;gap:8px;padding:6px 10px;background:#17231ce8;border:1px solid #889c6f;box-shadow:none;z-index:auto;font-size:12px;font-family:var(--hto-mono);color:#fff6da;text-shadow:1px 1px #15231d;pointer-events:auto; }
 #hand-item { display:flex;gap:8px;align-items:center; }
 #hand-item img { width:24px;height:28px;object-fit:contain;image-rendering:pixelated; }
 #hand-use { font-size:11px;padding:3px 9px;border:0;background:#17231c80;color:#eee8d8;box-shadow:none; }
 #npc-ui { position:absolute;inset:0;pointer-events:none;z-index:1015; }
-#npc-interact { position:absolute;left:14px;bottom:148px;pointer-events:auto;font-size:12px;padding:6px 10px;font-family:var(--hto-mono); }
+#npc-interact { position:static;left:auto;bottom:auto;top:auto;pointer-events:auto;font-size:12px;padding:6px 10px;font-family:var(--hto-mono);background:#17231ce8;border:1px solid #889c6f;color:#fff6da; }
 .npc-speech { position:absolute;transform:translate(-50%,-100%);max-width:220px;padding:7px 10px;background:#f2e9cf;color:#2b302d;border:2px solid #353f35;font:13px Consolas,"Microsoft YaHei",monospace;line-height:1.5; }
 #perler-collection h3 { font-size:15px;margin:18px 0 0;border-top:1px solid #a3977d;padding-top:12px; }
 @media(max-width:540px) { .perler-workshop { padding:10px; }.perler-workspace { grid-template-columns:minmax(0,1fr) 120px;gap:10px; }.perler-heading h2 { font-size:16px; } }

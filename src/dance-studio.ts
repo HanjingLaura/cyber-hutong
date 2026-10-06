@@ -160,7 +160,7 @@ export class DanceStudioScene extends Phaser.Scene {
     document.querySelector('#dance-score')!.textContent=`本轮 ${this.score} / 8 · 最好 ${this.best} / 8`;
     const current=Math.round(position)-4;
     document.querySelector('#dance-sequence')!.textContent=this.mode==='practice'?position<3.5?`准备 ${Math.max(1,4-Math.floor(position))}`:sequence.map((n,i)=>`${i===current?'[':''}${this.results[i]==='hit'?'✓':this.results[i]==='miss'?'×':arrows[n]}${i===current?']':''}`).join(' '):'← ↑ → ↓ · 四拍准备，八拍练习';
-    document.querySelector('#guide-title')!.textContent='舞室 · WASD / 方向键移动';
+    document.querySelector('#guide-title')!.textContent='WASD / 方向键移动';
     document.querySelector('#guide-action')!.textContent=this.mode==='practice'?`${position<3.5?`准备 ${Math.max(1,4-Math.floor(position))}`:sequence.slice(Math.max(0,current),Math.max(0,current)+4).map(n=>arrows[n]).join(' ')} · ${this.score}/8 · Esc 结束`:this.mode!=='walk'?'E / Esc 结束':target?`E · ${names[target.kind]}`:'镜子前 E 跳舞 · 中央空地 E 跟拍';
   }
 }

@@ -21,6 +21,7 @@ import { RehearsalScene } from './rehearsal';
 import { ElevatorLobbyScene } from './elevator-lobby';
 import { SubwayScene } from './subway';
 import { HeldItemView, type GripSlot } from './held-item';
+import { markScene, setGuide } from './hud';
 import { playerInventory, items, type ItemName } from './player-inventory';
 import { registerProductTextures } from './product-textures';
 import gripRegistry from '../assets/metadata/owner-grips.json';
@@ -78,7 +79,10 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
           <div class="fridge-cabinet"><div id="fridge-items"></div><div class="fridge-door-bins" aria-hidden="true"><span></span><span></span><span></span></div></div>
           <div class="fridge-actions"><p id="fridge-hand"></p><button id="fridge-store" type="button">放入手中物品 · F</button><p id="fridge-message" aria-live="polite">点击或按 1–9 取出物品，F 存入。</p></div>
         </dialog><dialog id="blind-menu" class="blind-menu" aria-labelledby="blind-title"><div class="blind-heading"><h2 id="blind-title">挑选盲盒</h2><button id="blind-close" type="button">关闭</button></div><div id="blind-machine-art" hidden><canvas id="gacha-art" width="82" height="190" aria-label="扭蛋机与取物口"></canvas></div><div id="blind-themes" aria-label="盲盒主题"></div><p id="blind-help"></p><div class="blind-glass"><div id="blind-boxes"></div></div><div class="blind-pickup"><button id="blind-extract" type="button" disabled>先选择一盒</button><button id="blind-refill" type="button">补货</button></div><div id="blind-result" aria-live="polite"></div></dialog><dialog id="arcade-game" class="arcade-game" aria-labelledby="arcade-title"><header><h2 id="arcade-title"></h2><button id="arcade-close" type="button">返回 · Esc</button></header><canvas id="arcade-screen" width="640" height="420" aria-label="像素小游戏"></canvas><footer><span id="arcade-help"></span><button id="arcade-undo" type="button" hidden>撤销</button><button id="arcade-action" type="button" hidden></button><button id="arcade-new" type="button">重开</button></footer></dialog><dialog id="noodle-menu" class="noodle-menu" aria-labelledby="noodle-title"><div class="noodle-heading"><h2 id="noodle-title"></h2><button id="noodle-close" type="button">关闭 · Esc</button></div><p id="noodle-menu-hand"></p><div id="noodle-choices"></div></dialog><dialog id="gym-storage" class="gym-storage" aria-labelledby="gym-storage-title"><div class="gym-storage-heading"><h2 id="gym-storage-title">储物架</h2><button id="gym-storage-close" type="button">关闭 · Esc</button></div><div id="gym-storage-items"></div></dialog><dialog id="perler-workshop" class="perler-workshop" aria-labelledby="perler-title"><div class="perler-heading"><h2 id="perler-title">拼豆</h2><button id="perler-close" type="button">返回 · Esc</button></div><div class="perler-workspace"><canvas id="perler-board" width="360" height="360" aria-label="16乘16拼豆底板，点击或拖动放豆，右键擦除"></canvas><div class="perler-tools"><label for="perler-pattern">底图</label><select id="perler-pattern"></select><div id="perler-palette" aria-label="豆子颜色"></div><button id="perler-eraser" type="button" aria-pressed="false">橡皮擦</button><div class="perler-history"><button id="perler-undo" type="button">撤销</button><button id="perler-redo" type="button">重做</button></div><button id="perler-iron" type="button">熨烫作品</button><button id="perler-new" type="button">换新底板</button><p id="perler-progress"></p></div></div><p id="perler-message" aria-live="polite"></p><div id="perler-collection" hidden><h3>作品</h3><div id="perler-gallery"></div></div></dialog><div id="game"></div><div class="loading">载入中…</div>
-        <div id="play-guide" aria-live="polite"><strong id="guide-title">胡同 · WASD / 方向键移动</strong><span id="guide-action">靠近工位按 E 坐下 · V 换视角</span></div>
+        <div id="hud-rail">
+          <div id="scene-mark">胡同 · 文化墙一侧</div>
+          <div id="play-guide" aria-live="polite"><strong id="guide-title">WASD / 方向键移动</strong><span id="guide-action">靠近工位按 E 坐下 · V 换视角</span></div>
+        </div>
         <div id="rehearsal-piano" hidden><div class="piano-heading"><span>钢琴 · C3–C6</span><span id="piano-range"></span><button id="rehearsal-piano-close" type="button">起身 · Esc</button></div><div id="rehearsal-keyboard" aria-label="钢琴琴键"></div><p class="piano-help">鼠标 / 触屏演奏 · Z 行低音，Q 行高音 · ↑↓ 切换键盘音区 · 支持和弦</p></div>
         <button id="view" aria-pressed="false">换个视角 · V</button>
       </section>
@@ -367,7 +371,7 @@ class HutongScene extends Phaser.Scene {
     this.room.setTexture(this.reverse ? 'reverse' : 'wall').setDisplaySize(VIEW_WIDTH, VIEW_HEIGHT);
     viewButton.setAttribute('aria-pressed', String(this.reverse));
     for (const tab of document.querySelectorAll<HTMLElement>('[data-scene]')) tab.setAttribute('aria-pressed', String(tab.dataset.scene === (this.reverse ? 'opposite' : 'culture')));
-    document.querySelector('#view-label')!.textContent = this.reverse ? '另一侧 · 同一个胡同' : '文化墙一侧';
+    markScene(this.reverse ? '胡同 · 另一侧' : '胡同 · 文化墙一侧');
     this.drawFurniture();
   }
   public selectView(reverse: boolean) {
@@ -573,23 +577,22 @@ class HutongScene extends Phaser.Scene {
       hintElement.textContent = this.seatedAt ? (this.mode==='working'?'在自己的工位办公。按 E 起身。':'坐下休息，只有自己的工位可以办公。按 E 起身。') : this.nearest ? `靠近 ${this.nearest.id}：按 E 坐下，自己的工位可办公。` : '沿中间通道走动，靠近椅子试坐。';
       interactButton.disabled = !this.seatedAt && !this.nearest;
       interactButton.textContent = this.seatedAt ? '起身' : this.nearest ? `坐到 ${this.nearest.id}` : '靠近椅子坐下';
-      document.querySelector('#guide-title')!.textContent = '胡同 · WASD / 方向键移动 · V 换视角';
-      document.querySelector('#guide-action')!.textContent = this.seatedAt ? (this.mode==='working'?'自己的工位 · 办公中 · E / Esc 起身':'坐下休息 · E / Esc 起身') : this.nearest ? `E · ${this.nearest.id} ${canWorkAt(onlineWorld()?.bridge.user?.role??'laura',this.sys.settings.key,this.nearest.id)?'我的工位，坐下办公':'坐下休息'}` : '靠近工位，按 E 坐下';
+      setGuide('WASD / 方向键移动 · V 换视角', this.seatedAt ? (this.mode==='working'?'自己的工位 · 办公中 · E / Esc 起身':'坐下休息 · E / Esc 起身') : this.nearest ? `E · ${this.nearest.id} ${canWorkAt(onlineWorld()?.bridge.user?.role??'laura',this.sys.settings.key,this.nearest.id)?'我的工位，坐下办公':'坐下休息'}` : '靠近工位，按 E 坐下');
       document.querySelector('#seat-state')!.textContent = this.seatedAt ? `${this.seatedAt.id} 使用中 · 其余 ${this.seats.length-1} 位空闲` : this.isHawaii?'两排各三个座位 · 六个工位':'左墙 L1–L4 · 右墙 R1–R4 · 暂未分配';
       if(this.isHawaii){
         modeElement.textContent=this.mode==='working'?`在 ${this.seatedAt!.id} 办公`:this.mode==='sit'?`坐在 ${this.seatedAt!.id} 休息`:this.mode==='walking'?'在夏威夷走动':'站在夏威夷';
-        document.querySelector('#guide-title')!.textContent='夏威夷 · WASD / 方向键移动';
+        setGuide('WASD / 方向键移动', this.seatedAt ? (this.mode==='working'?'自己的工位 · 办公中 · E / Esc 起身':'坐下休息 · E / Esc 起身') : this.nearest ? `E · ${this.nearest.id} ${canWorkAt(onlineWorld()?.bridge.user?.role??'laura',this.sys.settings.key,this.nearest.id)?'我的工位，坐下办公':'坐下休息'}` : '靠近工位，按 E 坐下');
         if(this.nearWindow()){
           interactButton.disabled=false;interactButton.textContent=this.curtainDown?'卷起窗帘':'拉下窗帘';
           hintElement.textContent=`靠近窗边：按 E ${interactButton.textContent}。`;
-          document.querySelector('#guide-action')!.textContent=`E · ${interactButton.textContent}`;
+          setGuide('WASD / 方向键移动', `E · ${interactButton.textContent}`);
         }
         document.querySelector('#curtain-control')!.textContent=this.curtainDown?'卷起窗帘':'拉下窗帘';
       }
       if(nearGuest&&!this.nearWindow()){
         interactButton.disabled=false;interactButton.textContent=this.officeGuest!.prompt;
         hintElement.textContent=`按 E ${this.officeGuest!.prompt}。`;
-        document.querySelector('#guide-action')!.textContent=`E · ${this.officeGuest!.prompt}`;
+        setGuide('WASD / 方向键移动', `E · ${this.officeGuest!.prompt}`);
       }
     }
   }
@@ -632,66 +635,77 @@ for (const button of document.querySelectorAll<HTMLButtonElement>('[data-scene]'
   viewButton.hidden = rest || pop || hawaii || bathroom || concert || arcade || noodle || gym || dance || perler || rehearsal || elevator || subway;
   document.querySelector<HTMLButtonElement>('#table-action')!.hidden = true;
   document.querySelector<HTMLElement>('#walk-review')!.hidden = true;
-  document.querySelector('#view-label')!.textContent = hawaii?'夏威夷 · 文化墙同向视角':pop ? 'POP MART · 盲盒店' : rest ? '休息室 · 从 Go! 墙看向设备墙' : target === 'culture' ? '文化墙一侧' : '另一侧 · 同一个胡同';
+  markScene(hawaii?'夏威夷 · 文化墙同向视角':pop ? 'POP MART · 盲盒店' : rest ? '休息室 · 从 Go! 墙看向设备墙' : target === 'culture' ? '胡同 · 文化墙一侧' : target === 'opposite' ? '胡同 · 另一侧' : '胡同');
+  setGuide('WASD / 方向键移动', hawaii?'E 坐下 / 起身 · 窗边 E 卷帘':pop?'E 挑盒 / 转动扭蛋机':rest?'靠近设备或桌椅，按 E 互动':'靠近工位按 E 坐下 · V 换视角');
   document.querySelector('.scene-caption span:last-child')!.textContent='';
   document.querySelector('.keys')!.innerHTML = hawaii?'WASD / 方向键移动<br>E 坐下 / 起身 · 窗边 E 卷帘<br>Esc 起身':pop ? 'WASD / 方向键移动<br>E 挑盒 / 转动扭蛋机<br>点击选盒 · Esc 关闭' : rest ? 'WASD / 方向键移动<br>E 与物件互动 · Esc 起身<br>坐着时 F 放下 / 拿回物品' : 'WASD / 方向键移动<br>E 坐下办公 / 起身 · V 换视角';
   document.querySelector<HTMLElement>('#bathroom-controls')!.hidden=!bathroom;
   if(bathroom){
-    document.querySelector('#view-label')!.textContent='厕所 · 从右往左';
+    markScene('厕所 · 从右往左');
+    setGuide('WASD / 方向键移动', '靠近隔间按 E 开门 / 坐下 · 洗手台 E 洗手');
     document.querySelector('.scene-caption span:last-child')!.textContent='';
     document.querySelector('.keys')!.innerHTML='WASD / 方向键移动<br>E 开门 / 坐下 / 起身<br>F 开关门 · Esc 起身<br>洗手台 E 洗手';
   }
   document.querySelector<HTMLElement>('#concert-controls')!.hidden=!concert;
   if(concert){
-    document.querySelector('#view-label')!.textContent='演唱会 · 内场朝向舞台';
+    markScene('演唱会 · 内场朝向舞台');
+    setGuide('WASD / 方向键移动', '三排内场座位 · 靠近后按 E 坐下');
     document.querySelector('.scene-caption span:last-child')!.textContent='';
     document.querySelector('.keys')!.innerHTML='WASD / 方向键移动<br>E 坐下 / 起身 · Esc 起身';
   }
   document.querySelector<HTMLElement>('#arcade-controls')!.hidden=!arcade;
   if(arcade){
-    document.querySelector('#view-label')!.textContent='娱乐室 · 电玩城';
+    markScene('娱乐室 · 电玩城');
+    setGuide('WASD / 方向键移动', '靠近机器按 E');
     document.querySelector('.scene-caption span:last-child')!.textContent='';
     document.querySelector('.keys')!.innerHTML='WASD / 方向键移动<br>E 玩游戏 · Esc 返回';
   }
   document.querySelector<HTMLElement>('#noodle-controls')!.hidden=!noodle;
   if(noodle){
-    document.querySelector('#view-label')!.textContent='米线店';
+    markScene('米线店');
+    setGuide('WASD / 方向键移动', '靠近窗口、碗筷台或凳子按 E');
     document.querySelector('.scene-caption span:last-child')!.textContent='';
     document.querySelector('.keys')!.innerHTML='WASD / 方向键移动<br>E 取餐 / 坐下 / 起身<br>F 桌上物品 / 调料 · Esc 起身';
   }
   document.querySelector<HTMLElement>('#gym-controls')!.hidden=!gym;
   if(gym){
-    document.querySelector('#view-label')!.textContent='健身房';
+    markScene('健身房');
+    setGuide('WASD / 方向键移动', '靠近器械按 E');
     document.querySelector('.scene-caption span:last-child')!.textContent='';
     document.querySelector('.keys')!.innerHTML='WASD / 方向键移动<br>E 使用 / 结束 · Esc 结束<br>跑步 F 调速 · 哑铃 Space 举起';
   }
   document.querySelector<HTMLElement>('#dance-controls')!.hidden=!dance;
   if(dance){
-    document.querySelector('#view-label')!.textContent='舞室';
+    markScene('舞室');
+    setGuide('WASD / 方向键移动', '镜子前 E 跳舞 · 中央空地 E 跟拍');
     document.querySelector('.scene-caption span:last-child')!.textContent='';
     document.querySelector('.keys')!.innerHTML='WASD / 方向键移动<br>E 跳舞 / 互动 · Esc 结束<br>F 调速 · 跟拍时按方向键';
   }
   document.querySelector<HTMLElement>('#perler-controls')!.hidden=!perler;
   if(perler){
-    document.querySelector('#view-label')!.textContent='拼豆店';
+    markScene('拼豆店');
+    setGuide('WASD / 方向键移动', '靠近圆凳按 E 拼豆');
     document.querySelector('.scene-caption span:last-child')!.textContent='';
     document.querySelector('.keys')!.innerHTML='WASD / 方向键移动<br>E 坐下 / 互动 · Esc 返回 / 起身<br>F 继续拼豆 · 点击或拖动放豆';
   }
   document.querySelector<HTMLElement>('#rehearsal-controls')!.hidden=!rehearsal;
   if(rehearsal){
-    document.querySelector('#view-label')!.textContent='排练厅';
+    markScene('排练厅');
+    setGuide('WASD / 方向键移动', '前排四席 · 后排六席 · 右侧钢琴');
     document.querySelector('.scene-caption span:last-child')!.textContent='';
     document.querySelector('.keys')!.innerHTML='WASD / 方向键移动<br>E 坐下 / 互动 · Esc 起身<br>弹琴时 A W S R D F T G Y H U J K';
   }
   document.querySelector<HTMLElement>('#elevator-controls')!.hidden=!elevator;
   if(elevator){
-    document.querySelector('#view-label')!.textContent='电梯间 · 从左往右';
+    markScene('电梯间 · 从左往右');
+    setGuide('WASD / 方向键移动', '靠近电梯按 E 开关门');
     document.querySelector('.scene-caption span:last-child')!.textContent='';
     document.querySelector('.keys')!.innerHTML='WASD / 方向键移动<br>E 开关附近电梯门';
   }
   document.querySelector<HTMLElement>('#subway-controls')!.hidden=!subway;
   if(subway){
-    document.querySelector('#view-label')!.textContent='五道口站 · 站台';
+    markScene('五道口站 · 站台');
+    setGuide('WASD / 方向键移动', '靠近车门按 E');
     document.querySelector('.scene-caption span:last-child')!.textContent='';
     document.querySelector('.keys')!.innerHTML='WASD / 方向键移动<br>E 开关列车车门';
   }

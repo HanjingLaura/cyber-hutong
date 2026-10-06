@@ -136,7 +136,7 @@ export class GymScene extends Phaser.Scene {
     document.querySelector<HTMLButtonElement>('#gym-rep')!.hidden=this.mode!=='curl';document.querySelector<HTMLButtonElement>('#gym-rep')!.disabled=this.liftStart!==null;
     document.querySelector<HTMLButtonElement>('#gym-speed')!.hidden=this.mode!=='run';document.querySelector('#gym-speed')!.textContent=`速度 ${this.speeds[this.speedIndex]} km/h · F`;
     document.querySelector('#gym-breath')!.textContent=this.mode==='breathe'?this.breathTime<4000?'吸气…':'呼气…':'';
-    document.querySelector('#guide-title')!.textContent='健身房 · WASD / 方向键移动';
+    document.querySelector('#guide-title')!.textContent='WASD / 方向键移动';
     document.querySelector('#guide-action')!.textContent=this.mode==='run'?'F 调速 · E / Esc 下机':this.mode==='curl'?'Space 举起 / 放下 · E / Esc 结束':this.mode!=='walk'?'E / Esc 结束':target?`E · ${names[target.kind]}`:'靠近器械按 E';
   }
 }

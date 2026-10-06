@@ -160,7 +160,7 @@ export class NoodleShopScene extends Phaser.Scene {
     document.querySelector('#mode')!.textContent=this.seated!==null?'坐在米线店':moving?'在米线店走动':'站在米线店';
     document.querySelector('#hint')!.textContent=this.message;
     document.querySelector('#noodle-hand')!.textContent=`手中：${playerInventory.hand??'空'}`;
-    document.querySelector('#guide-title')!.textContent='米线店 · WASD / 方向键移动';
+    document.querySelector('#guide-title')!.textContent='WASD / 方向键移动';
     document.querySelector('#guide-action')!.textContent=this.seated!==null?'E / Esc 起身 · F 桌上物品':target?`E · ${this.label(target)}`:'靠近窗口、碗筷台或凳子按 E';
   }
 }
