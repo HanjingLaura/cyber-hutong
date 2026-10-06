@@ -1,0 +1,31 @@
+/* Entry auth only — dusk-alley CRT tokens scoped so they never fight theme.css. */
+#account-dialog[data-entry="true"] {
+  --lantern: #e2c56a;
+  --lantern-hot: #f0d98a;
+  --moss-ink: #15231d;
+  --moss: #1e2c26;
+  --moss-mid: #2a3931;
+  --tile: #3a4a40;
+  --paper: #f3ebd4;
+  --paper-soft: #c9d0b8;
+  --cream: #edf0e6;
+  --ink: #23372f;
+  --ink-soft: #44574d;
+  --vermilion: #b44a32;
+  --glass: #15231dcc;
+  --glass-soft: #1e2c26e8;
+  --shadow-ink: #0d1612;
+  --font-brand: "ZCOOL QingKe HuangYou", "Microsoft YaHei", sans-serif;
+  --font-ui: "IBM Plex Sans", "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+  --font-mono: "IBM Plex Mono", Consolas, "Noto Sans SC", monospace;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --duration: 140ms;
+  color-scheme: dark;
+  font-family: var(--font-ui);
+}
