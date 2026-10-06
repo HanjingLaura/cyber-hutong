@@ -8,6 +8,7 @@ import {WorldClient} from './world-client';
 import {setupLifeUI} from './life-ui';
 import {setupNPCUI} from './npc-ui';
 import {setupNavigation} from '../room-navigation';
+import {PartyPresence,mergePartyPlayers} from './party-client';
 const title=(role:string)=>role[0].toUpperCase()+role.slice(1);
 type Reply={user?:User|null;self?:User;roster?:World['roster'];messages?:Message[]};
 export async function api<T=Reply>(path:string,input?:unknown):Promise<T>{let res:Response;try{res=await fetch(apiUrl(path),{method:input===undefined?'GET':'POST',headers:input===undefined?{}:{'Content-Type':'application/json'},body:input===undefined?undefined:JSON.stringify(input)});}catch{window.dispatchEvent(new Event('hutong:connection-lost'));throw new Error('连接中，请稍后重试');}let data:any=null;try{data=await res.json();}catch{window.dispatchEvent(new Event('hutong:connection-lost'));throw Object.assign(new Error(res.ok?'联机服务响应异常':'请求失败'),{status:res.status});}if(!res.ok)throw Object.assign(new Error(data?.error||'请求失败'),{status:res.status});return data;}
@@ -35,12 +36,25 @@ export function startSocial(game:Phaser.Game){
   setupNavigation(bridge,api,()=>publishPresence(true),client,notice);
   const lifeUI=setupLifeUI(bridge,api,()=>publishPresence(true),client,notice);
   const npcUI=setupNPCUI(bridge,api,()=>publishPresence(true),client,notice);
+  const applyPartyView=()=>{
+    if(!world)return;
+    if(party.enabled&&party.connected){
+      bridge.players=mergePartyPlayers(party.list(),world.players,user?.role);
+      bridge.onlineRoles=party.online().map(p=>p.role);
+      world.online=party.online();
+    }else{
+      bridge.players=world.players;
+      bridge.onlineRoles=world.online.map(p=>p.role);
+    }
+    people();
+  };
+  const party=new PartyPresence(bridge,client,api,()=>applyPartyView(),notice);
   $('settings-open').onclick=()=>($('settings-dialog') as HTMLDialogElement).showModal();
   $('collection-open').onclick=()=>{close('settings-dialog');window.dispatchEvent(new Event('hutong:open-collection'));};
   root.querySelectorAll<HTMLButtonElement>('[data-close]').forEach(b=>b.onclick=()=>close(b.dataset.close!));
   let accountSignature='',peopleSignature='';
   function hardLogout(text?:string){
-    events?.close();events=null;lifeUI.reset();npcUI.reset();shared.reset();
+    events?.close();events=null;party.disconnect();lifeUI.reset();npcUI.reset();shared.reset();
     user=null;world=null;bridge.user=null;bridge.players=[];bridge.onlineRoles=[];bridge.controller=true;bridge.connected=false;bridge.clearTransition();
     playerInventory.hand=null;initializedRole=null;connected=false;$('social-ui').dataset.revision='-1';
     for(const b of bubbles.values())b.element.remove();bubbles.clear();messages.clear();
@@ -58,17 +72,18 @@ export function startSocial(game:Phaser.Game){
   }
   async function refresh(){const result=await api('me');user=result.user||null;bridge.user=user;if(!world)world={self:user!,controller:true,players:[],online:[],roster:result.roster||[]};else world.roster=result.roster||world.roster;account();people();}
   function connect(){events?.close();if(!user)return;events=new EventSource(apiUrl('events?client='+encodeURIComponent(client)));
-    events.addEventListener('world',e=>{let next:World;try{next=JSON.parse((e as MessageEvent).data) as World;}catch{notice('联机数据异常');return;}const previousController=bridge.controller;world=next;user=next.self;bridge.user=user;bridge.players=next.players;bridge.controller=next.controller;if(previousController&&!next.controller)shared.pause();if(next.controller&&!previousController){bridge.stand();const self=next.players.find(p=>p.role===user?.role);if(self)bridge.apply(self);}bridge.connected=true;connected=true;
-      if(user.role&&initializedRole!==user.role){const self=next.players.find(p=>p.role===user!.role);if(self){bridge.pendingSpawn=self;initializedRole=user.role;}playerInventory.hand=user.hand as ItemName|null;}
+    events.addEventListener('world',e=>{let next:World;try{next=JSON.parse((e as MessageEvent).data) as World;}catch{notice('联机数据异常');return;}const previousController=bridge.controller;world=next;user=next.self;bridge.user=user;bridge.controller=next.controller;if(previousController&&!next.controller)shared.pause();if(next.controller&&!previousController){bridge.stand();const self=next.players.find(p=>p.role===user?.role);if(self)bridge.apply(self);if(party.enabled)void party.connect();}bridge.connected=true;connected=true;
+      if(user.role&&initializedRole!==user.role){const self=next.players.find(p=>p.role===user!.role);if(self){bridge.pendingSpawn=self;initializedRole=user.role;}playerInventory.hand=user.hand as ItemName|null;if(party.enabled){party.reopen();void party.connect();}}
       else if(user.revision>Number($('social-ui').dataset.revision||-1))playerInventory.hand=user.hand as ItemName|null;
       $('social-ui').dataset.revision=String(user.revision);
-      $('connection-state').textContent=next.controller?'已连接':'在另一个窗口操作';$('take-control').hidden=next.controller;
-      bridge.claimedRoles=next.roster.filter(p=>p.claimed).map(p=>p.role);bridge.onlineRoles=next.online.map(p=>p.role);account();people();const keyboard=bridge.active?.input.keyboard;if(keyboard)keyboard.enabled=next.controller;
+      const partyHint=party.enabled?(party.connected?' · PartyKit':' · PartyKit…'):'';
+      $('connection-state').textContent=(next.controller?'已连接':'在另一个窗口操作')+partyHint;$('take-control').hidden=next.controller;
+      bridge.claimedRoles=next.roster.filter(p=>p.claimed).map(p=>p.role);account();applyPartyView();const keyboard=bridge.active?.input.keyboard;if(keyboard)keyboard.enabled=next.controller;
       lifeUI.receive(next);shared.receive(next);npcUI.receive(next);bridge.npcEpoch=(next as any).npcEpoch??0;
     });
     events.addEventListener('message',e=>{try{receive(JSON.parse((e as MessageEvent).data));}catch{notice('联机消息异常');}});
     events.addEventListener('logout',()=>{hardLogout('登录已结束');});
-    events.onopen=()=>{connected=true;bridge.connected=true;loadHistory();};events.onerror=()=>{const wasConnected=connected;connected=false;bridge.connected=false;if(wasConnected)shared.pause();$('connection-state').textContent='连接中…';};
+    events.onopen=()=>{connected=true;bridge.connected=true;loadHistory();if(user?.role&&party.enabled){party.reopen();void party.connect();}};events.onerror=()=>{const wasConnected=connected;connected=false;bridge.connected=false;if(wasConnected)shared.pause();$('connection-state').textContent='连接中…';};
   }
   function people(){const signature=JSON.stringify([user?.role,world?.online,playerInventory.hand]);if(signature===peopleSignature)return;peopleSignature=signature;const list=$('people-list');list.replaceChildren();for(const role of roles){
     const row=document.createElement('div');row.className='person-row';const text=document.createElement('span'),online=world?.online.find(p=>p.role===role);text.textContent=`${title(role)}${role===user?.role?' · 你':online?' · 在线':' · 离线'}`;row.append(text);
@@ -89,20 +104,20 @@ export function startSocial(game:Phaser.Game){
   $('logout').onclick=async()=>{try{await api('logout',{});hardLogout();await refresh();}catch(e){notice((e as Error).message);}};
   $('people-open').onclick=()=>{$('people-panel').hidden=!$('people-panel').hidden;if(!$('people-panel').hidden)$('chat-panel').hidden=true;people();};$('chat-open').onclick=()=>openChat(null);$('chat-room').onclick=()=>openChat(null);
   $('chat-form').onsubmit=async e=>{e.preventDefault();if(!user?.role){showAccount();return;}if(sending)return;const input=$('chat-input') as HTMLInputElement,text=input.value.trim();if(!text)return;sending=true;try{await api('chat',{text,peer,requestId:crypto.randomUUID()});input.value='';}catch(e){notice((e as Error).message);}finally{sending=false;}};
-  $('take-control').onclick=async()=>{try{await api('control',{client});notice('已接管');}catch(e){notice((e as Error).message);}};
+  $('take-control').onclick=async()=>{try{await api('control',{client});if(party.enabled){party.reopen();void party.connect();}notice('已接管');}catch(e){notice((e as Error).message);}};
   $('details-open').hidden=!(import.meta as any).env.DEV||!location.search.includes('debug=1');$('details-open').onclick=()=>document.body.classList.toggle('show-game-details');
   $('fullscreen-toggle').onclick=async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else await document.documentElement.requestFullscreen();}catch{notice('当前窗口不支持切换全屏');}};
   window.addEventListener('keydown',e=>{if(e.key==='Enter'&&document.activeElement===document.querySelector('.world')){e.preventDefault();openChat(null);}if(e.key==='Escape'&&!($('account-dialog') as HTMLDialogElement).open){$('people-panel').hidden=true;$('chat-panel').hidden=true;document.body.classList.remove('show-scene-picker','show-game-details');}if(user?.role&&!bridge.controller&&[document.querySelector('.world'),game.canvas].includes(document.activeElement)&&/^(Arrow|Key[WASDEFV]|Space|Escape)/.test(e.code)){e.stopImmediatePropagation();e.preventDefault();}},true);
-  async function publishPresence(force=false){if(force&&sendingPresence){const deadline=Date.now()+3000;while(sendingPresence&&Date.now()<deadline)await new Promise(r=>setTimeout(r,20));if(sendingPresence)throw new Error('连接恢复后再操作');}if(!user?.role||!connected||!bridge.controller||sendingPresence)return;const state=bridge.state();if(!state)return;const signature=JSON.stringify(state);if(!force&&signature===lastSent)return;sendingPresence=true;try{const result=await api<{self:User;player:Player}>('presence',{...state,client});if(user?.id!==result.self.id)return;user=result.self;bridge.user=user;if(user.revision>Number($('social-ui').dataset.revision||-1)){playerInventory.hand=user.hand as ItemName|null;$('social-ui').dataset.revision=String(user.revision);}lastSent=signature;}catch(e){const err=e as Error&{status?:number};if(err.status===409){bridge.stand();const self=world?.players.find(p=>p.role===user?.role);if(self)bridge.apply(self);notice(err.message);}else if(err.status===401){hardLogout('登录已结束');}else if(err.status!==429)notice(err.message);}finally{sendingPresence=false;}}
-  let sendingPresence=false,lastPulse=0;
-  setInterval(()=>{const pulse=performance.now()-lastPulse>15000;if(pulse)lastPulse=performance.now();void publishPresence(pulse).catch(()=>{});const state=bridge.state();if(state&&state.scene!==lastRoom){lastRoom=state.scene;lastSent='';if(!peer){messages.clear();loadHistory();}document.body.classList.remove('show-scene-picker');}const rect=game.canvas.getBoundingClientRect();for(const [role,b] of bubbles){if(b.expires<performance.now()){b.element.remove();bubbles.delete(role);continue;}const p=role===user?.role?state:world?.players.find(p=>p.role===role);if(!p||p.scene!==state?.scene||b.scene!==state.scene){b.element.hidden=true;continue;}const screen=bridge.screen(p);b.element.hidden=false;b.element.style.left=Math.max(90,Math.min(innerWidth-90,rect.left+screen.x/640*rect.width))+'px';b.element.style.top=Math.max(62,rect.top+(screen.y-65)/360*rect.height)+'px';}},100);
+  async function publishPresence(force=false){if(force&&sendingPresence){const deadline=Date.now()+3000;while(sendingPresence&&Date.now()<deadline)await new Promise(r=>setTimeout(r,20));if(sendingPresence)throw new Error('连接恢复后再操作');}if(!user?.role||!connected||!bridge.controller||sendingPresence)return;const state=bridge.state();if(!state)return;party.publish(state,force);const signature=JSON.stringify(state);if(!force&&signature===lastSent)return;sendingPresence=true;try{const result=await api<{self:User;player:Player}>('presence',{...state,client});if(user?.id!==result.self.id)return;user=result.self;bridge.user=user;if(user.revision>Number($('social-ui').dataset.revision||-1)){playerInventory.hand=user.hand as ItemName|null;$('social-ui').dataset.revision=String(user.revision);}lastSent=signature;}catch(e){const err=e as Error&{status?:number};if(err.status===409){bridge.stand();const self=world?.players.find(p=>p.role===user?.role);if(self)bridge.apply(self);notice(err.message);}else if(err.status===401){hardLogout('登录已结束');}else if(err.status!==429)notice(err.message);}finally{sendingPresence=false;}}
+  let sendingPresence=false,lastPulse=0,lastPartyMove=0;
+  setInterval(()=>{const pulse=performance.now()-lastPulse>15000;if(pulse)lastPulse=performance.now();void publishPresence(pulse).catch(()=>{});const state=bridge.state();if(party.enabled&&state&&bridge.controller&&performance.now()-lastPartyMove>80){lastPartyMove=performance.now();party.publish(state);}if(party.enabled&&pulse)void party.refreshIfNeeded().catch(()=>{});if(state&&state.scene!==lastRoom){lastRoom=state.scene;lastSent='';if(!peer){messages.clear();loadHistory();}document.body.classList.remove('show-scene-picker');}const rect=game.canvas.getBoundingClientRect();for(const [role,b] of bubbles){if(b.expires<performance.now()){b.element.remove();bubbles.delete(role);continue;}const p=role===user?.role?state:(party.enabled&&party.connected?party.list().find(p=>p.role===role):null)||world?.players.find(p=>p.role===role);if(!p||p.scene!==state?.scene||b.scene!==state.scene){b.element.hidden=true;continue;}const screen=bridge.screen(p);b.element.hidden=false;b.element.style.left=Math.max(90,Math.min(innerWidth-90,rect.left+screen.x/640*rect.width))+'px';b.element.style.top=Math.max(62,rect.top+(screen.y-65)/360*rect.height)+'px';}},100);
   refresh().then(()=>{if(user)connect();else showAccount();}).catch(()=>{$('connection-state').textContent='单人试玩 · 联机服务未连接';showAccount();$('account-error').textContent='联机服务暂未连接，请稍后重试';});
   window.addEventListener('hutong:hand-changed',()=>{people();});
-  window.addEventListener('pagehide',()=>events?.close());
+  window.addEventListener('pagehide',()=>{events?.close();party.disconnect();});
   const connectionLost=()=>{const wasConnected=connected;connected=false;bridge.connected=false;if(wasConnected)shared.pause();$('connection-state').textContent='连接中…';};
-  window.addEventListener('offline',()=>{connectionLost();events?.close();});
-  window.addEventListener('online',()=>{if(user)connect();});
-  window.addEventListener('hutong:connection-lost',()=>{connectionLost();if(user&&navigator.onLine)connect();});
-  (window as unknown as Record<string,unknown>).__socialPreview={getState:()=>({user:user?{role:user.role,username:user.username,revision:user.revision,hand:user.hand}:null,connected,controller:bridge.controller,players:world?.players||[],room:bridge.state()?.scene,peer,client}),bridge};
+  window.addEventListener('offline',()=>{connectionLost();events?.close();party.disconnect();});
+  window.addEventListener('online',()=>{if(user){party.reopen();connect();}});
+  window.addEventListener('hutong:connection-lost',()=>{connectionLost();if(user&&navigator.onLine){party.reopen();connect();}});
+  (window as unknown as Record<string,unknown>).__socialPreview={getState:()=>({user:user?{role:user.role,username:user.username,revision:user.revision,hand:user.hand}:null,connected,controller:bridge.controller,players:bridge.players,party:party.enabled?{host:party.host(),connected:party.connected,players:party.list()}:null,room:bridge.state()?.scene,peer,client}),bridge};
   return bridge;
 }

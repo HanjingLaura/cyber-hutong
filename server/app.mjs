@@ -15,7 +15,10 @@ import {createBailian} from './llm.mjs';
 import {createDirector} from './director.mjs';
 import {createRewards,plushNames} from './rewards.mjs';
 import {createCeline} from './celine.mjs';
+import {issueTicket} from '../shared/party-ticket.mjs';
+import {PARTY_ROOM_ID} from '../shared/party-room.mjs';
 export const scenes=['hutong','hawaii','rest','pop','bathroom','concert','arcade','noodle','gym','dance','perler','rehearsal','elevator','subway'];
+const partySecret=()=>process.env.PARTY_AUTH_SECRET||'';
 const items=['咖啡','可乐','气泡水','薯片','面包','火腿肠','辣条','马卡龙','蛋糕','冰红茶','碗筷','米线','鸡柳','炸鸡','水','扭蛋·粉色小熊','扭蛋·薄荷兔子','扭蛋·蓝色机器人','扭蛋·橘猫','扭蛋·紫色小巫师','扭蛋·皇冠小熊'];
 const json=(res,status,value)=>{res.writeHead(status,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'});res.end(JSON.stringify(value));};
 const cookie=req=>String(req.headers.cookie||'').split(';').map(v=>v.trim()).find(v=>v.startsWith('hutong_session='))?.slice(15);
@@ -55,9 +58,22 @@ export function createMvpServer({dbPath='data/mvp.sqlite',staticDir=resolve('dis
       if(path.startsWith('/api/')){
         // Vite proxy and production must preserve the browser-facing Host header.
         const origin=req.headers.origin;if(req.method!=='GET'&&origin){let host='';try{host=new URL(origin).host.toLowerCase();}catch{fail(403,'请求来源不正确');}if(host!==String(req.headers.host||'').toLowerCase()&&!allowedHosts().includes(host))fail(403,'请求来源不正确');}
-        if(path==='/api/health'){json(res,200,{ok:true,version:2,online:players.size,llm:llm.status()});return;}
+        if(path==='/api/health'){json(res,200,{ok:true,version:2,online:players.size,llm:llm.status(),party:!!partySecret()});return;}
         const token=cookie(req),user=store.session(token);
         if(path==='/api/me'){json(res,200,{user,roster:store.roster()});return;}
+        if(path==='/api/party-ticket'){
+          if(req.method!=='POST')fail(405,'请使用 POST');
+          if(!user)fail(401,'请先登录');
+          if(!user.role)fail(409,'请先领取角色');
+          if(!partySecret())fail(503,'未配置 PARTY_AUTH_SECRET');
+          const input=await body(req);
+          if(typeof input.client!=='string'||input.client.length>80)fail(400,'连接编号无效');
+          startPlayer(user);
+          if(!controls.has(user.id))controls.set(user.id,input.client);
+          const controller=controls.get(user.id)===input.client;
+          const issued=await issueTicket(partySecret(),{userId:user.id,role:user.role,username:user.username,client:input.client,controller},60_000);
+          json(res,200,{...issued,room:process.env.PARTY_ROOM||PARTY_ROOM_ID,host:process.env.PARTYKIT_HOST||null,controller});return;
+        }
         if(path==='/api/register'||path==='/api/login'){
           if(req.method!=='POST')fail(405,'请使用 POST');limited('auth:'+clientAddress(req),30);
           const input=await body(req);
