@@ -32,39 +32,17 @@
   box-shadow: 8px 8px 0 var(--shadow-ink);
   animation: hutong-rise var(--duration) var(--ease-out) both;
 }
-.account-english,
-.account-wordmark,
-.account-lede { display: none; }
-#account-dialog[data-entry="true"] .account-english {
-  display: block;
-  margin: 0 0 6px;
-  text-align: center;
-  font: 600 11px/1 var(--font-mono);
-  letter-spacing: 0.28em;
-  color: var(--ink-soft);
-}
+.account-wordmark { display: none; }
 #account-dialog[data-entry="true"] .account-wordmark {
   display: block;
   text-align: center;
   font: 48px/1.05 var(--font-brand);
   letter-spacing: 0.12em;
-  margin: 0 0 8px;
+  margin: 0 0 22px;
   color: var(--ink);
   text-shadow: 3px 3px 0 #c5cbb8;
 }
-#account-dialog[data-entry="true"] .account-lede {
-  display: block;
-  text-align: center;
-  margin: 0 0 22px;
-  font-size: 13px;
-  line-height: 1.5;
-  color: var(--ink-soft);
-}
-#account-dialog[data-entry="true"] .panel-heading button[data-close] { display: none; }
-#account-dialog[data-entry="true"] .panel-heading h2 {
-  font: 600 15px/1.2 var(--font-mono);
-  letter-spacing: 0.06em;
-}
+#account-dialog[data-entry="true"] .panel-heading { display: none; }
 #account-dialog[data-entry="true"] input {
   width: 100%;
   height: 46px;
