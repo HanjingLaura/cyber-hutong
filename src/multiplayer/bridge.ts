@@ -55,7 +55,7 @@ export class MultiplayerBridge{
     if(this.user?.role&&!this.controller&&self?.scene===local.scene){this.apply(self);local={...self};}
     // Small feet footprints block entry, while an overlapping spawn can move out.
     const prev=this.previous.get(local.scene);
-    const deviceLock=scene.mode==='run'||scene.mode==='curl'||scene.mode==='piano';
+    const deviceLock=scene.mode==='run'||scene.mode==='curl'||scene.mode==='piano'||(local.scene==='gym'&&local.y<143&&[225,320,415].some(cx=>Math.abs(local.x-cx)<31));
     if(prev&&this.controller&&local.seat===null&&!deviceLock&&this.players.some(p=>p.role!==this.user?.role&&p.scene===local!.scene&&Math.abs(p.x-local!.x)<18&&Math.abs(p.y-local!.y)<10&&Math.hypot(local!.x-p.x,local!.y-p.y)<Math.hypot(prev.x-p.x,prev.y-p.y))){this.apply({...local,...prev});local={...local,...prev,moving:false};}
     this.previous.set(local.scene,{x:local.x,y:local.y});
     if(!this.views.has(scene)){this.views.set(scene,new Map());scene.events.once('shutdown',()=>{this.views.get(scene)?.forEach(v=>v.destroy());this.views.delete(scene);});}

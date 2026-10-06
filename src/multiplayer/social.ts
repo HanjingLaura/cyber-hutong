@@ -18,7 +18,7 @@ export async function api<T=Reply>(path:string,input?:unknown):Promise<T>{let re
 
 export function startSocial(game:Phaser.Game){
   const bridge=new MultiplayerBridge(game),client=crypto.randomUUID();
-  let user:User|null=null,world:World|null=null,events:EventSource|null=null,peer:Role|null=null,authMode='login',busy=false,sending=false,connected=false,lastSent='',lastRoom='',initializedRole:string|null=null,historyEpoch=0;
+  let user:User|null=null,world:World|null=null,events:EventSource|null=null,peer:Role|null=null,authMode='login',busy=false,sending=false,connected=false,lastSent='',lastRoom='',initializedRole:string|null=null,historyEpoch=0,handSynced=false;
   let lastChatContext:Role|null=null,nearRole:Role|null=null,emoting=false;
   const messages=new Map<number,Message>(),bubbles=new Map<Role,{element:HTMLElement;expires:number;scene:string}>(),unread=new Map<Role,number>();
   document.body.classList.add('game-fullscreen');
@@ -37,9 +37,15 @@ export function startSocial(game:Phaser.Game){
   const $=<T extends HTMLElement=HTMLElement>(id:string)=>document.getElementById(id) as T;
   const applySelf=(self:User|null|undefined)=>{
     if(!self||(user&&self.id===user.id&&self.revision<user.revision))return false;
-    user=self;bridge.user=self;
-    playerInventory.hand=self.hand as ItemName|null;playerInventory.noodleSeasoning=self.seasoning??[];
-    $('social-ui').dataset.revision=String(self.revision);return true;
+    const newer=!user||self.id!==user.id||self.revision>user.revision;
+    const applyHand=newer||!handSynced;
+    if(applyHand){
+      user=self;bridge.user=self;handSynced=true;
+      playerInventory.hand=self.hand as ItemName|null;playerInventory.noodleSeasoning=self.seasoning??[];
+    }else{
+      user={...self,hand:playerInventory.hand,seasoning:playerInventory.noodleSeasoning};bridge.user=user;
+    }
+    $('social-ui').dataset.revision=String(user.revision);return true;
   };
   const focus=()=>document.querySelector<HTMLElement>('.world')!.focus();
   let noticeTimer:ReturnType<typeof setTimeout>;
@@ -70,7 +76,7 @@ export function startSocial(game:Phaser.Game){
   function hardLogout(text?:string){
     events?.close();events=null;party.disconnect();lifeUI.reset();npcUI.reset();shared.reset();
     user=null;world=null;bridge.user=null;bridge.players=[];bridge.onlineRoles=[];bridge.controller=true;bridge.connected=false;bridge.clearTransition();
-    playerInventory.hand=null;initializedRole=null;connected=false;$('social-ui').dataset.revision='-1';
+    playerInventory.hand=null;initializedRole=null;connected=false;handSynced=false;$('social-ui').dataset.revision='-1';
     for(const b of bubbles.values())b.element.remove();bubbles.clear();messages.clear();unread.clear();updateBadges();
     nearRole=null;peer=null;lastChatContext=null;$('near-social').hidden=true;
     $('connection-state').textContent='单人试玩';if(bridge.active?.input.keyboard)bridge.active.input.keyboard.enabled=true;

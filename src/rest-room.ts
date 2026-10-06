@@ -368,9 +368,8 @@ export class RestRoomScene extends Phaser.Scene {
         cup.setTexture(item.texture, item.frame).setDisplaySize(item.width, item.height);
       }
     });
-    if (moving && this.seated === null && (this.facing === 1 || this.facing === 3)) {
-      const frames = this.hand ? this.frames.hold : this.frames.side;
-      const frame = frames.find(frame => frame.name === this.actor.frame.name)!;
+    if (moving && this.seated === null && (this.facing === 1 || this.facing === 3) && !this.hand) {
+      const frame = this.frames.side.find(frame => frame.name === this.actor.frame.name)!;
       this.sideLegs.draw(this.actor, frame, METRICS.standing, this.facing, this.motionTime);
     }
     const target = this.nearest();

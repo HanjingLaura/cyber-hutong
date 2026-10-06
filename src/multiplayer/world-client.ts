@@ -17,7 +17,7 @@ export function personalProgress(){return service?.progress??[];}
 export function onlineWorld(){return service;}
 const heldDevices=new Set<string>();
 const pendingDevices=new Set<string>();
-export function useDevice(device:string,start:()=>void){if(!service?.bridge.user?.role)return false;const key=service.bridge.active?.sys.settings.key+':'+device;if(heldDevices.has(key))return false;if(pendingDevices.has(key))return true;pendingDevices.add(key);void service.lease(device).then(()=>{if(!service?.bridge.connected||!service.bridge.controller){void service?.lease(device,true).catch(()=>{});return;}heldDevices.add(key);start();}).catch(e=>service?.notice(e.message)).finally(()=>pendingDevices.delete(key));return true;}
+export function useDevice(device:string,start:()=>void){if(!service?.bridge.user?.role)return false;const key=service.bridge.active?.sys.settings.key+':'+device;if(heldDevices.has(key))return false;if(pendingDevices.has(key))return true;pendingDevices.add(key);void service.lease(device).then(()=>{if(!service?.bridge.connected||!service.bridge.controller){void service?.lease(device,true).catch(()=>{});return;}if(service.bridge.active?.sys.settings.key+':'+device!==key){void service.lease(device,true).catch(()=>{});return;}heldDevices.add(key);start();}).catch(e=>service?.notice(e.message)).finally(()=>pendingDevices.delete(key));return true;}
 export function releaseDevice(device:string){if(!service?.bridge.user?.role)return;heldDevices.delete(service.bridge.active?.sys.settings.key+':'+device);void service.lease(device,true).catch(()=>{});}
 export class WorldClient{
  objects=new Map<string,RoomObject>();progress:Progress[]=[];busy=false;
@@ -34,9 +34,11 @@ export class WorldClient{
   if(data.npcs)setGuestPresence(data.npcs);
   if(data.clock)this.clockOffset=data.clock-Date.now();
   const scene=this.bridge.active;if(scene)for(const name of [data.self?.hand,...(data.players??[]).map((p:any)=>p.hand),...(data.objects??[]).flatMap((o:any)=>(o.slots??[]).map((s:any)=>typeof s==='string'?s:s?.name))])if(name)void ensureCollectible(scene,name).catch(()=>{});
-  if(data.self&&this.bridge.user?.id===data.self.id&&data.self.revision>=(this.bridge.user?.revision??0)){
+  if(data.self&&this.bridge.user?.id===data.self.id&&data.self.revision>(this.bridge.user?.revision??-1)){
+    const previous=playerInventory.hand;
     this.bridge.user=data.self;playerInventory.hand=data.self.hand as ItemName|null;playerInventory.noodleSeasoning=data.self.seasoning??[];
     const ui=document.getElementById('social-ui');if(ui)ui.dataset.revision=String(data.self.revision);
+    if(previous!==playerInventory.hand)window.dispatchEvent(new Event('hutong:hand-changed'));
   }
   for(const o of data.objects??[])if(o.version>=(this.objects.get(o.id)?.version??-1))this.objects.set(o.id,o);
   const version=data.progressVersion??data.self?.progressVersion??0;

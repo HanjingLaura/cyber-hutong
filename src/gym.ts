@@ -67,8 +67,9 @@ export class GymScene extends Phaser.Scene {
   private lift(){if(this.mode==='curl'&&this.liftStart===null){this.liftStart=this.time.now;this.message='举起，再慢慢放下。';}}
   private stop(){if(this.mode==='run'||this.mode==='curl')releaseDevice(this.mode==='run'?`run-${this.machine}`:'curl');this.mode='walk';this.liftStart=null;this.breathTime=0;this.x=this.returnPoint.x;this.y=this.returnPoint.y;this.facing=0;this.message='训练结束。';this.belt.clear();}
   private begin(kind:Mode,index:number){
-    this.returnPoint={x:this.x,y:this.y};this.machine=index;this.mode=kind;this.input.keyboard?.resetKeys();
-    if(kind==='run'){this.x=treadmills[index];this.y=127;this.facing=2;this.message='F 切换速度，E / Esc 下机。';}
+    this.machine=index;this.mode=kind;this.input.keyboard?.resetKeys();
+    if(kind==='run'){this.returnPoint={x:treadmills[index],y:155};this.x=treadmills[index];this.y=127;this.facing=2;this.message='F 切换速度，E / Esc 下机。';return;}
+    this.returnPoint={x:this.x,y:this.y};
     if(kind==='curl'){this.x=123;this.y=115;this.facing=0;this.message='Space 举一次哑铃，E / Esc 放回。';}
     if(kind==='rest'){this.x=benches[index].x;this.y=benches[index].y;this.facing=0;this.message='E / Esc 起身。';}
     if(kind==='breathe'){this.x=561;this.y=297;this.facing=0;this.breathTime=0;this.message='跟着节奏吸气、呼气，E / Esc 结束。';}
@@ -86,9 +87,10 @@ export class GymScene extends Phaser.Scene {
     if(playerInventory.hand&&['run','curl'].includes(target.kind)){this.message='训练需要空手，先存放物品。';return;}
     if(['run','curl'].includes(target.kind)){
       const kind=target.kind as 'run'|'curl';
-      const device=kind==='run'?`run-${target.index}`:'curl';
-      if(useDevice(device,()=>this.begin(kind,target.index)))return;
-      this.begin(kind,target.index);return;
+      const index=target.index;
+      const device=kind==='run'?`run-${index}`:'curl';
+      if(useDevice(device,()=>{if(this.sys.isActive()&&this.mode==='walk')this.begin(kind,index);}))return;
+      this.begin(kind,index);return;
     }
     if(target.kind==='stash'){this.storage();return;}
     if(target.kind==='water'){

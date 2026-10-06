@@ -531,9 +531,8 @@ class HutongScene extends Phaser.Scene {
       }
       this.heldItem.draw(this.actor, key, frame, this.gripSlots[key].get(frame.name)!, height, items[playerInventory.hand], point.y + (seated && !back ? 4 : 1), direction);
     }
-    if (!this.seatedAt && this.mode === 'walking' && (direction === 1 || direction === 3) && this.layers.actor) {
-      const frames = this.actor.texture.key === 'rest-hold' ? this.frames.hold : this.frames.sideWalk;
-      const frame = frames.find(frame => frame.name === this.actor.frame.name)!;
+    if (!this.seatedAt && this.mode === 'walking' && (direction === 1 || direction === 3) && this.layers.actor && !playerInventory.hand) {
+      const frame = this.frames.sideWalk.find(frame => frame.name === this.actor.frame.name)!;
       this.sideLegs.draw(this.actor, frame, METRICS.standing, direction, this.motionTime);
     }
   }

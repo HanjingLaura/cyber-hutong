@@ -4,7 +4,7 @@ import {canWorkAt} from '../workstations';
 import Phaser from 'phaser';
 import {characterRegistry,characterImage,type AvatarRole} from '../character-assets';
 import {items,type ItemName} from '../player-inventory';
-import {SideWalkLegs,sideUpperFrame,heldSideFrame} from '../side-walk-legs';
+import {SideWalkLegs,sideUpperFrame} from '../side-walk-legs';
 import {HeldItemView} from '../held-item';
 import type {SpriteFrame} from '../frames';
 import type {Player} from './types';
@@ -56,11 +56,13 @@ export class TeamAvatar{
   else if(mode==='dance'||mode==='practice')index=(back?54:46)+(previewPhase===undefined?Math.floor(performance.now()/400):previewPhase)%2;
   else if(mode==='curl')index=30+(previewPhase===undefined?Math.floor(performance.now()/650):previewPhase)%2;
   else if(moving)index=front?8+phase%4:back?16+phase%4:data.sideWalkLoop?data.sideWalkLoop[(previewPhase??Math.floor(this.time/(data.sideWalkFrameMs??250)))%data.sideWalkLoop.length]:24+(data.approvedLegacy?sideUpperFrame(this.time):Math.floor(this.time/125)%6);
-  if(data.approvedLegacy&&holding&&moving&&!front&&!back)index=18+heldSideFrame(this.time);
   const frame=(part===2?data.officeFrames:part?data.carryFrames:data.frames)[index],key='team-v3-'+frame.source,[sx,sy,w,h]=frame.rect;
   // Locomotion scale follows the head landmark across the entire cycle.
+  // Unnormalized carry sheets (front/back) used a taller atlas max than the crop,
+  // so side-carry v12 looked larger than holding-while-walking. Fill the same
+  // standing height unless the frame was head-normalized (offsetYRatio).
   if(seated&&height===61.44)height=characterRegistry.seatedHeight;
-  const scale=height/frame.referenceHeight,flip=direction===3,pivot=flip?1-frame.pivotX:frame.pivotX;
+  const scale=height/(part===1&&frame.offsetYRatio===undefined?h:frame.referenceHeight),flip=direction===3,pivot=flip?1-frame.pivotX:frame.pivotX;
   if(seated&&seatSurface!==undefined)y=seatSurface+(h-frame.seat[1])*scale;
   // Move the front-facing seated worker toward the desk; the monitor covers part of the hands.
   if(seated&&office&&!holding&&front)y-=height*.03+1;
@@ -71,8 +73,8 @@ export class TeamAvatar{
    if(back)this.body.setTexture(key,'upper-'+part+'-'+index).setOrigin(pivot,h/Math.round(h*.72));
    else this.upper.setTexture(key,'upper-'+part+'-'+index).setOrigin(pivot,0).setScale(scale).setFlipX(flip).setPosition(Math.round(x),Math.round(y-h*scale)).setDepth(depth+3).setVisible(true);
   }
-  const nativeFrame:SpriteFrame={name:'pose-'+part+'-'+index,x:sx,y:sy,width:w,height:h,referenceHeight:frame.referenceHeight,pivotX:frame.pivotX};
-  if(data.approvedLegacy&&moving&&!front&&!back&&!this.masked)this.legs.draw(this.body,nativeFrame,height,direction,this.time);
+  const nativeFrame:SpriteFrame={name:'pose-'+part+'-'+index,x:sx,y:sy,width:w,height:h,referenceHeight:part===1&&frame.offsetYRatio===undefined?h:frame.referenceHeight,pivotX:frame.pivotX};
+  if(data.approvedLegacy&&!holding&&moving&&!front&&!back&&!this.masked)this.legs.draw(this.body,nativeFrame,height,direction,this.time);
   if(player.hand?.startsWith('拼豆·')&&!this.scene.textures.exists('bead-item-'+player.hand.slice(3)))void ensureCollectible(this.scene,player.hand).catch(()=>{});
   const item=items[player.hand as ItemName];
   if(item&&frame.grip&&sceneTexture(this.scene,item.texture)){
