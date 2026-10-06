@@ -57,23 +57,23 @@ export class TeamAvatar{
   else if(mode==='curl')index=30+(previewPhase===undefined?Math.floor(performance.now()/650):previewPhase)%2;
   else if(moving)index=front?8+phase%4:back?16+phase%4:data.sideWalkLoop?data.sideWalkLoop[(previewPhase??Math.floor(this.time/(data.sideWalkFrameMs??250)))%data.sideWalkLoop.length]:24+(data.approvedLegacy?sideUpperFrame(this.time):Math.floor(this.time/125)%6);
   const frame=(part===2?data.officeFrames:part?data.carryFrames:data.frames)[index],key='team-v3-'+frame.source,[sx,sy,w,h]=frame.rect;
-  // Locomotion scale follows the head landmark across the entire cycle.
-  // Unnormalized carry sheets (front/back) used a taller atlas max than the crop,
-  // so side-carry v12 looked larger than holding-while-walking. Fill the same
-  // standing height unless the frame was head-normalized (offsetYRatio).
+  // Standing hold must share one on-screen height. Side-carry v12 is head-normalized
+  // (taller crop than referenceHeight); front/back carry uses the atlas max. Fill the
+  // crop to the standing height so left/right hold matches hold-walk and idle hold.
   if(seated&&height===61.44)height=characterRegistry.seatedHeight;
-  const scale=height/(part===1&&frame.offsetYRatio===undefined?h:frame.referenceHeight),flip=direction===3,pivot=flip?1-frame.pivotX:frame.pivotX;
+  const fillCarry=part===1&&!seated;
+  const scale=height/(fillCarry?h:frame.referenceHeight),flip=direction===3,pivot=flip?1-frame.pivotX:frame.pivotX;
   if(seated&&seatSurface!==undefined)y=seatSurface+(h-frame.seat[1])*scale;
   // Move the front-facing seated worker toward the desk; the monitor covers part of the hands.
   if(seated&&office&&!holding&&front)y-=height*.03+1;
-  y+=height*(frame.offsetYRatio??0);
+  if(!fillCarry)y+=height*(frame.offsetYRatio??0);
   this.hide();this.frameName=frame.name;
   this.body.setTexture(key,'pose-'+part+'-'+index).setOrigin(pivot,1).setScale(scale*(frame.scaleXRatio??1),scale).setFlipX(flip).setPosition(Math.round(x),Math.round(y)).setDepth(depth).setVisible(true);
   if(seated&&office){
    if(back)this.body.setTexture(key,'upper-'+part+'-'+index).setOrigin(pivot,h/Math.round(h*.72));
    else this.upper.setTexture(key,'upper-'+part+'-'+index).setOrigin(pivot,0).setScale(scale).setFlipX(flip).setPosition(Math.round(x),Math.round(y-h*scale)).setDepth(depth+3).setVisible(true);
   }
-  const nativeFrame:SpriteFrame={name:'pose-'+part+'-'+index,x:sx,y:sy,width:w,height:h,referenceHeight:part===1&&frame.offsetYRatio===undefined?h:frame.referenceHeight,pivotX:frame.pivotX};
+  const nativeFrame:SpriteFrame={name:'pose-'+part+'-'+index,x:sx,y:sy,width:w,height:h,referenceHeight:fillCarry?h:frame.referenceHeight,pivotX:frame.pivotX};
   if(data.approvedLegacy&&!holding&&moving&&!front&&!back&&!this.masked)this.legs.draw(this.body,nativeFrame,height,direction,this.time);
   if(player.hand?.startsWith('拼豆·')&&!this.scene.textures.exists('bead-item-'+player.hand.slice(3)))void ensureCollectible(this.scene,player.hand).catch(()=>{});
   const item=items[player.hand as ItemName];
