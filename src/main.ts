@@ -627,13 +627,12 @@ const game = new Phaser.Game({ type: Phaser.AUTO, width: VIEW_WIDTH / PIXEL_RATI
 });
 let selectedSceneKey='hutong';
 game.events.once('ready',()=>startSocial(game));
-// A scene may finish its first asset load after the user has already left it.
-// Check the current selection at CREATE, not just the running scenes at click time.
 game.events.once('ready',()=>{
   for(const key of ['hutong','rest','pop','hawaii','bathroom','concert','arcade','noodle','gym','dance','perler','rehearsal','elevator','subway']){
     const scene=game.scene.getScene(key);
     scene.events.on('create',()=>{if(key!==selectedSceneKey)game.scene.sleep(key);});
   }
+  import('./asset-warmup').then(({startAssetWarmup})=>startAssetWarmup(game)).catch(()=>{});
 });
 let navigationAuthorized=false;
 window.addEventListener('hutong:navigate',event=>{navigationAuthorized=true;try{document.querySelector<HTMLButtonElement>(`[data-scene="${(event as CustomEvent).detail}"]`)?.click();}finally{navigationAuthorized=false;}});

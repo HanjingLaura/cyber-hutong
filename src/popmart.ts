@@ -30,9 +30,10 @@ export class PopMartScene extends Phaser.Scene {
   constructor() { super('pop'); }
   preload() {
     preloadGuest(this,'buzz');
-    this.load.image('pop-room', new URL('../assets/drafts/popmart-store-v3.png', import.meta.url).href);
-    this.load.image('pop-stand', new URL('../assets/drafts/popmart-stand-v2.png', import.meta.url).href);
-    this.load.image('pop-props', new URL('../assets/drafts/popmart-props-v1.png', import.meta.url).href);
+    const load=(key:string,url:string)=>{if(!this.textures.exists(key))this.load.image(key,url);};
+    load('pop-room', new URL('../assets/drafts/popmart-store-v3.png', import.meta.url).href);
+    load('pop-stand', new URL('../assets/drafts/popmart-stand-v2.png', import.meta.url).href);
+    load('pop-props', new URL('../assets/drafts/popmart-props-v1.png', import.meta.url).href);
   }
   private get menu() { return document.querySelector<HTMLDialogElement>('#blind-menu')!; }
   private nearest() { return this.targets.filter(t => Math.hypot(t.x - this.x, t.y - this.y) < 39).sort((a,b) => Math.hypot(a.x-this.x,a.y-this.y) - Math.hypot(b.x-this.x,b.y-this.y))[0]; }

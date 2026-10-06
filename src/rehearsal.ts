@@ -15,9 +15,10 @@ export class RehearsalScene extends Phaser.Scene{
   private returnPoint={x:320,y:339};private message='靠近椅子或琴凳按 E。';
   constructor(){super('rehearsal');}
   preload(){
-    this.load.image('rehearsal-room',new URL('../assets/drafts/rehearsal-room-v1.png',import.meta.url).href);
-    this.load.image('rehearsal-kit',new URL('../assets/drafts/rehearsal-kit-v1.png',import.meta.url).href);
-    if(!this.textures.exists('concert-chair'))this.load.image('concert-chair',new URL('../assets/drafts/concert-chair-v1.png',import.meta.url).href);
+    const load=(k:string,u:string)=>{if(!this.textures.exists(k))this.load.image(k,u);};
+    load('rehearsal-room',new URL('../assets/drafts/rehearsal-room-v1.png',import.meta.url).href);
+    load('rehearsal-kit',new URL('../assets/drafts/rehearsal-kit-v1.png',import.meta.url).href);
+    load('concert-chair',new URL('../assets/drafts/concert-chair-v1.png',import.meta.url).href);
   }
   create(){
     this.add.image(0,0,'rehearsal-room').setOrigin(0).setDisplaySize(640,360).setDepth(-100);

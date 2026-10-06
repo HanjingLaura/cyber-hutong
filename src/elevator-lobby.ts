@@ -12,7 +12,7 @@ export class ElevatorLobbyScene extends Phaser.Scene{
   private x=320;private y=310;private facing=2;
   private doors=[{progress:0,open:false},{progress:0,open:false}];
   constructor(){super('elevator');}
-  preload(){this.load.image('elevator-room',new URL('../assets/drafts/elevator-lobby-v1.png',import.meta.url).href);}
+  preload(){if(!this.textures.exists('elevator-room'))this.load.image('elevator-room',new URL('../assets/drafts/elevator-lobby-v1.png',import.meta.url).href);}
   create(){
     this.add.image(0,0,'elevator-room').setOrigin(0).setDisplaySize(640,360).setDepth(-100);
     entrances.forEach(e=>{

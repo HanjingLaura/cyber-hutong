@@ -29,8 +29,9 @@ export class DanceStudioScene extends Phaser.Scene {
   constructor(){super('dance');}
   preload(){
     preloadGuest(this,'lulu');
-    this.load.image('dance-room',new URL('../assets/drafts/dance-room-v1.png',import.meta.url).href);
-    this.load.image('dance-poses',new URL('../assets/drafts/owner-dance-v1.png',import.meta.url).href);
+    const load=(k:string,u:string)=>{if(!this.textures.exists(k))this.load.image(k,u);};
+    load('dance-room',new URL('../assets/drafts/dance-room-v1.png',import.meta.url).href);
+    load('dance-poses',new URL('../assets/drafts/owner-dance-v1.png',import.meta.url).href);
   }
   create(){
     this.add.image(0,0,'dance-room').setOrigin(0).setDisplaySize(640,360).setDepth(-100);

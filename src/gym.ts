@@ -32,8 +32,9 @@ export class GymScene extends Phaser.Scene {
   constructor(){super('gym');}
   preload(){
     preloadGuest(this,'tutu');
-    this.load.image('gym-room',new URL('../assets/drafts/gym-room-v1.png',import.meta.url).href);
-    this.load.image('gym-curl',new URL('../assets/drafts/owner-gym-curl-v1.png',import.meta.url).href);
+    const load=(k:string,u:string)=>{if(!this.textures.exists(k))this.load.image(k,u);};
+    load('gym-room',new URL('../assets/drafts/gym-room-v1.png',import.meta.url).href);
+    load('gym-curl',new URL('../assets/drafts/owner-gym-curl-v1.png',import.meta.url).href);
   }
   create(){
     this.add.image(0,0,'gym-room').setOrigin(0).setDisplaySize(640,360).setDepth(-100);
