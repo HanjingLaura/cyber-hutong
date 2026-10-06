@@ -156,6 +156,7 @@ body.game-fullscreen{overflow:hidden;background:#333936;height:100dvh}
 #game-tools{position:absolute;top:12px;left:14px;right:14px;gap:3px}
 #game-tools button{border:0;border-bottom:2px solid #c2c5a3;background:#17231ccc;padding:7px 12px;box-shadow:none}
 #connection-state{font-size:11px;color:#e5e5c6;text-shadow:1px 1px #18251f;background:transparent;padding:0}
+#connection-state:empty{display:none}
 .game-fullscreen #hud-rail{top:48px;left:14px}
 #chat-panel{position:absolute;bottom:16px;left:14px;width:min(320px,40vw);padding:8px;background:linear-gradient(0deg,#142219cf,#14221900);border:0;box-shadow:none;color:#fff6da;text-shadow:1px 1px #15231d}
 #chat-panel .panel-heading{margin:0 0 3px;font-size:11px}#chat-panel .panel-heading button,#chat-room{font-size:10px;padding:3px 6px;border:0;background:#17231c80;box-shadow:none}

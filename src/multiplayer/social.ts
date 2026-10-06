@@ -23,7 +23,7 @@ export function startSocial(game:Phaser.Game){
   const messages=new Map<number,Message>(),bubbles=new Map<Role,{element:HTMLElement;expires:number;scene:string}>(),unread=new Map<Role,number>();
   document.body.classList.add('game-fullscreen');
   const root=document.createElement('div');root.id='social-ui';root.innerHTML=`
-    <nav id="game-tools" aria-label="游戏操作"><button id="room-open">地图</button><button id="people-open">人物</button><button id="chat-open">聊天</button><button id="settings-open">设置</button><span id="connection-state" role="status">单人试玩</span></nav>
+    <nav id="game-tools" aria-label="游戏操作"><button id="room-open">地图</button><button id="people-open">人物</button><button id="chat-open">聊天</button><button id="settings-open">设置</button><span id="connection-state" role="status"></span></nav>
     <dialog id="settings-dialog" class="social-dialog"><div class="panel-heading"><h2>设置</h2><button data-close="settings-dialog">关闭</button></div><div class="settings-actions"><button id="account-open">登录 / 领取角色</button><button id="collection-open">收藏册</button><button id="fullscreen-toggle">全屏</button><button id="details-open" hidden>调试操作</button></div></dialog>
     <section id="people-panel" class="social-panel" hidden><div class="panel-heading"><strong>人物</strong><button data-close="people-panel">关闭</button></div><div id="people-list"></div><button id="take-control" hidden>在这个窗口接管</button></section>
     <section id="chat-panel" class="social-panel" hidden><div class="panel-heading"><strong id="chat-title">当前场景</strong><button data-close="chat-panel">关闭</button></div><button id="chat-room">场景聊天</button><div id="chat-history" role="log" aria-live="polite"></div><form id="chat-form"><label class="sr-only" for="chat-input">消息</label><input id="chat-input" maxlength="200" placeholder="Enter 发送" autocomplete="off"/><button>发送</button></form></section>
@@ -79,7 +79,7 @@ export function startSocial(game:Phaser.Game){
     playerInventory.hand=null;initializedRole=null;connected=false;handSynced=false;$('social-ui').dataset.revision='-1';
     for(const b of bubbles.values())b.element.remove();bubbles.clear();messages.clear();unread.clear();updateBadges();
     nearRole=null;peer=null;lastChatContext=null;$('near-social').hidden=true;
-    $('connection-state').textContent='单人试玩';if(bridge.active?.input.keyboard)bridge.active.input.keyboard.enabled=true;
+    $('connection-state').textContent='';if(bridge.active?.input.keyboard)bridge.active.input.keyboard.enabled=true;
     accountSignature='';peopleSignature='';if(text)notice(text);account();people();
   }
   function account(){
@@ -143,7 +143,7 @@ export function startSocial(game:Phaser.Game){
   function updateNear(){const hud=$('near-social'),state=bridge.state();if(!user?.role||!state||!bridge.controller){nearRole=null;hud.hidden=true;return;}let best:Role|null=null,bestDist=55;for(const p of livePlayers()){if(p.role===user.role||p.scene!==state.scene)continue;const d=Math.hypot(p.x-state.x,p.y-state.y);if(d<=bestDist){bestDist=d;best=p.role;}}nearRole=best;hud.hidden=!best;if(best){$('near-label').textContent=title(best);($('near-social').querySelector('[data-near="gift"]') as HTMLButtonElement).disabled=!playerInventory.hand;const inviteBtn=$('near-social').querySelector('[data-near="invite"]') as HTMLButtonElement;inviteBtn.textContent=`去${meetPlaces[playPlaceFor(best)]}`;}
   }
   setInterval(()=>{const pulse=performance.now()-lastPulse>15000;if(pulse)lastPulse=performance.now();void publishPresence(pulse).catch(()=>{});const state=bridge.state();if(party.enabled&&state&&bridge.controller&&performance.now()-lastPartyMove>80){lastPartyMove=performance.now();party.publish(state);}if(party.enabled&&pulse)void party.refreshIfNeeded().catch(()=>{});if(state&&state.scene!==lastRoom){lastRoom=state.scene;lastSent='';if(!peer){messages.clear();loadHistory();}document.body.classList.remove('show-scene-picker');}updateNear();const rect=game.canvas.getBoundingClientRect();for(const [role,b] of bubbles){if(b.expires<performance.now()){b.element.remove();bubbles.delete(role);continue;}const p=role===user?.role?state:livePlayers().find(p=>p.role===role);if(!p||p.scene!==state?.scene||b.scene!==state.scene){b.element.hidden=true;continue;}const screen=bridge.screen(p);b.element.hidden=false;b.element.style.left=Math.max(90,Math.min(innerWidth-90,rect.left+screen.x/640*rect.width))+'px';b.element.style.top=Math.max(62,rect.top+(screen.y-65)/360*rect.height)+'px';}},100);
-  refresh().then(()=>{if(user)connect();else showAccount();}).catch(()=>{$('connection-state').textContent='单人试玩 · 联机服务未连接';showAccount();$('account-error').textContent='联机服务暂未连接，请稍后重试';});
+  refresh().then(()=>{if(user)connect();else showAccount();}).catch(()=>{$('connection-state').textContent='';showAccount();$('account-error').textContent='联机服务暂未连接，请稍后重试';});
   window.addEventListener('hutong:hand-changed',()=>{people();});
   window.addEventListener('pagehide',()=>{events?.close();party.disconnect();});
   const connectionLost=()=>{const wasConnected=connected;connected=false;bridge.connected=false;if(wasConnected)shared.pause();$('connection-state').textContent='连接中…';};

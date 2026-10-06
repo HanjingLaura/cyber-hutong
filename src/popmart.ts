@@ -198,7 +198,7 @@ export class PopMartScene extends Phaser.Scene {
       const count=records.filter(r=>r.toy===toy).length;
       return count?`<div class="collection-toy"><img alt="盲盒包装" src="${toyImage(toy)}"/><span>${name.split(' · ')[0]} × ${count}</span></div>`:'';
     }).join('')+gacha.counts.map((count,toy)=>count?`<div class="collection-toy"><img alt="扭蛋小玩具" src="${this.gachaImages[toy]}"/><span>扭蛋 × ${count}</span></div>`:'').join('');
-    document.querySelector('#pop-legacy')!.textContent=blindBoxes.data.legacy.length ? `旧版试玩收藏保留：${blindBoxes.data.legacy.join('、')}` : '';
+    document.querySelector('#pop-legacy')!.textContent=blindBoxes.data.legacy.length ? `旧版收藏保留：${blindBoxes.data.legacy.join('、')}` : '';
   }
   private canWalk(x:number,y:number) {
     if(guestBlocks('buzz',x,y))return false;
