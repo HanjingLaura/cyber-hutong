@@ -19,7 +19,7 @@ export class PerlerShopScene extends Phaser.Scene{
   private returnPoint={x:320,y:335};private stored:{name:ItemName;seasoning:string[]}|null=null;
   private message='靠近圆凳按 E 拼豆，右上方是熨烫台。';
   constructor(){super('perler');}
-  preload(){this.load.image('perler-room-v2',new URL('../assets/drafts/perler-shop-v2.png',import.meta.url).href);this.load.image('perler-furniture-v2',new URL('../assets/drafts/perler-furniture-v2.png',import.meta.url).href);}
+  preload(){const load=(k:string,u:string)=>{if(!this.textures.exists(k))this.load.image(k,u);};load('perler-room-v2',new URL('../assets/drafts/perler-shop-v2.png',import.meta.url).href);load('perler-furniture-v2',new URL('../assets/drafts/perler-furniture-v2.png',import.meta.url).href);}
   create(){
     this.add.image(0,0,'perler-room-v2').setOrigin(0).setDisplaySize(640,360).setDepth(-100);
     const furniture=registerFrames(this,'perler-furniture-v2',2,1,false,{x:[0,.8,1],y:[0,1]});

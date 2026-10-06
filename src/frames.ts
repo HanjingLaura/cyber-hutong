@@ -36,10 +36,15 @@ function bodyBounds(pixels: Uint8ClampedArray, width: number, x0: number, y0: nu
   return largest;
 }
 
+const frameCache = new Map<string, SpriteFrame[]>();
+
 // Generated sheets remain untouched. These are texture frames used by the renderer,
 // not edited copies of the artwork. Low-alpha generation fringe is excluded from bounds.
 export function registerFrames(scene: Phaser.Scene, key: string, columns: number, rows: number, actor = false, cuts?: { x: number[]; y: number[] }): SpriteFrame[] {
   const texture = scene.textures.get(key);
+  const cacheKey = key + ':' + columns + 'x' + rows + ':' + Number(actor) + ':' + JSON.stringify(cuts ?? null);
+  const cached = frameCache.get(cacheKey);
+  if (cached && texture.has(cached[0].name)) return cached.map(frame => ({ ...frame }));
   const source = texture.getSourceImage() as HTMLImageElement;
   const canvas = document.createElement('canvas');
   canvas.width = source.width;
@@ -88,7 +93,8 @@ export function registerFrames(scene: Phaser.Scene, key: string, columns: number
   // Fixed scale for the whole sheet preserves the raised and passing leg poses.
   const referenceHeight = Math.max(...frames.map(frame => frame.height));
   for (const frame of frames) frame.referenceHeight = referenceHeight;
-  return frames;
+  frameCache.set(cacheKey, frames);
+  return frames.map(frame => ({ ...frame }));
 }
 
 export function setSpriteFrame(image: Phaser.GameObjects.Image, key: string, frame: SpriteFrame, height: number) {

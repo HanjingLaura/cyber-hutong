@@ -29,8 +29,9 @@ export class NoodleShopScene extends Phaser.Scene {
   private dialog=document.querySelector<HTMLDialogElement>('#noodle-menu')!;
   constructor(){super('noodle');}
   preload(){
-    this.load.image('noodle-room-v3',new URL('../assets/drafts/noodle-room-v3.png',import.meta.url).href);
-    this.load.image('noodle-kit',new URL('../assets/drafts/noodle-furniture-v1.png',import.meta.url).href);
+    const load=(k:string,u:string)=>{if(!this.textures.exists(k))this.load.image(k,u);};
+    load('noodle-room-v3',new URL('../assets/drafts/noodle-room-v3.png',import.meta.url).href);
+    load('noodle-kit',new URL('../assets/drafts/noodle-furniture-v1.png',import.meta.url).href);
   }
   create(){
     registerProductTextures(this);

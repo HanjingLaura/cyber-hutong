@@ -20,8 +20,9 @@ export class ConcertScene extends Phaser.Scene {
   constructor(){super('concert');}
   preload(){
     preloadGuest(this,'zhu');
-    this.load.image('concert-room',new URL('../assets/drafts/concert-room-v4.png',import.meta.url).href);
-    this.load.image('concert-chair',new URL('../assets/drafts/concert-chair-v1.png',import.meta.url).href);
+    const load=(k:string,u:string)=>{if(!this.textures.exists(k))this.load.image(k,u);};
+    load('concert-room',new URL('../assets/drafts/concert-room-v4.png',import.meta.url).href);
+    load('concert-chair',new URL('../assets/drafts/concert-chair-v1.png',import.meta.url).href);
   }
   create(){
     placeGuest(this,'zhu');

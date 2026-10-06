@@ -182,7 +182,7 @@ export class RestRoomScene extends Phaser.Scene {
       if (!this.sys.isActive()) return;
       this.brewTimer?.remove(); this.brewing = false; this.coffeeReady = false;
       this.stand(); this.x = 554; this.y = 184; this.hand = null; this.tableItems.forEach(table => table.fill(null)); this.fridgeItems = [...fridgeDefaults, ...Array(6).fill(null)];
-      this.message('休息室试玩已重置。'); world.focus();
+      this.message('休息室已重置。'); world.focus();
     });
     for (const checkbox of document.querySelectorAll<HTMLInputElement>('[data-rest-layer]')) checkbox.addEventListener('change', () => {
       for (const image of this.groups[checkbox.dataset.restLayer!]) image.setVisible(checkbox.checked);

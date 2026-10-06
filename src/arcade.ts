@@ -20,7 +20,7 @@ export class ArcadeScene extends Phaser.Scene {
   private facing=2;
   private seated:string|null=null;private returnPoint={x:584,y:330};
   constructor(){super('arcade');}
-  preload(){this.load.image('arcade-room',new URL('../assets/drafts/arcade-room-v3.png',import.meta.url).href);this.load.image('arcade-props-v2',new URL('../assets/drafts/arcade-props-v2.png',import.meta.url).href);}
+  preload(){const load=(k:string,u:string)=>{if(!this.textures.exists(k))this.load.image(k,u);};load('arcade-room',new URL('../assets/drafts/arcade-room-v3.png',import.meta.url).href);load('arcade-props-v2',new URL('../assets/drafts/arcade-props-v2.png',import.meta.url).href);}
   private nearest(){return [...machines,...webMachines].filter(m=>Math.hypot(this.x-m.x,this.y-m.y)<30).sort((a,b)=>Math.hypot(this.x-a.x,this.y-a.y)-Math.hypot(this.x-b.x,this.y-b.y))[0];}
   private play(machine:(typeof machines)[number]|(typeof webMachines)[number]){this.input.keyboard?.resetKeys();if('url' in machine){window.open(machine.url,'_blank','noopener,noreferrer');}else this.games.open(machine.kind);}
   create(){

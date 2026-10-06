@@ -31,7 +31,7 @@ export class BathroomScene extends Phaser.Scene {
   constructor(){super('bathroom');}
   preload(){
     preloadGuest(this,'ferret');
-    this.load.image('bathroom-room',new URL('../assets/drafts/bathroom-room-v4.png',import.meta.url).href);
+    if(!this.textures.exists('bathroom-room'))this.load.image('bathroom-room',new URL('../assets/drafts/bathroom-room-v4.png',import.meta.url).href);
   }
   create(){
     placeGuest(this,'ferret');

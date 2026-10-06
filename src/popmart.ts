@@ -30,9 +30,10 @@ export class PopMartScene extends Phaser.Scene {
   constructor() { super('pop'); }
   preload() {
     preloadGuest(this,'buzz');
-    this.load.image('pop-room', new URL('../assets/drafts/popmart-store-v3.png', import.meta.url).href);
-    this.load.image('pop-stand', new URL('../assets/drafts/popmart-stand-v2.png', import.meta.url).href);
-    this.load.image('pop-props', new URL('../assets/drafts/popmart-props-v1.png', import.meta.url).href);
+    const load=(key:string,url:string)=>{if(!this.textures.exists(key))this.load.image(key,url);};
+    load('pop-room', new URL('../assets/drafts/popmart-store-v3.png', import.meta.url).href);
+    load('pop-stand', new URL('../assets/drafts/popmart-stand-v2.png', import.meta.url).href);
+    load('pop-props', new URL('../assets/drafts/popmart-props-v1.png', import.meta.url).href);
   }
   private get menu() { return document.querySelector<HTMLDialogElement>('#blind-menu')!; }
   private nearest() { return this.targets.filter(t => Math.hypot(t.x - this.x, t.y - this.y) < 39).sort((a,b) => Math.hypot(a.x-this.x,a.y-this.y) - Math.hypot(b.x-this.x,b.y-this.y))[0]; }
@@ -198,7 +199,7 @@ export class PopMartScene extends Phaser.Scene {
       const count=records.filter(r=>r.toy===toy).length;
       return count?`<div class="collection-toy"><img alt="盲盒包装" src="${toyImage(toy)}"/><span>${name.split(' · ')[0]} × ${count}</span></div>`:'';
     }).join('')+gacha.counts.map((count,toy)=>count?`<div class="collection-toy"><img alt="扭蛋小玩具" src="${this.gachaImages[toy]}"/><span>扭蛋 × ${count}</span></div>`:'').join('');
-    document.querySelector('#pop-legacy')!.textContent=blindBoxes.data.legacy.length ? `旧版试玩收藏保留：${blindBoxes.data.legacy.join('、')}` : '';
+    document.querySelector('#pop-legacy')!.textContent=blindBoxes.data.legacy.length ? `旧版收藏保留：${blindBoxes.data.legacy.join('、')}` : '';
   }
   private canWalk(x:number,y:number) {
     if(guestBlocks('buzz',x,y))return false;

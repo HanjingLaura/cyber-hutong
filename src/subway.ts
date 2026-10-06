@@ -13,7 +13,7 @@ export class SubwayScene extends Phaser.Scene {
   private x=320; private y=305; private facing=2;
   private progress=0; private open=false;
   constructor(){super('subway');}
-  preload(){this.load.image('subway-room',new URL('../assets/drafts/wudaokou-station-v1.png',import.meta.url).href);}
+  preload(){if(!this.textures.exists('subway-room'))this.load.image('subway-room',new URL('../assets/drafts/wudaokou-station-v1.png',import.meta.url).href);}
   create(){
     this.add.image(0,0,'subway-room').setOrigin(0).setDisplaySize(640,360).setDepth(-100);
     entrances.forEach(e=>{
