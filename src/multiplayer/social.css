@@ -14,7 +14,7 @@
   height: 100dvh;
   max-height: none;
   margin: 0;
-  padding: clamp(28px, 8vh, 72px) 20px 48px;
+  padding: 24px 20px;
   border: 0;
   background:
     linear-gradient(180deg, #0d161288 0%, #15231d55 42%, #15231dcc 100%),
@@ -23,9 +23,16 @@
   image-rendering: pixelated;
   box-shadow: none;
 }
+#account-dialog[data-entry="true"][open] {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 #account-dialog[data-entry="true"] .account-wall {
   width: min(380px, 100%);
-  margin: 0 auto;
+  margin: 0;
+  max-height: min(92dvh, 100%);
+  overflow: auto;
   padding: 28px 26px 26px;
   background: var(--cream);
   border: 3px solid var(--ink);
@@ -104,9 +111,7 @@ body.game-fullscreen{overflow:hidden;background:#333936;height:100dvh}
 .game-fullscreen #game{position:absolute;inset:0;width:100%;height:100%}
 .game-fullscreen #game>canvas{position:absolute!important;left:50%!important;top:50%!important;transform:translate(-50%,-50%)!important;width:min(100vw,177.777778dvh)!important;height:min(100dvh,56.25vw)!important;margin:0!important}
 .game-fullscreen #hutong-controls .layers,.game-fullscreen #rest-controls .layers,.game-fullscreen .review-actions,.game-fullscreen #hutong-controls>.note{display:none}
-.game-fullscreen #play-guide{top:60px;left:12px;background:#202923d9}
-.game-fullscreen .world[data-area="hawaii"] #play-guide{left:12px}
-.game-fullscreen #view{top:60px;right:12px}
+.game-fullscreen #view{top:14px;right:14px;border:0;border-bottom:2px solid #c2c5a3;background:#17231ccc;box-shadow:none;color:#fff6da;text-shadow:1px 1px #15231d}
 #game-tools{position:fixed;z-index:1100;top:10px;left:12px;right:12px;display:flex;gap:6px;flex-wrap:wrap;align-items:center;pointer-events:none}
 #game-tools button{font-size:12px;padding:7px 10px;pointer-events:auto;background:#202923e8;border:1px solid #9b9f86;border-radius:0}
 #connection-state{font-size:12px;color:#e9eddc;background:#202923dd;padding:5px 8px;margin-left:auto}
@@ -121,10 +126,28 @@ body.game-fullscreen{overflow:hidden;background:#333936;height:100dvh}
 .social-dialog input:not([type="checkbox"]),.social-dialog textarea,#chat-input{font:inherit;color:#eee8da;background:#172520;border:1px solid #819078;border-radius:0;padding:9px;max-width:100%}
 #claim-roles{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}#account-error{color:#f0b6a4;font-size:13px}
 #speech-layer{position:fixed;inset:0;z-index:1020;pointer-events:none}.speech{position:absolute;transform:translate(-50%,-100%);max-width:220px;padding:8px 10px;background:#f2e9cf;color:#2b302d;border:2px solid #353f35;font:13px "Microsoft YaHei",sans-serif;line-height:1.5;overflow-wrap:anywhere;border-radius:0}.speech:after{content:'';position:absolute;bottom:-6px;left:calc(50% - 4px);width:8px;height:6px;background:#f2e9cf;border-bottom:2px solid #353f35}
-#game-notice{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:1300;margin:0;padding:10px 14px;background:#233228f5;border:1px solid #c3bd93;font-size:13px;max-width:85vw;pointer-events:none}
+#game-notice{
+  position:absolute;
+  bottom:86px;
+  left:50%;
+  transform:translateX(-50%);
+  z-index:1300;
+  margin:0;
+  padding:14px 18px 12px;
+  background:linear-gradient(0deg,#142219d0 0%,#14221955 70%,#14221900 100%);
+  border:0;
+  font-size:12px;
+  line-height:1.55;
+  max-width:min(420px,70vw);
+  pointer-events:none;
+  color:#fff6da;
+  text-shadow:1px 1px #15231d;
+  text-align:center;
+  font-family:var(--hto-mono);
+}
 .sr-only{position:absolute;width:1px;height:1px;clip-path:inset(50%);overflow:hidden}
-@media(max-width:650px){#game-tools{gap:4px;left:6px;right:6px}#game-tools button{padding:6px;font-size:11px}#connection-state{display:none}.game-fullscreen #play-guide,.game-fullscreen #view{top:82px}.social-panel{max-height:60dvh}#chat-history{height:180px}}
- .location-map section{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}.location-map section>strong{width:100%}.location-map button[aria-pressed="true"]{border-color:#e3c76e;background:#424b3e}.settings-actions{display:flex;flex-wrap:wrap;gap:10px}.collection-entry{display:flex;align-items:center;gap:12px;padding:8px;border-bottom:1px solid #626f5e}.collection-entry img,.collection-entry canvas{width:64px;height:64px;object-fit:contain;image-rendering:pixelated}body:not(.show-game-details) .scene-selector{display:none!important}
+@media(max-width:650px){#game-tools{gap:4px;left:6px;right:6px}#game-tools button{padding:6px;font-size:11px}#connection-state{display:none}.game-fullscreen #view{top:82px}.social-panel{max-height:60dvh}#chat-history{height:180px}}
+.location-map section{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}.location-map section>strong{width:100%}.location-map button[aria-pressed="true"]{border-color:#e3c76e;background:#424b3e}.settings-actions{display:flex;flex-wrap:wrap;gap:10px}.collection-entry{display:flex;align-items:center;gap:12px;padding:8px;border-bottom:1px solid #626f5e}.collection-entry img,.collection-entry canvas{width:64px;height:64px;object-fit:contain;image-rendering:pixelated}body:not(.show-game-details) .scene-selector{display:none!important}
 /* In-world HUD: retain the fixed 16:9 game projection at every window size. */
 .game-fullscreen #game>canvas{border:0;box-shadow:none}
 .game-fullscreen .world{border:0;box-shadow:none}
@@ -132,8 +155,29 @@ body.game-fullscreen{overflow:hidden;background:#333936;height:100dvh}
 #social-ui button,#social-ui input,#social-ui textarea,#social-ui dialog,#social-ui .social-panel{pointer-events:auto}
 #game-tools{position:absolute;top:12px;left:14px;right:14px;gap:3px}
 #game-tools button{border:0;border-bottom:2px solid #c2c5a3;background:#17231ccc;padding:7px 12px;box-shadow:none}
-#connection-state{font-size:11px;color:#e5e5c6;text-shadow:1px 1px #18251f}
-.game-fullscreen #play-guide{top:auto;bottom:16px;left:50%;transform:translateX(-50%);background:#152119a6;border:0;text-align:center;max-width:40%;font-family:var(--hto-mono)}
+#connection-state{font-size:11px;color:#e5e5c6;text-shadow:1px 1px #18251f;background:transparent;padding:0}
+.game-fullscreen #play-guide{
+  top:auto;
+  bottom:14px;
+  left:50%;
+  right:auto;
+  transform:translateX(-50%);
+  width:min(420px,56vw);
+  max-width:none;
+  margin:0;
+  padding:18px 16px 10px;
+  border:0;
+  background:linear-gradient(0deg,#142219d8 0%,#14221966 55%,#14221900 100%);
+  color:#fff6da;
+  text-shadow:1px 1px #15231d;
+  text-align:center;
+  font:12px/1.55 var(--hto-mono);
+  pointer-events:none;
+  z-index:1020;
+}
+.game-fullscreen #play-guide strong{opacity:.72;font-size:11px;letter-spacing:.04em}
+.game-fullscreen #play-guide span{margin-top:2px}
+.game-fullscreen .world[data-area="hawaii"] #play-guide{left:50%}
 #chat-panel{position:absolute;bottom:16px;left:14px;width:min(320px,40vw);padding:8px;background:linear-gradient(0deg,#142219cf,#14221900);border:0;box-shadow:none;color:#fff6da;text-shadow:1px 1px #15231d}
 #chat-panel .panel-heading{margin:0 0 3px;font-size:11px}#chat-panel .panel-heading button,#chat-room{font-size:10px;padding:3px 6px;border:0;background:#17231c80;box-shadow:none}
 #chat-history{height:110px;padding:2px 0;font-size:12px;scrollbar-width:thin}#chat-history p{margin:2px 0}
@@ -145,7 +189,7 @@ body.game-fullscreen{overflow:hidden;background:#333936;height:100dvh}
 .location-map [data-place] img{display:block;width:100%;aspect-ratio:16/9;object-fit:cover;image-rendering:pixelated}
 .location-map [data-place] span{padding:6px 8px;font-size:12px}.location-map [data-place][aria-pressed="true"]{border-color:#e8d285;background:#495039}
 #blind-result img{object-fit:contain;image-rendering:pixelated;width:96px;height:96px}
-@media(max-width:650px){.location-map section{grid-template-columns:repeat(2,minmax(0,1fr))}#chat-panel{width:44vw;left:6px;bottom:8px}#chat-history{height:70px;font-size:10px}.game-fullscreen #play-guide{bottom:12px;left:8px;right:auto;transform:none;max-width:48%;font-size:10px;text-align:left}#game-tools{left:6px;top:6px}#people-panel,#life-offers,#hand-actions{right:6px;width:min(260px,48vw)}#hand-actions{bottom:200px}#life-offers{bottom:110px}#npc-interact{left:6px;bottom:130px}}
+@media(max-width:650px){.location-map section{grid-template-columns:repeat(2,minmax(0,1fr))}#chat-panel{width:44vw;left:6px;bottom:8px}#chat-history{height:70px;font-size:10px}.game-fullscreen #play-guide{bottom:10px;left:50%;width:min(360px,78vw);font-size:11px;padding:14px 12px 8px}#game-notice{bottom:72px;max-width:78vw}#game-tools{left:6px;top:6px}#people-panel,#life-offers,#hand-actions{right:6px;width:min(260px,48vw)}#hand-actions{bottom:200px}#life-offers{bottom:110px}#npc-interact{left:6px;bottom:130px}}
 
 #life-ui{position:absolute;inset:0;pointer-events:none;z-index:1025}
 #life-ui dialog,#life-ui button,#life-ui .social-panel,#life-ui #hand-actions{pointer-events:auto}

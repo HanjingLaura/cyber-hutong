@@ -9,9 +9,25 @@ main { max-width: 1480px; margin: auto; display: grid; grid-template-columns: mi
 .scene-nav button[aria-pressed="true"] { background: #526149; border-color: #cfdbb9; }
 [hidden] { display: none !important; }
 .world { position: relative; background: var(--hto-bg-stage); border: 1px solid var(--hto-line-strong); aspect-ratio: 16 / 9; width: 100%; }
-#view { position: absolute; top: 10px; right: 10px; padding: 7px 11px; font-size: 13px; background: #26382def; font-family: var(--hto-mono); }
-#play-guide { position: absolute; left: 10px; top: 10px; padding: 7px 10px; background: #202923e8; color: var(--hto-panel-ink); pointer-events: none; font-size: 12px; line-height: 1.6; font-family: var(--hto-mono); }
+#view { position: absolute; top: 10px; right: 10px; padding: 7px 11px; font-size: 13px; background: #17231ccc; border: 0; border-bottom: 2px solid #c2c5a3; color: #fff6da; text-shadow: 1px 1px #15231d; font-family: var(--hto-mono); }
+#play-guide {
+  position: absolute;
+  left: 50%;
+  bottom: 12px;
+  top: auto;
+  transform: translateX(-50%);
+  width: min(360px, 70%);
+  padding: 16px 14px 8px;
+  border: 0;
+  background: linear-gradient(0deg, #142219d8 0%, #14221966 55%, #14221900 100%);
+  color: #fff6da;
+  text-shadow: 1px 1px #15231d;
+  text-align: center;
+  pointer-events: none;
+  font: 12px/1.55 var(--hto-mono);
+}
 #play-guide strong, #play-guide span { display: block; font-weight: normal; }
+#play-guide strong { opacity: .72; font-size: 11px; }
 .scene-caption { display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; color: #aab4a5; font-size: 13px; }
 #walk-review { margin: 18px 0 0; padding: 12px; background: #303632; border-top: 1px solid #5c675c; }
 #walk-review canvas { width: 768px; max-width: 100%; height: auto; display: block; image-rendering: pixelated; }
@@ -112,7 +128,7 @@ input[type=checkbox] { accent-color: #bbc997; width: 16px; height: 16px; }
 #blind-themes button { font-size:13px;padding:7px 10px; }
 #blind-themes [aria-pressed="true"] { background:#5d5841;border-color:#ebcd65; }
 .blind-slot img { width:42px;height:58px; }
-.world[data-area="hawaii"] #play-guide { left:7%; }
+.world[data-area="hawaii"] #play-guide { left: 50%; }
 #blind-machine-art { text-align:center; }
 #blind-machine-art img { height:260px;max-width:100%;object-fit:contain;image-rendering:pixelated; }
 .blind-menu[data-source="machine"] { width:min(350px,90vw);padding:14px;background:#242831;border:5px solid #dfb65b;box-shadow:inset 0 0 0 3px #10131b; }

@@ -64,7 +64,7 @@ interface PreviewState {
 declare global { interface Window { __hawaiiPreview?: { getState: () => PreviewState & {curtainDown:boolean;curtainProgress:number;nearWindow:boolean} }; __hutongPreview?: { getState: () => PreviewState } } }
 
 document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
-  <header><h1>hutong-online</h1><p>WASD 移动 · E 互动 · <a href="${BASE}members.html">动作检查</a></p></header>
+  <header><h1>hutong-online</h1><p>WASD 移动 · E 互动</p></header>
   <nav class="scene-nav" aria-label="场景视角"><button data-scene="culture" aria-pressed="true">胡同 · 文化墙</button><button data-scene="opposite" aria-pressed="false">胡同 · 另一侧</button><button data-scene="rest" aria-pressed="false">休息室 · 设备墙</button><button data-scene="pop" aria-pressed="false">POP MART · 盲盒店</button><button data-scene="hawaii" aria-pressed="false">夏威夷 · 窗边工位</button><button data-scene="bathroom" aria-pressed="false">厕所 · 从右往左</button><button data-scene="concert" aria-pressed="false">演唱会 · 内场</button><button data-scene="arcade" aria-pressed="false">娱乐室 · 电玩城</button><button data-scene="noodle" aria-pressed="false">米线店</button><button data-scene="gym" aria-pressed="false">健身房</button><button data-scene="dance" aria-pressed="false">舞室</button><button data-scene="perler" aria-pressed="false">拼豆店</button><button data-scene="rehearsal" aria-pressed="false">排练厅</button><button data-scene="elevator" aria-pressed="false">电梯间</button><button data-scene="subway" aria-pressed="false">五道口站</button></nav>
   <main>
     <div class="stage-column">

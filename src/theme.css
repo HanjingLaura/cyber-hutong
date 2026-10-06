@@ -80,6 +80,16 @@ button[aria-pressed="true"], button[aria-current="true"] {
   border-bottom: 1px solid var(--hto-line);
 }
 .hto-link:hover { border-bottom-color: var(--hto-accent); }
+.hto-link.back {
+  display: inline-grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  font: 22px/1 var(--hto-mono);
+  color: var(--hto-ink-bright);
+  border-bottom-color: transparent;
+}
+.hto-link.back:hover { color: var(--hto-accent); border-bottom-color: var(--hto-accent); }
 .hto-panel {
   background: var(--hto-panel);
   color: var(--hto-panel-ink);
