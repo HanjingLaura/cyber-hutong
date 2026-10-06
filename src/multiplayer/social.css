@@ -189,7 +189,8 @@ body.game-fullscreen{overflow:hidden;background:#333936;height:100dvh}
 .location-map [data-place] img{display:block;width:100%;aspect-ratio:16/9;object-fit:cover;image-rendering:pixelated}
 .location-map [data-place] span{padding:6px 8px;font-size:12px}.location-map [data-place][aria-pressed="true"]{border-color:#e8d285;background:#495039}
 #blind-result img{object-fit:contain;image-rendering:pixelated;width:96px;height:96px}
-@media(max-width:650px){.location-map section{grid-template-columns:repeat(2,minmax(0,1fr))}#chat-panel{width:44vw;left:6px;bottom:8px}#chat-history{height:70px;font-size:10px}.game-fullscreen #play-guide{bottom:10px;left:50%;width:min(360px,78vw);font-size:11px;padding:14px 12px 8px}#game-notice{bottom:72px;max-width:78vw}#game-tools{left:6px;top:6px}#people-panel,#life-offers,#hand-actions{right:6px;width:min(260px,48vw)}#hand-actions{bottom:200px}#life-offers{bottom:110px}#npc-interact{left:6px;bottom:130px}}
+@media(max-width:650px){.location-map section{grid-template-columns:repeat(2,minmax(0,1fr))}#chat-panel{width:44vw;left:6px;bottom:8px}#chat-history{height:70px;font-size:10px}.game-fullscreen #play-guide{bottom:10px;left:50%;width:min(360px,78vw);font-size:11px;padding:14px 12px 8px}#game-notice{bottom:72px;max-width:78vw}#game-tools{left:6px;top:6px}#people-panel,#life-offers{right:6px;width:min(260px,48vw)}#hand-actions{left:50%;right:auto;bottom:64px;width:auto}#life-offers{bottom:110px}#npc-interact{left:6px;bottom:130px}}
+.world:has(#hand-actions:not([hidden])) #near-social{bottom:96px}
 
 #life-ui{position:absolute;inset:0;pointer-events:none;z-index:1025}
 #life-ui dialog,#life-ui button,#life-ui .social-panel,#life-ui #hand-actions{pointer-events:auto}

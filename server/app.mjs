@@ -30,7 +30,9 @@ export const stripBase=url=>{const i=url.indexOf('?'),path=i===-1?url:url.slice(
 const allowedHosts=()=>String(process.env.HUTONG_ALLOWED_HOSTS||'').split(',').map(v=>v.trim().toLowerCase()).filter(Boolean);
 const clientAddress=req=>process.env.VERCEL?String(req.headers['x-forwarded-for']||'').split(',')[0].trim()||req.socket.remoteAddress:req.socket.remoteAddress;
 export function createMvpServer({dbPath='data/mvp.sqlite',staticDir=resolve('dist'),llmOptions={}}={}){
-  const store=openStore(dbPath),players=new Map(),streams=new Set(),controls=new Map(),rates=new Map();
+  const store=openStore(dbPath),players=new Map(),streams=new Set(),rates=new Map();
+  const controlStmt={get:store.db.prepare('SELECT client FROM controllers WHERE account=?'),set:store.db.prepare('INSERT INTO controllers(account,client,at) VALUES(?,?,?) ON CONFLICT(account) DO UPDATE SET client=excluded.client,at=excluded.at'),del:store.db.prepare('DELETE FROM controllers WHERE account=?')};
+  const controls={get(id){return controlStmt.get.get(id)?.client;},has(id){return !!controlStmt.get.get(id);},set(id,client){controlStmt.set.run(id,client,Date.now());return this;},delete(id){controlStmt.del.run(id);return true;}};
   const leases=new Map();const life=createLife(store),autonomy=createAutonomy(store,life,players,leases);
   const world=createWorld(store,life),replyCooldown=new Map(),llm=createBailian(store,life,llmOptions);
   const rewards=createRewards(store,life,world,leases);
@@ -50,7 +52,7 @@ export function createMvpServer({dbPath='data/mvp.sqlite',staticDir=resolve('dis
   const limited=(key,max,ms=60000)=>{const now=Date.now(),entry=rates.get(key);if(!entry||entry.until<now){rates.set(key,{n:1,until:now+ms});return;}if(++entry.n>max)fail(429,'操作太快，请稍后重试');};
   const cookieFlags=()=>`HttpOnly; SameSite=Strict; Path=/${process.env.COOKIE_SECURE==='1'||process.env.VERCEL==='1'?'; Secure':''}`;
   const setSession=(res,token)=>res.setHeader('Set-Cookie',`hutong_session=${token}; ${cookieFlags()}; Max-Age=604800`);
-  const checkControl=(user,client)=>{if(typeof client!=='string'||controls.get(user.id)!==client)fail(409,'角色在另一个窗口操作，请点击接管');};
+  const checkControl=(user,client)=>{if(typeof client!=='string'||client.length>80)fail(409,'角色在另一个窗口操作，请点击接管');const current=controls.get(user.id);if(!current){controls.set(user.id,client);return;}if(current!==client)fail(409,'角色在另一个窗口操作，请点击接管');};
   const startPlayer=user=>{if(!user.role||players.has(user.id))return;const homes={suki:[288,207],sid:[192,207],jilly:[192,182],laura:[384,207],kay:[480,207],franco:[480,182],cora:[288,182],amber:[384,182]};const [x,y]=homes[user.role];const previous=autonomy.reclaim(user.id)||life.position(user.id);const p={id:user.id,role:user.role,scene:'hutong',x,y,facing:0,moving:false,seat:null,activity:'walk',...previous,at:Date.now()};if(p.seat){const seat=interactions[p.scene].seats[p.seat];if(seat)[p.x,p.y]=seat.approach;p.seat=null;}const oldActivity=interactions[p.scene].activities[p.activity]?.find(a=>Math.hypot(p.x-a.at[0],p.y-a.at[1])<8);if(oldActivity)[p.x,p.y]=oldActivity.approach;p.activity='walk';p.moving=false;players.set(user.id,p);dirty=true;};
   const server=createServer(async(req,res)=>{
     try{

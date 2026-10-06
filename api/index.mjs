@@ -25,7 +25,7 @@ replica?.attach(app.store.db);
 
 // End SSE streams before the function's maxDuration so EventSource reconnects cleanly.
 const sseMs = Number(process.env.HUTONG_SSE_MAX_MS || 240000);
-const fresh = /\/api\/(me|login|register|events|claim|logout)$/;
+const fresh = /\/api\/(me|login|register|events|claim|logout|inventory|control|presence)$/;
 
 export default async function handler(req, res) {
   req.url = stripBase(req.url || '/');

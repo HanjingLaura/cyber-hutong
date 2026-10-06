@@ -27,7 +27,8 @@ export function openStore(path){
     CREATE TABLE IF NOT EXISTS messages(seq INTEGER PRIMARY KEY AUTOINCREMENT,id TEXT UNIQUE NOT NULL,sender TEXT NOT NULL,recipient TEXT,scene TEXT NOT NULL,body TEXT NOT NULL,at INTEGER NOT NULL,npc INTEGER NOT NULL DEFAULT 0);
     CREATE INDEX IF NOT EXISTS messages_thread ON messages(sender,recipient,seq);
     CREATE INDEX IF NOT EXISTS messages_room ON messages(scene,recipient,seq);
-    CREATE TABLE IF NOT EXISTS operations(id TEXT NOT NULL,account TEXT NOT NULL,result TEXT NOT NULL,PRIMARY KEY(id,account));`);
+    CREATE TABLE IF NOT EXISTS operations(id TEXT NOT NULL,account TEXT NOT NULL,result TEXT NOT NULL,PRIMARY KEY(id,account));
+    CREATE TABLE IF NOT EXISTS controllers(account TEXT PRIMARY KEY,client TEXT NOT NULL,at INTEGER NOT NULL);`);
   if(!db.prepare('PRAGMA table_info(accounts)').all().some(c=>c.name==='seasoning'))db.exec("ALTER TABLE accounts ADD COLUMN seasoning TEXT NOT NULL DEFAULT '[]'");
   if(!db.prepare('PRAGMA table_info(accounts)').all().some(c=>c.name==='progress_revision'))db.exec("ALTER TABLE accounts ADD COLUMN progress_revision INTEGER NOT NULL DEFAULT 0");
   const byId=id=>db.prepare('SELECT * FROM accounts WHERE id=?').get(id);

@@ -209,10 +209,10 @@ input[type=checkbox] { accent-color: #bbc997; width: 16px; height: 16px; }
 #bag-slots button,#collection-slots button { min-height:72px;display:flex;align-items:center;gap:12px;font-size:12px; }
 #bag-slots img,#collection-slots img { width:40px;height:44px;object-fit:contain;image-rendering:pixelated; }
 #collection-help { font-size:12px;color:#bfc4b0; }
-#hand-actions { position:absolute;right:14px;bottom:210px;display:flex;align-items:center;gap:10px;padding:6px 8px;background:var(--hto-panel);border:2px solid var(--hto-panel-border);box-shadow:3px 3px 0 var(--hto-shadow);z-index:12;font-size:12px;font-family:var(--hto-mono); }
+#hand-actions { position:absolute;left:50%;right:auto;bottom:52px;transform:translateX(-50%);display:flex;align-items:center;justify-content:center;gap:10px;padding:10px 14px 8px;background:linear-gradient(0deg,#142219d0 0%,#14221955 70%,#14221900 100%);border:0;box-shadow:none;z-index:1120;font-size:12px;font-family:var(--hto-mono);color:#fff6da;text-shadow:1px 1px #15231d; }
 #hand-item { display:flex;gap:8px;align-items:center; }
 #hand-item img { width:24px;height:28px;object-fit:contain;image-rendering:pixelated; }
-#hand-use { font-size:12px;padding:4px 9px; }
+#hand-use { font-size:11px;padding:3px 9px;border:0;background:#17231c80;color:#eee8d8;box-shadow:none; }
 #npc-ui { position:absolute;inset:0;pointer-events:none;z-index:1015; }
 #npc-interact { position:absolute;left:14px;bottom:148px;pointer-events:auto;font-size:12px;padding:6px 10px;font-family:var(--hto-mono); }
 .npc-speech { position:absolute;transform:translate(-50%,-100%);max-width:220px;padding:7px 10px;background:#f2e9cf;color:#2b302d;border:2px solid #353f35;font:13px Consolas,"Microsoft YaHei",monospace;line-height:1.5; }
