@@ -18,9 +18,10 @@ export class HeldItemView {
   private scene: Phaser.Scene;
   constructor(scene: Phaser.Scene) {
     this.scene = scene;
-    this.item = scene.add.image(0, 0, 'rest-kit').setVisible(false);
+    // Placeholder until rest-kit / rest-hold finish progressive load.
+    this.item = scene.add.image(0, 0, 'idle').setVisible(false);
     this.palm = scene.add.graphics().setVisible(false);
-    this.arm = scene.add.image(0, 0, 'rest-hold').setVisible(false);
+    this.arm = scene.add.image(0, 0, 'idle').setVisible(false);
   }
 
   hide() { this.item.setVisible(false); this.palm.setVisible(false); this.arm.setVisible(false); }

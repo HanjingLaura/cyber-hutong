@@ -5,7 +5,7 @@ import { canWalk, project, visualFacing, WORKSTATIONS, type Point } from './layo
 
 type Worker={role:string;scene:string;seat:string|null;x:number;y:number};
 export function preloadAni(scene:Phaser.Scene){
-  scene.load.image('ani-sheet',new URL('../assets/npcs/ani-v2.png',import.meta.url).href);
+  if(!scene.textures.exists('ani-sheet'))scene.load.image('ani-sheet',new URL('../assets/npcs/ani-v2.png',import.meta.url).href);
 }
 
 // A companion follows Sid's work state, rather than an unrelated random roll.

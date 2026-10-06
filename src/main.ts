@@ -29,15 +29,23 @@ import gripRegistry from '../assets/metadata/owner-grips.json';
 import { registerFrames, registerRegions, setSpriteFrame, type SpriteFrame } from './frames';
 import { canWalk, project, visualFacing, floorY, HEIGHT_PROJECTION, WORKSTATIONS, DESK_ROWS, REVERSE_Y, SPAWN, METRICS, VIEW_WIDTH, VIEW_HEIGHT, PIXEL_RATIO, CONTENT_SCALE, scaleRowPoint, type Facing, type Workstation } from './layout';
 
-const assets = {
+/** First paint: room + furniture + standing pose only (~2MB). */
+const criticalAssets = {
   wall: new URL('../assets/drafts/hutong-wall-view-v5.png', import.meta.url).href,
-  reverse: new URL('../assets/drafts/hutong-reverse-view-v5.png', import.meta.url).href,
   furniture: new URL('../assets/drafts/hutong-furniture-kit-v5.png', import.meta.url).href,
   decor: new URL('../assets/drafts/desk-decor-v1.png', import.meta.url).href,
   idle: new URL('../assets/drafts/owner-standing-v2.png', import.meta.url).href,
+};
+/** After the room is visible — walk/sit/carry/reverse/NPC sheets. */
+const deferredAssets = {
+  reverse: new URL('../assets/drafts/hutong-reverse-view-v5.png', import.meta.url).href,
   walk: new URL('../assets/drafts/owner-walk-v1.png', import.meta.url).href,
   sideWalk: new URL('../assets/drafts/owner-side-walk-v2.png', import.meta.url).href,
   seated: new URL('../assets/drafts/owner-seated-front-back-v2.png', import.meta.url).href,
+  'rest-kit': new URL('../assets/drafts/rest-interaction-kit-v2.png', import.meta.url).href,
+  'held-water': new URL('../assets/props/water-bottle-v1.png', import.meta.url).href,
+  'rest-hold': new URL('../assets/drafts/owner-carry-empty-v1.png', import.meta.url).href,
+  'rest-seated-hold': new URL('../assets/drafts/owner-seated-hold-empty-v1.png', import.meta.url).href,
 };
 const HAWAII_SEATS: Workstation[] = ['culture', 'plain'].flatMap((row,index) =>
   Array.from({length:3},(_,number)=>({
@@ -163,6 +171,9 @@ class HutongScene extends Phaser.Scene {
   private motionTime = 0;
   private walkFrame = 0;
   private lastHud = '';
+  /** Motion/sit/carry/NPC textures ready after progressive second wave. */
+  private motionReady = false;
+  private deferredLoading = false;
 
   constructor(key='hutong') { super(key); }
   private get isHawaii() { return this.sys.settings.key==='hawaii'; }
@@ -183,18 +194,68 @@ class HutongScene extends Phaser.Scene {
     this.lastHud='';
   }
   preload() {
-    if(!this.isHawaii)preloadAni(this);
-    preloadOfficeGuests(this);
-    for (const [key, url] of Object.entries(assets)) if(!this.textures.exists(key))this.load.image(key, url);
-    if(this.isHawaii)this.load.image('hawaii-wall',new URL('../assets/drafts/hawaii-wall-v2.png',import.meta.url).href);
-    this.load.image('rest-kit', new URL('../assets/drafts/rest-interaction-kit-v2.png', import.meta.url).href);
-    this.load.image('held-water', new URL('../assets/props/water-bottle-v1.png', import.meta.url).href);
-    this.load.image('rest-hold', new URL('../assets/drafts/owner-carry-empty-v1.png', import.meta.url).href);
-    this.load.image('rest-seated-hold', new URL('../assets/drafts/owner-seated-hold-empty-v1.png', import.meta.url).href);
+    for (const [key, url] of Object.entries(criticalAssets)) if(!this.textures.exists(key))this.load.image(key, url);
+    if(this.isHawaii&&!this.textures.exists('hawaii-wall'))this.load.image('hawaii-wall',new URL('../assets/drafts/hawaii-wall-v2.png',import.meta.url).href);
     this.load.on('loaderror', () => {
       const loading = document.querySelector('.loading');
       if (loading) loading.textContent = '素材载入失败，请刷新页面。';
     });
+  }
+  private enqueueDeferred() {
+    if(this.motionReady||this.deferredLoading)return;
+    this.deferredLoading=true;
+    for(const [key,url] of Object.entries(deferredAssets))if(!this.textures.exists(key))this.load.image(key,url);
+    if(!this.isHawaii&&!this.textures.exists('ani-sheet'))preloadAni(this);
+    preloadOfficeGuests(this);
+    const finish=()=>{
+      this.deferredLoading=false;
+      if(!this.sys.game||!this.textures.exists('idle'))return;
+      this.mountDeferred();
+    };
+    if(!this.load.isLoading()){this.load.once('complete',finish);this.load.start();}
+    else this.load.once('complete',finish);
+  }
+  private mountDeferred() {
+    if(this.motionReady)return;
+    if(!this.textures.exists('walk')||!this.textures.exists('sideWalk')||!this.textures.exists('seated'))return;
+    this.frames.walk = registerFrames(this, 'walk', 4, 4, true);
+    this.frames.sideWalk = registerFrames(this, 'sideWalk', 6, 2, true);
+    this.frames.seated = registerFrames(this, 'seated', 3, 2, true);
+    this.frames.seated.forEach((frame, index) => this.addSlice('seated', frame, `upper-${index}`, .72, false));
+    if(this.textures.exists('rest-hold')&&this.textures.exists('rest-seated-hold')){
+      this.frames.hold = registerFrames(this, 'rest-hold', 4, 5, true, { x: [0, .32, .51, .70, 1], y: [0, .207, .412, .609, .808, 1] });
+      this.frames.seatedHold = registerFrames(this, 'rest-seated-hold', 3, 1, true);
+      if(this.textures.exists('rest-kit'))registerRegions(this, 'rest-kit', [{ name: 'coffee-cup', x0: .76, x1: .99, y0: 0, y1: 1 }]);
+      if(this.textures.exists('held-water')&&!this.textures.get('held-water').has('bottle'))this.textures.get('held-water').add('bottle', 0, 6, 2, 6, 11);
+      for (const [key, registry] of Object.entries(gripRegistry)) {
+        if(!this.textures.exists(key))continue;
+        this.gripSlots[key] = new Map(Object.entries(registry.slots));
+        for (const [name, slot] of this.gripSlots[key]) {
+          const [x, y, width, height] = slot.handRect;
+          if(!this.textures.get(key).has(`palm-${name}`))this.textures.get(key).add(`palm-${name}`, 0, x, y, width, height);
+        }
+      }
+      this.frames.hold.forEach(frame => this.addSlice('rest-hold', frame, `held-upper-${frame.name}`, .72, false));
+      this.frames.seatedHold.forEach(frame => this.addSlice('rest-seated-hold', frame, `held-upper-${frame.name}`, .72, false));
+    }
+    const walkSheet = document.querySelector<HTMLCanvasElement>('#walk-sheet');
+    if(walkSheet&&this.frames.sideWalk?.length){
+      const reviewContext = walkSheet.getContext('2d');
+      if(reviewContext){
+        reviewContext.imageSmoothingEnabled = false;
+        const walkSource = this.textures.get('sideWalk').getSourceImage() as HTMLImageElement;
+        this.frames.sideWalk.forEach((frame, index) => {
+          const scale = METRICS.standing / PIXEL_RATIO / frame.referenceHeight;
+          const center = index % 6 * 128 + 64, baseline = Math.floor(index / 6) * 112 + 96;
+          reviewContext.drawImage(walkSource, frame.x, frame.y, frame.width, frame.height,
+            Math.round(center - frame.width * scale * frame.pivotX), Math.round(baseline - frame.height * scale),
+            Math.round(frame.width * scale), Math.round(frame.height * scale));
+        });
+      }
+    }
+    if(!this.officeGuest)this.officeGuest=new OfficeGuest(this,this.isHawaii,this.workstations);
+    if(!this.isHawaii&&!this.aniGuest&&this.textures.exists('ani-sheet'))this.aniGuest=new AniGuest(this);
+    this.motionReady=true;
   }
   private addSlice(key: string, frame: SpriteFrame, name: string, ratio: number, lower: boolean) {
     const height = Math.round(frame.height * ratio);
@@ -229,38 +290,14 @@ class HutongScene extends Phaser.Scene {
     this.furnitureScales.chair = { x: METRICS.chairWidth / chairSize.width, y: METRICS.chairHeight / chairSize.height };
     this.furnitureScales.laptop = { x: METRICS.laptopWidth / laptopSize.width, y: METRICS.laptopWidth / laptopSize.width };
     this.frames.idle = registerFrames(this, 'idle', 4, 1, true);
-    this.frames.walk = registerFrames(this, 'walk', 4, 4, true);
-    this.frames.sideWalk = registerFrames(this, 'sideWalk', 6, 2, true);
-    this.frames.seated = registerFrames(this, 'seated', 3, 2, true);
-    this.frames.hold = registerFrames(this, 'rest-hold', 4, 5, true, { x: [0, .32, .51, .70, 1], y: [0, .207, .412, .609, .808, 1] });
-    this.frames.seatedHold = registerFrames(this, 'rest-seated-hold', 3, 1, true);
-    registerRegions(this, 'rest-kit', [{ name: 'coffee-cup', x0: .76, x1: .99, y0: 0, y1: 1 }]);
-    this.textures.get('held-water').add('bottle', 0, 6, 2, 6, 11);
-    for (const [key, registry] of Object.entries(gripRegistry)) {
-      this.gripSlots[key] = new Map(Object.entries(registry.slots));
-      for (const [name, slot] of this.gripSlots[key]) {
-        const [x, y, width, height] = slot.handRect;
-        if(!this.textures.get(key).has(`palm-${name}`))this.textures.get(key).add(`palm-${name}`, 0, x, y, width, height);
-      }
-    }
-    this.frames.hold.forEach(frame => this.addSlice('rest-hold', frame, `held-upper-${frame.name}`, .72, false));
-    this.frames.seatedHold.forEach(frame => this.addSlice('rest-seated-hold', frame, `held-upper-${frame.name}`, .72, false));
+    this.frames.walk = [];
+    this.frames.sideWalk = [];
+    this.frames.seated = [];
+    this.frames.hold = [];
+    this.frames.seatedHold = [];
     this.heldItem = new HeldItemView(this);
-    const walkSheet = document.querySelector<HTMLCanvasElement>('#walk-sheet')!;
-    const reviewContext = walkSheet.getContext('2d')!;
-    reviewContext.imageSmoothingEnabled = false;
-    const walkSource = this.textures.get('sideWalk').getSourceImage() as HTMLImageElement;
-    this.frames.sideWalk.forEach((frame, index) => {
-      // Match the current game sampling and character height in the review.
-      const scale = METRICS.standing / PIXEL_RATIO / frame.referenceHeight;
-      const center = index % 6 * 128 + 64, baseline = Math.floor(index / 6) * 112 + 96;
-      reviewContext.drawImage(walkSource, frame.x, frame.y, frame.width, frame.height,
-        Math.round(center - frame.width * scale * frame.pivotX), Math.round(baseline - frame.height * scale),
-        Math.round(frame.width * scale), Math.round(frame.height * scale));
-    });
     this.frames.desk.forEach((frame, index) => this.addSlice('furniture', frame, `panel-${index}`, .42, true));
     this.addSlice('furniture', this.frames.chair[0], 'backrest', .58, false);
-    this.frames.seated.forEach((frame, index) => this.addSlice('seated', frame, `upper-${index}`, .72, false));
     this.room = this.add.image(0, 0, this.isHawaii?'hawaii-wall':'wall').setOrigin(0).setDisplaySize(VIEW_WIDTH, VIEW_HEIGHT).setDepth(-100);
     this.groups.room.push(this.room);
     if(this.isHawaii)this.officeWindow=new OfficeWindow(this);
@@ -298,7 +335,7 @@ class HutongScene extends Phaser.Scene {
       }
     }
     this.actor = this.add.image(0, 0, 'idle');
-    this.actorUpper = this.add.image(0, 0, 'seated').setVisible(false);
+    this.actorUpper = this.add.image(0, 0, 'idle').setVisible(false);
     this.groups.actor.push(this.actor, this.actorUpper);
     this.keyInput = this.input.keyboard!.addKeys('W,A,S,D,UP,DOWN,LEFT,RIGHT') as Record<string, Phaser.Input.Keyboard.Key>;
     this.input.keyboard!.addCapture(['UP', 'DOWN', 'LEFT', 'RIGHT', 'SPACE']);
@@ -352,14 +389,14 @@ class HutongScene extends Phaser.Scene {
       });
     }
     this.drawFurniture();
-    this.officeGuest=new OfficeGuest(this,this.isHawaii,this.workstations);
-    if(!this.isHawaii)this.aniGuest=new AniGuest(this);
     this.events.on(Phaser.Scenes.Events.WAKE,()=>this.officeGuest?.enter(this.seatedAt?.id??null));
     this.drawFurniture();
     if(this.isHawaii)window.__hawaiiPreview={getState:()=>({...this.snapshot(),curtainDown:this.curtainDown,curtainProgress:this.curtainProgress,nearWindow:this.nearWindow()})};
     else window.__hutongPreview = { getState: () => this.snapshot() };
     document.querySelector('#curtain-control')!.addEventListener('click',()=>{if(this.sys.isActive()&&this.isHawaii){this.toggleCurtain();world.focus();}});
     document.querySelector('.loading')?.remove(); world.focus();
+    // Paint the room first; continue heavy sheets without blocking the viewport.
+    this.time.delayedCall(0,()=>this.enqueueDeferred());
   }
   private snapshot(): PreviewState {
     const screen = project({ x: this.actorX, y: this.actorY }, this.reverse);
@@ -378,6 +415,7 @@ class HutongScene extends Phaser.Scene {
   }
   private switchView() {
     if(this.isHawaii)return;
+    if(!this.textures.exists('reverse')){this.enqueueDeferred();return;}
     this.input.keyboard?.resetKeys(); this.reverse = !this.reverse; this.motionTime = 0;
     this.room.setTexture(this.reverse ? 'reverse' : 'wall').setDisplaySize(VIEW_WIDTH, VIEW_HEIGHT);
     viewButton.setAttribute('aria-pressed', String(this.reverse));
@@ -498,7 +536,10 @@ class HutongScene extends Phaser.Scene {
     this.actorUpper.setVisible(false);
     this.actor.setFlipX(false);
     this.heldItem.hide();
-    if (this.seatedAt) {
+    const canSit=this.motionReady&&!!this.frames.seated?.length;
+    const canWalkAnim=this.motionReady&&!!this.frames.walk?.length&&!!this.frames.sideWalk?.length;
+    const canHold=this.motionReady&&!!this.frames.hold?.length&&!!this.frames.seatedHold?.length&&!!this.gripSlots['rest-hold'];
+    if (this.seatedAt && canSit) {
       const far = direction === 2;
       const frameIndex = (far ? 0 : 3) + (this.mode==='working'?1+Math.floor(this.motionTime/250)%2:0);
       const frame = this.frames.seated[frameIndex];
@@ -517,7 +558,7 @@ class HutongScene extends Phaser.Scene {
         this.actorUpper.setTexture('seated', `upper-${frameIndex}`).setOrigin(frame.pivotX, 0).setScale(scale)
           .setPosition(point.x, point.y - frame.height * scale).setDepth(point.y + 4).setVisible(this.layers.actor);
       }
-    } else if (this.mode === 'walking') {
+    } else if (this.mode === 'walking' && canWalkAnim) {
       if (direction === 1 || direction === 3) {
         this.walkFrame = sideUpperFrame(this.motionTime);
         setSpriteFrame(this.actor, 'sideWalk', this.frames.sideWalk[(direction === 1 ? 0 : 6) + this.walkFrame], METRICS.standing);
@@ -532,7 +573,7 @@ class HutongScene extends Phaser.Scene {
       this.actor.setDepth(point.y + 1);
     }
     this.actor.setPosition(Math.round(point.x), Math.round(point.y)).setVisible(this.layers.actor);
-    if (playerInventory.hand && this.layers.actor) {
+    if (playerInventory.hand && this.layers.actor && canHold) {
       const seated = !!this.seatedAt, back = seated && direction === 2;
       const key = seated && !back ? 'rest-seated-hold' : 'rest-hold';
       const moving = !seated && this.mode === 'walking';
@@ -555,7 +596,7 @@ class HutongScene extends Phaser.Scene {
       }
       this.heldItem.draw(this.actor, key, frame, this.gripSlots[key].get(frame.name)!, height, items[playerInventory.hand], point.y + (seated && !back ? 4 : 1), direction);
     }
-    if (!this.seatedAt && this.mode === 'walking' && (direction === 1 || direction === 3) && this.layers.actor && !playerInventory.hand) {
+    if (!this.seatedAt && this.mode === 'walking' && canWalkAnim && (direction === 1 || direction === 3) && this.layers.actor && !playerInventory.hand) {
       const frame = this.frames.sideWalk.find(frame => frame.name === this.actor.frame.name)!;
       this.sideLegs.draw(this.actor, frame, METRICS.standing, direction, this.motionTime);
     }
@@ -623,6 +664,7 @@ class HutongScene extends Phaser.Scene {
 
 const game = new Phaser.Game({ type: Phaser.AUTO, width: VIEW_WIDTH / PIXEL_RATIO, height: VIEW_HEIGHT / PIXEL_RATIO, parent: 'game', backgroundColor: '#333936',
   pixelArt: true, roundPixels: true, scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH },
+  loader: { maxParallelDownloads: 3 },
   scene: [new HutongScene(), RestRoomScene, PopMartScene, new HutongScene('hawaii'), BathroomScene, ConcertScene, ArcadeScene, NoodleShopScene, GymScene, DanceStudioScene, PerlerShopScene, RehearsalScene, ElevatorLobbyScene, SubwayScene], input: { keyboard: true }, banner: false,
 });
 let selectedSceneKey='hutong';
@@ -632,7 +674,6 @@ game.events.once('ready',()=>{
     const scene=game.scene.getScene(key);
     scene.events.on('create',()=>{if(key!==selectedSceneKey)game.scene.sleep(key);});
   }
-  import('./asset-warmup').then(({startAssetWarmup})=>startAssetWarmup(game)).catch(()=>{});
 });
 let navigationAuthorized=false;
 window.addEventListener('hutong:navigate',event=>{navigationAuthorized=true;try{document.querySelector<HTMLButtonElement>(`[data-scene="${(event as CustomEvent).detail}"]`)?.click();}finally{navigationAuthorized=false;}});

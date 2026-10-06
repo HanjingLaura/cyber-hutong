@@ -1,99 +1,84 @@
-/** Browser + Phaser texture warmup so room switches hit cache instead of cold downloads. */
+/** Latency-safe texture warmup: never starve the active scene's downloads. */
 import Phaser from 'phaser';
 
-const roomTextures:Record<string,{key:string;url:string}[]>={
+const roomTextures:Record<string,string[]>={
  hutong:[
-  {key:'wall',url:new URL('../assets/drafts/hutong-wall-view-v5.png',import.meta.url).href},
-  {key:'reverse',url:new URL('../assets/drafts/hutong-reverse-view-v5.png',import.meta.url).href},
+  new URL('../assets/drafts/hutong-wall-view-v5.png',import.meta.url).href,
+  new URL('../assets/drafts/hutong-reverse-view-v5.png',import.meta.url).href,
  ],
- hawaii:[{key:'hawaii-wall',url:new URL('../assets/drafts/hawaii-wall-v2.png',import.meta.url).href}],
+ hawaii:[new URL('../assets/drafts/hawaii-wall-v2.png',import.meta.url).href],
  rest:[
-  {key:'rest-shell',url:new URL('../assets/drafts/rest-room-shell-v2.png',import.meta.url).href},
-  {key:'rest-props',url:new URL('../assets/drafts/rest-props-v1.png',import.meta.url).href},
+  new URL('../assets/drafts/rest-room-shell-v2.png',import.meta.url).href,
+  new URL('../assets/drafts/rest-props-v1.png',import.meta.url).href,
  ],
  pop:[
-  {key:'pop-room',url:new URL('../assets/drafts/popmart-store-v3.png',import.meta.url).href},
-  {key:'pop-stand',url:new URL('../assets/drafts/popmart-stand-v2.png',import.meta.url).href},
-  {key:'pop-props',url:new URL('../assets/drafts/popmart-props-v1.png',import.meta.url).href},
+  new URL('../assets/drafts/popmart-store-v3.png',import.meta.url).href,
+  new URL('../assets/drafts/popmart-stand-v2.png',import.meta.url).href,
+  new URL('../assets/drafts/popmart-props-v1.png',import.meta.url).href,
  ],
- bathroom:[{key:'bathroom-room',url:new URL('../assets/drafts/bathroom-room-v4.png',import.meta.url).href}],
+ bathroom:[new URL('../assets/drafts/bathroom-room-v4.png',import.meta.url).href],
  concert:[
-  {key:'concert-room',url:new URL('../assets/drafts/concert-room-v4.png',import.meta.url).href},
-  {key:'concert-chair',url:new URL('../assets/drafts/concert-chair-v1.png',import.meta.url).href},
+  new URL('../assets/drafts/concert-room-v4.png',import.meta.url).href,
+  new URL('../assets/drafts/concert-chair-v1.png',import.meta.url).href,
  ],
  arcade:[
-  {key:'arcade-room',url:new URL('../assets/drafts/arcade-room-v3.png',import.meta.url).href},
-  {key:'arcade-props-v2',url:new URL('../assets/drafts/arcade-props-v2.png',import.meta.url).href},
+  new URL('../assets/drafts/arcade-room-v3.png',import.meta.url).href,
+  new URL('../assets/drafts/arcade-props-v2.png',import.meta.url).href,
  ],
  noodle:[
-  {key:'noodle-room-v3',url:new URL('../assets/drafts/noodle-room-v3.png',import.meta.url).href},
-  {key:'noodle-kit',url:new URL('../assets/drafts/noodle-furniture-v1.png',import.meta.url).href},
+  new URL('../assets/drafts/noodle-room-v3.png',import.meta.url).href,
+  new URL('../assets/drafts/noodle-furniture-v1.png',import.meta.url).href,
  ],
  gym:[
-  {key:'gym-room',url:new URL('../assets/drafts/gym-room-v1.png',import.meta.url).href},
-  {key:'gym-curl',url:new URL('../assets/drafts/owner-gym-curl-v1.png',import.meta.url).href},
+  new URL('../assets/drafts/gym-room-v1.png',import.meta.url).href,
+  new URL('../assets/drafts/owner-gym-curl-v1.png',import.meta.url).href,
  ],
  dance:[
-  {key:'dance-room',url:new URL('../assets/drafts/dance-room-v1.png',import.meta.url).href},
-  {key:'dance-poses',url:new URL('../assets/drafts/owner-dance-v1.png',import.meta.url).href},
+  new URL('../assets/drafts/dance-room-v1.png',import.meta.url).href,
+  new URL('../assets/drafts/owner-dance-v1.png',import.meta.url).href,
  ],
  perler:[
-  {key:'perler-room-v2',url:new URL('../assets/drafts/perler-shop-v2.png',import.meta.url).href},
-  {key:'perler-furniture-v2',url:new URL('../assets/drafts/perler-furniture-v2.png',import.meta.url).href},
+  new URL('../assets/drafts/perler-shop-v2.png',import.meta.url).href,
+  new URL('../assets/drafts/perler-furniture-v2.png',import.meta.url).href,
  ],
  rehearsal:[
-  {key:'rehearsal-room',url:new URL('../assets/drafts/rehearsal-room-v1.png',import.meta.url).href},
-  {key:'rehearsal-kit',url:new URL('../assets/drafts/rehearsal-kit-v1.png',import.meta.url).href},
+  new URL('../assets/drafts/rehearsal-room-v1.png',import.meta.url).href,
+  new URL('../assets/drafts/rehearsal-kit-v1.png',import.meta.url).href,
  ],
- elevator:[{key:'elevator-room',url:new URL('../assets/drafts/elevator-lobby-v1.png',import.meta.url).href}],
- subway:[{key:'subway-room',url:new URL('../assets/drafts/wudaokou-station-v1.png',import.meta.url).href}],
+ elevator:[new URL('../assets/drafts/elevator-lobby-v1.png',import.meta.url).href],
+ subway:[new URL('../assets/drafts/wudaokou-station-v1.png',import.meta.url).href],
 };
 
-const sharedActor=[
- {key:'idle',url:new URL('../assets/drafts/owner-standing-v2.png',import.meta.url).href},
- {key:'walk',url:new URL('../assets/drafts/owner-walk-v1.png',import.meta.url).href},
- {key:'sideWalk',url:new URL('../assets/drafts/owner-side-walk-v2.png',import.meta.url).href},
- {key:'seated',url:new URL('../assets/drafts/owner-seated-front-back-v2.png',import.meta.url).href},
- {key:'rest-hold',url:new URL('../assets/drafts/owner-carry-empty-v1.png',import.meta.url).href},
- {key:'rest-seated-hold',url:new URL('../assets/drafts/owner-seated-hold-empty-v1.png',import.meta.url).href},
- {key:'held-water',url:new URL('../assets/props/water-bottle-v1.png',import.meta.url).href},
- {key:'furniture',url:new URL('../assets/drafts/hutong-furniture-kit-v5.png',import.meta.url).href},
- {key:'decor',url:new URL('../assets/drafts/desk-decor-v1.png',import.meta.url).href},
- {key:'rest-kit',url:new URL('../assets/drafts/rest-interaction-kit-v2.png',import.meta.url).href},
-];
+const warmed=new Set<string>();
+const queue:string[]=[];
+let active=0;
+const MAX_PARALLEL=2;
 
-const httpWarm=new Set<string>();
-function warmUrl(url:string){
- if(httpWarm.has(url))return;
- httpWarm.add(url);
- const image=new Image();
- image.decoding='async';
- image.src=url;
+function pump(){
+ while(active<MAX_PARALLEL&&queue.length){
+  const url=queue.shift()!;
+  if(warmed.has(url))continue;
+  warmed.add(url);
+  active++;
+  const done=()=>{active=Math.max(0,active-1);pump();};
+  // fetch() into HTTP cache without decoding into GPU memory.
+  fetch(url,{cache:'force-cache',mode:'cors',...({priority:'low'} as RequestInit)}).then(r=>r.blob()).then(()=>done(),()=>done());
+ }
 }
 
-/** Queue HTTP warm for a room's heavy textures (and shared actor sheets). */
+function enqueue(urls:string[],front=false){
+ for(const url of urls){
+  if(warmed.has(url))continue;
+  const at=queue.indexOf(url);
+  if(at>=0){if(front&&at>0){queue.splice(at,1);queue.unshift(url);}continue;}
+  if(front)queue.unshift(url);else queue.push(url);
+ }
+ pump();
+}
+
+/** Warm only the destination room (map select / before enter). */
 export function warmRoom(room:string){
- for(const entry of sharedActor)warmUrl(entry.url);
- for(const entry of roomTextures[room]||[])warmUrl(entry.url);
-}
-
-/** Idle-time warmup: shared sheets first, then every room background. */
-export function startAssetWarmup(game:Phaser.Game){
- const rooms=Object.keys(roomTextures);
- let index=0;
- const step=()=>{
-  if(!game.textures)return;
-  if(index===0)for(const entry of sharedActor)warmUrl(entry.url);
-  const room=rooms[index++];
-  if(!room)return;
-  warmRoom(room);
-  const idle=(window as Window &{requestIdleCallback?:(cb:()=>void,opts?:{timeout:number})=>number}).requestIdleCallback;
-  if(idle)idle(step,{timeout:1200});
-  else setTimeout(step,180);
- };
- const idle=(window as Window &{requestIdleCallback?:(cb:()=>void,opts?:{timeout:number})=>number}).requestIdleCallback;
- if(idle)idle(step,{timeout:800});
- else setTimeout(step,400);
+ enqueue(roomTextures[room]||[],true);
 }
 
 /** Skip Phaser download when the texture is already in the game cache. */

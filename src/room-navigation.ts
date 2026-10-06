@@ -1,4 +1,4 @@
-import {roomArt,allRoomArt} from './room-art';
+import {roomArt} from './room-art';
 import rooms from '../shared/rooms.json';
 import {project} from './layout';
 import {warmRoom} from './asset-warmup';
@@ -24,14 +24,14 @@ export function setupNavigation(bridge:MultiplayerBridge,request:(path:string,in
   if(!exitNear()||document.querySelector('dialog[open]')){notice('先结束互动，再走到出口');return;}
   selected=null;const p=bridge.state();
   dialog.querySelector('[data-current]')!.textContent='当前位置：'+(p?rooms[p.scene as RoomKey].name:'');
-  dialog.querySelector('[data-error]')!.textContent='点选地点，再点「进入」。';
+  dialog.querySelector('[data-error]')!.textContent='';
   const list=dialog.querySelector('[data-places]')!;list.replaceChildren();
   for(const group of ['办公','休闲','出行']){
    const section=document.createElement('section'),label=document.createElement('strong');label.textContent=group;section.append(label);
    for(const [key,r]of Object.entries(rooms).filter(([,room])=>room.group===group)){
     const b=document.createElement('button');b.type='button';b.dataset.place=key;b.disabled=p?.scene===key;
     const frame=document.createElement('span');frame.className='place-frame';
-    const img=document.createElement('img');img.src=roomArt(key);img.alt='';img.loading='lazy';img.decoding='async';
+    const img=document.createElement('img');img.src=roomArt(key);img.alt='';img.loading='lazy';img.decoding='async';img.fetchPriority='low';
     const enter=document.createElement('span');enter.className='place-enter';enter.dataset.enterPlace='';enter.textContent='进入';enter.hidden=true;
     frame.append(img,enter);
     const name=document.createElement('span');name.className='place-name';name.textContent=r.name;
@@ -46,7 +46,6 @@ export function setupNavigation(bridge:MultiplayerBridge,request:(path:string,in
    }
    list.append(section);
   }
-  for(const url of allRoomArt()){const tip=new Image();tip.decoding='async';tip.src=url;}
   bridge.active?.input.keyboard?.resetKeys();dialog.showModal();
  };
  dialog.querySelector('[data-cancel]')!.addEventListener('click',()=>dialog.close());dialog.addEventListener('close',()=>{selected=null;document.querySelector<HTMLElement>('.world')!.focus();});
@@ -54,11 +53,12 @@ export function setupNavigation(bridge:MultiplayerBridge,request:(path:string,in
   const deadline=performance.now()+12000;while(!scene.sys.isActive()||!(scene as any).actor){if(performance.now()>deadline)throw new Error('地点载入失败，请重试');await new Promise(resolve=>setTimeout(resolve,50));}
   return scene;
  };
- const go=async(target:RoomKey)=>{
+  const go=async(target:RoomKey)=>{
   if(busy)return;
   if(!exitNear()||document.querySelector('dialog[open]:not(#location-map)')){notice('先结束互动，再走到出口');return;}
   const before=bridge.state()!;busy=true;bridge.transitioning=true;let committed=false;
   dialog.querySelectorAll<HTMLButtonElement>('[data-place]').forEach(b=>b.disabled=true);
+  const status=dialog.querySelector('[data-error]')!;status.textContent='正在进入…';
   warmRoom(target);
   try{
    if(bridge.user?.role&&(!bridge.connected||!bridge.controller))throw new Error('连接恢复后再切换地点');

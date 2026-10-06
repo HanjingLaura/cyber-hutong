@@ -19,15 +19,26 @@ export class TeamAvatar{
   this.legs=new SideWalkLegs(scene);this.held=new HeldItemView(scene);
   this.label=scene.add.text(0,0,role[0].toUpperCase()+role.slice(1),{fontSize:'9px',fontFamily:'Consolas',color:'#f2ecd8',stroke:'#202723',strokeThickness:2}).setOrigin(.5,1).setVisible(false);
   const sources=[...new Set([...this.data.frames,...this.data.carryFrames,...this.data.officeFrames].map(f=>f.source))];
-  Promise.all([gachaReady(),Promise.all(sources.map(async id=>[id,await characterImage(id)] as const))]).then(([,images])=>{
-   if(this.dead||!scene.sys.game)return;registerGachaTextures(scene);
+  // Idle/office sheets first so the avatar appears under high latency; walk/carry follow.
+  const primary=new Set([this.data.frames[0]?.source,this.data.frames[1]?.source,this.data.frames[2]?.source,this.data.officeFrames[0]?.source].filter(Boolean) as string[]);
+  const first=sources.filter(id=>primary.has(id));
+  const rest=sources.filter(id=>!primary.has(id));
+  const mount=(images:readonly (readonly [string,HTMLImageElement])[])=>{
+   if(this.dead||!scene.sys.game)return;
    for(const [id,image]of images){const key='team-v3-'+id;if(!scene.textures.exists(key))scene.textures.addImage(key,image);}
    [this.data.frames,this.data.carryFrames,this.data.officeFrames].forEach((frames,part)=>frames.forEach((frame,index)=>{
+    if(!scene.textures.exists('team-v3-'+frame.source))return;
     const texture=scene.textures.get('team-v3-'+frame.source),[x,y,w,h]=frame.rect,name='pose-'+part+'-'+index;
     if(!texture.has(name)){texture.add(name,0,x,y,w,h);texture.add('upper-'+part+'-'+index,0,x,y,w,Math.round(h*.72));
      if(frame.grip){const [gx,gy]=frame.grip,ax=Math.max(0,gx-12),ay=Math.max(0,gy-12);texture.add('arm-'+part+'-'+index,0,x+ax,y+ay,Math.min(16,w-ax),Math.min(18,h-ay));}
     }
-   }));this.ready=true;
+   }));
+  };
+  void gachaReady().then(()=>registerGachaTextures(scene)).catch(()=>{});
+  Promise.all(first.map(async id=>[id,await characterImage(id)] as const)).then(images=>{
+   mount(images);this.ready=true;
+   if(!rest.length)return;
+   void Promise.all(rest.map(async id=>[id,await characterImage(id)] as const)).then(mount).catch(()=>{});
   }).catch(()=>{if(!this.dead)this.label.setText('素材加载失败');});
  }
  hide(){[this.body,this.upper,this.prop,this.arm,this.label].forEach(x=>x.setVisible(false));this.legs.hide();this.held.hide();}

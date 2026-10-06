@@ -67,4 +67,27 @@ lauraDance.members.laura.indices.forEach((index,i)=>{characterRegistry.members.l
 const files=import.meta.glob(['../assets/characters/team/v3/*.png','../assets/characters/team/v4/*.png','../assets/characters/team/v8/*.png','../assets/characters/team/v10/*.png','../assets/characters/team/v12/*.png','../assets/characters/laura/v5/*.png','../assets/characters/laura/v6/*.png','../assets/characters/laura/v7/*.png','../assets/characters/laura/approved/*.png','../assets/npcs/celine-v1.png'],{eager:true,query:'?url',import:'default'}) as Record<string,string>;
 export function characterSource(id:string){const file=characterRegistry.sources[id]?.file,url=id==='celine-v1'?files['../assets/npcs/celine-v1.png']:files['../assets/characters/'+file];if(!url)throw Error('人物素材缺失：'+id);return url;}
 const cache=new Map<string,Promise<HTMLImageElement>>();
-export function characterImage(id:string){const url=characterSource(id);if(!cache.has(url)){const image=new Image();image.src=url;cache.set(url,image.decode().then(()=>image).catch(e=>{cache.delete(url);throw e;}));}return cache.get(url)!;}
+let inflight=0;
+const waiters:Array<()=>void>=[];
+const MAX_DECODE=3;
+function seat():Promise<void>{
+ if(inflight<MAX_DECODE){inflight++;return Promise.resolve();}
+ return new Promise(resolve=>waiters.push(resolve));
+}
+function release(){
+ const next=waiters.shift();
+ if(next)next();
+ else inflight=Math.max(0,inflight-1);
+}
+export function characterImage(id:string){
+ const url=characterSource(id);
+ if(!cache.has(url)){
+  cache.set(url,seat().then(()=>{
+   const image=new Image();
+   image.decoding='async';
+   image.src=url;
+   return image.decode().then(()=>{release();return image;}).catch(e=>{release();cache.delete(url);throw e;});
+  }));
+ }
+ return cache.get(url)!;
+}
