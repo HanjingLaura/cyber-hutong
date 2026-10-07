@@ -228,13 +228,38 @@ input[type=checkbox] { accent-color: #bbc997; width: 16px; height: 16px; }
 .perler-work canvas,.perler-work small { grid-column:1 / -1; }
 .perler-work small { font-size:11px;text-align:center; }
 .perler-work button { padding:4px;font-size:12px; }
-.bag-tabs { display:flex;gap:8px;margin:12px 0; }
-.bag-tabs [aria-pressed="true"] { background:#415347;outline:1px solid #bdc5a1; }
-#life-ui #bag-slots,#life-ui #collection-slots { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;max-height:40vh;overflow:auto; }
-#bag-slots[hidden],#collection-slots[hidden],#hand-actions[hidden] { display:none; }
-#bag-slots button,#collection-slots button { min-height:72px;display:flex;align-items:center;gap:12px;font-size:12px; }
-#bag-slots img,#collection-slots img { width:40px;height:44px;object-fit:contain;image-rendering:pixelated; }
-#collection-help { font-size:12px;color:#bfc4b0; }
+#hand-actions[hidden] { display:none; }
+/* Backpack: leather satchel with a hand slot and four pockets. */
+#life-ui .bag-dialog { width:min(360px,92vw);background:linear-gradient(#5b3f2a,#4a3322);border:3px solid #2a1c12;box-shadow:inset 0 0 0 2px #8a6544,0 10px 0 #1b120b;color:#f4e6cc; }
+#life-ui .bag-dialog .panel-heading { border-bottom:2px dashed #8a6544;padding-bottom:8px; }
+.bag-hand-card { display:flex;align-items:center;gap:12px;margin:12px 0 8px;padding:8px 10px;background:#3a2719;border:2px solid #2a1c12;border-radius:6px; }
+.bag-hand-card small { display:block;font-size:11px;color:#c8a982; }
+.bag-hand-card strong { font-size:14px; }
+.bag-art { width:44px;height:44px;flex:none;display:grid;place-items:center;background:#2a1c12;border-radius:4px; }
+.bag-art img,.cabinet-art img { max-width:100%;max-height:100%;image-rendering:pixelated; }
+.bag-art img { width:36px;height:36px;object-fit:contain; }
+.bag-actions { display:flex;gap:6px;margin-bottom:12px; }
+.bag-actions button { flex:1;font-size:12px;padding:6px 4px;background:#7a5636;border:2px solid #2a1c12;color:#fff3dc; }
+.bag-actions button:disabled { opacity:.4; }
+.bag-grid { display:grid;grid-template-columns:repeat(4,1fr);gap:8px; }
+.bag-cell { position:relative;aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:4px;background:#2f2015;border:2px solid #1d130c;border-radius:6px;box-shadow:inset 0 2px 0 #00000055;color:#f4e6cc;font-size:11px; }
+.bag-cell.empty { background:repeating-linear-gradient(45deg,#2f2015 0 6px,#33231a 6px 12px); }
+.bag-cell:not(:disabled):hover { outline:2px solid #e3c27a; }
+.bag-cell .bag-art { width:34px;height:34px;background:none; }
+.bag-name { max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+.bag-count { position:absolute;top:2px;right:4px;font-size:11px;color:#ffd98a; }
+/* Collection: wooden display cabinet with glass shelves. */
+#life-ui .cabinet-dialog { width:min(560px,94vw);background:#3b2a1e;border:4px solid #23170f;box-shadow:inset 0 0 0 3px #6e4f35,0 10px 0 #140d08;color:#f4e6cc; }
+#collection-count { margin-left:auto;margin-right:8px;font-size:12px;color:#c8a982; }
+.cabinet { display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));grid-auto-rows:150px;gap:0;min-height:300px;max-height:62vh;overflow:auto;background:repeating-linear-gradient(transparent 0 138px,#23170f 138px 140px,#6e4f35 140px 148px,#23170f 148px 150px),linear-gradient(#cfe6ee1c,#cfe6ee08);background-attachment:local;border:3px solid #23170f;margin-top:10px; }
+.cabinet-item { margin:0;height:138px;padding:8px 6px 4px;display:flex;flex-direction:column;align-items:center;text-align:center;background:radial-gradient(ellipse at 50% 40%,#fff4d61c,transparent 70%); }
+.cabinet-art { width:64px;height:64px;display:grid;place-items:center; }
+.cabinet-art img { width:56px;height:56px;object-fit:contain;filter:drop-shadow(0 3px 0 #00000066); }
+.cabinet-item figcaption { display:flex;flex-direction:column;gap:2px;margin-top:6px;width:100%; }
+.cabinet-item strong { font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+.cabinet-item small { font-size:10px;color:#c8a982; }
+.cabinet-item button { margin-top:4px;font-size:11px;padding:3px 6px;background:#6e4f35;border:1px solid #23170f;color:#fff3dc; }
+.cabinet-empty { grid-column:1/-1;padding:32px;text-align:center;color:#c8a982; }
 #hand-actions { position:static;left:auto;right:auto;bottom:auto;top:auto;transform:none;display:flex;align-items:center;justify-content:flex-start;gap:8px;padding:6px 10px;background:#17231ce8;border:1px solid #889c6f;box-shadow:none;z-index:auto;font-size:12px;font-family:var(--hto-mono);color:#fff6da;text-shadow:1px 1px #15231d;pointer-events:auto; }
 #hand-item { display:flex;gap:8px;align-items:center; }
 #hand-item img { width:24px;height:28px;object-fit:contain;image-rendering:pixelated; }
@@ -248,3 +273,7 @@ input[type=checkbox] { accent-color: #bbc997; width: 16px; height: 16px; }
 #blind-machine-art canvas { width:164px;height:380px;margin:0 auto;image-rendering:pixelated; }
 .blind-menu[data-source="machine"] #blind-result img { width:66px;height:87px; }
 @media(max-height:700px) { #blind-machine-art canvas { width:123px;height:285px; } }
+
+/* Refresh gate: stage stays blank until the saved scene is known. */
+body.scene-pending #game,body.scene-pending .scene-caption,body.scene-pending #hud-rail{visibility:hidden}
+body.scene-pending .world::after{content:'载入中…';position:absolute;inset:0;display:grid;place-items:center;color:#d7d9cc;background:#333936;font-size:14px;letter-spacing:.2em;pointer-events:none;z-index:5}

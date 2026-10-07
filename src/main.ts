@@ -24,6 +24,7 @@ import { markScene, setGuide } from './hud';
 import { openDeskComputer, closeDeskComputer, deskComputerOpen } from './desk-computer';
 import { playerInventory, type ItemName } from './player-inventory';
 import { registerProductTextures } from './product-textures';
+import { holdScene } from './scene-gate';
 import { registerRegions, setSpriteFrame, type SpriteFrame } from './frames';
 import { canWalk, project, visualFacing, floorY, HEIGHT_PROJECTION, WORKSTATIONS, DESK_ROWS, REVERSE_Y, SPAWN, METRICS, VIEW_WIDTH, VIEW_HEIGHT, PIXEL_RATIO, CONTENT_SCALE, scaleRowPoint, type Facing, type Workstation } from './layout';
 
@@ -515,6 +516,7 @@ class HutongScene extends Phaser.Scene {
   }
 }
 
+holdScene();
 const game = new Phaser.Game({ type: Phaser.AUTO, width: VIEW_WIDTH / PIXEL_RATIO, height: VIEW_HEIGHT / PIXEL_RATIO, parent: 'game', backgroundColor: '#333936',
   pixelArt: true, roundPixels: true, scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH },
   scene: [new HutongScene(), RestRoomScene, PopMartScene, new HutongScene('hawaii'), BathroomScene, ConcertScene, ArcadeScene, NoodleShopScene, GymScene, DanceStudioScene, PerlerShopScene, RehearsalScene, ElevatorLobbyScene, SubwayScene], input: { keyboard: true }, banner: false,
