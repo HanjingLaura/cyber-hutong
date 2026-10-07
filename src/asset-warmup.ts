@@ -31,11 +31,9 @@ const roomTextures:Record<string,{key:string;url:string}[]>={
  ],
  gym:[
   {key:'gym-room',url:new URL('../assets/drafts/gym-room-v1.png',import.meta.url).href},
-  {key:'gym-curl',url:new URL('../assets/drafts/owner-gym-curl-v1.png',import.meta.url).href},
  ],
  dance:[
   {key:'dance-room',url:new URL('../assets/drafts/dance-room-v1.png',import.meta.url).href},
-  {key:'dance-poses',url:new URL('../assets/drafts/owner-dance-v1.png',import.meta.url).href},
  ],
  perler:[
   {key:'perler-room-v2',url:new URL('../assets/drafts/perler-shop-v2.png',import.meta.url).href},
@@ -50,12 +48,6 @@ const roomTextures:Record<string,{key:string;url:string}[]>={
 };
 
 const sharedActor=[
- {key:'idle',url:new URL('../assets/drafts/owner-standing-v2.png',import.meta.url).href},
- {key:'walk',url:new URL('../assets/drafts/owner-walk-v1.png',import.meta.url).href},
- {key:'sideWalk',url:new URL('../assets/drafts/owner-side-walk-v2.png',import.meta.url).href},
- {key:'seated',url:new URL('../assets/drafts/owner-seated-front-back-v2.png',import.meta.url).href},
- {key:'rest-hold',url:new URL('../assets/drafts/owner-carry-empty-v1.png',import.meta.url).href},
- {key:'rest-seated-hold',url:new URL('../assets/drafts/owner-seated-hold-empty-v1.png',import.meta.url).href},
  {key:'held-water',url:new URL('../assets/props/water-bottle-v1.png',import.meta.url).href},
  {key:'furniture',url:new URL('../assets/drafts/hutong-furniture-kit-v5.png',import.meta.url).href},
  {key:'decor',url:new URL('../assets/drafts/desk-decor-v1.png',import.meta.url).href},

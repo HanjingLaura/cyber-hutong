@@ -41,3 +41,11 @@ test('retired black-outfit Laura sheets are not referenced by the character regi
  const avatar=readFileSync(new URL('../src/multiplayer/avatar.ts',import.meta.url),'utf8');assert.doesNotMatch(avatar,/blackLaura/);
  const social=readFileSync(new URL('../src/multiplayer/social.ts',import.meta.url),'utf8');assert.doesNotMatch(social,/PartyKit…|在另一个窗口操作'\)/);
 });
+
+test('legacy built-in player actor and its sheets are removed',async()=>{
+ const {existsSync,readdirSync}=await import('node:fs');
+ assert.equal(existsSync(new URL('../src/shop-actor.ts',import.meta.url)),false);
+ assert.equal(existsSync(new URL('../assets/characters/laura/approved',import.meta.url)),false);
+ assert.deepEqual(readdirSync(new URL('../assets/drafts',import.meta.url)).filter(f=>f.startsWith('owner-')),[]);
+ for(const f of readdirSync(new URL('../src',import.meta.url)).filter(f=>f.endsWith('.ts')))assert.doesNotMatch(readFileSync(new URL('../src/'+f,import.meta.url),'utf8'),/owner-[a-z-]+v\d\.png|ShopActor/,f);
+});

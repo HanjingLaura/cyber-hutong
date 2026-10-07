@@ -1,10 +1,7 @@
-import { SideWalkLegs, sideUpperFrame, heldSideFrame } from './side-walk-legs';
 import Phaser from 'phaser';
-import { registerFrames, registerRegions, setSpriteFrame, type SpriteFrame } from './frames';
+import { registerRegions, type SpriteFrame } from './frames';
 import { CONTENT_SCALE, METRICS, PIXEL_RATIO } from './layout';
-import { HeldItemView, type GripSlot } from './held-item';
 
-import gripRegistry from '../assets/metadata/owner-grips.json';
 import { playerInventory, items, vendingProducts, fridgeDefaults, type ItemName } from './player-inventory';
 import { registerProductTextures } from './product-textures';
 import {sharedAction,onlineWorld} from './multiplayer/world-client';
@@ -27,15 +24,11 @@ type Target = { id: string; name: string; kind: 'coffee' | 'fridge' | 'vending' 
 declare global { interface Window { __restPreview?: { getState: () => unknown } } }
 
 export class RestRoomScene extends Phaser.Scene {
-  private frames: Record<string, SpriteFrame[]> = {};
-  private sideLegs!: SideWalkLegs;
-  private actor!: Phaser.GameObjects.Image;
+  private actor = false;
   private fridge!: Phaser.GameObjects.Image;
   private fridgeDoor!: Phaser.GameObjects.Graphics;
   private fridgeItems: (ItemName | null)[] = [...fridgeDefaults, ...Array(6).fill(null)];
   private machineCup!: Phaser.GameObjects.Image;
-  private heldItem!: HeldItemView;
-  private gripSlots: Record<string, Map<string, GripSlot>> = {};
   private keys!: Record<string, Phaser.Input.Keyboard.Key>;
   private x = 554; private y = 184; private facing = 0; private motionTime = 0;
   private seated: number | null = null;
@@ -61,15 +54,9 @@ export class RestRoomScene extends Phaser.Scene {
     load('rest-props', new URL('../assets/drafts/rest-props-v1.png', import.meta.url).href);
     load('rest-kit', new URL('../assets/drafts/rest-interaction-kit-v2.png', import.meta.url).href);
     load('held-water', new URL('../assets/props/water-bottle-v1.png', import.meta.url).href);
-    load('rest-hold', new URL('../assets/drafts/owner-carry-empty-v1.png', import.meta.url).href);
-    load('rest-seated-hold', new URL('../assets/drafts/owner-seated-hold-empty-v1.png', import.meta.url).href);
-    for (const [key, url] of Object.entries({ idle: new URL('../assets/drafts/owner-standing-v2.png', import.meta.url).href, walk: new URL('../assets/drafts/owner-walk-v1.png', import.meta.url).href, side: new URL('../assets/drafts/owner-side-walk-v2.png', import.meta.url).href, seated: new URL('../assets/drafts/owner-seated-front-back-v2.png', import.meta.url).href })) {
-      load(`rest-${key}`, url);
-    }
   }
   create() {
     registerProductTextures(this);
-    this.sideLegs = new SideWalkLegs(this);
     this.cameras.main.setZoom(1 / PIXEL_RATIO).centerOn(320, 180);
     this.add.image(0, 0, 'rest-shell').setOrigin(0).setDisplaySize(640, 360).setDepth(-100);
     const props = registerRegions(this, 'rest-props', [
@@ -95,7 +82,6 @@ export class RestRoomScene extends Phaser.Scene {
     this.groups.equipment.push(this.add.image(machinePoint.x, machinePoint.y, 'rest-kit', kit[2].name).setOrigin(.5, 1).setDisplaySize(37 * CONTENT_SCALE, 47 * CONTENT_SCALE).setDepth(133));
     this.machineCup = this.add.image(machinePoint.x - 4, machinePoint.y - 2, 'rest-kit', kit[3].name).setOrigin(.5, 1).setDisplaySize(7, 7).setDepth(134).setVisible(false);
     if (!this.textures.get('held-water').has('bottle')) this.textures.get('held-water').add('bottle', 0, 6, 2, 6, 11);
-    this.heldItem = new HeldItemView(this);
     // Plants remain separate decorations on the counter, rather than baked in.
     for (const x of [268, 465]) {
       const point = restPoint(x, 64, true);
@@ -113,20 +99,7 @@ export class RestRoomScene extends Phaser.Scene {
       this.groups.chairs.push(this.add.image(seat.x, seat.y, 'rest-props', props[5].name)
         .setOrigin(.5, 1).setDisplaySize(44 * CONTENT_SCALE, 56 * CONTENT_SCALE).setDepth(seat.y));
     }
-    this.frames.idle = registerFrames(this, 'rest-idle', 4, 1, true);
-    this.frames.walk = registerFrames(this, 'rest-walk', 4, 4, true);
-    this.frames.side = registerFrames(this, 'rest-side', 6, 2, true);
-    this.frames.seated = registerFrames(this, 'rest-seated', 3, 2, true);
-    this.frames.hold = registerFrames(this, 'rest-hold', 4, 5, true, { x: [0, .32, .51, .70, 1], y: [0, .207, .412, .609, .808, 1] });
-    this.frames.seatedHold = registerFrames(this, 'rest-seated-hold', 3, 1, true);
-    for (const [key, registry] of Object.entries(gripRegistry)) {
-      this.gripSlots[key] = new Map(Object.entries(registry.slots));
-      for (const [name, slot] of this.gripSlots[key]) {
-        const [x, y, width, height] = slot.handRect;
-        if (!this.textures.get(key).has(`palm-${name}`)) this.textures.get(key).add(`palm-${name}`, 0, x, y, width, height);
-      }
-    }
-    this.actor = this.add.image(this.x, this.y, 'rest-idle');
+    this.actor = true;
     this.keys = this.input.keyboard!.addKeys('W,A,S,D,UP,DOWN,LEFT,RIGHT') as Record<string, Phaser.Input.Keyboard.Key>;
     const world = document.querySelector<HTMLElement>('.world')!;
     const action = (event: KeyboardEvent) => {
@@ -189,7 +162,7 @@ export class RestRoomScene extends Phaser.Scene {
     });
     this.events.once('shutdown', () => { window.removeEventListener('keydown', action); world.removeEventListener('blur', clear); window.removeEventListener('blur', clear); });
     this.events.on('sleep', () => { clear(); if (this.vendingMenu.open) this.vendingMenu.close(); if (this.tableMenu.open) this.tableMenu.close(); if (this.fridgeMenu.open) this.fridgeMenu.close(); });
-    window.__restPreview = { getState: () => ({ ready: true, tableCollision: { ...tableCollision, floorY: tableFloorY }, active: this.sys.isActive(), x: this.x, y: this.y, seated: this.seated, hand: this.hand, fridgeItems: [...this.fridgeItems], fridgeOpen: this.fridgeMenu.open, tableItems: this.tableItems.map(table => [...table]), brewing: this.brewing, coffeeReady: this.coffeeReady, machineCupVisible: this.machineCup.visible, heldCupVisible: this.heldItem.visible, actorTexture: this.actor.texture.key, actorFrame: this.actor.frame.name, metrics: METRICS, chairCount: this.targets.filter(target => target.kind === 'chair').length, facing: this.facing, seats: chairSeats.map(s => ({ ...s })), nearest: this.nearest()?.id ?? null, targets: this.targets.map(t => ({ ...t })) }) };
+    window.__restPreview = { getState: () => ({ ready: true, tableCollision: { ...tableCollision, floorY: tableFloorY }, active: this.sys.isActive(), x: this.x, y: this.y, seated: this.seated, hand: this.hand, fridgeItems: [...this.fridgeItems], fridgeOpen: this.fridgeMenu.open, tableItems: this.tableItems.map(table => [...table]), brewing: this.brewing, coffeeReady: this.coffeeReady, machineCupVisible: this.machineCup.visible, heldCupVisible: !!this.hand, actorTexture: 'team-avatar', metrics: METRICS, chairCount: this.targets.filter(target => target.kind === 'chair').length, facing: this.facing, seats: chairSeats.map(s => ({ ...s })), nearest: this.nearest()?.id ?? null, targets: this.targets.map(t => ({ ...t })) }) };
     world.focus();
   }
   private get fridgeMenu() { return document.querySelector<HTMLDialogElement>('#fridge-menu')!; }
@@ -340,25 +313,6 @@ export class RestRoomScene extends Phaser.Scene {
       }
     }
     this.motionTime = moving ? this.motionTime + Math.min(delta, 50) : 0;
-    this.sideLegs.hide();
-    this.actor.setFlipX(false);
-    let holdFrame: SpriteFrame | null = null;
-    const holdKey = this.seated !== null ? 'rest-seated-hold' : 'rest-hold';
-    if (this.hand) {
-      if (this.seated !== null) holdFrame = this.frames.seatedHold[this.facing === 0 ? 0 : this.facing === 1 ? 1 : 2];
-      else {
-        const phase = (this.facing === 1 || this.facing === 3) ? heldSideFrame(this.motionTime) : Math.floor(this.motionTime / 125) % 4;
-        const index = moving ? (this.facing === 0 ? 4 : this.facing === 2 ? 12 : 8) + phase : this.facing;
-        holdFrame = this.frames.hold[index]; this.actor.setFlipX(moving && this.facing === 3);
-      }
-      setSpriteFrame(this.actor, holdKey, holdFrame, this.seated !== null ? METRICS.seated : METRICS.standing);
-      if (this.actor.flipX) this.actor.setOrigin(1 - holdFrame.pivotX, 1);
-    }
-    else if (this.seated !== null) setSpriteFrame(this.actor, 'rest-seated', this.frames.seated[3], METRICS.seated);
-    else if (moving && (this.facing === 1 || this.facing === 3)) setSpriteFrame(this.actor, 'rest-side', this.frames.side[(this.facing === 1 ? 0 : 6) + sideUpperFrame(this.motionTime)], METRICS.standing);
-    else if (moving) setSpriteFrame(this.actor, 'rest-walk', this.frames.walk[this.facing * 4 + Math.floor(this.motionTime / 125) % 4], METRICS.standing);
-    else setSpriteFrame(this.actor, 'rest-idle', this.frames.idle[this.facing], METRICS.standing);
-    this.actor.setPosition(Math.round(this.x), Math.round(this.y)).setDepth(this.y + 1);
     const tableVisible = document.querySelector<HTMLInputElement>('[data-rest-layer="tables"]')!.checked;
     this.tableSprites.forEach((cup, index) => {
       const drink = this.tableItems[Math.floor(index / tableCapacity)][index % tableCapacity];
@@ -368,16 +322,9 @@ export class RestRoomScene extends Phaser.Scene {
         cup.setTexture(item.texture, item.frame).setDisplaySize(item.width, item.height);
       }
     });
-    if (moving && this.seated === null && (this.facing === 1 || this.facing === 3) && !this.hand) {
-      const frame = this.frames.side.find(frame => frame.name === this.actor.frame.name)!;
-      this.sideLegs.draw(this.actor, frame, METRICS.standing, this.facing, this.motionTime);
-    }
     const target = this.nearest();
     const equipmentVisible = document.querySelector<HTMLInputElement>('[data-rest-layer="equipment"]')!.checked;
     this.machineCup.setVisible(this.coffeeReady && equipmentVisible);
-    if (holdFrame) this.heldItem.draw(this.actor, holdKey, holdFrame, this.gripSlots[holdKey].get(holdFrame.name)!,
-      this.seated !== null ? METRICS.seated : METRICS.standing, items[this.hand!], this.actor.depth, this.facing);
-    else this.heldItem.hide();
     document.querySelector('#mode')!.textContent = this.seated !== null ? '坐着休息' : this.brewing ? '等待咖啡' : moving ? '在休息室走动' : '站在休息室';
     document.querySelector('#hint')!.textContent = this.seated !== null ? '按 F 放下 / 拿回桌上物品；E 或 Esc 起身。' : target ? `靠近${target.name}：按 E 互动。` : '靠近设备、餐桌或椅子。';
     const tableButton = document.querySelector<HTMLButtonElement>('#table-action')!;

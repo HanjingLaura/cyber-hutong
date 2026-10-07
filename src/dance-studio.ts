@@ -1,8 +1,5 @@
 import Phaser from 'phaser';
-import { ShopActor } from './shop-actor';
-import { registerFrames, setSpriteFrame, type SpriteFrame } from './frames';
 import { playerInventory, type ItemName } from './player-inventory';
-import { METRICS } from './layout';
 import { DanceBeat } from './dance-beat';
 import { preloadGuest, placeGuest, guestBlocks } from './easter-eggs';
 import {sharedAction} from './multiplayer/world-client';
@@ -10,16 +7,14 @@ import {sharedAction} from './multiplayer/world-client';
 type Mode = 'walk' | 'dance' | 'practice' | 'sit';
 const sequence = [3, 2, 1, 0, 3, 1, 2, 0];
 const arrows = ['↓', '→', '↑', '←'];
-const poses = [0, 1, 0, 2, 0, 3, 0, 2];
 const targets = [{kind:'music',x:83,y:179}, {kind:'mirror',x:320,y:186}, {kind:'floor',x:320,y:267}, {kind:'bench',x:166,y:289}, {kind:'stash',x:565,y:178}] as const;
 const names = {music:'开关音响',mirror:'对镜跳舞',floor:'跟拍练习',bench:'坐下休息',stash:'存放 / 拿回物品'};
 declare global { interface Window { __dancePreview?: {getState:()=>unknown} } }
 
 export class DanceStudioScene extends Phaser.Scene {
   mirrorMask!:Phaser.Display.Masks.GeometryMask;
-  private actor!: ShopActor; private reflection!: ShopActor;
-  private dancer!: Phaser.GameObjects.Image; private reflectedDancer!: Phaser.GameObjects.Image;
-  private frames: SpriteFrame[] = []; private keys!:Record<string, Phaser.Input.Keyboard.Key>;
+  private actor=false;
+  private keys!:Record<string, Phaser.Input.Keyboard.Key>;
   private beat = new DanceBeat(); private mode:Mode = 'walk';
   private x=320; private y=298; private facing=2;
   private returnPoint={x:320,y:298}; private stored:{name:ItemName;seasoning:string[]}|null=null;
@@ -31,16 +26,12 @@ export class DanceStudioScene extends Phaser.Scene {
     preloadGuest(this,'lulu');
     const load=(k:string,u:string)=>{if(!this.textures.exists(k))this.load.image(k,u);};
     load('dance-room',new URL('../assets/drafts/dance-room-v1.png',import.meta.url).href);
-    load('dance-poses',new URL('../assets/drafts/owner-dance-v1.png',import.meta.url).href);
   }
   create(){
     this.add.image(0,0,'dance-room').setOrigin(0).setDisplaySize(640,360).setDepth(-100);
     this.mirrorMask=this.add.graphics().fillStyle(0xffffff).fillRect(118,35,404,96).setVisible(false).createGeometryMask();
     placeGuest(this,'lulu');
-    this.actor=new ShopActor(this);this.reflection=new ShopActor(this);
-    this.frames=registerFrames(this,'dance-poses',4,2,true);
-    this.dancer=this.add.image(0,0,'dance-poses').setVisible(false);
-    this.reflectedDancer=this.add.image(0,0,'dance-poses').setVisible(false);
+    this.actor=true;
     this.beatMarks=this.add.graphics().setDepth(350);
     this.keys=this.input.keyboard!.addKeys('W,A,S,D,UP,DOWN,LEFT,RIGHT') as Record<string,Phaser.Input.Keyboard.Key>;
     const world=document.querySelector<HTMLElement>('.world')!;
@@ -128,22 +119,7 @@ export class DanceStudioScene extends Phaser.Scene {
       for(let i=0;i<8;i++)if(position>i+4+160/(60000/this.beat.bpm)&&this.results[i]===null)this.results[i]='miss';
       if(position>=12){this.best=Math.max(this.best,this.score);this.stop();this.message=`本轮 ${this.score} / 8 拍。最好 ${this.best} / 8。`;}
     }
-    // Keep the full silhouette and held item inside the actual mirror pane.
-    const rx=Math.round(this.x),ry=Math.round(130-(this.y-177)*.25);
-    this.dancer.setVisible(false);this.reflectedDancer.setVisible(false);this.beatMarks.clear();
-    if(this.mode==='dance'||this.mode==='practice'){
-      this.actor.hide();this.reflection.hide();
-      const index=poses[((Math.floor(position)%8)+8)%8];
-      setSpriteFrame(this.dancer,'dance-poses',this.frames[4+index],METRICS.standing);
-      this.dancer.setPosition(this.x,this.y).setDepth(this.y+1).setVisible(true);
-      this.dancer.setFlipX(index===1);if(index===1)this.dancer.setOrigin(1-this.frames[4+index].pivotX,1);
-      setSpriteFrame(this.reflectedDancer,'dance-poses',this.frames[index],44);
-      this.reflectedDancer.setMask(this.mirrorMask).setPosition(rx,ry).setDepth(-50).setVisible(rx>=136&&rx<=504);
-      this.reflectedDancer.setFlipX(index===1);if(index===1)this.reflectedDancer.setOrigin(1-this.frames[index].pivotX,1);
-    }else{
-      this.actor.draw(this.x,this.y,this.facing,moving,dt,this.mode==='sit',this.y+1,undefined,0,this.mode==='sit'?250:undefined);
-      this.reflection.draw(rx,ry,this.facing===0?2:this.facing===2?0:this.facing,moving,dt,this.mode==='sit',-50,44);if(rx<136||rx>504)this.reflection.hide();
-    }
+    this.beatMarks.clear();
     if(this.beat.playing){
       const beat=((Math.floor(position)%4)+4)%4;
       for(let i=0;i<4;i++)this.beatMarks.fillStyle(i===beat?0xe5c56b:0x565d59).fillRect(299+i*11,335,7,3);

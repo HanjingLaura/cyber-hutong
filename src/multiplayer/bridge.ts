@@ -38,12 +38,7 @@ export class MultiplayerBridge{
   stand(){const s=this.active;if(!s)return;if(typeof s.stand==='function')s.stand();else if(typeof s.stop==='function')s.stop();}
   clearTransition(){this.transitioning=false;this.pendingSpawn=null;if(this.syncTimer){clearTimeout(this.syncTimer);this.syncTimer=null;}}
   screen(p:Player){const scene=this.active,office=['hutong','hawaii'].includes(p.scene),reverse=office&&!!scene?.reverse;return {...project(p,reverse),facing:visualFacing(p.facing as Facing,reverse)};}
-  private hideLegacy(scene:Room){const actor=scene.actor;if(actor?.hide)actor.hide();else actor?.setVisible(false);scene.actorUpper?.setVisible(false);scene.sideLegs?.hide();scene.heldItem?.hide();scene.curlActor?.setVisible(false);scene.dancer?.setVisible(false);scene.reflectedDancer?.setVisible(false);scene.reflection?.hide();}
   private draw(delta:number){
-    // Legacy per-scene actors still use the retired black-outfit sheets. Hide them in
-    // every active room, every frame, before the room is "ready" and for guests too,
-    // so they can never flash. The current TeamAvatar is the only player sprite.
-    for(const s of this.game.scene.getScenes(true))if(s.sys.settings.key in previewKeys)this.hideLegacy(s as Room);
     const scene=this.active;let local=this.state();if(!scene||!local)return;
     if(this.pendingSpawn?.scene===local.scene){this.apply(this.pendingSpawn);local=this.state()!;this.pendingSpawn=null;this.transitioning=false;if(this.syncTimer){clearTimeout(this.syncTimer);this.syncTimer=null;}}
     const self=this.players.find(p=>p.role===this.user?.role);

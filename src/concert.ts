@@ -2,14 +2,13 @@ import Phaser from 'phaser';
 import { preloadGuest, placeGuest, guestBlocks } from './easter-eggs';
 import geometry from '../shared/interactions.json';
 import { registerRegions } from './frames';
-import { ShopActor } from './shop-actor';
 import { playerInventory } from './player-inventory';
 
 // Three rows, two blocks of three, with a clear central and side aisle.
 const seats=Object.entries(geometry.concert.seats).map(([id,s])=>({id,x:s.at[0],y:s.at[1],approachY:s.approach[1],row:id.charCodeAt(0)-65,column:Number(id[1])-1}));
 declare global { interface Window { __concertPreview?: { getState: () => unknown } } }
 export class ConcertScene extends Phaser.Scene {
-  private actor!: ShopActor;
+  private actor=false;
   private backs:Phaser.GameObjects.Image[]=[];
   private chairs:Phaser.GameObjects.Image[]=[];
   private keys!:Record<string,Phaser.Input.Keyboard.Key>;
@@ -44,7 +43,7 @@ export class ConcertScene extends Phaser.Scene {
       this.backs.push(this.add.image(seat.x,top,'concert-chair','backrest').setOrigin(.5,0)
         .setDisplaySize(width,height*backHeight/chair.height).setDepth(seat.y+2).setVisible(true));
     });
-    this.actor=new ShopActor(this);
+    this.actor=true;
     this.keys=this.input.keyboard!.addKeys('W,A,S,D,UP,DOWN,LEFT,RIGHT') as Record<string,Phaser.Input.Keyboard.Key>;
     const world=document.querySelector<HTMLElement>('.world')!;
     const action=(event:KeyboardEvent)=>{
@@ -93,7 +92,7 @@ export class ConcertScene extends Phaser.Scene {
         this.facing=dx?dx>0?1:3:dy>0?0:2;moving=ox!==this.x||oy!==this.y;
       }
     }
-    this.actor.draw(this.x,this.y,this.facing,moving,delta,this.seated!==null,this.y+1,undefined,0,this.seated!==null?seats[this.seated].y-13:undefined);
+    
     this.backs.forEach((image,i)=>image.setVisible(true).setDepth(seats[i].y+2));
     this.chairs.forEach((image,i)=>image.setDepth(this.seated===i?seats[i].y-1:seats[i].y+10));
     const seat=this.nearest(),button=document.querySelector<HTMLButtonElement>('#interact')!;

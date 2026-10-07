@@ -1,6 +1,5 @@
 import Phaser from 'phaser';
 import { registerRegions } from './frames';
-import { ShopActor } from './shop-actor';
 import { playerInventory, items, type ItemName } from './player-inventory';
 import { registerProductTextures } from './product-textures';
 import {sharedAction} from './multiplayer/world-client';
@@ -18,7 +17,7 @@ declare global {interface Window {__noodlePreview?:{getState:()=>unknown}}}
 
 /** Service counters are painted into the room; seats and food remain interactive sprites. */
 export class NoodleShopScene extends Phaser.Scene {
-  private actor!:ShopActor;
+  private actor=false;
   private keys!:Record<string,Phaser.Input.Keyboard.Key>;
   private x=320;private y=337;private facing=2;private seated:number|null=null;
   private dishes:(Dish|null)[][]=tables.map(()=>Array(6).fill(null));
@@ -49,7 +48,7 @@ export class NoodleShopScene extends Phaser.Scene {
     seats.forEach((s,index)=>{const chair=this.add.image(s.x,s.y,'noodle-kit','stool').setOrigin(.5,1).setDisplaySize(24,23).setDepth(s.y+2);
       chair.setInteractive({useHandCursor:true}).on('pointerdown',()=>{if(this.dialog.open)return;if(this.seated===index){this.stand();return;}if(this.seated!==null)return;if(Math.hypot(this.x-s.x,this.y-(s.y+19))>=24){this.message='靠近这把凳子再坐下。';return;}this.sit(index);});this.chairs.push(chair);});
     this.toppings=this.add.graphics().setDepth(265);
-    this.actor=new ShopActor(this);
+    this.actor=true;
     this.keys=this.input.keyboard!.addKeys('W,A,S,D,UP,DOWN,LEFT,RIGHT') as Record<string,Phaser.Input.Keyboard.Key>;
     const world=document.querySelector<HTMLElement>('.world')!;
     const action=(event:KeyboardEvent)=>{
@@ -148,7 +147,7 @@ export class NoodleShopScene extends Phaser.Scene {
       const dx=Number(this.keys.D.isDown||this.keys.RIGHT.isDown)-Number(this.keys.A.isDown||this.keys.LEFT.isDown),dy=Number(this.keys.S.isDown||this.keys.DOWN.isDown)-Number(this.keys.W.isDown||this.keys.UP.isDown);
       if(dx||dy){const step=108*Math.min(delta,32)/1000/Math.hypot(dx,dy),ox=this.x,oy=this.y;if(this.canWalk(this.x+dx*step,this.y))this.x+=dx*step;if(this.canWalk(this.x,this.y+dy*step))this.y+=dy*step;this.facing=dx?dx>0?1:3:dy>0?0:2;moving=this.x!==ox||this.y!==oy;}
     }
-    this.actor.draw(this.x,this.y,this.facing,moving,delta,this.seated!==null,this.y+(this.seated!==null?4:1),this.seated!==null?54:undefined);
+    
     this.toppings.clear();
     this.dishes.forEach((row,index)=>row.forEach((dish,slot)=>{
       const image=this.dishImages[index][slot];image.setVisible(!!dish);if(!dish)return;

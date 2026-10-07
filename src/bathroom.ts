@@ -1,7 +1,6 @@
 import Phaser from 'phaser';
 import {sharedAction} from './multiplayer/world-client';
 import { preloadGuest, placeGuest, guestBlocks } from './easter-eggs';
-import { ShopActor } from './shop-actor';
 import { playerInventory } from './player-inventory';
 
 const centers = [88, 173, 259, 344];
@@ -13,7 +12,7 @@ declare global { interface Window { __bathroomPreview?: { getState: () => unknow
 
 /** Door thresholds, toilet seat anchors and walkable bays share the same layout. */
 export class BathroomScene extends Phaser.Scene {
-  private actor!: ShopActor;
+  private actor=false;
   private doors: Phaser.GameObjects.Graphics[] = [];
   private angles=centers.map(()=>0);
   private doorMotion=centers.map(()=>({angle:0}));
@@ -39,7 +38,7 @@ export class BathroomScene extends Phaser.Scene {
     // Plumbing and partitions are painted together; only doors are movable.
     centers.forEach((_,i)=>{this.doors.push(this.add.graphics().setDepth(209));this.paintDoor(i);});
     this.water=this.add.graphics().setDepth(215);
-    this.actor=new ShopActor(this);
+    this.actor=true;
     this.keys=this.input.keyboard!.addKeys('W,A,S,D,UP,DOWN,LEFT,RIGHT') as Record<string,Phaser.Input.Keyboard.Key>;
     const world=document.querySelector<HTMLElement>('.world')!;
     const action=(event:KeyboardEvent)=>{
@@ -160,7 +159,7 @@ export class BathroomScene extends Phaser.Scene {
         this.facing=dx?dx>0?1:3:dy>0?0:2;moving=this.x!==ox||this.y!==oy;
       }
     }
-    this.actor.draw(this.x,this.y,this.facing,moving,delta,this.seated!==null,this.seated!==null?196:this.y+1,undefined,0,this.seated!==null?170:undefined);
+    
     this.water.clear();
     if(this.washing!==null){
         const x=sinkCenters[this.washing],phase=Math.floor((this.time.now-this.washStarted)/100)%3;
