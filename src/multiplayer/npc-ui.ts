@@ -4,8 +4,10 @@ import type {MultiplayerBridge} from './bridge';
 import {dockPrompt} from '../hud';
 const names:Record<string,string>={ani:'Ani',lulu:'噜噜',tutu:'图图',buzz:'巴斯光年',zhu:'朱志鑫',ferret:'富贵貂'};
 export function setupNPCUI(bridge:MultiplayerBridge,request:(path:string,input?:any)=>Promise<any>,publish:()=>Promise<void>,client:string,notice:(s:string)=>void){
- const root=document.createElement('div');root.id='npc-ui';root.innerHTML='<button id="npc-interact" hidden></button><div id="npc-speech-layer"></div>';document.querySelector('.world')!.append(root);dockPrompt(root.querySelector('#npc-interact'));
- const button=root.querySelector<HTMLButtonElement>('#npc-interact')!,speech=root.querySelector<HTMLElement>('#npc-speech-layer')!;
+ const root=document.createElement('div');root.id='npc-ui';root.innerHTML='<button id="npc-interact" hidden></button><div id="npc-speech-layer"></div>';document.querySelector('.world')!.append(root);
+ // Grab #npc-interact before dockPrompt moves it out of root.
+ const button=root.querySelector<HTMLButtonElement>('#npc-interact')!;dockPrompt(button);
+ const speech=root.querySelector<HTMLElement>('#npc-speech-layer')!;
  let visible:string[]=[],reactions:any[]=[],offset=0,busy=false;
  const nearest=()=>{const p=bridge.state();if(!p||!bridge.user?.role)return;return rules.filter(n=>n.owner===bridge.user!.role&&n.room===p.scene&&visible.includes(n.id)).find(n=>{const point=(positions as Record<string,{x:number;y:number}>)[n.id];return Math.hypot(p.x-point.x,p.y-point.y)<=(n.id==='ani'?75:42);});};
  async function interact(id:string){if(busy)return;busy=true;try{await publish();await request('npc',{npc:id,client});}catch(e){notice((e as Error).message);}finally{busy=false;}}

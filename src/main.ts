@@ -328,6 +328,8 @@ class HutongScene extends Phaser.Scene {
       window.removeEventListener('keydown', actionKey);
     });
     this.events.on('sleep', () => closeDeskComputer());
+    // UI bindings must never block scene startup (the 「载入中…」 overlay is cleared at the end of create).
+    try {
     world.addEventListener('pointerdown', () => world.focus());
     interactButton.addEventListener('click', () => { if (this.sys.isActive()) { this.interact(); world.focus(); } });
     viewButton.addEventListener('click', () => { if (this.sys.isActive()) { this.switchView(); world.focus(); } });
@@ -351,6 +353,7 @@ class HutongScene extends Phaser.Scene {
         this.drawFurniture();
       });
     }
+    } catch (error) { console.error('UI init failed in scene create', error); }
     this.drawFurniture();
     this.officeGuest=new OfficeGuest(this,this.isHawaii,this.workstations);
     if(!this.isHawaii)this.aniGuest=new AniGuest(this);
@@ -358,7 +361,7 @@ class HutongScene extends Phaser.Scene {
     this.drawFurniture();
     if(this.isHawaii)window.__hawaiiPreview={getState:()=>({...this.snapshot(),curtainDown:this.curtainDown,curtainProgress:this.curtainProgress,nearWindow:this.nearWindow()})};
     else window.__hutongPreview = { getState: () => this.snapshot() };
-    document.querySelector('#curtain-control')!.addEventListener('click',()=>{if(this.sys.isActive()&&this.isHawaii){this.toggleCurtain();world.focus();}});
+    document.querySelector('#curtain-control')?.addEventListener('click',()=>{if(this.sys.isActive()&&this.isHawaii){this.toggleCurtain();world.focus();}});
     document.querySelector('.loading')?.remove(); world.focus();
   }
   private snapshot(): PreviewState {
@@ -626,7 +629,7 @@ const game = new Phaser.Game({ type: Phaser.AUTO, width: VIEW_WIDTH / PIXEL_RATI
   scene: [new HutongScene(), RestRoomScene, PopMartScene, new HutongScene('hawaii'), BathroomScene, ConcertScene, ArcadeScene, NoodleShopScene, GymScene, DanceStudioScene, PerlerShopScene, RehearsalScene, ElevatorLobbyScene, SubwayScene], input: { keyboard: true }, banner: false,
 });
 let selectedSceneKey='hutong';
-game.events.once('ready',()=>startSocial(game));
+game.events.once('ready',()=>{try{startSocial(game);}catch(error){console.error('startSocial failed',error);}});
 game.events.once('ready',()=>{
   for(const key of ['hutong','rest','pop','hawaii','bathroom','concert','arcade','noodle','gym','dance','perler','rehearsal','elevator','subway']){
     const scene=game.scene.getScene(key);
