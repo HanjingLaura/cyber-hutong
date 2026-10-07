@@ -24,7 +24,7 @@ export function startSocial(game:Phaser.Game){
   document.body.classList.add('game-fullscreen');
   const root=document.createElement('div');root.id='social-ui';root.innerHTML=`
     <nav id="game-tools" aria-label="游戏操作"><button id="room-open">地图</button><button id="people-open">人物</button><button id="chat-open">聊天</button><button id="settings-open">设置</button><span id="connection-state" role="status"></span></nav>
-    <dialog id="settings-dialog" class="social-dialog"><div class="panel-heading"><h2>设置</h2><button data-close="settings-dialog">关闭</button></div><div class="settings-actions"><button id="account-open">登录 / 领取角色</button><button id="collection-open">收藏册</button><button id="fullscreen-toggle">全屏</button><button id="details-open" hidden>调试操作</button></div></dialog>
+    <dialog id="settings-dialog" class="social-dialog"><div class="panel-heading"><h2>设置</h2><button data-close="settings-dialog">关闭</button></div><div class="settings-actions"><button id="account-open">登录 / 领取角色</button><button id="fullscreen-toggle">全屏</button><button id="details-open" hidden>调试操作</button></div></dialog>
     <section id="people-panel" class="social-panel" hidden><div class="panel-heading"><strong>人物</strong><button data-close="people-panel">关闭</button></div><div id="people-list"></div><button id="take-control" hidden>在这个窗口接管</button></section>
     <section id="chat-panel" class="social-panel" hidden><div class="panel-heading"><strong id="chat-title">当前场景</strong><button data-close="chat-panel">关闭</button></div><button id="chat-room">场景聊天</button><div id="chat-history" role="log" aria-live="polite"></div><form id="chat-form"><label class="sr-only" for="chat-input">消息</label><input id="chat-input" maxlength="200" placeholder="Enter 发送" autocomplete="off"/><button>发送</button></form></section>
     <div id="near-social" hidden><span id="near-label"></span><button data-near="greet" type="button">招呼</button><button data-near="gift" type="button">赠送</button><button data-near="chat" type="button">私聊</button><button data-near="invite" type="button">邀约</button><button data-near="wave" type="button" title="挥手">👋</button><button data-near="cheer" type="button" title="加油">🙌</button><button data-near="bow" type="button" title="点头">🙇</button></div>
@@ -70,7 +70,6 @@ export function startSocial(game:Phaser.Game){
   };
   const party=new PartyPresence(bridge,client,api,()=>applyPartyView(),notice);
   $('settings-open').onclick=()=>($('settings-dialog') as HTMLDialogElement).showModal();
-  $('collection-open').onclick=()=>{close('settings-dialog');window.dispatchEvent(new Event('hutong:open-collection'));};
   root.querySelectorAll<HTMLButtonElement>('[data-close]').forEach(b=>b.onclick=()=>close(b.dataset.close!));
   let accountSignature='',peopleSignature='';
   function hardLogout(text?:string){
