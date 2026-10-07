@@ -85,7 +85,7 @@ export class ArcadeGames {
   }
   private action(){
     if(this.kind==='basketball')this.sports.shoot();
-    if(this.kind==='spider'){if(!this.spider.deal())this.message='';else this.message='';this.selection=null;this.draw();}
+    if(this.kind==='spider'){this.spider.deal();this.message='';this.selection=null;this.draw();}
     if(this.kind==='claw'&&this.phase==='ready'&&!this.waiting&&this.prizes.length)void this.startClaw();
   }
   private loadPrizes(){const remaining=personalProgress().find(p=>p.kind==='claw'&&p.key==='machine')?.data.remaining??[0,1,2,3,4,5];this.prizes=(remaining.length?remaining:[0,1,2,3,4,5]).map((i:number)=>({x:[140,220,300,380,460,530][i],color:i%5}));}
@@ -157,7 +157,7 @@ export class ArcadeGames {
           else this.rect(x+7,y+6,35,5,'#7a91aa');
           if(this.selection?.column===col&&this.selection.index<=index){this.ctx.strokeStyle='#ebcf6d';this.ctx.lineWidth=2;this.ctx.strokeRect(x+1,y+1,47,57);}
         });
-      });this.text(this.spider.completed===8?'':this.message,20,406,'#edcf82',12);
+      });this.text(this.message,20,406,'#edcf82',12);
     }else {
       this.rect(70,30,500,340,'#db8fa7');this.rect(82,43,476,265,'#83bbc2');this.rect(91,53,458,247,'#24434f');
       this.rect(93,65,454,7,'#a9c6cb');this.rect(86,313,116,45,'#272b36');this.rect(94,320,100,29,'#111b26');

@@ -89,7 +89,7 @@ export function startSocial(game:Phaser.Game){
     $('claim-section').hidden=!user||!!user.role;$('account-session').hidden=!user;
     $('account-summary').textContent=user?`${user.username} · ${user.role?title(user.role):'尚未领取角色'}`:'';
     $('account-open').textContent=user?.role?title(user.role):user?'领取角色':'登录 / 领取角色';
-    $('claim-roles').replaceChildren();for(const entry of world?.roster||[]){const button=document.createElement('button');button.textContent=title(entry.role)+(entry.claimed?' · 已领取':'');button.disabled=entry.claimed;button.onclick=async()=>{try{const res=await api('claim',{role:entry.role});user=res.user!;bridge.user=user;initializedRole=null;connect();account();close('account-dialog');void 0;}catch(e){$('account-error').textContent=(e as Error).message;await refresh();account();}};$('claim-roles').append(button);}
+    $('claim-roles').replaceChildren();for(const entry of world?.roster||[]){const button=document.createElement('button');button.textContent=title(entry.role)+(entry.claimed?' · 已领取':'');button.disabled=entry.claimed;button.onclick=async()=>{try{const res=await api('claim',{role:entry.role});user=res.user!;bridge.user=user;initializedRole=null;connect();account();close('account-dialog');}catch(e){$('account-error').textContent=(e as Error).message;await refresh();account();}};$('claim-roles').append(button);}
   }
   async function refresh(){const result=await api('me');user=result.user||null;bridge.user=user;if(!world)world={self:user!,controller:true,players:[],online:[],roster:result.roster||[]};else world.roster=result.roster||world.roster;account();people();}
   function connect(){events?.close();if(!user)return;events=new EventSource(apiUrl('events?client='+encodeURIComponent(client)));

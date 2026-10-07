@@ -31,11 +31,11 @@ export class ArcadeSports{
       text(`得分 ${this.score}   投篮 ${this.shots}/10`,30,35);const hoop=this.hoop();rect(hoop-46,68,92,65,'#526d8e');rect(hoop-25,89,50,37,'#bddde0');rect(hoop-28,123,56,6,'#ed913d');for(let i=0;i<6;i++)rect(hoop-23+i*9,130,3,23,'#c3d8dd');
       rect(82,362,476,6,'#53657b');rect(this.aim-2,170,4,178,'#344d61');rect(this.aim-14,351,28,5,'#4ed4db');
       let x=320,y=340;if(this.flight!==null){const t=Math.min(1,this.flight/900);x=320+(this.shotX-320)*t;y=340-212*t-95*Math.sin(Math.PI*t);}disc(x,y,13,'#f29b47');rect(x-1,y-12,2,24,'#7f482c');rect(x-12,y-1,24,2,'#7f482c');
-      if(this.shots>=10&&this.flight===null)text('',160,403);
+      
     }else{
       text(`你 ${this.goals[0]} : ${this.goals[1]} 电脑`,220,35);rect(50,60,540,310,'#72c5d5');rect(60,70,520,290,'#c3e6df');rect(60,208,520,4,'#65b0c8');rect(265,60,110,10,'#18283e');rect(265,360,110,10,'#18283e');
       disc(this.bot.x,this.bot.y,18,'#d757a3');disc(this.player.x,this.player.y,18,'#228db8');disc(this.puck.x,this.puck.y,8,'#dd6550');
-      if(Math.max(...this.goals)>=5)text(this.goals[0]>=5?'':'',220,403);
+      
     }
   }
 }

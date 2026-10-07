@@ -98,7 +98,7 @@ export class ConcertScene extends Phaser.Scene {
     const seat=this.nearest(),button=document.querySelector<HTMLButtonElement>('#interact')!;
     button.disabled=this.seated===null&&!seat;
     button.textContent=this.seated!==null?'离开座位':seat?`坐到 ${seat.id}`:'';
-    document.querySelector('#mode')!.textContent=this.seated!==null?'':moving?'':'';
+    document.querySelector('#mode')!.textContent='';
     document.querySelector('#hint')!.textContent=this.seated!==null?'Esc 起身':'E 坐下';
     document.querySelector('#guide-title')!.textContent='WASD / 方向键移动';
     document.querySelector('#guide-action')!.textContent=this.seated!==null?'E / Esc 起身':seat?`E 坐下`:'E 坐下';

@@ -110,7 +110,7 @@ export class RehearsalScene extends Phaser.Scene{
     this.chairs.forEach((chair,i)=>chair.setDepth(this.seated===i?seats[i].y-1:seats[i].y+10));
     const t=this.nearest(),button=document.querySelector<HTMLButtonElement>('#interact')!;
     button.disabled=this.mode==='walk'&&!t;button.textContent=this.mode!=='walk'?this.mode==='podium'?'下指挥台':'起身':t?t.kind==='seat'?`坐到 ${seats[t.index].id}`:t.kind==='piano'?'坐下弹钢琴':'上指挥台':'';
-    document.querySelector('#mode')!.textContent={walk:moving?'':'',seat:`坐在 ${this.seated===null?'':seats[this.seated].id}`,piano:'',podium:''}[this.mode];
+    document.querySelector('#mode')!.textContent='';
     document.querySelector('#hint')!.textContent=this.message;
     document.querySelector('#rehearsal-state')!.textContent='';
     document.querySelector('#guide-title')!.textContent='WASD / 方向键移动';

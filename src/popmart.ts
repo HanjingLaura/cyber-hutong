@@ -215,7 +215,7 @@ export class PopMartScene extends Phaser.Scene {
     
     const target=this.nearest(), button=document.querySelector<HTMLButtonElement>('#interact')!;
     button.disabled=!target; button.textContent=target?target.id==='machine'?'转动扭蛋机':'挑选陈列台盲盒':'';
-    document.querySelector('#mode')!.textContent=moving?'':'';
+    document.querySelector('#mode')!.textContent='';
     document.querySelector('#hint')!.textContent=target?.id==='machine'?'E 扭蛋':target?'E 挑一盒':'';
     document.querySelector('#guide-title')!.textContent='WASD / 方向键移动';
     document.querySelector('#guide-action')!.textContent=target?`E · ${target.id==='machine'?'扭蛋机':'挑一盒'}`:'E 互动';

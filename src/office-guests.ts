@@ -10,7 +10,7 @@ type Pose={rect:number[];name:string};
 const WALK=108;
 const urls={celine:new URL('../assets/npcs/celine-v1.png',import.meta.url).href};
 export function pickOfficeGuest(roll:number):Identity|null{return roll<.1?'celine':null;}
-export function pickCelineQuestion(roll:number){return '';}
+export function pickCelineQuestion(_roll:number){return '';}
 export function preloadOfficeGuests(scene:Phaser.Scene){
  for(const [id,url] of Object.entries(urls))if(!scene.textures.exists(`office-${id}`))scene.load.image(`office-${id}`,url);
  const motion=characterRegistry.members.celine;

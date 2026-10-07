@@ -325,7 +325,7 @@ export class RestRoomScene extends Phaser.Scene {
     const target = this.nearest();
     const equipmentVisible = document.querySelector<HTMLInputElement>('[data-rest-layer="equipment"]')!.checked;
     this.machineCup.setVisible(this.coffeeReady && equipmentVisible);
-    document.querySelector('#mode')!.textContent = this.seated !== null ? '' : this.brewing ? '' : moving ? '' : '';
+    document.querySelector('#mode')!.textContent = '';
     document.querySelector('#hint')!.textContent = this.seated !== null ? 'F 物品 · Esc 起身' : target ? `E 互动` : '';
     const tableButton = document.querySelector<HTMLButtonElement>('#table-action')!;
     tableButton.hidden = this.seated === null;
