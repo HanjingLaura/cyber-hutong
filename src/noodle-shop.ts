@@ -24,7 +24,7 @@ export class NoodleShopScene extends Phaser.Scene {
   private dishImages:Phaser.GameObjects.Image[][]=[];
   private chairs:Phaser.GameObjects.Image[]=[];
   private toppings!:Phaser.GameObjects.Graphics;
-  private message='先到左侧拿碗筷，再去米线窗口。';
+  private message='先拿碗筷';
   private dialog=document.querySelector<HTMLDialogElement>('#noodle-menu')!;
   constructor(){super('noodle');}
   preload(){
@@ -96,9 +96,9 @@ export class NoodleShopScene extends Phaser.Scene {
     document.querySelector('#noodle-menu-hand')!.textContent=`手中：${playerInventory.hand??'空'}`;
     this.input.keyboard?.resetKeys();this.dialog.showModal();
   }
-  private take(name:ItemName){if(playerInventory.hand){this.message='先把手中的物品放到桌上。';return;}const source=name==='碗筷'?'utensils':['可乐','冰红茶'].includes(name)?'drinks':'chicken';if(sharedAction('noodle:'+source,'supply',{item:name}))return;playerInventory.hand=name;playerInventory.noodleSeasoning=[];this.message=`拿到了${name}。`;}
+  private take(name:ItemName){if(playerInventory.hand){this.message='手上有东西';return;}const source=name==='碗筷'?'utensils':['可乐','冰红茶'].includes(name)?'drinks':'chicken';if(sharedAction('noodle:'+source,'supply',{item:name}))return;playerInventory.hand=name;playerInventory.noodleSeasoning=[];this.message=`拿到了${name}。`;}
   private stand(){if(this.seated===null)return;const s=seats[this.seated];this.x=s.x;this.y=s.y+22;this.seated=null;this.facing=0;}
-  private sit(index:number){const s=seats[index];this.input.keyboard?.resetKeys();this.seated=index;this.x=s.x;this.y=s.y-3;this.facing=2;this.message='F · 桌上物品 / 调料，E / Esc 起身。';document.querySelector<HTMLElement>('.world')!.focus();}
+  private sit(index:number){const s=seats[index];this.input.keyboard?.resetKeys();this.seated=index;this.x=s.x;this.y=s.y-3;this.facing=2;this.message='F · F 物品 · Esc 起身';document.querySelector<HTMLElement>('.world')!.focus();}
   private interact(){
     if(this.seated!==null){this.stand();return;}
     const target=this.nearest();if(!target)return;
@@ -106,16 +106,16 @@ export class NoodleShopScene extends Phaser.Scene {
     if(target.kind==='table'){this.openTable(target.index);return;}
     if(target.kind==='utensils'){this.take('碗筷');return;}
     if(target.kind==='noodles'){
-      if(playerInventory.hand!=='碗筷'){this.message='先到左侧拿一套碗筷；已有物品可以先放到桌上。';return;}
+      if(playerInventory.hand!=='碗筷'){this.message='先拿碗筷';return;}
       if(sharedAction('noodle:noodles','supply',{item:'米线'}))return;
-      playerInventory.hand='米线';playerInventory.noodleSeasoning=[];this.message='米线出餐了，可以放到桌上加醋或麻油。';return;
+      playerInventory.hand='米线';playerInventory.noodleSeasoning=[];this.message='米线好了';return;
     }
     const products:ItemName[]=target.kind==='drinks'?['可乐','冰红茶']:['鸡柳','炸鸡'];
     this.menu(target.kind==='drinks'?'饮料柜':'鸡柳大人',products.map(name=>({name,item:name,disabled:!!playerInventory.hand,run:()=>this.take(name)})));
   }
   private season(table:number,name:string){
     const dish=this.dishes[table].find(d=>d?.name==='米线');
-    if(!dish){this.message='先把米线放到这张桌上再加调料。';return;}
+    if(!dish){this.message='先放下米线';return;}
     if(dish.seasoning.includes(name)){this.message=`这碗米线已经加过${name}了。`;return;}
     if(sharedAction(`noodle:table-${table}`,'season',{slot:this.dishes[table].indexOf(dish),item:name}))return;
     dish.seasoning.push(name);this.message=`米线加了${name}。`;

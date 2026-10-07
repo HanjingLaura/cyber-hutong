@@ -99,9 +99,9 @@ export class ConcertScene extends Phaser.Scene {
     button.disabled=this.seated===null&&!seat;
     button.textContent=this.seated!==null?'离开座位':seat?`坐到 ${seat.id}`:'靠近内场座位';
     document.querySelector('#mode')!.textContent=this.seated!==null?`坐在 ${seats[this.seated].id} 看舞台`:moving?'在内场走动':'站在演唱会内场';
-    document.querySelector('#hint')!.textContent=this.seated!==null?'按 E / Esc 起身；起身后可从出口切换场景。':'中央和两侧均有通道，靠近座位后按 E 坐下。';
+    document.querySelector('#hint')!.textContent=this.seated!==null?'Esc 起身':'E 坐下';
     document.querySelector('#guide-title')!.textContent='WASD / 方向键移动';
-    document.querySelector('#guide-action')!.textContent=this.seated!==null?'E / Esc 起身':seat?`E · 坐到 ${seat.id} 面向舞台`:'三排内场座位 · 靠近后按 E 坐下';
-    document.querySelector('#concert-state')!.textContent=this.seated===null?'A / B / C 三排 · 每排 6 席 · 共 18 席':`${seats[this.seated].id} 使用中 · 其余 17 席空闲`;
+    document.querySelector('#guide-action')!.textContent=this.seated!==null?'E / Esc 起身':seat?`E · 坐到 ${seat.id} 面向舞台`:'E 坐下';
+    document.querySelector('#concert-state')!.textContent=this.seated===null?'A / B / C ':`${seats[this.seated].id} 使用中 · 其余 17 席空闲`;
   }
 }

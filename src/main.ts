@@ -73,7 +73,7 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
         </dialog><dialog id="table-menu" class="table-menu" aria-labelledby="table-menu-title"><h2 id="table-menu-title">拿回桌上物品</h2><p>点击或按对应数字拿回一件</p><div id="table-pick-list"></div><button id="table-close" type="button">取消 · Esc</button></dialog><dialog id="fridge-menu" class="fridge-menu" aria-labelledby="fridge-title">
           <div class="fridge-heading"><h2 id="fridge-title">冰箱 · 上层冷藏柜</h2><button id="fridge-close" type="button">关门 · Esc</button></div>
           <div class="fridge-cabinet"><div id="fridge-items"></div><div class="fridge-door-bins" aria-hidden="true"><span></span><span></span><span></span></div></div>
-          <div class="fridge-actions"><p id="fridge-hand"></p><button id="fridge-store" type="button">放入手中物品 · F</button><p id="fridge-message" aria-live="polite">点击或按 1–9 取出物品，F 存入。</p></div>
+          <div class="fridge-actions"><p id="fridge-hand"></p><button id="fridge-store" type="button">放入手中物品 · F</button><p id="fridge-message" aria-live="polite">1–9 取 · F 存</p></div>
         </dialog><dialog id="blind-menu" class="blind-menu" aria-labelledby="blind-title"><div class="blind-heading"><h2 id="blind-title">挑选盲盒</h2><button id="blind-close" type="button">关闭</button></div><div id="blind-machine-art" hidden><canvas id="gacha-art" width="82" height="190" aria-label="扭蛋机与取物口"></canvas></div><div id="blind-themes" aria-label="盲盒主题"></div><p id="blind-help"></p><div class="blind-glass"><div id="blind-boxes"></div></div><div class="blind-pickup"><button id="blind-extract" type="button" disabled>先选择一盒</button><button id="blind-refill" type="button">补货</button></div><div id="blind-result" aria-live="polite"></div></dialog><dialog id="arcade-game" class="arcade-game" aria-labelledby="arcade-title"><header><h2 id="arcade-title"></h2><button id="arcade-close" type="button">返回 · Esc</button></header><canvas id="arcade-screen" width="640" height="420" aria-label="像素小游戏"></canvas><footer><span id="arcade-help"></span><button id="arcade-undo" type="button" hidden>撤销</button><button id="arcade-action" type="button" hidden></button><button id="arcade-new" type="button">重开</button></footer></dialog><dialog id="noodle-menu" class="noodle-menu" aria-labelledby="noodle-title"><div class="noodle-heading"><h2 id="noodle-title"></h2><button id="noodle-close" type="button">关闭 · Esc</button></div><p id="noodle-menu-hand"></p><div id="noodle-choices"></div></dialog><dialog id="gym-storage" class="gym-storage" aria-labelledby="gym-storage-title"><div class="gym-storage-heading"><h2 id="gym-storage-title">储物架</h2><button id="gym-storage-close" type="button">关闭 · Esc</button></div><div id="gym-storage-items"></div></dialog><dialog id="perler-workshop" class="perler-workshop" aria-labelledby="perler-title"><div class="perler-heading"><h2 id="perler-title">拼豆</h2><button id="perler-close" type="button">返回 · Esc</button></div><div class="perler-workspace"><canvas id="perler-board" width="360" height="360" aria-label="16乘16拼豆底板，点击或拖动放豆，右键擦除"></canvas><div class="perler-tools"><label for="perler-pattern">底图</label><select id="perler-pattern"></select><div id="perler-palette" aria-label="豆子颜色"></div><button id="perler-eraser" type="button" aria-pressed="false">橡皮擦</button><div class="perler-history"><button id="perler-undo" type="button">撤销</button><button id="perler-redo" type="button">重做</button></div><button id="perler-iron" type="button">熨烫作品</button><button id="perler-new" type="button">换新底板</button><p id="perler-progress"></p></div></div><p id="perler-message" aria-live="polite"></p><div id="perler-collection" hidden><h3>作品</h3><div id="perler-gallery"></div></div></dialog><div id="game"></div><div class="loading">载入中…</div>
         <div id="hud-rail">
           <div id="scene-mark">胡同 · 文化墙一侧</div>
@@ -83,13 +83,13 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
         <button id="view" aria-pressed="false">换个视角 · V</button>
       </section>
       <div class="scene-caption"><span id="view-label">文化墙一侧</span><span></span></div>
-      <figure id="walk-review" hidden><canvas id="walk-sheet" width="768" height="224" role="img" aria-label="本人左右步行的六帧循环，包含迈步、抬脚、双腿交叉和换脚"></canvas>
-        <figcaption>右向／左向各六帧：迈步 → 抬脚 → 经过身体下方 → 换脚迈步 → 抬脚 → 回步。游戏里按固定尺度播放。</figcaption>
+      <figure id="walk-review" hidden><canvas id="walk-sheet" width="768" height="224" role="img" aria-label=""></canvas>
+        <figcaption></figcaption>
       </figure>
     </div>
     <aside>
       <div class="status"><h2>你的角色</h2><strong id="mode">未登录</strong>
-        <p id="hint" class="hint" aria-live="polite">载入后点击场景开始。</p>
+        <p id="hint" class="hint" aria-live="polite"></p>
         <button id="interact" disabled>靠近椅子坐下</button><button id="table-action" hidden>放到桌上</button>
       </div>
       <p class="keys"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> / 方向键移动<br>
@@ -109,7 +109,7 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
       <div class="review-actions"><button id="walk-toggle" aria-expanded="false">查看步行动作</button><button id="reset">回到入口</button></div>
       <p class="note" hidden></p>
       </div>
-      <div id="rest-controls" hidden><h2>休息室</h2><p id="rest-inventory">手中：空</p><p id="rest-message" aria-live="polite">试试接一杯咖啡，再放到餐桌上。</p><div class="layers"><label><input type="checkbox" data-rest-layer="equipment" checked>贩卖机、冰箱、咖啡台</label><label><input type="checkbox" data-rest-layer="tables" checked>独立餐桌</label><label><input type="checkbox" data-rest-layer="chairs" checked>独立椅子</label></div><button id="rest-reset">重置休息室</button></div>
+      <div id="rest-controls" hidden><h2>休息室</h2><p id="rest-inventory">手中：空</p><p id="rest-message" aria-live="polite"></p><div class="layers"><label><input type="checkbox" data-rest-layer="equipment" checked></label><label><input type="checkbox" data-rest-layer="tables" checked>独立餐桌</label><label><input type="checkbox" data-rest-layer="chairs" checked>独立椅子</label></div><button id="rest-reset">重置休息室</button></div>
       <div id="pop-controls" hidden><h2>本期盲盒 <span id="pop-count"></span></h2><div id="pop-collection" class="lineup"></div><p id="pop-legacy" class="note"></p></div>
       <div id="bathroom-controls" hidden><h2>厕所</h2><p id="bathroom-state"></p><button id="bathroom-door" type="button" disabled>靠近隔间开关门</button></div>
       <div id="concert-controls" hidden><h2>演唱会内场</h2><p id="concert-state"></p></div>
@@ -182,7 +182,7 @@ class HutongScene extends Phaser.Scene {
     this.load.image('held-water', new URL('../assets/props/water-bottle-v1.png', import.meta.url).href);
     this.load.on('loaderror', () => {
       const loading = document.querySelector('.loading');
-      if (loading) loading.textContent = '素材载入失败，请刷新页面。';
+      if (loading) loading.textContent = '加载失败，请刷新';
     });
   }
   private addSlice(key: string, frame: SpriteFrame, name: string, ratio: number, lower: boolean) {
@@ -492,11 +492,11 @@ class HutongScene extends Phaser.Scene {
     if (hud !== this.lastHud) {
       this.lastHud = hud;
       modeElement.textContent = this.mode === 'working' ? `在 ${this.seatedAt!.id} 工位办公` : this.mode === 'sit' ? `坐在 ${this.seatedAt!.id} 休息` : this.mode === 'walking' ? '在胡同里走动' : '站在胡同里';
-      hintElement.textContent = this.seatedAt ? (this.mode==='working'?'在自己的工位办公。点击电脑屏幕放大查看 · E 起身。':'坐下休息，只有自己的工位可以办公。按 E 起身。') : this.nearest ? `靠近 ${this.nearest.id}：按 E 坐下，自己的工位可办公。` : '沿中间通道走动，靠近椅子试坐。';
+      hintElement.textContent = this.seatedAt ? (this.mode==='working'?'点电脑 · Esc 起身':'Esc 起身') : this.nearest ? `靠近 ${this.nearest.id}：E 坐下` : 'E 坐下';
       interactButton.disabled = !this.seatedAt && !this.nearest;
       interactButton.textContent = this.seatedAt ? '起身' : this.nearest ? `坐到 ${this.nearest.id}` : '靠近椅子坐下';
       setGuide('WASD / 方向键移动 · V 换视角', this.seatedAt ? (this.mode==='working'?'自己的工位 · 点击电脑放大 · E / Esc 起身':'坐下休息 · E / Esc 起身') : this.nearest ? `E · ${this.nearest.id} ${canWorkAt(onlineWorld()?.bridge.user?.role??'laura',this.sys.settings.key,this.nearest.id)?'我的工位，坐下办公':'坐下休息'}` : '靠近工位，按 E 坐下');
-      document.querySelector('#seat-state')!.textContent = this.seatedAt ? `${this.seatedAt.id} 使用中 · 其余 ${this.seats.length-1} 位空闲` : this.isHawaii?'两排各三个座位 · 六个工位':'左墙 L1–L4 · 右墙 R1–R4 · 暂未分配';
+      document.querySelector('#seat-state')!.textContent = this.seatedAt ? `${this.seatedAt.id} 使用中 · 其余 ${this.seats.length-1} 位空闲` : this.isHawaii?'':'';
       if(this.isHawaii){
         modeElement.textContent=this.mode==='working'?`在 ${this.seatedAt!.id} 办公`:this.mode==='sit'?`坐在 ${this.seatedAt!.id} 休息`:this.mode==='walking'?'在夏威夷走动':'站在夏威夷';
         setGuide('WASD / 方向键移动', this.seatedAt ? (this.mode==='working'?'自己的工位 · 点击电脑放大 · E / Esc 起身':'坐下休息 · E / Esc 起身') : this.nearest ? `E · ${this.nearest.id} ${canWorkAt(onlineWorld()?.bridge.user?.role??'laura',this.sys.settings.key,this.nearest.id)?'我的工位，坐下办公':'坐下休息'}` : '靠近工位，按 E 坐下');
@@ -567,7 +567,7 @@ for (const button of document.querySelectorAll<HTMLButtonElement>('[data-scene]'
   document.querySelector<HTMLElement>('#concert-controls')!.hidden=!concert;
   if(concert){
     markScene('演唱会 · 内场朝向舞台');
-    setGuide('WASD / 方向键移动', '三排内场座位 · 靠近后按 E 坐下');
+    setGuide('WASD / 方向键移动', 'E 坐下');
     document.querySelector('.scene-caption span:last-child')!.textContent='';
     document.querySelector('.keys')!.innerHTML='WASD / 方向键移动<br>E 坐下 / 起身 · Esc 起身';
   }
@@ -609,7 +609,7 @@ for (const button of document.querySelectorAll<HTMLButtonElement>('[data-scene]'
   document.querySelector<HTMLElement>('#rehearsal-controls')!.hidden=!rehearsal;
   if(rehearsal){
     markScene('排练厅');
-    setGuide('WASD / 方向键移动', '前排四席 · 后排六席 · 右侧钢琴');
+    setGuide('WASD / 方向键移动', '');
     document.querySelector('.scene-caption span:last-child')!.textContent='';
     document.querySelector('.keys')!.innerHTML='WASD / 方向键移动<br>E 坐下 / 互动 · Esc 起身<br>弹琴时 A W S R D F T G Y H U J K';
   }

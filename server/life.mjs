@@ -1,6 +1,7 @@
 import {randomUUID} from 'node:crypto';
 import {fail} from './store.mjs';
 
+export const drinks=['咖啡','可乐','气泡水','冰红茶','水'];
 export const consumables=['咖啡','可乐','气泡水','薯片','面包','火腿肠','辣条','马卡龙','蛋糕','冰红茶','米线','鸡柳','炸鸡','水'];
 export const memoryPolicy={routineCooldown:30*60000,encounterCooldown:60*60000};
 export const meetPlaces={rest:'休息室',arcade:'娱乐室',dance:'舞室',gym:'健身房'};
@@ -60,7 +61,7 @@ export function createLife(store){
   unlocked(id);const a=store.byId(id),slots=bag(id);if(a.revision!==input.revision)fail(409,'物品已改变，请重试');let hand=a.hand,seasoning=JSON.parse(a.seasoning||'[]'),origin=hand?handOrigin(id,hand,scene):null;
   if(input.action==='stow'){if(!hand)fail(409,'手中没有物品');let slot=slots.findIndex(s=>s?.name===hand&&s.count<5&&JSON.stringify(s.seasoning)===JSON.stringify(seasoning));if(slot<0)slot=slots.indexOf(null);if(slot<0)fail(409,'背包已满');if(slots[slot])slots[slot].count++;else slots[slot]={name:hand,count:1,seasoning,origin};hand=null;seasoning=[];origin=null;}
   else if(input.action==='equip'){if(!Number.isInteger(input.slot)||input.slot<0||input.slot>3)fail(400,'背包格子无效');const entry=slots[input.slot];if(!entry)fail(409,'这个格子是空的');if(hand)fail(409,'先收起手中物品');hand=entry.name;seasoning=entry.seasoning;origin=entry.origin??null;if(--entry.count===0)slots[input.slot]=null;}
-  else if(input.action==='consume'){if(!consumables.includes(hand))fail(409,'这个物品不能食用');if(!recordOptions.silent)record(id,'consume',`享用了${hand}。`,scene,Date.now(),recordOptions);hand=null;seasoning=[];origin=null;}
+  else if(input.action==='consume'){if(!consumables.includes(hand))fail(409,'这个物品不能食用');if(!recordOptions.silent)record(id,'consume',`${drinks.includes(hand)?'喝':'吃'}了${hand}。`,scene,Date.now(),recordOptions);hand=null;seasoning=[];origin=null;}
   else if(input.action==='collect'){if(!hand||consumables.includes(hand)||hand==='碗筷')fail(409,'手中的物品不能收藏');const item=hand;addCollected(id,item,seasoning,origin);hand=null;seasoning=[];origin=null;if(!recordOptions.silent)record(id,'collect',`把${item.startsWith('拼豆·')?'拼豆作品':item}收进了收藏。`,scene);}
   else if(input.action==='retrieve'){if(hand)fail(409,'先收起手中物品');const entries=collection(id);if(!Number.isInteger(input.slot)||input.slot<0||input.slot>=entries.length)fail(400,'收藏位置无效');const entry=entries[input.slot];hand=entry.name;seasoning=entry.seasoning;origin=entry.origin??null;if(--entry.count===0)entries.splice(input.slot,1);writeCollection(id,entries);}
   else fail(400,'背包操作无效');

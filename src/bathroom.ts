@@ -82,7 +82,7 @@ export class BathroomScene extends Phaser.Scene {
     if(this.turning[index])return;
     // Closing cannot trap a walking actor crossing the threshold.
     if(this.open[index]&&this.seated!==index&&Math.abs(this.x-centers[index])<33&&this.y<218){
-      this.message='先退到门外，再关门。';return;
+      this.message='先出门';return;
     }
     this.setDoorOpen(index,!this.open[index]);
   }
@@ -110,7 +110,7 @@ export class BathroomScene extends Phaser.Scene {
     if(this.turning[index])return;
     if(!this.open[index])this.toggleDoor(index);
     this.seated=null;this.x=centers[index];this.y=235;this.facing=0;
-    this.message='已起身，手中物品保留。';
+    this.message='起身了';
   }
   private interact(){
     if(this.washing!==null)return;
@@ -120,7 +120,7 @@ export class BathroomScene extends Phaser.Scene {
     if(target.kind==='toilet'){
       if(this.turning[target.index])return;
       this.seated=target.index;this.x=centers[target.index];this.y=seatedFootY;this.facing=0;
-      this.message=`坐在 ${target.index+1} 号马桶上 · E / Esc 起身，F 开关门。`;return;
+      this.message=`坐在 ${target.index+1} 号 · F 门 · Esc 起身`;return;
     }
     this.washing=target.index;this.x=sinkCenters[target.index];this.y=237;this.facing=2;this.washStarted=this.time.now;
     this.message='正在洗手…';

@@ -103,7 +103,7 @@ function result() {
   $('record').textContent = game.score > previous ? `新纪录！比之前多 ${game.score - previous} 分。` : `本机最高 ${best} 分 · 下次再挑战`;
   $('leaders').replaceChildren();
   const leaders = game.leaders();
-  if (!leaders.length) $('leaders').textContent = '这次大家都躲过了，下次加油！';
+  if (!leaders.length) $('leaders').textContent = '无人命中';
   for (const id of leaders) {
     const person = document.createElement('div'); person.className = 'leader';
     person.innerHTML = `<canvas width="100" height="128" aria-hidden="true"></canvas><p><b>${names[IDS.indexOf(id)]}</b><br>${game.counts[id]} 次${leaders.length > 1 ? ' · 并列' : ''}</p>`;
@@ -137,7 +137,7 @@ Promise.all(IDS.map(async (id, index) => {
   const ctx = source.getContext('2d'); ctx.drawImage(image, x, y, w, h, 0, 0, w, h);
   frames.set(id, { source, w, h }); draw($('people').children[index].querySelector('canvas'), id);
 })).then(() => { loaded = true; $('selection').dataset.ready = 'true'; updateSelection(); })
-  .catch(() => { $('asset-status').hidden = false; $('asset-status').textContent = '人物资源加载失败，请刷新页面重试。'; });
+  .catch(() => { $('asset-status').hidden = false; $('asset-status').textContent = '加载失败，请刷新'; });
 function loop() { game.tick(); render(); requestAnimationFrame(loop); }
 requestAnimationFrame(loop);
 // Tick even in a background tab; absolute deadlines prevent extending the 60-second round.

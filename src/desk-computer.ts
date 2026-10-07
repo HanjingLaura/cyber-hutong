@@ -21,7 +21,7 @@ function ensure() {
   root.innerHTML = `
     <div class="desk-bezel" role="document">
       <header class="desk-titlebar">
-        <span class="desk-title">工位电脑 · DESKTOP</span>
+        <span class="desk-title"></span>
         <button type="button" class="desk-close" aria-label="关闭电脑屏幕">×</button>
       </header>
       <div class="desk-screen">

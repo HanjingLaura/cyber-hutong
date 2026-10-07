@@ -66,7 +66,7 @@ export class PerlerBoard {
   private get history(){return this.histories[this.seat];}
   getState(){return {open:this.dialog.open,seat:this.seat,color:this.color,erasing:this.erasing,busy:this.busy,cells:[...this.board.cells],pattern:this.board.pattern,fused:this.board.fused,works:this.works.length,undo:this.history.undo.length,message:this.message};}
   cellsAt(seat:number){return this.boards[seat].cells;}
-  open(seat:number,gallery=false){if(onlineWorld()?.bridge.user?.role){const progress=personalProgress();this.works=progress.filter(p=>p.kind==='bead').map(p=>({...p.data,key:p.key}));const draft=progress.find(p=>p.kind==='draft'&&p.key===String(seat));if(!this.dialog.open)this.boards[seat]=draft?structuredClone(draft.data):{cells:empty(),pattern:'自由',fused:false};}this.seat=seat;this.galleryOnly=gallery;this.dialog.dataset.gallery=String(gallery);this.message=gallery?this.works.length?'已熨烫的作品都收在这里。':'还没有作品，先到圆凳旁拼一张。':this.board.fused?'作品已熨烫，可以换新底板。':'选色放豆，右键或橡皮擦移除。';this.render();this.dialog.showModal();}
+  open(seat:number,gallery=false){if(onlineWorld()?.bridge.user?.role){const progress=personalProgress();this.works=progress.filter(p=>p.kind==='bead').map(p=>({...p.data,key:p.key}));const draft=progress.find(p=>p.kind==='draft'&&p.key===String(seat));if(!this.dialog.open)this.boards[seat]=draft?structuredClone(draft.data):{cells:empty(),pattern:'自由',fused:false};}this.seat=seat;this.galleryOnly=gallery;this.dialog.dataset.gallery=String(gallery);this.message=gallery?this.works.length?'已熨烫的作品':'还没有作品':this.board.fused?'已熨烫':'选色放豆，右键或橡皮擦移除。';this.render();this.dialog.showModal();}
   close(){if(this.dialog.open)this.dialog.close();else this.cancelIron();}
   private paint(e:PointerEvent,erase:boolean){
     const rect=this.canvas.getBoundingClientRect();const px=(e.clientX-rect.left)*360/rect.width,py=(e.clientY-rect.top)*360/rect.height;
@@ -89,13 +89,13 @@ export class PerlerBoard {
   private cancelIron(){if(this.timer)clearTimeout(this.timer);this.timer=undefined;this.revision++;this.busy=false;this.render();}
   private iron(){
     if(this.busy||this.board.fused||!this.board.cells.some(c=>c>=0))return;
-    this.commitStroke();this.busy=true;this.message='覆上烫纸，正在熨烫…';this.render();const revision=++this.revision;
+    this.commitStroke();this.busy=true;this.message='熨烫中…';this.render();const revision=++this.revision;
     this.timer=setTimeout(async()=>{if(revision!==this.revision||!this.dialog.open)return;this.timer=undefined;const work={cells:[...this.board.cells],pattern:this.board.pattern,created:Date.now()},board=this.board;
-      try{if(onlineWorld()?.bridge.user?.role)await onlineWorld()!.saveNow('bead',String(work.created),work);else{this.works.push(work);this.works=this.works.slice(-24);}board.fused=true;this.message='熨烫完成，可以拿走或收进收藏。';this.save();this.onChange();}catch(e){this.message=(e as Error).message;}finally{this.busy=false;this.render();}
+      try{if(onlineWorld()?.bridge.user?.role)await onlineWorld()!.saveNow('bead',String(work.created),work);else{this.works.push(work);this.works=this.works.slice(-24);}board.fused=true;this.message='熨好了';this.save();this.onChange();}catch(e){this.message=(e as Error).message;}finally{this.busy=false;this.render();}
     },1000);
   }
   private save(){if(onlineWorld()?.bridge.user?.role){saveProgress('draft',String(this.seat),this.board);return;}try{localStorage.setItem('hutong-perler-v1',JSON.stringify({boards:this.boards,works:this.works}));}catch{/* keep working in memory */}}
-  private async takeWork(work:BeadWork,collect:boolean){if(this.busy)return;this.busy=true;this.render();try{const service=onlineWorld();if(!service?.bridge.user?.role)throw Error('登录后可带走作品');const result=await service.reward('perler',{key:work.key??String(work.created),collect});this.message=result.collected?'作品已收进收藏，背包里可以取回。':'作品已拿在手里，可以带出拼豆室。';}catch(e){this.message=(e as Error).message;}finally{this.busy=false;this.render();}}
+  private async takeWork(work:BeadWork,collect:boolean){if(this.busy)return;this.busy=true;this.render();try{const service=onlineWorld();if(!service?.bridge.user?.role)throw Error('登录后可带走作品');const result=await service.reward('perler',{key:work.key??String(work.created),collect});this.message=result.collected?'放进收藏了':'拿在手上了';}catch(e){this.message=(e as Error).message;}finally{this.busy=false;this.render();}}
   render(){
     const ctx=this.ctx;ctx.fillStyle='#a88559';ctx.fillRect(0,0,360,360);ctx.fillStyle='#eae7d8';ctx.fillRect(14,14,332,332);
     const guide=guideCells(this.board.pattern);let correct=0,total=0;

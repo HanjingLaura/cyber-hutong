@@ -203,29 +203,29 @@ export class RestRoomScene extends Phaser.Scene {
     const store = document.querySelector<HTMLButtonElement>('#fridge-store')!;
     store.disabled = !this.hand || !this.fridgeItems.includes(null);
     store.textContent = this.hand ? `放入${this.hand} · F` : '手中没有物品';
-    document.querySelector('#fridge-message')!.textContent = this.hand ? '先放入手中的物品，再取出其他物品。' : '点击或按 1–9 取出物品，F 存入。';
+    document.querySelector('#fridge-message')!.textContent = this.hand ? '手上有东西' : '1–9 取 · F 存';
   }
   private storeFridgeItem() {
     if (!this.sys.isActive() || !this.fridgeMenu.open || !this.hand) return;
     const slot = this.fridgeItems.indexOf(null);
-    if (slot < 0) { document.querySelector('#fridge-message')!.textContent = '柜内已满，请先取出一些物品。'; return; }
+    if (slot < 0) { document.querySelector('#fridge-message')!.textContent = '已满'; return; }
     if(sharedAction('rest:fridge','put',{slot},()=>this.renderFridge()))return;
     const name = this.hand; this.fridgeItems[slot] = name; this.hand = null;
     this.renderFridge(); document.querySelector('#fridge-message')!.textContent = `${name}已放进冰箱。`;
   }
   private takeFridgeItem(slot: number) {
     if (!this.sys.isActive() || !this.fridgeMenu.open || !this.fridgeItems[slot]) return;
-    if (this.hand) { document.querySelector('#fridge-message')!.textContent = '手里已有物品，先按 F 存入，再取出。'; return; }
+    if (this.hand) { document.querySelector('#fridge-message')!.textContent = '手上有东西'; return; }
     if(sharedAction('rest:fridge','take',{slot},()=>this.renderFridge()))return;
     this.hand = this.fridgeItems[slot]; this.fridgeItems[slot] = null;
-    this.renderFridge(); document.querySelector('#fridge-message')!.textContent = `拿起了${this.hand}，关门后可以带走。`;
+    this.renderFridge(); document.querySelector('#fridge-message')!.textContent = `拿起了${this.hand}`;
   }
   private get vendingMenu() { return document.querySelector<HTMLDialogElement>('#vending-menu')!; }
   private takeProduct(name: ItemName) {
     if (!this.sys.isActive() || !this.vendingMenu.open || this.nearest()?.kind !== 'vending' || this.hand || !vendingProducts.includes(name)) return;
     if(sharedAction('rest:vending','supply',{item:name},()=>this.vendingMenu.close()))return;
     this.hand = name; this.vendingMenu.close();
-    this.message(`拿到了${name}。可以放在餐桌上，也可以带去胡同。`);
+    this.message(`拿到了${name}。`);
   }
   private nearest() {
     return this.targets.filter(t => Math.hypot(this.x - t.x, this.y - t.y) < 30)
@@ -240,18 +240,18 @@ export class RestRoomScene extends Phaser.Scene {
     if (target.kind === 'fridge') {
       this.openFridge();
     } else if (target.kind === 'coffee') {
-      if (this.hand) { this.message('手里已有物品，先放到餐桌上。'); return; }
+      if (this.hand) { this.message('手上有东西'); return; }
       if(this.coffeeReady&&sharedAction('rest:coffee','supply',{item:'咖啡'},()=>{this.coffeeReady=false;this.message('拿起了咖啡。');}))return;
-      if (this.coffeeReady) { this.coffeeReady = false; this.hand = '咖啡'; this.message('拿起了刚冲好的咖啡。'); return; }
+      if (this.coffeeReady) { this.coffeeReady = false; this.hand = '咖啡'; this.message('拿起咖啡'); return; }
       this.brewing = true; this.message('咖啡机正在冲泡…');
       this.motionTime = 0;
       this.timeEventCoffee();
     } else if (target.kind === 'vending') {
-      if (this.hand) { this.message('手里已有物品，先放到餐桌上。'); return; }
+      if (this.hand) { this.message('手上有东西'); return; }
       this.input.keyboard?.resetKeys(); this.vendingMenu.showModal();
     } else if (target.kind === 'chair') {
       this.seated = target.index!; const seat = chairSeats[this.seated]; this.x = seat.x; this.y = seat.y; this.facing = seat.facing;
-      this.message(`坐在椅子 ${target.index! + 1} 休息。按 E 或 Esc 起身。`);
+      this.message(`坐在椅子 ${target.index! + 1} Esc 起身`);
     } else {
       this.useTable(target.index!);
     }
@@ -269,7 +269,7 @@ export class RestRoomScene extends Phaser.Scene {
     const table = this.tableItems[index];
     if (this.hand) {
       const slot = table.indexOf(null);
-      if (slot < 0) { this.message('桌面已经放满 6 件，请先拿走一些物品。'); return; }
+      if (slot < 0) { this.message('桌上已满'); return; }
       if(sharedAction(`rest:table-${index}`,'put',{slot}))return;
       const name = this.hand; table[slot] = name; this.hand = null;
       this.message(`${name}已放到餐桌 ${index + 1}。桌上 ${this.tableCount(index)} / 6 件。`);
@@ -281,11 +281,11 @@ export class RestRoomScene extends Phaser.Scene {
       list.innerHTML = table.map((name, slot) => name ? `<button type="button" data-slot="${slot}">${slot + 1} · ${name}</button>` : '').join('');
       for (const button of list.querySelectorAll<HTMLButtonElement>('button')) button.addEventListener('click', () => this.takeTableItem(index, Number(button.dataset.slot)));
       this.input.keyboard?.resetKeys(); this.tableMenu.showModal();
-    } else this.message('这张餐桌是空的。拿到物品后可以放在这里。');
+    } else this.message('桌上是空的');
   }
 
   private timeEventCoffee() {
-    this.brewTimer = this.time.delayedCall(1400, () => { this.brewing = false; this.coffeeReady = true; this.message('咖啡已出杯，按 E 拿起。'); });
+    this.brewTimer = this.time.delayedCall(1400, () => { this.brewing = false; this.coffeeReady = true; this.message('咖啡好了 · E 拿起'); });
   }
   private canWalk(x: number, y: number) {
     if (x < 52 || x > 590 || y < 140 || y > 278) return false;
@@ -326,7 +326,7 @@ export class RestRoomScene extends Phaser.Scene {
     const equipmentVisible = document.querySelector<HTMLInputElement>('[data-rest-layer="equipment"]')!.checked;
     this.machineCup.setVisible(this.coffeeReady && equipmentVisible);
     document.querySelector('#mode')!.textContent = this.seated !== null ? '坐着休息' : this.brewing ? '等待咖啡' : moving ? '在休息室走动' : '站在休息室';
-    document.querySelector('#hint')!.textContent = this.seated !== null ? '按 F 放下 / 拿回桌上物品；E 或 Esc 起身。' : target ? `靠近${target.name}：按 E 互动。` : '靠近设备、餐桌或椅子。';
+    document.querySelector('#hint')!.textContent = this.seated !== null ? 'F 物品 · Esc 起身' : target ? `靠近${target.name}：按 E 互动。` : '靠近设备、餐桌或椅子。';
     const tableButton = document.querySelector<HTMLButtonElement>('#table-action')!;
     tableButton.hidden = this.seated === null;
     if (this.seated !== null) {

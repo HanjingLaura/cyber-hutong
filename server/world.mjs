@@ -69,7 +69,7 @@ export function createWorld(store,life){
     if(!o?.stock)fail(400,'不能补货');if(o.stock.some(Boolean))fail(409,'先取完这排盲盒再补货');o.stock.fill(true);save(o);
    }else fail(400,'操作无效');
    if(hand!==account.hand){db.prepare('UPDATE accounts SET hand=?,seasoning=?,revision=revision+1 WHERE id=?').run(hand,JSON.stringify(hand?seasoning:[]),user.id);life?.setOrigin?.(user.id,hand,hand?{scene:String(input.object).split(':')[0],at:Date.now()}:null);}
-   if(!options.skipRecord&&['supply','put','take','consume','draw','gacha'].includes(input.action))life?.record(user.id,'object',({supply:'领取了'+input.item,put:'放下了'+account.hand,take:'从储物处拿起了'+hand,consume:'享用了食物',draw:'打开了一盒盲盒',gacha:'抽到了'+hand}[input.action])+'。',p.scene);
+   if(!options.skipRecord&&['supply','put','take','consume','draw','gacha'].includes(input.action))life?.record(user.id,'object',({supply:'领取了'+input.item,put:'放下了'+account.hand,take:'从储物处拿起了'+hand,consume:'在桌边吃了东西',draw:'打开了一盒盲盒',gacha:'抽到了'+hand}[input.action])+'。',p.scene);
    const result={self:store.publicAccount(store.byId(user.id)),objects:snapshot(p.scene),progress:progress(user.id)};
    db.prepare('INSERT INTO operations VALUES(?,?,?)').run(input.requestId,user.id,JSON.stringify(result));if(ownedTx)db.exec('COMMIT');return result;
   }catch(e){if(ownedTx)db.exec('ROLLBACK');progressCache.delete(user.id);throw e;}

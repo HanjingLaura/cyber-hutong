@@ -80,11 +80,11 @@ export class RehearsalScene extends Phaser.Scene{
     if(this.mode!=='walk'){this.stand();return;}
     const t=this.nearest();if(!t)return;
     if(t.kind==='piano'&&useDevice('piano',()=>this.interact()))return;
-    if(t.kind==='piano'&&playerInventory.hand){this.message='手中有物品，先在其他场景放好再弹琴。';return;}
+    if(t.kind==='piano'&&playerInventory.hand){this.message='手上有东西';return;}
     this.returnPoint={x:this.x,y:this.y};this.mode=t.kind;this.facing=2;this.input.keyboard?.resetKeys();
-    if(t.kind==='seat'){this.seated=t.index;this.x=seats[t.index].x;this.y=seats[t.index].y;this.message='坐在谱台前，E / E / Esc 起身。';}
-    if(t.kind==='piano'){this.x=536;this.y=223;(document.querySelector('#rehearsal-piano') as HTMLElement).hidden=false;this.message='Z 行与 Q 行弹琴，可同时按多个键。↑ / ↓ 切换音区，Esc 起身。';}
-    if(t.kind==='podium'){this.x=320;this.y=181;this.facing=0;this.message='站上指挥台，面向排练座位。E / Esc 下台。';}
+    if(t.kind==='seat'){this.seated=t.index;this.x=seats[t.index].x;this.y=seats[t.index].y;this.message='Esc 起身';}
+    if(t.kind==='piano'){this.x=536;this.y=223;(document.querySelector('#rehearsal-piano') as HTMLElement).hidden=false;this.message='Z 行弹琴 · ↑↓ 音区 · Esc 起身';}
+    if(t.kind==='podium'){this.x=320;this.y=181;this.facing=0;this.message='Esc 下台';}
   }
   private canWalk(x:number,y:number){
     if(x<45||x>600||y<179||y>347)return false;
@@ -114,6 +114,6 @@ export class RehearsalScene extends Phaser.Scene{
     document.querySelector('#hint')!.textContent=this.message;
     document.querySelector('#rehearsal-state')!.textContent=`前排 4 席 · 后排 6 席 · 钢琴 ${this.piano.notesPlayed} 次触键`;
     document.querySelector('#guide-title')!.textContent='WASD / 方向键移动';
-    document.querySelector('#guide-action')!.textContent=this.mode==='piano'?'Z / Q 两排弹琴 · ↑↓ 切换音区 · Esc 起身':this.mode!=='walk'?'E / Esc 起身':t?`E · ${button.textContent}`:'前排四席 · 后排六席 · 右侧钢琴';
+    document.querySelector('#guide-action')!.textContent=this.mode==='piano'?'Z / Q 两排弹琴 · ↑↓ 切换音区 · Esc 起身':this.mode!=='walk'?'E / Esc 起身':t?`E · ${button.textContent}`:'';
   }
 }
