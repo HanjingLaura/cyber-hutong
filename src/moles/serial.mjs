@@ -72,7 +72,7 @@ export class UnoSerial {
       if (this.ready && this.session === session) await writer.write(new TextEncoder().encode(command + '\n'));
     }).catch(() => { if (this.session === session) void this.disconnect('Uno 写入失败，继续网页游戏'); });
   }
-  async disconnect(message = '已断开 Uno，继续网页游戏') {
+  async disconnect(message = '') {
     // Invalidate queued writes before asynchronous cleanup.
     ++this.session; this.ready = false; clearTimeout(this.timer);
     const port = this.port, reader = this.reader, writer = this.writer, task = this.readTask;

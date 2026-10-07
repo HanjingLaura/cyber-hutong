@@ -127,7 +127,7 @@ export class RestRoomScene extends Phaser.Scene {
       if (event.code === 'Escape') this.stand();
     };
     const products = document.querySelector('#vending-products')!;
-    products.innerHTML = vendingProducts.map((name, index) => `<button type="button" data-product="${name}" aria-label="免费领取${name}"><span class="stock-row"><img alt=""/><img alt=""/><img alt=""/></span><span class="shelf-label">${index + 1} · ${name}</span></button>`).join('');
+    products.innerHTML = vendingProducts.map((name, index) => `<button type="button" data-product="${name}" aria-label="免费领取${name}"><span class="stock-row"><img alt=""/><img alt=""/><img alt=""/></span><span class="shelf-label">${index + 1} ${name}</span></button>`).join('');
     for (const button of products.querySelectorAll<HTMLButtonElement>('button')) {
       const name = button.dataset.product as ItemName;
       const item = items[name];
@@ -155,7 +155,7 @@ export class RestRoomScene extends Phaser.Scene {
       if (!this.sys.isActive()) return;
       this.brewTimer?.remove(); this.brewing = false; this.coffeeReady = false;
       this.stand(); this.x = 554; this.y = 184; this.hand = null; this.tableItems.forEach(table => table.fill(null)); this.fridgeItems = [...fridgeDefaults, ...Array(6).fill(null)];
-      this.message('休息室已重置。'); world.focus();
+      this.message(''); world.focus();
     });
     for (const checkbox of document.querySelectorAll<HTMLInputElement>('[data-rest-layer]')) checkbox.addEventListener('change', () => {
       for (const image of this.groups[checkbox.dataset.restLayer!]) image.setVisible(checkbox.checked);
@@ -189,7 +189,7 @@ export class RestRoomScene extends Phaser.Scene {
   }
   private renderFridge() {
     const list = document.querySelector('#fridge-items')!;
-    list.innerHTML = this.fridgeItems.map((name, slot) => `<button type="button" data-fridge-slot="${slot}" ${!name ? 'disabled' : ''}>${name ? '<img alt=""/>' : '<span class="fridge-empty">空位</span>'}<span>${slot + 1} · ${name ?? '空'}</span></button>`).join('');
+    list.innerHTML = this.fridgeItems.map((name, slot) => `<button type="button" data-fridge-slot="${slot}" ${!name ? 'disabled' : ''}>${name ? '<img alt=""/>' : '<span class="fridge-empty">空位</span>'}<span>${slot + 1} ${name ?? ''}</span></button>`).join('');
     for (const button of list.querySelectorAll<HTMLButtonElement>('button')) {
       const slot = Number(button.dataset.fridgeSlot), name = this.fridgeItems[slot];
       if (!name) continue;
@@ -202,8 +202,8 @@ export class RestRoomScene extends Phaser.Scene {
     document.querySelector('#fridge-hand')!.textContent = `手中：${this.hand ?? '空'} · 柜内 ${this.fridgeItems.filter(Boolean).length} / 9 件`;
     const store = document.querySelector<HTMLButtonElement>('#fridge-store')!;
     store.disabled = !this.hand || !this.fridgeItems.includes(null);
-    store.textContent = this.hand ? `放入${this.hand} · F` : '手中没有物品';
-    document.querySelector('#fridge-message')!.textContent = this.hand ? '手上有东西' : '1–9 取 · F 存';
+    store.textContent = this.hand ? `放入${this.hand}` : '放入手中物品';
+    document.querySelector('#fridge-message')!.textContent = this.hand ? 'F 存' : '1–9 取';
   }
   private storeFridgeItem() {
     if (!this.sys.isActive() || !this.fridgeMenu.open || !this.hand) return;
@@ -211,28 +211,28 @@ export class RestRoomScene extends Phaser.Scene {
     if (slot < 0) { document.querySelector('#fridge-message')!.textContent = '已满'; return; }
     if(sharedAction('rest:fridge','put',{slot},()=>this.renderFridge()))return;
     const name = this.hand; this.fridgeItems[slot] = name; this.hand = null;
-    this.renderFridge(); document.querySelector('#fridge-message')!.textContent = `${name}已放进冰箱。`;
+    this.renderFridge(); document.querySelector('#fridge-message')!.textContent = '';
   }
   private takeFridgeItem(slot: number) {
     if (!this.sys.isActive() || !this.fridgeMenu.open || !this.fridgeItems[slot]) return;
     if (this.hand) { document.querySelector('#fridge-message')!.textContent = '手上有东西'; return; }
     if(sharedAction('rest:fridge','take',{slot},()=>this.renderFridge()))return;
     this.hand = this.fridgeItems[slot]; this.fridgeItems[slot] = null;
-    this.renderFridge(); document.querySelector('#fridge-message')!.textContent = `拿起了${this.hand}`;
+    this.renderFridge(); document.querySelector('#fridge-message')!.textContent = '';
   }
   private get vendingMenu() { return document.querySelector<HTMLDialogElement>('#vending-menu')!; }
   private takeProduct(name: ItemName) {
     if (!this.sys.isActive() || !this.vendingMenu.open || this.nearest()?.kind !== 'vending' || this.hand || !vendingProducts.includes(name)) return;
     if(sharedAction('rest:vending','supply',{item:name},()=>this.vendingMenu.close()))return;
     this.hand = name; this.vendingMenu.close();
-    this.message(`拿到了${name}。`);
+    this.message('');
   }
   private nearest() {
     return this.targets.filter(t => Math.hypot(this.x - t.x, this.y - t.y) < 30)
       .sort((a, b) => Math.hypot(this.x - a.x, this.y - a.y) - Math.hypot(this.x - b.x, this.y - b.y))[0];
   }
   private message(text: string) { document.querySelector('#rest-message')!.textContent = text; }
-  private stand() { if (this.seated !== null) { const seat = chairSeats[this.seated]; this.x = seat.approach.x; this.y = seat.approach.y; this.seated = null; this.message('起身了。'); } }
+  private stand() { if (this.seated !== null) { const seat = chairSeats[this.seated]; this.x = seat.approach.x; this.y = seat.approach.y; this.seated = null; this.message(''); } }
   private interact() {
     if (this.seated !== null) { this.stand(); return; }
     if (this.brewing) return;
@@ -241,9 +241,9 @@ export class RestRoomScene extends Phaser.Scene {
       this.openFridge();
     } else if (target.kind === 'coffee') {
       if (this.hand) { this.message('手上有东西'); return; }
-      if(this.coffeeReady&&sharedAction('rest:coffee','supply',{item:'咖啡'},()=>{this.coffeeReady=false;this.message('拿起了咖啡。');}))return;
-      if (this.coffeeReady) { this.coffeeReady = false; this.hand = '咖啡'; this.message('拿起咖啡'); return; }
-      this.brewing = true; this.message('咖啡机正在冲泡…');
+      if(this.coffeeReady&&sharedAction('rest:coffee','supply',{item:'咖啡'},()=>{this.coffeeReady=false;this.message('');}))return;
+      if (this.coffeeReady) { this.coffeeReady = false; this.hand = '咖啡'; this.message(''); return; }
+      this.brewing = true; this.message('');
       this.motionTime = 0;
       this.timeEventCoffee();
     } else if (target.kind === 'vending') {
@@ -251,7 +251,7 @@ export class RestRoomScene extends Phaser.Scene {
       this.input.keyboard?.resetKeys(); this.vendingMenu.showModal();
     } else if (target.kind === 'chair') {
       this.seated = target.index!; const seat = chairSeats[this.seated]; this.x = seat.x; this.y = seat.y; this.facing = seat.facing;
-      this.message(`坐在椅子 ${target.index! + 1} Esc 起身`);
+      this.message(`Esc 起身`);
     } else {
       this.useTable(target.index!);
     }
@@ -263,7 +263,7 @@ export class RestRoomScene extends Phaser.Scene {
     if(sharedAction(`rest:table-${index}`,'take',{slot},()=>{if(this.tableMenu.open)this.tableMenu.close();}))return;
     this.hand = this.tableItems[index][slot]; this.tableItems[index][slot] = null;
     if (this.tableMenu.open) this.tableMenu.close();
-    this.message(`拿回了${this.hand}。桌上还剩 ${this.tableCount(index)} 件。`);
+    this.message('');
   }
   private useTable(index: number) {
     const table = this.tableItems[index];
@@ -272,20 +272,20 @@ export class RestRoomScene extends Phaser.Scene {
       if (slot < 0) { this.message('桌上已满'); return; }
       if(sharedAction(`rest:table-${index}`,'put',{slot}))return;
       const name = this.hand; table[slot] = name; this.hand = null;
-      this.message(`${name}已放到餐桌 ${index + 1}。桌上 ${this.tableCount(index)} / 6 件。`);
+      this.message('');
     } else if (this.tableCount(index) === 1) this.takeTableItem(index, table.findIndex(Boolean));
     else if (this.tableCount(index) > 1) {
       this.tableMenu.dataset.table = String(index);
-      document.querySelector('#table-menu-title')!.textContent = `餐桌 ${index + 1} · 拿回哪一件？`;
+      document.querySelector('#table-menu-title')!.textContent = '';
       const list = document.querySelector('#table-pick-list')!;
-      list.innerHTML = table.map((name, slot) => name ? `<button type="button" data-slot="${slot}">${slot + 1} · ${name}</button>` : '').join('');
+      list.innerHTML = table.map((name, slot) => name ? `<button type="button" data-slot="${slot}">${slot + 1} ${name}</button>` : '').join('');
       for (const button of list.querySelectorAll<HTMLButtonElement>('button')) button.addEventListener('click', () => this.takeTableItem(index, Number(button.dataset.slot)));
       this.input.keyboard?.resetKeys(); this.tableMenu.showModal();
-    } else this.message('桌上是空的');
+    } else this.message('');
   }
 
   private timeEventCoffee() {
-    this.brewTimer = this.time.delayedCall(1400, () => { this.brewing = false; this.coffeeReady = true; this.message('咖啡好了 · E 拿起'); });
+    this.brewTimer = this.time.delayedCall(1400, () => { this.brewing = false; this.coffeeReady = true; this.message(''); });
   }
   private canWalk(x: number, y: number) {
     if (x < 52 || x > 590 || y < 140 || y > 278) return false;
@@ -325,8 +325,8 @@ export class RestRoomScene extends Phaser.Scene {
     const target = this.nearest();
     const equipmentVisible = document.querySelector<HTMLInputElement>('[data-rest-layer="equipment"]')!.checked;
     this.machineCup.setVisible(this.coffeeReady && equipmentVisible);
-    document.querySelector('#mode')!.textContent = this.seated !== null ? '坐着休息' : this.brewing ? '等待咖啡' : moving ? '在休息室走动' : '站在休息室';
-    document.querySelector('#hint')!.textContent = this.seated !== null ? 'F 物品 · Esc 起身' : target ? `靠近${target.name}：按 E 互动。` : '靠近设备、餐桌或椅子。';
+    document.querySelector('#mode')!.textContent = this.seated !== null ? '' : this.brewing ? '' : moving ? '' : '';
+    document.querySelector('#hint')!.textContent = this.seated !== null ? 'F 物品 · Esc 起身' : target ? `E 互动` : '';
     const tableButton = document.querySelector<HTMLButtonElement>('#table-action')!;
     tableButton.hidden = this.seated === null;
     if (this.seated !== null) {
@@ -336,10 +336,10 @@ export class RestRoomScene extends Phaser.Scene {
     }
     const button = document.querySelector<HTMLButtonElement>('#interact')!;
     button.disabled = this.brewing || (this.seated === null && !target);
-    button.textContent = this.seated !== null ? '起身' : target?.kind === 'fridge' ? '打开冰箱上门' : target?.kind === 'vending' ? '挑选产品' : target?.kind === 'coffee' ? this.coffeeReady ? '拿起咖啡' : '冲一杯咖啡' : target?.kind === 'chair' ? '坐下休息' : target?.kind === 'table' ? this.hand ? `放下${this.hand}` : this.tableCount(target.index!) ? `选择桌上物品（${this.tableCount(target.index!)} 件）` : '查看餐桌' : '靠近物件互动';
+    button.textContent = this.seated !== null ? '起身' : target?.kind === 'fridge' ? '打开冰箱上门' : target?.kind === 'vending' ? '挑选产品' : target?.kind === 'coffee' ? this.coffeeReady ? '拿起咖啡' : '冲一杯咖啡' : target?.kind === 'chair' ? '坐下休息' : target?.kind === 'table' ? this.hand ? `放下${this.hand}` : this.tableCount(target.index!) ? `选择桌上物品（${this.tableCount(target.index!)} 件）` : '查看餐桌' : '';
     document.querySelector('#rest-inventory')!.textContent = `手中：${this.hand ?? '空'}`;
     document.querySelector('#guide-title')!.textContent = 'WASD / 方向键移动';
-    document.querySelector('#guide-action')!.textContent = this.seated !== null ? tableButton.disabled ? '桌面空 · E / Esc 起身' : `F · ${tableButton.textContent} · E / Esc 起身` : this.brewing ? '正在冲泡咖啡…' : target ? `E · ${button.textContent}` : '靠近设备或桌椅，按 E 互动';
+    document.querySelector('#guide-action')!.textContent = this.seated !== null ? tableButton.disabled ? '桌面空 · E / Esc 起身' : `F · ${tableButton.textContent} · E / Esc 起身` : this.brewing ? '' : target ? `E · ${button.textContent}` : 'E 互动';
   }
 }
 

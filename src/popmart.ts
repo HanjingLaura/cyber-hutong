@@ -35,7 +35,9 @@ export class PopMartScene extends Phaser.Scene {
     load('pop-props', new URL('../assets/drafts/popmart-props-v1.png', import.meta.url).href);
   }
   private get menu() { return document.querySelector<HTMLDialogElement>('#blind-menu')!; }
-  private nearest() { return this.targets.filter(t => Math.hypot(t.x - this.x, t.y - this.y) < 39).sort((a,b) => Math.hypot(a.x-this.x,a.y-this.y) - Math.hypot(b.x-this.x,b.y-this.y))[0]; }
+  // The shelf is a 160px island, so measure to its edge rather than its centre; matches server/world.mjs checkNear.
+  private reach(t:{id:Source;x:number;y:number}) { return t.id==='shelf' ? Math.hypot(Math.max(240-this.x,0,this.x-400),Math.max(171-this.y,0,this.y-283)) : Math.hypot(t.x-this.x,t.y-this.y); }
+  private nearest() { return this.targets.filter(t => this.reach(t) < (t.id==='shelf'?36:39)).sort((a,b) => this.reach(a) - this.reach(b))[0]; }
   create() {
     placeGuest(this,'buzz');
     this.add.image(0,0,'pop-room').setOrigin(0).setDisplaySize(640,360).setDepth(-100);
@@ -107,13 +109,13 @@ export class PopMartScene extends Phaser.Scene {
     machine.hidden=this.source!=='machine';
     if(this.source==='machine')this.drawGacha();
     const list=document.querySelector('#blind-boxes')!;
-    list.innerHTML=blindBoxes.stock(this.source,this.theme).map((toy,i)=>`<button type="button" class="blind-slot" data-box="${i}" aria-pressed="${this.selected===i}" ${toy===null || this.busy?'disabled':''} aria-label="${String.fromCharCode(65+Math.floor(i/6))}${i%6+1}${toy===null?' 已取走':''}">${toy===null?'<span class="sold-box">已取走</span>':`<img class="box-art" alt="未拆封盲盒" src="${this.boxImages[i%3]}"/>`}<span>${String.fromCharCode(65+Math.floor(i/6))}${i%6+1}</span></button>`).join('');
+    list.innerHTML=blindBoxes.stock(this.source,this.theme).map((toy,i)=>`<button type="button" class="blind-slot" data-box="${i}" aria-pressed="${this.selected===i}" ${toy===null || this.busy?'disabled':''} aria-label="${String.fromCharCode(65+Math.floor(i/6))}${i%6+1}${toy===null?' 已取走':''}">${toy===null?'<span class="sold-box"></span>':`<img class="box-art" alt="未拆封盲盒" src="${this.boxImages[i%3]}"/>`}<span>${String.fromCharCode(65+Math.floor(i/6))}${i%6+1}</span></button>`).join('');
     list.querySelectorAll<HTMLButtonElement>('[data-box]').forEach(button=>button.addEventListener('click',()=>{
       if(this.busy) return; this.selected=Number(button.dataset.box); document.querySelector('#blind-result')!.replaceChildren(); this.render();
     }));
     const extract=document.querySelector<HTMLButtonElement>('#blind-extract')!;
     extract.disabled=this.busy||(this.source==='shelf'&&this.selected===null);
-    extract.textContent=this.busy?'…':this.source==='machine'?(this.capsule==='ready'?'打开扭蛋 · E':'转动 · E'):this.selected===null?'选一盒':`拆开 · E`;
+    extract.textContent=this.busy?'…':this.source==='machine'?(this.capsule==='ready'?'打开扭蛋':'转动'):this.selected===null?'选一盒':'拆开';
     document.querySelector<HTMLButtonElement>('#blind-close')!.disabled=this.busy;
     document.querySelector<HTMLButtonElement>('#blind-refill')!.disabled=this.busy;
     document.querySelector<HTMLElement>('#blind-help')!.hidden=true;
@@ -135,14 +137,14 @@ export class PopMartScene extends Phaser.Scene {
   }
   private result(record: ToyRecord) {
     const result=document.querySelector('#blind-result')!;
-    const [series,name]=toyNames[record.toy].split(' · ');result.innerHTML=`<div class="blind-reveal"><img alt="${name}" src="${toyImage(record.toy)}"/><div><small>${series}</small><strong>${name}</strong><p>已放进收藏</p></div></div>`;
+    const name=toyNames[record.toy];result.innerHTML=`<div class="blind-reveal"><img alt="${name}" src="${toyImage(record.toy)}"/><div><strong>${name}</strong></div></div>`;
   }
   private extractCapsule(){
     const result=document.querySelector('#blind-result')!;
     if(this.capsule==='ready'){
       this.capsule='opened';
       if(!onlineWorld()?.bridge.user?.role)playerInventory.hand=gachaItems[this.capsuleToy] as ItemName;
-      result.innerHTML=`<img alt="${gachaNames[this.capsuleToy]}" src="${this.gachaImages[this.capsuleToy]}"/><strong>${gachaNames[this.capsuleToy]}</strong><p>拿在手上</p>`;
+      result.innerHTML=`<img alt="${gachaNames[this.capsuleToy]}" src="${this.gachaImages[this.capsuleToy]}"/><strong>${gachaNames[this.capsuleToy]}</strong>`;
       this.render();return;
     }
     const service=onlineWorld();
@@ -185,7 +187,7 @@ export class PopMartScene extends Phaser.Scene {
     const records=blindBoxes.data.collection;
     const owned=(toy:number)=>records.filter(r=>r.toy===toy).length;
     document.querySelector('#pop-count')!.textContent=`${new Set(records.map(r=>r.toy)).size} / ${toyNames.length}`;
-    document.querySelector('#pop-collection')!.innerHTML=toyNames.map((name,toy)=>{const n=owned(toy),[,short]=name.split(' · ');return `<div class="lineup-toy${n?'':' locked'}" title="${short}"><img alt="${short}" src="${toyImage(toy)}"/>${n>1?`<b>×${n}</b>`:''}</div>`;}).join('');
+    document.querySelector('#pop-collection')!.innerHTML=toyNames.map((name,toy)=>{const n=owned(toy);return `<div class="lineup-toy${n?'':' locked'}" title="${name}"><img alt="${name}" src="${toyImage(toy)}"/>${n>1?`<b>×${n}</b>`:''}</div>`;}).join('');
     document.querySelector('#pop-legacy')!.textContent='';
   }
   private canWalk(x:number,y:number) {
@@ -212,9 +214,9 @@ export class PopMartScene extends Phaser.Scene {
     }
     
     const target=this.nearest(), button=document.querySelector<HTMLButtonElement>('#interact')!;
-    button.disabled=!target; button.textContent=target?target.id==='machine'?'转动扭蛋机':'挑选陈列台盲盒':'靠近陈列台或扭蛋机';
-    document.querySelector('#mode')!.textContent=moving?'在 POP MART 走动':'逛 POP MART';
-    document.querySelector('#hint')!.textContent=target?.id==='machine'?'E 转动扭蛋机。':target?'E 挑一盒。':'沿通道逛逛。';
+    button.disabled=!target; button.textContent=target?target.id==='machine'?'转动扭蛋机':'挑选陈列台盲盒':'';
+    document.querySelector('#mode')!.textContent=moving?'':'';
+    document.querySelector('#hint')!.textContent=target?.id==='machine'?'E 扭蛋':target?'E 挑一盒':'';
     document.querySelector('#guide-title')!.textContent='WASD / 方向键移动';
     document.querySelector('#guide-action')!.textContent=target?`E · ${target.id==='machine'?'扭蛋机':'挑一盒'}`:'E 互动';
   }

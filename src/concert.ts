@@ -97,11 +97,11 @@ export class ConcertScene extends Phaser.Scene {
     this.chairs.forEach((image,i)=>image.setDepth(this.seated===i?seats[i].y-1:seats[i].y+10));
     const seat=this.nearest(),button=document.querySelector<HTMLButtonElement>('#interact')!;
     button.disabled=this.seated===null&&!seat;
-    button.textContent=this.seated!==null?'离开座位':seat?`坐到 ${seat.id}`:'靠近内场座位';
-    document.querySelector('#mode')!.textContent=this.seated!==null?`坐在 ${seats[this.seated].id} 看舞台`:moving?'在内场走动':'站在演唱会内场';
+    button.textContent=this.seated!==null?'离开座位':seat?`坐到 ${seat.id}`:'';
+    document.querySelector('#mode')!.textContent=this.seated!==null?'':moving?'':'';
     document.querySelector('#hint')!.textContent=this.seated!==null?'Esc 起身':'E 坐下';
     document.querySelector('#guide-title')!.textContent='WASD / 方向键移动';
-    document.querySelector('#guide-action')!.textContent=this.seated!==null?'E / Esc 起身':seat?`E · 坐到 ${seat.id} 面向舞台`:'E 坐下';
-    document.querySelector('#concert-state')!.textContent=this.seated===null?'A / B / C ':`${seats[this.seated].id} 使用中 · 其余 17 席空闲`;
+    document.querySelector('#guide-action')!.textContent=this.seated!==null?'E / Esc 起身':seat?`E 坐下`:'E 坐下';
+    document.querySelector('#concert-state')!.textContent=this.seated===null?'A / B / C ':'';
   }
 }

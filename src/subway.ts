@@ -39,7 +39,7 @@ export class SubwayScene extends Phaser.Scene {
     world.focus();
   }
   private nearest(){return entrances.map((e,index)=>({index,x:e.x+e.width/2,y:242})).filter(e=>Math.hypot(this.x-e.x,this.y-e.y)<36).sort((a,b)=>Math.hypot(this.x-a.x,this.y-a.y)-Math.hypot(this.x-b.x,this.y-b.y))[0]?.index;}
-  private state(){return this.progress<=0?'车门已关闭':this.progress>=1?'车门已打开':this.open?'车门正在打开':'车门正在关闭';}
+  private state(){return this.progress<=0?'':this.progress>=1?'':this.open?'':'';}
   private interact(){if(this.nearest()!==undefined){if(sharedAction('subway:doors','toggle'))return;this.open=!this.open;}}
   private canWalk(x:number,y:number){return x>=40&&x<=600&&y>=226&&y<=343;}
   private drawDoors(){
@@ -70,11 +70,11 @@ export class SubwayScene extends Phaser.Scene {
     this.progress=Phaser.Math.Clamp(this.progress+(this.open?1:-1)*Math.min(delta,50)/750,0,1);
     this.drawDoors();
     const near=this.nearest()!==undefined,button=document.querySelector<HTMLButtonElement>('#interact')!;
-    button.disabled=!near;button.textContent=near?(this.open?'关闭车门':'打开车门'):'靠近车门';
-    document.querySelector('#mode')!.textContent=moving?'在站台走动':'站在五道口站';
-    document.querySelector('#hint')!.textContent='靠近车门按 E 开关；人物暂不进入列车。';
+    button.disabled=!near;button.textContent=near?(this.open?'关闭车门':'打开车门'):'';
+    document.querySelector('#mode')!.textContent=moving?'':'';
+    document.querySelector('#hint')!.textContent='E 开关车门';
     document.querySelector('#subway-state')!.textContent=this.state();
     document.querySelector('#guide-title')!.textContent='WASD / 方向键移动';
-    document.querySelector('#guide-action')!.textContent=near?`E · ${button.textContent}`:'靠近车门按 E';
+    document.querySelector('#guide-action')!.textContent=near?`E · ${button.textContent}`:'E 开关车门';
   }
 }

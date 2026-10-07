@@ -25,13 +25,13 @@ export class ArcadeScene extends Phaser.Scene {
   create(){
     this.add.image(0,0,'arcade-room').setOrigin(0).setDisplaySize(640,360).setDepth(-100);
     for(const machine of [...machines.slice(0,3),...webMachines]){
-      this.add.zone(machine.x,126,76,110).setInteractive({useHandCursor:true}).on('pointerdown',()=>{if(this.games.dialog.open)return;if(Math.hypot(this.x-machine.x,this.y-machine.y)<30)this.play(machine);else document.querySelector('#hint')!.textContent='走近游戏机再玩。';});
+      this.add.zone(machine.x,126,76,110).setInteractive({useHandCursor:true}).on('pointerdown',()=>{if(this.games.dialog.open)return;if(Math.hypot(this.x-machine.x,this.y-machine.y)<30)this.play(machine);else document.querySelector('#hint')!.textContent='走近一点';});
     }
     const frames=registerFrames(this,'arcade-props-v2',3,1);
     const basketball=this.add.image(125,330,'arcade-props-v2',frames[0].name).setOrigin(.5,1).setDisplaySize(84,124).setDepth(330);
     const hockey=this.add.image(434,304,'arcade-props-v2',frames[1].name).setOrigin(.5,1).setDisplaySize(135,75).setDepth(304);
     const seat=this.add.image(bench.x,bench.y,'arcade-props-v2',frames[2].name).setOrigin(.5,1).setDisplaySize(88,42).setDepth(342);
-    [basketball,hockey].forEach((image,index)=>image.setInteractive({useHandCursor:true}).on('pointerdown',()=>{if(this.games.dialog.open)return;const target=machines[index+3];if(Math.hypot(this.x-target.x,this.y-target.y)<35){this.games.open(target.kind);}else document.querySelector('#hint')!.textContent='走近这台机器再玩。';}));
+    [basketball,hockey].forEach((image,index)=>image.setInteractive({useHandCursor:true}).on('pointerdown',()=>{if(this.games.dialog.open)return;const target=machines[index+3];if(Math.hypot(this.x-target.x,this.y-target.y)<35){this.games.open(target.kind);}else document.querySelector('#hint')!.textContent='走近一点';}));
     seat.setInteractive({useHandCursor:true}).on('pointerdown',()=>{if(!this.games.dialog.open&&(this.seated!==null||this.nearBench()))this.interact();});
     this.actor=true;this.games=new ArcadeGames();
     this.keys=this.input.keyboard!.addKeys('W,A,S,D,UP,DOWN,LEFT,RIGHT') as Record<string,Phaser.Input.Keyboard.Key>;
@@ -67,10 +67,10 @@ export class ArcadeScene extends Phaser.Scene {
     }
     
     const target=this.nearest(),button=document.querySelector<HTMLButtonElement>('#interact')!;
-    button.disabled=!target&&!this.nearBench()&&!this.seated;button.textContent=this.seated?'起身':this.nearBench()?'坐下休息':target?`玩${target.name}`:'靠近机器';
-    document.querySelector('#mode')!.textContent=this.games.dialog.open?'正在玩游戏':this.seated?'坐着休息':moving?'在娱乐室走动':'站在娱乐室';
+    button.disabled=!target&&!this.nearBench()&&!this.seated;button.textContent=this.seated?'起身':this.nearBench()?'坐下休息':target?`玩${target.name}`:'';
+    document.querySelector('#mode')!.textContent=this.games.dialog.open?'正在玩游戏':this.seated?'':moving?'在娱乐室走动':'站在娱乐室';
     document.querySelector('#hint')!.textContent=this.seated?'E / Esc 起身':this.nearBench()?'E · 坐下休息':target?`E · ${target.name}`:'E 玩游戏';
     document.querySelector('#guide-title')!.textContent='WASD / 方向键移动';
-    document.querySelector('#guide-action')!.textContent=this.seated?'E / Esc 起身':this.nearBench()?'E · 坐下休息':target?`E · ${target.name}`:'靠近机器按 E';
+    document.querySelector('#guide-action')!.textContent=this.seated?'E / Esc 起身':this.nearBench()?'E · 坐下休息':target?`E · ${target.name}`:'E 玩游戏';
   }
 }

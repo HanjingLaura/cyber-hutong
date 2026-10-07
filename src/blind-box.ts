@@ -1,7 +1,7 @@
-export const toyNames = ['胡迪 · Poncho Woody', '巴斯 · Buzz to the Rescue', '红心 · Sweet Bullseye', '海绵宝宝 · I’m SpongeBob', '派大星 · I’m Patrick', '比奇堡 · The Farmer', 'MOLLY · Dino Red', 'DIMOO · Classic Mickey', 'SKULLPANDA · The Joy', 'LABUBU · Luck'] as const;
+export const toyNames = ['胡迪', '巴斯', '红心', '海绵宝宝', '派大星', '比奇堡', 'MOLLY', 'DIMOO', 'SKULLPANDA', 'LABUBU'] as const;
 export const themes = {
   story: { name: '玩具总动员', members: [0, 1, 2] },
-  bikini: { name: '比奇堡 · 海绵宝宝', members: [3, 4, 5] },
+  bikini: { name: '比奇堡', members: [3, 4, 5] },
   classic: { name: 'POP MART 经典 IP', members: [6, 7, 8, 9] },
   all: { name: 'POP MART', members: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] },
 } as const;

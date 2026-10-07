@@ -24,7 +24,7 @@ export class GymScene extends Phaser.Scene {
   private reps=0;private liftStart:number|null=null;private breaths=0;private breathTime=0;
   private returnPoint={x:320,y:290};
   private stored:{name:ItemName;seasoning:string[]}[]=[];
-  private message='靠近器械按 E。';
+  private message='E 使用';
   private dialog=document.querySelector<HTMLDialogElement>('#gym-storage')!;
   constructor(){super('gym');}
   preload(){
@@ -60,21 +60,21 @@ export class GymScene extends Phaser.Scene {
   }
   private nearest(){return targets.filter(t=>Math.hypot(this.x-t.x,this.y-t.y)<29).sort((a,b)=>Math.hypot(this.x-a.x,this.y-a.y)-Math.hypot(this.x-b.x,this.y-b.y))[0];}
   private changeSpeed(){if(this.mode==='run')this.speedIndex=(this.speedIndex+1)%this.speeds.length;}
-  private lift(){if(this.mode==='curl'&&this.liftStart===null){this.liftStart=this.time.now;this.message='举起，再慢慢放下。';}}
-  private stop(){const wasWalking=this.mode==='walk';if(this.mode==='run'||this.mode==='curl')releaseDevice(this.mode==='run'?`run-${this.machine}`:'curl');if(wasWalking){this.liftStart=null;return;}this.mode='walk';this.liftStart=null;this.breathTime=0;this.x=this.returnPoint.x;this.y=this.returnPoint.y;this.facing=0;this.message='训练结束。';this.belt.clear();}
+  private lift(){if(this.mode==='curl'&&this.liftStart===null){this.liftStart=this.time.now;this.message='';}}
+  private stop(){const wasWalking=this.mode==='walk';if(this.mode==='run'||this.mode==='curl')releaseDevice(this.mode==='run'?`run-${this.machine}`:'curl');if(wasWalking){this.liftStart=null;return;}this.mode='walk';this.liftStart=null;this.breathTime=0;this.x=this.returnPoint.x;this.y=this.returnPoint.y;this.facing=0;this.message='';this.belt.clear();}
   private begin(kind:Mode,index:number){
     this.machine=index;this.mode=kind;this.input.keyboard?.resetKeys();
-    if(kind==='run'){this.returnPoint={x:treadmills[index],y:155};this.x=treadmills[index];this.y=127;this.facing=2;this.message='F F 调速 · Esc 下机';return;}
+    if(kind==='run'){this.returnPoint={x:treadmills[index],y:155};this.x=treadmills[index];this.y=127;this.facing=2;this.message='F 调速 · Esc 下机';return;}
     this.returnPoint={x:this.x,y:this.y};
-    if(kind==='curl'){this.x=123;this.y=115;this.facing=0;this.message='Space Space 举 · Esc 放回';}
-    if(kind==='rest'){this.x=benches[index].x;this.y=benches[index].y;this.facing=0;this.message='E / Esc 起身。';}
+    if(kind==='curl'){this.x=123;this.y=115;this.facing=0;this.message='Space 举 · Esc 放回';}
+    if(kind==='rest'){this.x=benches[index].x;this.y=benches[index].y;this.facing=0;this.message='Esc 起身';}
     if(kind==='breathe'){this.x=561;this.y=297;this.facing=0;this.breathTime=0;this.message='Esc 结束';}
   }
   private storage(){
     const list=document.querySelector('#gym-storage-items')!;list.replaceChildren();
     const make=(label:string,disabled:boolean,run:()=>void)=>{const button=document.createElement('button');button.type='button';button.textContent=label;button.disabled=disabled;button.addEventListener('click',()=>{run();this.dialog.close();});list.append(button);};
-    make(playerInventory.hand?`存放${playerInventory.hand}`:'存放手中物品',!playerInventory.hand||this.stored.length>=6,()=>{if(sharedAction('gym:stash','put',{slot:onlineWorld()?.objects.get('gym:stash')?.slots?.findIndex(i=>!i)??0}))return;if(playerInventory.hand&&this.stored.length<6){this.stored.push({name:playerInventory.hand,seasoning:[...playerInventory.noodleSeasoning]});playerInventory.hand=null;this.message='放好了';}});
-    this.stored.forEach((item,index)=>make(`拿回${item.name}`,!!playerInventory.hand,()=>{if(sharedAction('gym:stash','take',{slot:(item as typeof item & {slot?:number}).slot??index}))return;if(!playerInventory.hand){playerInventory.hand=item.name;playerInventory.noodleSeasoning=[...item.seasoning];this.stored.splice(index,1);this.message=`拿回了${item.name}。`;}}));
+    make(playerInventory.hand?`存放${playerInventory.hand}`:'存放手中物品',!playerInventory.hand||this.stored.length>=6,()=>{if(sharedAction('gym:stash','put',{slot:onlineWorld()?.objects.get('gym:stash')?.slots?.findIndex(i=>!i)??0}))return;if(playerInventory.hand&&this.stored.length<6){this.stored.push({name:playerInventory.hand,seasoning:[...playerInventory.noodleSeasoning]});playerInventory.hand=null;this.message='';}});
+    this.stored.forEach((item,index)=>make(`拿回${item.name}`,!!playerInventory.hand,()=>{if(sharedAction('gym:stash','take',{slot:(item as typeof item & {slot?:number}).slot??index}))return;if(!playerInventory.hand){playerInventory.hand=item.name;playerInventory.noodleSeasoning=[...item.seasoning];this.stored.splice(index,1);this.message='';}}));
     this.input.keyboard?.resetKeys();this.dialog.showModal();
   }
   private interact(){
@@ -92,7 +92,7 @@ export class GymScene extends Phaser.Scene {
     if(target.kind==='water'){
       if(playerInventory.hand){this.message='手上有东西';return;}
       if(sharedAction('gym:water','supply',{item:'水'}))return;
-      playerInventory.hand='水';playerInventory.noodleSeasoning=[];this.message='接了一瓶水';return;
+      playerInventory.hand='水';playerInventory.noodleSeasoning=[];this.message='';return;
     }
     this.begin(target.kind,target.index);
   }
@@ -119,7 +119,7 @@ export class GymScene extends Phaser.Scene {
     if(this.mode==='curl'){
       
       let frame=0;
-      if(this.liftStart!==null){const age=this.time.now-this.liftStart;frame=age<170?1:age<400?2:1;if(age>=620){this.reps++;this.liftStart=null;frame=0;this.message=`完成 ${this.reps} 次弯举。`;}}
+      if(this.liftStart!==null){const age=this.time.now-this.liftStart;frame=age<170?1:age<400?2:1;if(age>=620){this.reps++;this.liftStart=null;frame=0;this.message='';}}
       void frame;
     }else{
       if(this.mode==='run'){
@@ -131,7 +131,7 @@ export class GymScene extends Phaser.Scene {
       
     }
     const target=this.nearest(),button=document.querySelector<HTMLButtonElement>('#interact')!;
-    button.disabled=this.dialog.open||this.mode==='walk'&&!target;button.textContent=this.mode==='walk'?target?names[target.kind]:'靠近器械':this.mode==='run'?'下跑步机':this.mode==='curl'?'放回哑铃':this.mode==='rest'?'起身':'结束练习';
+    button.disabled=this.dialog.open||this.mode==='walk'&&!target;button.textContent=this.mode==='walk'?target?names[target.kind]:'':this.mode==='run'?'下跑步机':this.mode==='curl'?'放回哑铃':this.mode==='rest'?'起身':'结束练习';
     document.querySelector('#mode')!.textContent={walk:moving?'在健身房走动':'站在健身房',run:'正在跑步',curl:'哑铃弯举',rest:'坐下休息',breathe:'呼吸练习'}[this.mode];
     document.querySelector('#hint')!.textContent=this.message;
     document.querySelector('#gym-stats')!.textContent=`跑步 ${this.distance.toFixed(1)} 米 · ${Math.floor(this.elapsed)} 秒 · 弯举 ${this.reps} 次 · 呼吸 ${this.breaths} 轮`;
@@ -140,6 +140,6 @@ export class GymScene extends Phaser.Scene {
     document.querySelector<HTMLButtonElement>('#gym-speed')!.hidden=this.mode!=='run';document.querySelector('#gym-speed')!.textContent=`速度 ${this.speeds[this.speedIndex]} km/h · F`;
     document.querySelector('#gym-breath')!.textContent=this.mode==='breathe'?this.breathTime<4000?'吸气…':'呼气…':'';
     document.querySelector('#guide-title')!.textContent='WASD / 方向键移动';
-    document.querySelector('#guide-action')!.textContent=this.mode==='run'?'F 调速 · E / Esc 下机':this.mode==='curl'?'Space 举起 / 放下 · E / Esc 结束':this.mode!=='walk'?'E / Esc 结束':target?`E · ${names[target.kind]}`:'靠近器械按 E';
+    document.querySelector('#guide-action')!.textContent=this.mode==='run'?'F 调速 · E / Esc 下机':this.mode==='curl'?'Space 举起 / 放下 · E / Esc 结束':this.mode!=='walk'?'E / Esc 结束':target?`E · ${names[target.kind]}`:'E 使用';
   }
 }

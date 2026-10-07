@@ -11,7 +11,7 @@ export class RehearsalScene extends Phaser.Scene{
   private actor=false;private piano!:Piano;private keys!:Record<string,Phaser.Input.Keyboard.Key>;
   private chairs:Phaser.GameObjects.Image[]=[];private backs:Phaser.GameObjects.Image[]=[];
   private x=320;private y=339;private facing=2;private mode:Mode='walk';private seated:number|null=null;
-  private returnPoint={x:320,y:339};private message='靠近椅子或琴凳按 E。';
+  private returnPoint={x:320,y:339};private message='E 坐下';
   constructor(){super('rehearsal');}
   preload(){
     const load=(k:string,u:string)=>{if(!this.textures.exists(k))this.load.image(k,u);};
@@ -69,7 +69,7 @@ export class RehearsalScene extends Phaser.Scene{
     const exit=this.mode==='piano'?{x:536,y:246}:seat?{x:seat.x,y:seat.approachY}:{x:320,y:219};
     if(this.mode==='piano')releaseDevice('piano');
     this.piano.stop();this.mode='walk';this.seated=null;const point=this.freeExit(exit);this.x=point.x;this.y=point.y;this.facing=0;
-    (document.querySelector('#rehearsal-piano') as HTMLElement).hidden=true;this.message='靠近座位或琴凳按 E。';this.input.keyboard?.resetKeys();
+    (document.querySelector('#rehearsal-piano') as HTMLElement).hidden=true;this.message='E 坐下';this.input.keyboard?.resetKeys();
   }
   private freeExit(exit:{x:number;y:number}){
     const people=onlineWorld()?.bridge.players??[];
@@ -109,10 +109,10 @@ export class RehearsalScene extends Phaser.Scene{
     this.backs.forEach((back,i)=>back.setVisible(this.seated===i).setDepth(seats[i].y+2));
     this.chairs.forEach((chair,i)=>chair.setDepth(this.seated===i?seats[i].y-1:seats[i].y+10));
     const t=this.nearest(),button=document.querySelector<HTMLButtonElement>('#interact')!;
-    button.disabled=this.mode==='walk'&&!t;button.textContent=this.mode!=='walk'?this.mode==='podium'?'下指挥台':'起身':t?t.kind==='seat'?`坐到 ${seats[t.index].id}`:t.kind==='piano'?'坐下弹钢琴':'上指挥台':'靠近椅子或琴凳';
-    document.querySelector('#mode')!.textContent={walk:moving?'在排练厅走动':'站在排练厅',seat:`坐在 ${this.seated===null?'':seats[this.seated].id}`,piano:'正在弹钢琴',podium:'站在指挥台'}[this.mode];
+    button.disabled=this.mode==='walk'&&!t;button.textContent=this.mode!=='walk'?this.mode==='podium'?'下指挥台':'起身':t?t.kind==='seat'?`坐到 ${seats[t.index].id}`:t.kind==='piano'?'坐下弹钢琴':'上指挥台':'';
+    document.querySelector('#mode')!.textContent={walk:moving?'':'',seat:`坐在 ${this.seated===null?'':seats[this.seated].id}`,piano:'',podium:''}[this.mode];
     document.querySelector('#hint')!.textContent=this.message;
-    document.querySelector('#rehearsal-state')!.textContent=`前排 4 席 · 后排 6 席 · 钢琴 ${this.piano.notesPlayed} 次触键`;
+    document.querySelector('#rehearsal-state')!.textContent='';
     document.querySelector('#guide-title')!.textContent='WASD / 方向键移动';
     document.querySelector('#guide-action')!.textContent=this.mode==='piano'?'Z / Q 两排弹琴 · ↑↓ 切换音区 · Esc 起身':this.mode!=='walk'?'E / Esc 起身':t?`E · ${button.textContent}`:'';
   }

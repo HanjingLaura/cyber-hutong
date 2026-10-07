@@ -300,3 +300,4 @@ html.touch-ui .bag-grid { gap:6px; }
 html.touch-ui .cabinet { grid-template-columns:repeat(auto-fill,minmax(100px,1fr));max-height:56dvh; }
 html.touch-ui #life-ui .bag-dialog,html.touch-ui #life-ui .cabinet-dialog { border-width:3px 0 0; }
 .cabinet-item figcaption { flex:1; } .cabinet-item button { margin-top:auto; }
+#perler-message:empty,#fridge-message:empty,#memory-caption:empty,#memory-status:empty,#blind-result:empty,#arcade-help:empty,#perler-count:empty,.hint:empty,.speech:empty,.npc-speech:empty,#guide-action:empty,#scene-mark:empty,.cabinet-empty:empty,#table-menu-title:empty{display:none}

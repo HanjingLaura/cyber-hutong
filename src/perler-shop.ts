@@ -16,7 +16,7 @@ export class PerlerShopScene extends Phaser.Scene{
   private keys!:Record<string,Phaser.Input.Keyboard.Key>;
   private x=320;private y=335;private facing=2;private seated:number|null=null;private lastSeat=4;
   private returnPoint={x:320,y:335};private stored:{name:ItemName;seasoning:string[]}|null=null;
-  private message='靠近圆凳按 E 拼豆，右上方是熨烫台。';
+  private message='E 拼豆';
   constructor(){super('perler');}
   preload(){const load=(k:string,u:string)=>{if(!this.textures.exists(k))this.load.image(k,u);};load('perler-room-v2',new URL('../assets/drafts/perler-shop-v2.png',import.meta.url).href);load('perler-furniture-v2',new URL('../assets/drafts/perler-furniture-v2.png',import.meta.url).href);}
   create(){
@@ -55,12 +55,12 @@ export class PerlerShopScene extends Phaser.Scene{
     window.__perlerPreview={getState:()=>({ready:true,active:this.sys.isActive(),x:this.x,y:this.y,facing:this.facing,seated:this.seated,seats:seats.map((s,index)=>({...s,index,interactive:!!this.chairs[index].input})),nearest:this.nearest(),hand:playerInventory.hand,stored:this.stored,workshop:this.workshop.getState(),message:this.message})};world.focus();
   }
   private nearest(){return targets.filter(t=>Math.hypot(this.x-t.x,this.y-t.y)<27).sort((a,b)=>Math.hypot(this.x-a.x,this.y-a.y)-Math.hypot(this.x-b.x,this.y-b.y))[0];}
-  private stand(){this.seated=null;this.x=this.returnPoint.x;this.y=this.returnPoint.y;this.facing=0;this.message='底板已保存';}
+  private stand(){this.seated=null;this.x=this.returnPoint.x;this.y=this.returnPoint.y;this.facing=0;this.message='';}
   private sit(index:number){
     if(playerInventory.hand){this.message='需要空手';return;}
     this.input.keyboard?.resetKeys();this.returnPoint={x:this.x,y:this.y};this.seated=index;this.lastSeat=index;
     this.x=seats[index].x;this.y=seats[index].y-4;this.facing=2;
-    this.message='E / Esc 结束拼豆。';
+    this.message='Esc 结束';
     this.workshop.open(index);
   }
   private interact(){
@@ -68,14 +68,14 @@ export class PerlerShopScene extends Phaser.Scene{
     const t=this.nearest();if(!t)return;
     if(t.kind==='stash'){
       if(sharedAction('perler:stash',playerInventory.hand?'put':'take',{slot:0}))return;
-      if(playerInventory.hand){if(this.stored){this.message='储物格已满';return;}this.stored={name:playerInventory.hand,seasoning:[...playerInventory.noodleSeasoning]};playerInventory.hand=null;this.message='物品存好了。';}
-      else if(this.stored){playerInventory.hand=this.stored.name;playerInventory.noodleSeasoning=[...this.stored.seasoning];this.stored=null;this.message='拿回了物品。';}
-      else this.message='储物格';return;
+      if(playerInventory.hand){if(this.stored){this.message='储物格已满';return;}this.stored={name:playerInventory.hand,seasoning:[...playerInventory.noodleSeasoning]};playerInventory.hand=null;this.message='';}
+      else if(this.stored){playerInventory.hand=this.stored.name;playerInventory.noodleSeasoning=[...this.stored.seasoning];this.stored=null;this.message='';}
+      else this.message='';return;
     }
     if(t.kind==='gallery'){this.workshop.open(this.lastSeat,true);return;}
     if(playerInventory.hand){this.message='需要空手';return;}
     this.input.keyboard?.resetKeys();
-    if(t.kind==='iron'){this.workshop.open(this.lastSeat);this.message='熨烫中';return;}
+    if(t.kind==='iron'){this.workshop.open(this.lastSeat);this.message='';return;}
     this.sit(t.index);
   }
   private canWalk(x:number,y:number){
@@ -108,13 +108,13 @@ export class PerlerShopScene extends Phaser.Scene{
     
     const t=this.nearest(),button=document.querySelector<HTMLButtonElement>('#interact')!;
     button.disabled=this.workshop.dialog.open||this.seated===null&&!t;
-    button.textContent=this.seated!==null?'起身':t?{seat:'坐下拼豆',iron:'使用熨烫台',gallery:'查看作品',stash:'存放 / 拿回物品'}[t.kind]:'靠近圆凳或熨烫台';
+    button.textContent=this.seated!==null?'起身':t?{seat:'坐下拼豆',iron:'使用熨烫台',gallery:'查看作品',stash:'存放 / 拿回物品'}[t.kind]:'';
     document.querySelector('#mode')!.textContent=this.seated!==null?'坐着拼豆':moving?'在拼豆店走动':'站在拼豆店';
     document.querySelector('#hint')!.textContent=this.message;
     document.querySelector('#perler-hand')!.textContent=`手中：${playerInventory.hand??'空'} · 储物格：${this.stored?.name??'空'}`;
-    document.querySelector('#perler-count')!.textContent=`作品 ${this.workshop.works.length} 件 · 八张独立底板`;
+    document.querySelector('#perler-count')!.textContent='';
     (document.querySelector('#perler-continue') as HTMLButtonElement).hidden=this.seated===null;
     document.querySelector('#guide-title')!.textContent='WASD / 方向键移动';
-    document.querySelector('#guide-action')!.textContent=this.seated!==null?'E / Esc 结束拼豆':t?`E · ${button.textContent}`:'靠近圆凳按 E 拼豆';
+    document.querySelector('#guide-action')!.textContent=this.seated!==null?'E / Esc 结束拼豆':t?`E · ${button.textContent}`:'E 拼豆';
   }
 }

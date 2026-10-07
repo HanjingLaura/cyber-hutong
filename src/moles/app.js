@@ -100,10 +100,10 @@ function result() {
   best = Math.max(best, game.score); storage.set('hutong-moles-best', best);
   $('play').hidden = true; $('result').hidden = false;
   $('final-score').textContent = game.score;
-  $('record').textContent = game.score > previous ? `新纪录！比之前多 ${game.score - previous} 分。` : `本机最高 ${best} 分 · 下次再挑战`;
+  $('record').textContent = '';
   $('leaders').replaceChildren();
   const leaders = game.leaders();
-  if (!leaders.length) $('leaders').textContent = '无人命中';
+  if (!leaders.length) $('leaders').textContent = '';
   for (const id of leaders) {
     const person = document.createElement('div'); person.className = 'leader';
     person.innerHTML = `<canvas width="100" height="128" aria-hidden="true"></canvas><p><b>${names[IDS.indexOf(id)]}</b><br>${game.counts[id]} 次${leaders.length > 1 ? ' · 并列' : ''}</p>`;
@@ -117,7 +117,7 @@ function render() {
   lastPhase = game.phase;
   $('score').textContent = game.score; $('time').textContent = game.remaining;
   $('combo').textContent = game.combo; $('best').textContent = best;
-  $('saved-best').textContent = `本机最高 ${best} 分`;
+  $('saved-best').textContent = '';
   $('countdown').hidden = game.phase !== 'countdown';
   if (game.phase === 'countdown') $('countdown').textContent = Math.max(1, Math.ceil((game.countdownEnd - game.now()) / 1000));
   for (const [hole, button] of holeButtons.entries()) {

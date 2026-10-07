@@ -71,8 +71,8 @@ export class ArcadeGames {
     document.querySelector('#arcade-title')!.textContent=names[kind];
     document.querySelector<HTMLElement>('#arcade-undo')!.hidden=kind!=='spider';
     document.querySelector<HTMLElement>('#arcade-action')!.hidden=kind==='mines'||kind==='hockey';
-    document.querySelector('#arcade-action')!.textContent=kind==='basketball'?'投篮 · Space':kind==='claw'?'抓取 · Space':'发牌';
-    document.querySelector('#arcade-help')!.textContent=kind==='basketball'?'鼠标 / ← → 瞄准 · Space 投篮 · 10 次机会':kind==='hockey'?'鼠标 / WASD 移动球锤 · 先得 5 分获胜':kind==='mines'?'点击翻格 · 右键插旗':kind==='spider'?'单花色 · 点牌，再点目标列 · K → A 收齐':'← → / A D 移动 · Space 抓取';
+    document.querySelector('#arcade-action')!.textContent=kind==='basketball'?'投篮':kind==='claw'?'抓取':'发牌';
+    document.querySelector('#arcade-help')!.textContent=kind==='basketball'?'← → 瞄准 · Space 投篮':kind==='hockey'?'WASD 移动':kind==='mines'?'点击翻格 · 右键插旗':kind==='spider'?'点牌 · 点目标列':'← → 移动 · Space 抓取';
     this.dialog.showModal();this.draw();this.previous=performance.now();this.tick(this.previous);
   }
   private restart(){
@@ -85,12 +85,12 @@ export class ArcadeGames {
   }
   private action(){
     if(this.kind==='basketball')this.sports.shoot();
-    if(this.kind==='spider'){if(!this.spider.deal())this.message='先填满空列';else this.message='';this.selection=null;this.draw();}
+    if(this.kind==='spider'){if(!this.spider.deal())this.message='';else this.message='';this.selection=null;this.draw();}
     if(this.kind==='claw'&&this.phase==='ready'&&!this.waiting&&this.prizes.length)void this.startClaw();
   }
   private loadPrizes(){const remaining=personalProgress().find(p=>p.kind==='claw'&&p.key==='machine')?.data.remaining??[0,1,2,3,4,5];this.prizes=(remaining.length?remaining:[0,1,2,3,4,5]).map((i:number)=>({x:[140,220,300,380,460,530][i],color:i%5}));}
-  private async startClaw(){this.waiting=true;const aim=this.clawX;try{const service=onlineWorld();if(!service?.bridge.user?.role)throw Error('登录后可以抓取娃娃');const result=await service.reward('claw-start',{aim});if(!this.dialog.open){await service.reward('claw-cancel',{round:result.round});return;}this.round=result.round;this.phase='down';this.phaseTime=performance.now();this.clawStartX=this.clawX=aim;this.captured=null;this.message='';}catch(e){this.message=(e as Error).message;}finally{this.waiting=false;this.draw();}}
-  private async finishClaw(){this.waiting=true;try{const result=await onlineWorld()!.reward('claw-finish',{round:this.round});this.wins=result.wins;if(Array.isArray(result.remaining))this.prizes=(result.remaining.length?result.remaining:[0,1,2,3,4,5]).map((i:number)=>({x:[140,220,300,380,460,530][i],color:i%5}));else if(result.won&&this.captured!==null)this.prizes.splice(this.captured,1);this.message=result.won?(result.collected?'抓到了，放进收藏':'抓到了，拿在手上'):'没抓到，再试一次';}catch(e){this.message=(e as Error).message;}finally{this.waiting=false;this.round=null;this.captured=null;this.phase='ready';this.clawX=110;this.draw();}}
+  private async startClaw(){this.waiting=true;const aim=this.clawX;try{const service=onlineWorld();if(!service?.bridge.user?.role)throw Error('请先登录');const result=await service.reward('claw-start',{aim});if(!this.dialog.open){await service.reward('claw-cancel',{round:result.round});return;}this.round=result.round;this.phase='down';this.phaseTime=performance.now();this.clawStartX=this.clawX=aim;this.captured=null;this.message='';}catch(e){this.message=(e as Error).message;}finally{this.waiting=false;this.draw();}}
+  private async finishClaw(){this.waiting=true;try{const result=await onlineWorld()!.reward('claw-finish',{round:this.round});this.wins=result.wins;if(Array.isArray(result.remaining))this.prizes=(result.remaining.length?result.remaining:[0,1,2,3,4,5]).map((i:number)=>({x:[140,220,300,380,460,530][i],color:i%5}));else if(result.won&&this.captured!==null)this.prizes.splice(this.captured,1);this.message='';}catch(e){this.message=(e as Error).message;}finally{this.waiting=false;this.round=null;this.captured=null;this.phase='ready';this.clawX=110;this.draw();}}
   private step(column:number){return Math.min(17,265/Math.max(1,this.spider.columns[column].length));}
   private cardClick(x:number,y:number){
     const column=Math.floor((x-20)/60);if(column<0||column>9||y<70)return;
@@ -99,7 +99,7 @@ export class ArcadeGames {
       if(this.spider.move(this.selection.column,this.selection.index,column)){this.selection=null;this.message='';this.draw();return;}
       if(this.selection.column===column&&this.selection.index===index){this.selection=null;this.draw();return;}
     }
-    if(this.spider.canSelect(column,index)){this.selection={column,index};this.message='';}else this.message='选择连续递减的明牌';
+    if(this.spider.canSelect(column,index)){this.selection={column,index};this.message='';}else this.message='';
     this.draw();
   }
   private tick(now:number){
@@ -146,7 +146,7 @@ export class ArcadeGames {
         if(this.mines.bombs.has(i)&&(open||this.mines.outcome==='lost'))this.bomb(x,y);
         else if(open&&this.mines.number(i))this.text(String(this.mines.number(i)),x+9,y+21,['','#285688','#246343','#a94850','#664d8e'][this.mines.number(i)]??'#292f43',18);
       }
-      this.text(this.mines.outcome==='won'?'通关！':this.mines.outcome==='lost'?'踩到地雷了':'',170,395,'#ebbd87');
+      
     }else if(this.kind==='spider'){
       this.text(`收齐 ${this.spider.completed}/8`,20,33);this.text(`步数 ${this.spider.moves}`,210,33);this.text(`待发 ${this.spider.stock.length}`,470,33);
       this.spider.columns.forEach((column,col)=>{
@@ -157,7 +157,7 @@ export class ArcadeGames {
           else this.rect(x+7,y+6,35,5,'#7a91aa');
           if(this.selection?.column===col&&this.selection.index<=index){this.ctx.strokeStyle='#ebcf6d';this.ctx.lineWidth=2;this.ctx.strokeRect(x+1,y+1,47,57);}
         });
-      });this.text(this.spider.completed===8?'通关！':this.message,20,406,'#edcf82',12);
+      });this.text(this.spider.completed===8?'':this.message,20,406,'#edcf82',12);
     }else {
       this.rect(70,30,500,340,'#db8fa7');this.rect(82,43,476,265,'#83bbc2');this.rect(91,53,458,247,'#24434f');
       this.rect(93,65,454,7,'#a9c6cb');this.rect(86,313,116,45,'#272b36');this.rect(94,320,100,29,'#111b26');
