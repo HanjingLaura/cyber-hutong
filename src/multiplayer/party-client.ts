@@ -20,7 +20,9 @@ export function mergePartyPlayers(partyPlayers: Player[], ssePlayers: Player[], 
     // Never take an offline (autonomy) copy of yourself: you are live in this tab.
     if (p.role === selfRole ? !offline : offline) map.set(p.role, p);
   }
-  for (const p of partyPlayers) map.set(p.role, p);
+  // Pose comes from PartyKit; the held item is server-authoritative when the server knows this player.
+  const server = new Map(ssePlayers.map(p => [p.role, p]));
+  for (const p of partyPlayers) { const s = server.get(p.role); map.set(p.role, s && !(s as Player & { offline?: boolean }).offline ? { ...p, hand: s.hand } : p); }
   return [...map.values()];
 }
 

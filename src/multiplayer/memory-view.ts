@@ -141,7 +141,7 @@ export function setupMemoryView(dialog:HTMLDialogElement,bridge:MultiplayerBridg
    const label=document.createElement('span');label.textContent=item.data?.version===1?(rooms as Record<string,{name:string}>)[item.scene]?.name??item.scene:'未留下画面';b.append(thumbnail,label);b.onclick=()=>void show(j);strip.append(b);
   }
   if(!e){status.textContent='还没有记录';return;}
-  if(e.data?.version!==1){status.textContent='这段旧经历没有留下画面';return;}
+  if(e.data?.version!==1){status.textContent='无画面';return;}
   try{const buffer=document.createElement('canvas');buffer.width=640;buffer.height=360;await paint(buffer,e,bridge);if(epoch!==current)return;ctx.imageSmoothingEnabled=false;ctx.drawImage(buffer,0,0);canvas.dataset.ready='true';canvas.dataset.seq=String(e.seq);canvas.dataset.actors=String(e.data.actors?.length??0);}catch{if(epoch===current)status.textContent='画面素材未能加载';}
  }
  previous.onclick=()=>void show(index-1);next.onclick=()=>void show(index+1);

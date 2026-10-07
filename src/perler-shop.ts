@@ -32,7 +32,7 @@ export class PerlerShopScene extends Phaser.Scene{
         if(this.workshop.dialog.open)return;
         if(this.seated===index){this.stand();return;}
         if(this.seated!==null)return;
-        if(Math.hypot(this.x-seat.x,this.y-seat.approach)>=27){this.message='走近这把凳子再坐下。';return;}
+        if(Math.hypot(this.x-seat.x,this.y-seat.approach)>=27){this.message='走近一点';return;}
         this.sit(index);
       });this.chairs.push(chair);
     });
@@ -57,7 +57,7 @@ export class PerlerShopScene extends Phaser.Scene{
   private nearest(){return targets.filter(t=>Math.hypot(this.x-t.x,this.y-t.y)<27).sort((a,b)=>Math.hypot(this.x-a.x,this.y-a.y)-Math.hypot(this.x-b.x,this.y-b.y))[0];}
   private stand(){this.seated=null;this.x=this.returnPoint.x;this.y=this.returnPoint.y;this.facing=0;this.message='底板已保存';}
   private sit(index:number){
-    if(playerInventory.hand){this.message='拼豆需要空手，先存到左下方储物格。';return;}
+    if(playerInventory.hand){this.message='需要空手';return;}
     this.input.keyboard?.resetKeys();this.returnPoint={x:this.x,y:this.y};this.seated=index;this.lastSeat=index;
     this.x=seats[index].x;this.y=seats[index].y-4;this.facing=2;
     this.message='E / Esc 结束拼豆。';
@@ -68,14 +68,14 @@ export class PerlerShopScene extends Phaser.Scene{
     const t=this.nearest();if(!t)return;
     if(t.kind==='stash'){
       if(sharedAction('perler:stash',playerInventory.hand?'put':'take',{slot:0}))return;
-      if(playerInventory.hand){if(this.stored){this.message='先拿回储物格里的物品。';return;}this.stored={name:playerInventory.hand,seasoning:[...playerInventory.noodleSeasoning]};playerInventory.hand=null;this.message='物品存好了。';}
+      if(playerInventory.hand){if(this.stored){this.message='储物格已满';return;}this.stored={name:playerInventory.hand,seasoning:[...playerInventory.noodleSeasoning]};playerInventory.hand=null;this.message='物品存好了。';}
       else if(this.stored){playerInventory.hand=this.stored.name;playerInventory.noodleSeasoning=[...this.stored.seasoning];this.stored=null;this.message='拿回了物品。';}
       else this.message='储物格';return;
     }
     if(t.kind==='gallery'){this.workshop.open(this.lastSeat,true);return;}
-    if(playerInventory.hand){this.message='拼豆和熨烫需要空手，先存到左下方储物格。';return;}
+    if(playerInventory.hand){this.message='需要空手';return;}
     this.input.keyboard?.resetKeys();
-    if(t.kind==='iron'){this.workshop.open(this.lastSeat);this.message='在熨烫台处理刚才的底板。';return;}
+    if(t.kind==='iron'){this.workshop.open(this.lastSeat);this.message='熨烫中';return;}
     this.sit(t.index);
   }
   private canWalk(x:number,y:number){

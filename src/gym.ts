@@ -64,11 +64,11 @@ export class GymScene extends Phaser.Scene {
   private stop(){const wasWalking=this.mode==='walk';if(this.mode==='run'||this.mode==='curl')releaseDevice(this.mode==='run'?`run-${this.machine}`:'curl');if(wasWalking){this.liftStart=null;return;}this.mode='walk';this.liftStart=null;this.breathTime=0;this.x=this.returnPoint.x;this.y=this.returnPoint.y;this.facing=0;this.message='训练结束。';this.belt.clear();}
   private begin(kind:Mode,index:number){
     this.machine=index;this.mode=kind;this.input.keyboard?.resetKeys();
-    if(kind==='run'){this.returnPoint={x:treadmills[index],y:155};this.x=treadmills[index];this.y=127;this.facing=2;this.message='F 切换速度，E / Esc 下机。';return;}
+    if(kind==='run'){this.returnPoint={x:treadmills[index],y:155};this.x=treadmills[index];this.y=127;this.facing=2;this.message='F F 调速 · Esc 下机';return;}
     this.returnPoint={x:this.x,y:this.y};
-    if(kind==='curl'){this.x=123;this.y=115;this.facing=0;this.message='Space 举一次哑铃，E / Esc 放回。';}
+    if(kind==='curl'){this.x=123;this.y=115;this.facing=0;this.message='Space Space 举 · Esc 放回';}
     if(kind==='rest'){this.x=benches[index].x;this.y=benches[index].y;this.facing=0;this.message='E / Esc 起身。';}
-    if(kind==='breathe'){this.x=561;this.y=297;this.facing=0;this.breathTime=0;this.message='跟着节奏吸气、呼气，E / Esc 结束。';}
+    if(kind==='breathe'){this.x=561;this.y=297;this.facing=0;this.breathTime=0;this.message='Esc 结束';}
   }
   private storage(){
     const list=document.querySelector('#gym-storage-items')!;list.replaceChildren();
@@ -80,7 +80,7 @@ export class GymScene extends Phaser.Scene {
   private interact(){
     if(this.mode!=='walk'){this.stop();return;}
     const target=this.nearest();if(!target)return;
-    if(playerInventory.hand&&['run','curl'].includes(target.kind)){this.message='训练需要空手，先存放物品。';return;}
+    if(playerInventory.hand&&['run','curl'].includes(target.kind)){this.message='需要空手';return;}
     if(['run','curl'].includes(target.kind)){
       const kind=target.kind as 'run'|'curl';
       const index=target.index;
@@ -90,7 +90,7 @@ export class GymScene extends Phaser.Scene {
     }
     if(target.kind==='stash'){this.storage();return;}
     if(target.kind==='water'){
-      if(playerInventory.hand){this.message='手里已有物品，先存到旁边储物架。';return;}
+      if(playerInventory.hand){this.message='手上有东西';return;}
       if(sharedAction('gym:water','supply',{item:'水'}))return;
       playerInventory.hand='水';playerInventory.noodleSeasoning=[];this.message='接了一瓶水';return;
     }

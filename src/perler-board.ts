@@ -89,7 +89,7 @@ export class PerlerBoard {
   private cancelIron(){if(this.timer)clearTimeout(this.timer);this.timer=undefined;this.revision++;this.busy=false;this.render();}
   private iron(){
     if(this.busy||this.board.fused||!this.board.cells.some(c=>c>=0))return;
-    this.commitStroke();this.busy=true;this.message='覆上烫纸，正在熨烫…';this.render();const revision=++this.revision;
+    this.commitStroke();this.busy=true;this.message='熨烫中…';this.render();const revision=++this.revision;
     this.timer=setTimeout(async()=>{if(revision!==this.revision||!this.dialog.open)return;this.timer=undefined;const work={cells:[...this.board.cells],pattern:this.board.pattern,created:Date.now()},board=this.board;
       try{if(onlineWorld()?.bridge.user?.role)await onlineWorld()!.saveNow('bead',String(work.created),work);else{this.works.push(work);this.works=this.works.slice(-24);}board.fused=true;this.message='熨好了';this.save();this.onChange();}catch(e){this.message=(e as Error).message;}finally{this.busy=false;this.render();}
     },1000);

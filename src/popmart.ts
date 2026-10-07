@@ -142,11 +142,11 @@ export class PopMartScene extends Phaser.Scene {
     if(this.capsule==='ready'){
       this.capsule='opened';
       if(!onlineWorld()?.bridge.user?.role)playerInventory.hand=gachaItems[this.capsuleToy] as ItemName;
-      result.innerHTML=`<img alt="${gachaNames[this.capsuleToy]}" src="${this.gachaImages[this.capsuleToy]}"/><strong>${gachaNames[this.capsuleToy]}</strong><p>已拿在手里 · 关闭后可带走</p>`;
+      result.innerHTML=`<img alt="${gachaNames[this.capsuleToy]}" src="${this.gachaImages[this.capsuleToy]}"/><strong>${gachaNames[this.capsuleToy]}</strong><p>拿在手上</p>`;
       this.render();return;
     }
     const service=onlineWorld();
-    if(playerInventory.hand){if(service)service.notice('先把手里的物品放下，再转扭蛋');else result.textContent='先把手里的物品放下，再转扭蛋';return;}
+    if(playerInventory.hand){if(service)service.notice('手上有东西');else result.textContent='手上有东西';return;}
     if(service?.bridge.user?.role){this.busy=true;this.capsule='spinning';this.spinStarted=Date.now();this.render();void service.action('pop:classic','gacha').then(data=>{this.capsuleToy=data.progress.filter((p:any)=>p.kind==='gacha').at(-1)?.data.toy??0;this.busy=false;this.capsule='ready';this.render();this.renderCollection();}).catch(e=>{this.busy=false;this.capsule='idle';this.render();service.notice(e.message);});return;}
     this.busy=true;this.capsule='spinning';this.spinStarted=Date.now();
     result.replaceChildren();this.render();

@@ -21,10 +21,10 @@ export function setupNavigation(bridge:MultiplayerBridge,request:(path:string,in
  };
  const open=()=>{
   if(busy)return;
-  if(!exitNear()||document.querySelector('dialog[open]')){notice('先结束互动，再走到出口');return;}
+  if(!exitNear()||document.querySelector('dialog[open]')){notice('先走到出口');return;}
   selected=null;const p=bridge.state();
   dialog.querySelector('[data-current]')!.textContent='当前位置：'+(p?rooms[p.scene as RoomKey].name:'');
-  dialog.querySelector('[data-error]')!.textContent='点选地点，再点「进入」。';
+  dialog.querySelector('[data-error]')!.textContent='';
   const list=dialog.querySelector('[data-places]')!;list.replaceChildren();
   for(const group of ['办公','休闲','出行']){
    const section=document.createElement('section'),label=document.createElement('strong');label.textContent=group;section.append(label);
@@ -56,7 +56,7 @@ export function setupNavigation(bridge:MultiplayerBridge,request:(path:string,in
  };
  const go=async(target:RoomKey)=>{
   if(busy)return;
-  if(!exitNear()||document.querySelector('dialog[open]:not(#location-map)')){notice('先结束互动，再走到出口');return;}
+  if(!exitNear()||document.querySelector('dialog[open]:not(#location-map)')){notice('先走到出口');return;}
   const before=bridge.state()!;busy=true;bridge.transitioning=true;let committed=false;
   dialog.querySelectorAll<HTMLButtonElement>('[data-place]').forEach(b=>b.disabled=true);
   warmRoom(target);

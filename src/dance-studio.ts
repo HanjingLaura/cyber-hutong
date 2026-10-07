@@ -65,13 +65,13 @@ export class DanceStudioScene extends Phaser.Scene {
   }
   private async start(mode:'dance'|'practice'){
     if(this.mode!=='walk')return;
-    if(playerInventory.hand){this.message='先将手中物品存到右侧储物格。';return;}
+    if(playerInventory.hand){this.message='手上有东西';return;}
     const revision=++this.revision;
     try{await this.beat.start();}catch{this.message='音响未能播放，请再试一次。';return;}
     if(revision!==this.revision||!this.sys.isActive())return;
     this.returnPoint={x:this.x,y:this.y};this.x=320;this.y=249;this.facing=2;this.mode=mode;
     this.results=sequence.map(()=>null);this.score=0;this.input.keyboard?.resetKeys();
-    this.message=mode==='dance'?'跟着节拍对镜跳舞。E / Esc 停止。':'四拍准备，再跟随方向键。E / Esc 结束。';
+    this.message=mode==='dance'?'Esc 停止':'方向键跟拍 · Esc 结束';
   }
   private stop(){
     this.revision++;
@@ -83,7 +83,7 @@ export class DanceStudioScene extends Phaser.Scene {
     const period=60000/this.beat.bpm,position=(performance.now()-this.beat.epoch)/period-4,index=Math.round(position);
     if(index<0||index>=sequence.length||this.results[index]!==null||Math.abs(position-index)*period>160)return;
     this.results[index]=direction===sequence[index]?'hit':'miss';
-    if(this.results[index]==='hit'){this.score++;this.message='踩中节拍！';}else this.message='方向不对，跟下一拍。';
+    if(this.results[index]==='hit'){this.score++;this.message='踩中节拍！';}else this.message='错拍';
   }
   private interact(){
     if(this.mode!=='walk'){this.stop();return;}
@@ -92,11 +92,11 @@ export class DanceStudioScene extends Phaser.Scene {
     if(target.kind==='music'){if(this.beat.playing)this.beat.stop();else void this.beat.start().catch(()=>{this.message='音响未能播放，请再试一次。';});return;}
     if(target.kind==='stash'){
       if(sharedAction('dance:stash',playerInventory.hand?'put':'take',{slot:0}))return;
-      if(playerInventory.hand){if(this.stored){this.message='储物格已有物品，先拿回。';return;}this.stored={name:playerInventory.hand,seasoning:[...playerInventory.noodleSeasoning]};playerInventory.hand=null;this.message='物品已存好。';}
+      if(playerInventory.hand){if(this.stored){this.message='储物格已满';return;}this.stored={name:playerInventory.hand,seasoning:[...playerInventory.noodleSeasoning]};playerInventory.hand=null;this.message='物品已存好。';}
       else if(this.stored){playerInventory.hand=this.stored.name;playerInventory.noodleSeasoning=[...this.stored.seasoning];this.stored=null;this.message='拿回物品。';}
       else this.message='储物架';return;
     }
-    this.returnPoint={x:this.x,y:this.y};this.mode='sit';this.x=88;this.y=282;this.facing=0;this.message='坐下休息，E / Esc 起身。';
+    this.returnPoint={x:this.x,y:this.y};this.mode='sit';this.x=88;this.y=282;this.facing=0;this.message='Esc 起身';
   }
   private canWalk(x:number,y:number){
     if(guestBlocks('lulu',x,y))return false;
