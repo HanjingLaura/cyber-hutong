@@ -146,10 +146,30 @@
   background: #17231c;
 }
 
-@media (max-width: 520px) {
-  .desk-icons {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    padding-bottom: 48px;
-  }
-  .desk-screen { height: min(320px, 62dvh); }
+
+/* Pixel monitor: 208×176 sprite drawn at 2×, screen well at (12,12)-(195,131). */
+#desk-computer { width:416px;max-width:calc(100vw - 16px); }
+.desk-bezel { position:relative;width:416px;height:352px;padding:0;border:0;box-shadow:none;background:url('../assets/ui/desk-monitor.png') 0 0/416px 352px no-repeat;image-rendering:pixelated;filter:drop-shadow(4px 6px 0 #0a1210aa); }
+.desk-titlebar { position:absolute;right:-6px;top:-10px;margin:0;padding:0;border:0;z-index:3; }
+.desk-title { display:none; }
+.desk-screen { position:absolute;left:24px;top:24px;width:368px;height:240px;border:0;box-shadow:inset 0 0 0 2px #0006;background:#1a2740; }
+.desk-wallpaper { background:url('../assets/ui/desk-wallpaper.png') 0 0/368px 240px no-repeat;image-rendering:pixelated; }
+.desk-wallpaper::after { background:repeating-linear-gradient(0deg,transparent 0 3px,#0000000f 3px 4px);opacity:1; }
+.desk-icons { grid-template-columns:repeat(4,64px);justify-content:start;gap:8px 14px;padding:14px 16px 40px; }
+.desk-app { gap:3px;padding:3px 0; }
+.desk-app img { width:64px;height:64px;background:none;border:0;box-shadow:none;filter:drop-shadow(2px 2px 0 #0008); }
+.desk-taskbar { min-height:24px;background:#c4c8ba;border-top:2px solid #e8eadf;color:#20261f;box-shadow:inset 0 -2px 0 #8a8e80; }
+.desk-start { background:#d8dccd;border:2px solid;border-color:#f4f5ee #6f7366 #6f7366 #f4f5ee;box-shadow:none;color:#20261f;font-weight:600; }
+.desk-clock { background:#b6baac;border:1px solid;border-color:#7d8174 #f0f1ea #f0f1ea #7d8174;color:#20261f; }
+@media (max-width: 440px) {
+  #desk-computer { width:312px; }
+  .desk-bezel { width:312px;height:264px;background-size:312px 264px; }
+  .desk-screen { left:18px;top:18px;width:276px;height:180px; }
+  .desk-wallpaper { background-size:276px 180px; }
+  .desk-icons { grid-template-columns:repeat(4,48px);gap:6px 14px;padding:10px 12px 30px; }
+  .desk-app img { width:48px;height:48px; }
+  .desk-screen { height:180px; }
 }
+#desk-computer { padding-top:34px;overflow:visible; }
+#desk-computer .desk-titlebar { top:-34px;right:0; }
+#desk-computer .desk-close { width:32px;height:28px; }

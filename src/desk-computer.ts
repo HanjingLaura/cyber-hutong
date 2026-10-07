@@ -5,7 +5,7 @@ import codexIcon from '../assets/ui/codex-app-icon.png';
 import feishuIcon from '../assets/ui/feishu-app-icon.png';
 
 const apps = [
-  { id: 'grokbot', name: 'Grokbot', href: 'https://grok.com/', icon: grokIcon },
+  { id: 'grokbot', name: 'Grok Bot', href: 'https://grok.com/', icon: grokIcon },
   { id: 'codex', name: 'Codex', href: 'https://chatgpt.com/codex/', icon: codexIcon },
   { id: 'ani', name: 'Ani', href: 'https://app.ani.cool/', icon: aniIcon },
   { id: 'feishu', name: '飞书', href: 'https://www.feishu.cn/', icon: feishuIcon },
@@ -41,7 +41,7 @@ function ensure() {
     link.target = '_blank';
     link.rel = 'noopener noreferrer';
     link.dataset.app = app.id;
-    link.innerHTML = `<img src="${app.icon}" alt="" width="48" height="48" draggable="false"/><span>${app.name}</span>`;
+    link.innerHTML = `<img src="${app.icon}" alt="" width="64" height="64" draggable="false"/><span>${app.name}</span>`;
     icons.append(link);
   }
   root.querySelector('.desk-close')!.addEventListener('click', () => closeDeskComputer());
