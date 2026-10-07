@@ -5,7 +5,7 @@ import { preloadGuest, placeGuest, guestBlocks } from './easter-eggs';
 import { gacha } from './gacha';
 import {onlineWorld} from './multiplayer/world-client';
 import { registerRegions } from './frames';
-import { blindBoxes, themes, type Theme, toyNames, toyImage, setToyImages, type ToyRecord } from './blind-box';
+import { blindBoxes, type Theme, toyNames, toyImage, type ToyRecord } from './blind-box';
 
 type Source = 'shelf' | 'machine';
 const shopFloor=new Phaser.Geom.Polygon([200,150,237.5,150,237.5,287.5,405,287.5,405,150,460,150,550,305,415,310,415,345,225,345,225,310,85,305]);
@@ -15,7 +15,7 @@ export class PopMartScene extends Phaser.Scene {
   private keys!: Record<string, Phaser.Input.Keyboard.Key>;
   private x = 320; private y = 316; private facing = 2;
   private source: Source = 'shelf';
-  private theme: Theme = 'story';
+  private theme: Theme = 'all';
   private selected: number | null = null;
   private busy = false;
   private boxImages: string[] = [];
@@ -65,9 +65,6 @@ export class PopMartScene extends Phaser.Scene {
       {name:'box-yellow',x0:.185,y0:.478,x1:.227,y1:.598},
     ]));
     this.boxImages=[...this.boxImages,...this.boxImages,...this.boxImages];
-    // Use the pixel packaging until matching IP figure art is available. Do not
-    // relabel unrelated generic toys or insert photographs into the pixel world.
-    setToyImages(Array.from({length:10},(_,i)=>this.boxImages[i%3]));
     this.actor=true;
     this.keys = this.input.keyboard!.addKeys('W,A,S,D,UP,DOWN,LEFT,RIGHT') as Record<string, Phaser.Input.Keyboard.Key>;
     const world = document.querySelector<HTMLElement>('.world')!;
@@ -104,20 +101,13 @@ export class PopMartScene extends Phaser.Scene {
     document.querySelector('#blind-title')!.textContent=this.source==='machine' ? '扭蛋机' : '挑一盒';
     this.menu.dataset.source=this.source;
     this.menu.dataset.theme=this.theme;
-    const themeList=document.querySelector<HTMLElement>('#blind-themes')!;
-    themeList.hidden=this.source==='machine';
+    document.querySelector<HTMLElement>('#blind-themes')!.hidden=true;
     document.querySelector<HTMLElement>('.blind-glass')!.hidden=this.source==='machine';
     const machine=document.querySelector<HTMLElement>('#blind-machine-art')!;
     machine.hidden=this.source!=='machine';
     if(this.source==='machine')this.drawGacha();
-    themeList.innerHTML=Object.entries(themes).map(([id,theme])=>`<button type="button" data-theme="${id}" aria-pressed="${id===this.theme}" ${this.busy?'disabled':''}>${theme.name}</button>`).join('');
-    themeList.querySelectorAll<HTMLButtonElement>('[data-theme]').forEach(button=>button.addEventListener('click',()=>{
-      if(this.busy)return;
-      this.theme=button.dataset.theme as Theme; this.selected=null;
-      document.querySelector('#blind-result')!.replaceChildren(); this.render();
-    }));
     const list=document.querySelector('#blind-boxes')!;
-    list.innerHTML=blindBoxes.stock(this.source,this.theme).map((toy,i)=>`<button type="button" class="blind-slot" data-box="${i}" aria-pressed="${this.selected===i}" ${toy===null || this.busy?'disabled':''} aria-label="${String.fromCharCode(65+Math.floor(i/6))}${i%6+1}${toy===null?' 已取走':''}">${toy===null?'<span class="sold-box">已取走</span>':`<img class="box-art" alt="未拆封盲盒" src="${this.boxImages[Object.keys(themes).indexOf(this.theme)*3+i%3]}"/>`}<span>${String.fromCharCode(65+Math.floor(i/6))}${i%6+1}</span></button>`).join('');
+    list.innerHTML=blindBoxes.stock(this.source,this.theme).map((toy,i)=>`<button type="button" class="blind-slot" data-box="${i}" aria-pressed="${this.selected===i}" ${toy===null || this.busy?'disabled':''} aria-label="${String.fromCharCode(65+Math.floor(i/6))}${i%6+1}${toy===null?' 已取走':''}">${toy===null?'<span class="sold-box">已取走</span>':`<img class="box-art" alt="未拆封盲盒" src="${this.boxImages[i%3]}"/>`}<span>${String.fromCharCode(65+Math.floor(i/6))}${i%6+1}</span></button>`).join('');
     list.querySelectorAll<HTMLButtonElement>('[data-box]').forEach(button=>button.addEventListener('click',()=>{
       if(this.busy) return; this.selected=Number(button.dataset.box); document.querySelector('#blind-result')!.replaceChildren(); this.render();
     }));
@@ -145,7 +135,7 @@ export class PopMartScene extends Phaser.Scene {
   }
   private result(record: ToyRecord) {
     const result=document.querySelector('#blind-result')!;
-    result.innerHTML=`<img alt="盲盒包装" src="${toyImage(record.toy)}"/><strong>${toyNames[record.toy].split(' · ')[0]}</strong>`;
+    const [series,name]=toyNames[record.toy].split(' · ');result.innerHTML=`<div class="blind-reveal"><img alt="${name}" src="${toyImage(record.toy)}"/><div><small>${series}</small><strong>${name}</strong><p>已放进收藏</p></div></div>`;
   }
   private extractCapsule(){
     const result=document.querySelector('#blind-result')!;
@@ -193,12 +183,10 @@ export class PopMartScene extends Phaser.Scene {
   }
   private renderCollection() {
     const records=blindBoxes.data.collection;
-    document.querySelector('#pop-count')!.textContent=`抽取记录 ${records.length+gacha.counts.reduce((a,b)=>a+b,0)}`;
-    document.querySelector('#pop-collection')!.innerHTML=toyNames.map((name,toy)=>{
-      const count=records.filter(r=>r.toy===toy).length;
-      return count?`<div class="collection-toy"><img alt="盲盒包装" src="${toyImage(toy)}"/><span>${name.split(' · ')[0]} × ${count}</span></div>`:'';
-    }).join('')+gacha.counts.map((count,toy)=>count?`<div class="collection-toy"><img alt="扭蛋小玩具" src="${this.gachaImages[toy]}"/><span>扭蛋 × ${count}</span></div>`:'').join('');
-    document.querySelector('#pop-legacy')!.textContent=blindBoxes.data.legacy.length ? `旧版收藏保留：${blindBoxes.data.legacy.join('、')}` : '';
+    const owned=(toy:number)=>records.filter(r=>r.toy===toy).length;
+    document.querySelector('#pop-count')!.textContent=`${new Set(records.map(r=>r.toy)).size} / ${toyNames.length}`;
+    document.querySelector('#pop-collection')!.innerHTML=toyNames.map((name,toy)=>{const n=owned(toy),[,short]=name.split(' · ');return `<div class="lineup-toy${n?'':' locked'}" title="${short}"><img alt="${short}" src="${toyImage(toy)}"/>${n>1?`<b>×${n}</b>`:''}</div>`;}).join('');
+    document.querySelector('#pop-legacy')!.textContent='';
   }
   private canWalk(x:number,y:number) {
     if(guestBlocks('buzz',x,y))return false;

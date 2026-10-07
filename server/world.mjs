@@ -22,7 +22,7 @@ export const objects={
  ...Object.fromEntries([88,173,259,344].map((x,i)=>[`bathroom:door-${i}`,{at:[x,226],open:false}])),
  ...Object.fromEntries([0,1].map(i=>[`elevator:door-${i}`,{at:[i?471:250,253],open:false}])),
  'subway:doors':{at:[320,242],open:false},
- ...Object.fromEntries(['story','classic','bikini'].map(theme=>[`pop:${theme}`,{at:[320,300],stock:Array(18).fill(true)}])),
+ ...Object.fromEntries(['story','classic','bikini','all'].map(theme=>[`pop:${theme}`,{at:[320,300],stock:Array(18).fill(true)}])),
 };
 export function createWorld(store,life){
  const db=store.db;
@@ -61,7 +61,7 @@ export function createWorld(store,life){
     o.open=!o.open;save(o);
    }else if(input.action==='draw'){
     if(!o?.stock||!Number.isInteger(slot)||slot<0||slot>=18||!o.stock[slot])fail(409,'这盒已被取走');
-    o.stock[slot]=false;save(o);const theme=input.object.split(':')[1],pool={story:[0,1,2],classic:[6,7,8,9],bikini:[3,4,5]}[theme];
+    o.stock[slot]=false;save(o);const theme=input.object.split(':')[1],pool={story:[0,1,2],classic:[6,7,8,9],bikini:[3,4,5],all:[0,1,2,3,4,5,6,7,8,9]}[theme];
     const record={toy:pool[randomInt(pool.length)],theme,source:'shelf',slot,at:Date.now(),id:input.requestId};write(user.id,'toy',input.requestId,record);
    }else if(input.action==='gacha'){
     if(input.object!=='pop:classic')fail(400,'机器无效');if(hand)fail(409,'先把手里的物品放下');const toy=randomInt(6);hand=['扭蛋·粉色小熊','扭蛋·薄荷兔子','扭蛋·蓝色机器人','扭蛋·橘猫','扭蛋·紫色小巫师','扭蛋·皇冠小熊'][toy];write(user.id,'gacha',input.requestId,{toy,at:Date.now()});

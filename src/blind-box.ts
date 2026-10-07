@@ -3,6 +3,7 @@ export const themes = {
   story: { name: '玩具总动员', members: [0, 1, 2] },
   bikini: { name: '比奇堡 · 海绵宝宝', members: [3, 4, 5] },
   classic: { name: 'POP MART 经典 IP', members: [6, 7, 8, 9] },
+  all: { name: 'POP MART', members: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] },
 } as const;
 export type Theme = keyof typeof themes;
 export type Stock = (number | null)[];
@@ -18,13 +19,14 @@ function randomToy(theme: Theme) {
   return pool[value % pool.length];
 }
 function stock(theme: Theme): Stock { return Array.from({ length: 18 }, () => randomToy(theme)); }
-function themeStock(): ThemeStock { return { story: stock('story'), bikini: stock('bikini'), classic: stock('classic') }; }
+function themeStock(): ThemeStock { return { story: stock('story'), bikini: stock('bikini'), classic: stock('classic'), all: stock('all') }; }
 function validStock(value: unknown, theme: Theme): value is Stock {
   return Array.isArray(value) && value.length === 18 && value.every(v => v === null || (themes[theme].members as readonly number[]).includes(v));
 }
 function load(): Save {
   try {
     const value = JSON.parse(localStorage.getItem(key) ?? 'null');
+    for (const source of ['shelf','machine']) if (value?.[source] && !value[source].all) value[source].all = stock('all');
     if (value?.version === 2 && ['shelf', 'machine'].every(source => Object.keys(themes).every(theme => validStock(value[source]?.[theme],theme as Theme)))
       && Array.isArray(value.legacy) && value.legacy.every((name:unknown) => typeof name === 'string') && Array.isArray(value.collection)
       && value.collection.every((r:ToyRecord) => r && themes[r.theme] && (themes[r.theme].members as readonly number[]).includes(r.toy) && ['shelf','machine'].includes(r.source) && Number.isInteger(r.slot) && r.slot>=0 && r.slot<18 && Number.isFinite(r.at))) return value;
@@ -51,6 +53,8 @@ export const blindBoxes = {
   refill(source:'shelf'|'machine',theme:Theme) { this.data[source][theme]=stock(theme);this.save(); },
 };
 blindBoxes.save();
-let toyImages:string[]=[];
+// Hand-pixelled Q-style figures, one per toy (assets/props/toys/toy-N.png).
+const figureUrls=import.meta.glob('../assets/props/toys/toy-*.png',{eager:true,query:'?url',import:'default'}) as Record<string,string>;
+let toyImages:string[]=Array.from({length:toyNames.length},(_,i)=>figureUrls[`../assets/props/toys/toy-${i}.png`]);
 export function setToyImages(images:string[]) { toyImages=images; }
 export function toyImage(toy:number) { return toyImages[toy]; }
