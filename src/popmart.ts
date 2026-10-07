@@ -37,6 +37,8 @@ export class PopMartScene extends Phaser.Scene {
   private get menu() { return document.querySelector<HTMLDialogElement>('#blind-menu')!; }
   // The shelf is a 160px island, so measure to its edge rather than its centre; matches server/world.mjs checkNear.
   private reach(t:{id:Source;x:number;y:number}) { return t.id==='shelf' ? Math.hypot(Math.max(240-this.x,0,this.x-400),Math.max(171-this.y,0,this.y-283)) : Math.hypot(t.x-this.x,t.y-this.y); }
+  // The exit sits right in front of the shelf: facing the shelf means E opens it, otherwise E leaves.
+  prefersInteraction() { return this.facing===2 && this.nearest()?.id==='shelf'; }
   private nearest() { return this.targets.filter(t => this.reach(t) < (t.id==='shelf'?36:39)).sort((a,b) => this.reach(a) - this.reach(b))[0]; }
   create() {
     placeGuest(this,'buzz');
