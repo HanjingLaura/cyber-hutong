@@ -177,9 +177,23 @@ function corsHeaders(env: Env, request: Request): Record<string, string> | true 
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
-    return (
-      (await routePartykitRequest(request, env, { cors: corsHeaders(env, request) })) ||
-      new Response('Not Found', { status: 404 })
-    );
+    const url = new URL(request.url);
+    if (url.pathname === '/' || url.pathname === '/health') {
+      return Response.json({
+        ok: true,
+        service: 'cyber-hutong-party',
+        room: PARTY_ROOM_ID,
+        party: 'hutong',
+      });
+    }
+    try {
+      return (
+        (await routePartykitRequest(request, env, { cors: corsHeaders(env, request) })) ||
+        new Response('Not Found', { status: 404 })
+      );
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      return Response.json({ ok: false, error: message }, { status: 500 });
+    }
   },
 } satisfies ExportedHandler<Env>;
