@@ -110,7 +110,7 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
       <p class="note" hidden></p>
       </div>
       <div id="rest-controls" hidden><h2>休息室</h2><p id="rest-inventory">手中：空</p><p id="rest-message" aria-live="polite">试试接一杯咖啡，再放到餐桌上。</p><div class="layers"><label><input type="checkbox" data-rest-layer="equipment" checked>贩卖机、冰箱、咖啡台</label><label><input type="checkbox" data-rest-layer="tables" checked>独立餐桌</label><label><input type="checkbox" data-rest-layer="chairs" checked>独立椅子</label></div><button id="rest-reset">重置休息室</button></div>
-      <div id="pop-controls" hidden><h2>盲盒收藏</h2><p id="pop-count">收藏：0 件</p><div id="pop-collection"></div><p id="pop-legacy" class="note"></p></div>
+      <div id="pop-controls" hidden><h2>本期盲盒 <span id="pop-count"></span></h2><div id="pop-collection" class="lineup"></div><p id="pop-legacy" class="note"></p></div>
       <div id="bathroom-controls" hidden><h2>厕所</h2><p id="bathroom-state"></p><button id="bathroom-door" type="button" disabled>靠近隔间开关门</button></div>
       <div id="concert-controls" hidden><h2>演唱会内场</h2><p id="concert-state"></p></div>
       <div id="arcade-controls" hidden><h2>娱乐室</h2></div>
