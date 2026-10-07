@@ -218,14 +218,14 @@ export class RestRoomScene extends Phaser.Scene {
     if (this.hand) { document.querySelector('#fridge-message')!.textContent = '手里已有物品，先按 F 存入，再取出。'; return; }
     if(sharedAction('rest:fridge','take',{slot},()=>this.renderFridge()))return;
     this.hand = this.fridgeItems[slot]; this.fridgeItems[slot] = null;
-    this.renderFridge(); document.querySelector('#fridge-message')!.textContent = `拿起了${this.hand}，关门后可以带走。`;
+    this.renderFridge(); document.querySelector('#fridge-message')!.textContent = `拿起了${this.hand}`;
   }
   private get vendingMenu() { return document.querySelector<HTMLDialogElement>('#vending-menu')!; }
   private takeProduct(name: ItemName) {
     if (!this.sys.isActive() || !this.vendingMenu.open || this.nearest()?.kind !== 'vending' || this.hand || !vendingProducts.includes(name)) return;
     if(sharedAction('rest:vending','supply',{item:name},()=>this.vendingMenu.close()))return;
     this.hand = name; this.vendingMenu.close();
-    this.message(`拿到了${name}。可以放在餐桌上，也可以带去胡同。`);
+    this.message(`拿到了${name}。`);
   }
   private nearest() {
     return this.targets.filter(t => Math.hypot(this.x - t.x, this.y - t.y) < 30)
@@ -281,11 +281,11 @@ export class RestRoomScene extends Phaser.Scene {
       list.innerHTML = table.map((name, slot) => name ? `<button type="button" data-slot="${slot}">${slot + 1} · ${name}</button>` : '').join('');
       for (const button of list.querySelectorAll<HTMLButtonElement>('button')) button.addEventListener('click', () => this.takeTableItem(index, Number(button.dataset.slot)));
       this.input.keyboard?.resetKeys(); this.tableMenu.showModal();
-    } else this.message('这张餐桌是空的。拿到物品后可以放在这里。');
+    } else this.message('桌上是空的');
   }
 
   private timeEventCoffee() {
-    this.brewTimer = this.time.delayedCall(1400, () => { this.brewing = false; this.coffeeReady = true; this.message('咖啡已出杯，按 E 拿起。'); });
+    this.brewTimer = this.time.delayedCall(1400, () => { this.brewing = false; this.coffeeReady = true; this.message('咖啡好了 · E 拿起'); });
   }
   private canWalk(x: number, y: number) {
     if (x < 52 || x > 590 || y < 140 || y > 278) return false;

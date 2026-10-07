@@ -2,6 +2,9 @@ import {gachaNames,plushNames} from './gacha-assets';
 import type { HeldItem } from './held-item';
 export type ItemName = `拼豆·${string}` | `娃娃·${typeof plushNames[number]}` | `扭蛋·${typeof gachaNames[number]}` | '咖啡' | '可乐' | '气泡水' | '薯片' | '面包' | '火腿肠' | '辣条' | '马卡龙' | '蛋糕' | '冰红茶' | '碗筷' | '米线' | '鸡柳' | '炸鸡' | '水';
 export const consumables:readonly string[]=['咖啡','可乐','气泡水','薯片','面包','火腿肠','辣条','马卡龙','蛋糕','冰红茶','米线','鸡柳','炸鸡','水'];
+export const drinks:readonly string[]=['咖啡','可乐','气泡水','冰红茶','水'];
+/** What the item in hand allows: eat/drink it, put it in the backpack, put it in the 收藏 cabinet. */
+export function handOptions(hand:string|null|undefined){const edible=!!hand&&consumables.includes(hand);return{edible,verb:edible?(drinks.includes(hand!)?'喝掉':'吃掉'):'',stow:!!hand,collect:!!hand&&!edible&&hand!=='碗筷'};}
 export function itemLabel(name:string){return name.startsWith('拼豆·')?'拼豆作品':name;}
 export const vendingProducts: ItemName[] = ['可乐', '气泡水', '薯片', '面包', '火腿肠', '辣条'];
 // Inventory belongs to the player and survives scene/camera changes.

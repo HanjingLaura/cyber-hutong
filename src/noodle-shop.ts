@@ -108,7 +108,7 @@ export class NoodleShopScene extends Phaser.Scene {
     if(target.kind==='noodles'){
       if(playerInventory.hand!=='碗筷'){this.message='先到左侧拿一套碗筷；已有物品可以先放到桌上。';return;}
       if(sharedAction('noodle:noodles','supply',{item:'米线'}))return;
-      playerInventory.hand='米线';playerInventory.noodleSeasoning=[];this.message='米线出餐了，可以放到桌上加醋或麻油。';return;
+      playerInventory.hand='米线';playerInventory.noodleSeasoning=[];this.message='米线好了';return;
     }
     const products:ItemName[]=target.kind==='drinks'?['可乐','冰红茶']:['鸡柳','炸鸡'];
     this.menu(target.kind==='drinks'?'饮料柜':'鸡柳大人',products.map(name=>({name,item:name,disabled:!!playerInventory.hand,run:()=>this.take(name)})));

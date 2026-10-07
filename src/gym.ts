@@ -73,7 +73,7 @@ export class GymScene extends Phaser.Scene {
   private storage(){
     const list=document.querySelector('#gym-storage-items')!;list.replaceChildren();
     const make=(label:string,disabled:boolean,run:()=>void)=>{const button=document.createElement('button');button.type='button';button.textContent=label;button.disabled=disabled;button.addEventListener('click',()=>{run();this.dialog.close();});list.append(button);};
-    make(playerInventory.hand?`存放${playerInventory.hand}`:'存放手中物品',!playerInventory.hand||this.stored.length>=6,()=>{if(sharedAction('gym:stash','put',{slot:onlineWorld()?.objects.get('gym:stash')?.slots?.findIndex(i=>!i)??0}))return;if(playerInventory.hand&&this.stored.length<6){this.stored.push({name:playerInventory.hand,seasoning:[...playerInventory.noodleSeasoning]});playerInventory.hand=null;this.message='物品已存好，可以训练了。';}});
+    make(playerInventory.hand?`存放${playerInventory.hand}`:'存放手中物品',!playerInventory.hand||this.stored.length>=6,()=>{if(sharedAction('gym:stash','put',{slot:onlineWorld()?.objects.get('gym:stash')?.slots?.findIndex(i=>!i)??0}))return;if(playerInventory.hand&&this.stored.length<6){this.stored.push({name:playerInventory.hand,seasoning:[...playerInventory.noodleSeasoning]});playerInventory.hand=null;this.message='放好了';}});
     this.stored.forEach((item,index)=>make(`拿回${item.name}`,!!playerInventory.hand,()=>{if(sharedAction('gym:stash','take',{slot:(item as typeof item & {slot?:number}).slot??index}))return;if(!playerInventory.hand){playerInventory.hand=item.name;playerInventory.noodleSeasoning=[...item.seasoning];this.stored.splice(index,1);this.message=`拿回了${item.name}。`;}}));
     this.input.keyboard?.resetKeys();this.dialog.showModal();
   }
@@ -92,7 +92,7 @@ export class GymScene extends Phaser.Scene {
     if(target.kind==='water'){
       if(playerInventory.hand){this.message='手里已有物品，先存到旁边储物架。';return;}
       if(sharedAction('gym:water','supply',{item:'水'}))return;
-      playerInventory.hand='水';playerInventory.noodleSeasoning=[];this.message='接了一瓶水，可以带去其他场景。';return;
+      playerInventory.hand='水';playerInventory.noodleSeasoning=[];this.message='接了一瓶水';return;
     }
     this.begin(target.kind,target.index);
   }

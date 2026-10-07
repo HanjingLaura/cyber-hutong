@@ -110,7 +110,7 @@ export class BathroomScene extends Phaser.Scene {
     if(this.turning[index])return;
     if(!this.open[index])this.toggleDoor(index);
     this.seated=null;this.x=centers[index];this.y=235;this.facing=0;
-    this.message='已起身，手中物品保留。';
+    this.message='起身了';
   }
   private interact(){
     if(this.washing!==null)return;

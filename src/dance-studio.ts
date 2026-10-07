@@ -76,7 +76,7 @@ export class DanceStudioScene extends Phaser.Scene {
   private stop(){
     this.revision++;
     this.beat.stop();
-    if(this.mode!=='walk'){this.x=this.returnPoint.x;this.y=this.returnPoint.y;this.facing=0;this.message='已结束，可以继续在舞室走动。';}
+    if(this.mode!=='walk'){this.x=this.returnPoint.x;this.y=this.returnPoint.y;this.facing=0;this.message='结束';}
     this.mode='walk';this.input.keyboard?.resetKeys();
   }
   private press(direction:number){
@@ -94,7 +94,7 @@ export class DanceStudioScene extends Phaser.Scene {
       if(sharedAction('dance:stash',playerInventory.hand?'put':'take',{slot:0}))return;
       if(playerInventory.hand){if(this.stored){this.message='储物格已有物品，先拿回。';return;}this.stored={name:playerInventory.hand,seasoning:[...playerInventory.noodleSeasoning]};playerInventory.hand=null;this.message='物品已存好。';}
       else if(this.stored){playerInventory.hand=this.stored.name;playerInventory.noodleSeasoning=[...this.stored.seasoning];this.stored=null;this.message='拿回物品。';}
-      else this.message='可以在这里存放手中的物品。';return;
+      else this.message='储物架';return;
     }
     this.returnPoint={x:this.x,y:this.y};this.mode='sit';this.x=88;this.y=282;this.facing=0;this.message='坐下休息，E / Esc 起身。';
   }

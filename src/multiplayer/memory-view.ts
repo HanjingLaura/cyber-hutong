@@ -125,7 +125,7 @@ export function setupMemoryView(dialog:HTMLDialogElement,bridge:MultiplayerBridg
  async function show(i:number){
   index=Math.max(0,Math.min(i,entries.length-1));const current=++epoch,e=entries[index];
   previous.disabled=index===0;next.disabled=index>=entries.length-1;
-  dialog.querySelector('#memory-caption')!.textContent=e?.body??'这里还没有留下经历。';
+  dialog.querySelector('#memory-caption')!.textContent=e?.body??'还没有记录';
   dialog.querySelector('#memory-count')!.textContent=e?`${index+1} / ${entries.length}`:'';
   canvas.dataset.eventId=e?.eventId??'';
   dialog.querySelector('#memory-place')!.textContent=e?(rooms as Record<string,{name:string}>)[e.scene]?.name??e.scene:'';
@@ -140,7 +140,7 @@ export function setupMemoryView(dialog:HTMLDialogElement,bridge:MultiplayerBridg
    if(item.data?.version===1)void paint(thumbnail,item,bridge).catch(()=>{});
    const label=document.createElement('span');label.textContent=item.data?.version===1?(rooms as Record<string,{name:string}>)[item.scene]?.name??item.scene:'未留下画面';b.append(thumbnail,label);b.onclick=()=>void show(j);strip.append(b);
   }
-  if(!e){status.textContent='新的经历会在这里留下画面';return;}
+  if(!e){status.textContent='还没有记录';return;}
   if(e.data?.version!==1){status.textContent='这段旧经历没有留下画面';return;}
   try{const buffer=document.createElement('canvas');buffer.width=640;buffer.height=360;await paint(buffer,e,bridge);if(epoch!==current)return;ctx.imageSmoothingEnabled=false;ctx.drawImage(buffer,0,0);canvas.dataset.ready='true';canvas.dataset.seq=String(e.seq);canvas.dataset.actors=String(e.data.actors?.length??0);}catch{if(epoch===current)status.textContent='画面素材未能加载';}
  }
