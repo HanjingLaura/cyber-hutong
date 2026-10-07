@@ -5,7 +5,6 @@ import { AniGuest, preloadAni } from './ani-guest';
 import {sharedAction,onlineWorld} from './multiplayer/world-client';
 import { startSocial } from './multiplayer/social';
 import { OfficeGuest, preloadOfficeGuests } from './office-guests';
-import { SideWalkLegs, sideUpperFrame, heldSideFrame } from './side-walk-legs';
 import Phaser from 'phaser';
 import './style.css';
 import { RestRoomScene } from './rest-room';
@@ -20,13 +19,11 @@ import { PerlerShopScene } from './perler-shop';
 import { RehearsalScene } from './rehearsal';
 import { ElevatorLobbyScene } from './elevator-lobby';
 import { SubwayScene } from './subway';
-import { HeldItemView, type GripSlot } from './held-item';
 import { markScene, setGuide } from './hud';
 import { openDeskComputer, closeDeskComputer, deskComputerOpen } from './desk-computer';
-import { playerInventory, items, type ItemName } from './player-inventory';
+import { playerInventory, type ItemName } from './player-inventory';
 import { registerProductTextures } from './product-textures';
-import gripRegistry from '../assets/metadata/owner-grips.json';
-import { registerFrames, registerRegions, setSpriteFrame, type SpriteFrame } from './frames';
+import { registerRegions, setSpriteFrame, type SpriteFrame } from './frames';
 import { canWalk, project, visualFacing, floorY, HEIGHT_PROJECTION, WORKSTATIONS, DESK_ROWS, REVERSE_Y, SPAWN, METRICS, VIEW_WIDTH, VIEW_HEIGHT, PIXEL_RATIO, CONTENT_SCALE, scaleRowPoint, type Facing, type Workstation } from './layout';
 
 const assets = {
@@ -34,10 +31,6 @@ const assets = {
   reverse: new URL('../assets/drafts/hutong-reverse-view-v5.png', import.meta.url).href,
   furniture: new URL('../assets/drafts/hutong-furniture-kit-v5.png', import.meta.url).href,
   decor: new URL('../assets/drafts/desk-decor-v1.png', import.meta.url).href,
-  idle: new URL('../assets/drafts/owner-standing-v2.png', import.meta.url).href,
-  walk: new URL('../assets/drafts/owner-walk-v1.png', import.meta.url).href,
-  sideWalk: new URL('../assets/drafts/owner-side-walk-v2.png', import.meta.url).href,
-  seated: new URL('../assets/drafts/owner-seated-front-back-v2.png', import.meta.url).href,
 };
 const HAWAII_SEATS: Workstation[] = ['culture', 'plain'].flatMap((row,index) =>
   Array.from({length:3},(_,number)=>({
@@ -146,11 +139,7 @@ class HutongScene extends Phaser.Scene {
   private furnitureScales: Record<FurnitureKind, { x: number; y: number }> = {
     desk: { x: 1, y: 1 }, chair: { x: 1, y: 1 }, laptop: { x: 1, y: 1 },
   };
-  private sideLegs!: SideWalkLegs;
-  private actor!: Phaser.GameObjects.Image;
-  private heldItem!: HeldItemView;
-  private gripSlots: Record<string, Map<string, GripSlot>> = {};
-  private actorUpper!: Phaser.GameObjects.Image;
+  private actor = false;
   private room!: Phaser.GameObjects.Image;
   private keyInput!: Record<string, Phaser.Input.Keyboard.Key>;
   private actorX = SPAWN.x;
@@ -189,8 +178,6 @@ class HutongScene extends Phaser.Scene {
     if(this.isHawaii)this.load.image('hawaii-wall',new URL('../assets/drafts/hawaii-wall-v2.png',import.meta.url).href);
     this.load.image('rest-kit', new URL('../assets/drafts/rest-interaction-kit-v2.png', import.meta.url).href);
     this.load.image('held-water', new URL('../assets/props/water-bottle-v1.png', import.meta.url).href);
-    this.load.image('rest-hold', new URL('../assets/drafts/owner-carry-empty-v1.png', import.meta.url).href);
-    this.load.image('rest-seated-hold', new URL('../assets/drafts/owner-seated-hold-empty-v1.png', import.meta.url).href);
     this.load.on('loaderror', () => {
       const loading = document.querySelector('.loading');
       if (loading) loading.textContent = '素材载入失败，请刷新页面。';
@@ -204,7 +191,6 @@ class HutongScene extends Phaser.Scene {
   }
   create() {
     registerProductTextures(this);
-    this.sideLegs = new SideWalkLegs(this);
     this.cameras.main.setZoom(1 / PIXEL_RATIO).centerOn(VIEW_WIDTH / 2, VIEW_HEIGHT / 2);
     const furniture = registerRegions(this, 'furniture', [
       { name: 'desk-front', x0: 0, y0: 0, x1: 1, y1: .38 },
@@ -228,39 +214,10 @@ class HutongScene extends Phaser.Scene {
     this.furnitureScales.desk = { x: (this.isHawaii?448:METRICS.deskRowWidth) / deskSize.width, y: METRICS.deskHeight / deskSize.height };
     this.furnitureScales.chair = { x: METRICS.chairWidth / chairSize.width, y: METRICS.chairHeight / chairSize.height };
     this.furnitureScales.laptop = { x: METRICS.laptopWidth / laptopSize.width, y: METRICS.laptopWidth / laptopSize.width };
-    this.frames.idle = registerFrames(this, 'idle', 4, 1, true);
-    this.frames.walk = registerFrames(this, 'walk', 4, 4, true);
-    this.frames.sideWalk = registerFrames(this, 'sideWalk', 6, 2, true);
-    this.frames.seated = registerFrames(this, 'seated', 3, 2, true);
-    this.frames.hold = registerFrames(this, 'rest-hold', 4, 5, true, { x: [0, .32, .51, .70, 1], y: [0, .207, .412, .609, .808, 1] });
-    this.frames.seatedHold = registerFrames(this, 'rest-seated-hold', 3, 1, true);
     registerRegions(this, 'rest-kit', [{ name: 'coffee-cup', x0: .76, x1: .99, y0: 0, y1: 1 }]);
     this.textures.get('held-water').add('bottle', 0, 6, 2, 6, 11);
-    for (const [key, registry] of Object.entries(gripRegistry)) {
-      this.gripSlots[key] = new Map(Object.entries(registry.slots));
-      for (const [name, slot] of this.gripSlots[key]) {
-        const [x, y, width, height] = slot.handRect;
-        if(!this.textures.get(key).has(`palm-${name}`))this.textures.get(key).add(`palm-${name}`, 0, x, y, width, height);
-      }
-    }
-    this.frames.hold.forEach(frame => this.addSlice('rest-hold', frame, `held-upper-${frame.name}`, .72, false));
-    this.frames.seatedHold.forEach(frame => this.addSlice('rest-seated-hold', frame, `held-upper-${frame.name}`, .72, false));
-    this.heldItem = new HeldItemView(this);
-    const walkSheet = document.querySelector<HTMLCanvasElement>('#walk-sheet')!;
-    const reviewContext = walkSheet.getContext('2d')!;
-    reviewContext.imageSmoothingEnabled = false;
-    const walkSource = this.textures.get('sideWalk').getSourceImage() as HTMLImageElement;
-    this.frames.sideWalk.forEach((frame, index) => {
-      // Match the current game sampling and character height in the review.
-      const scale = METRICS.standing / PIXEL_RATIO / frame.referenceHeight;
-      const center = index % 6 * 128 + 64, baseline = Math.floor(index / 6) * 112 + 96;
-      reviewContext.drawImage(walkSource, frame.x, frame.y, frame.width, frame.height,
-        Math.round(center - frame.width * scale * frame.pivotX), Math.round(baseline - frame.height * scale),
-        Math.round(frame.width * scale), Math.round(frame.height * scale));
-    });
     this.frames.desk.forEach((frame, index) => this.addSlice('furniture', frame, `panel-${index}`, .42, true));
     this.addSlice('furniture', this.frames.chair[0], 'backrest', .58, false);
-    this.frames.seated.forEach((frame, index) => this.addSlice('seated', frame, `upper-${index}`, .72, false));
     this.room = this.add.image(0, 0, this.isHawaii?'hawaii-wall':'wall').setOrigin(0).setDisplaySize(VIEW_WIDTH, VIEW_HEIGHT).setDepth(-100);
     this.groups.room.push(this.room);
     if(this.isHawaii)this.officeWindow=new OfficeWindow(this);
@@ -297,9 +254,7 @@ class HutongScene extends Phaser.Scene {
         this.decorations.push({ row, x, frame: 1, image }); this.groups.decor.push(image);
       }
     }
-    this.actor = this.add.image(0, 0, 'idle');
-    this.actorUpper = this.add.image(0, 0, 'seated').setVisible(false);
-    this.groups.actor.push(this.actor, this.actorUpper);
+    this.actor = true;
     this.keyInput = this.input.keyboard!.addKeys('W,A,S,D,UP,DOWN,LEFT,RIGHT') as Record<string, Phaser.Input.Keyboard.Key>;
     this.input.keyboard!.addCapture(['UP', 'DOWN', 'LEFT', 'RIGHT', 'SPACE']);
     const acceptsInput = () => this.sys.isActive() && (document.activeElement === world || document.activeElement === this.game.canvas);
@@ -366,11 +321,11 @@ class HutongScene extends Phaser.Scene {
   }
   private snapshot(): PreviewState {
     const screen = project({ x: this.actorX, y: this.actorY }, this.reverse);
-    return { hand: playerInventory.hand, heldItemVisible: this.heldItem.visible, ready: true, view: this.reverse ? 'opposite' : 'culture', mode: this.mode,
+    return { hand: playerInventory.hand, heldItemVisible: !!playerInventory.hand, ready: true, view: this.reverse ? 'opposite' : 'culture', mode: this.mode,
       x: this.actorX, y: this.actorY, screenX: screen.x, screenY: screen.y,
       facing: this.facing, visualFacing: visualFacing(this.facing, this.reverse),
       seatedAt: this.seatedAt?.id ?? null, nearest: this.nearest?.id ?? null, seatCount: this.seats.length,
-      walkFrame: this.walkFrame, texture: this.actor.texture.key, actorScale: this.actor.scaleY,
+      walkFrame: this.walkFrame, texture: 'team-avatar', actorScale: 1,
       layers: { ...this.layers }, frameCounts: Object.fromEntries(Object.entries(this.frames).map(([key, value]) => [key, value.length])),
       metrics: this.isHawaii?{...METRICS,deskRowWidth:448,workstationWidth:448/3}:METRICS, deskRowCount: this.deskRows.length, projectionY: REVERSE_Y,
       framebuffer: { width: this.game.canvas.width, height: this.game.canvas.height },
@@ -494,74 +449,9 @@ class HutongScene extends Phaser.Scene {
     this.seatedAt = null; this.mode = 'standing'; this.motionTime = 0;
     this.drawFurniture();
   }
+  // The player is rendered only by the multiplayer TeamAvatar; this tracks the walk phase for state snapshots.
   private drawActor() {
-    this.sideLegs.hide();
-    const point = project({ x: this.actorX, y: this.actorY }, this.reverse);
-    const direction = visualFacing(this.facing, this.reverse);
-    this.actorUpper.setVisible(false);
-    this.actor.setFlipX(false);
-    this.heldItem.hide();
-    if (this.seatedAt) {
-      const far = direction === 2;
-      const frameIndex = (far ? 0 : 3) + (this.mode==='working'?1+Math.floor(this.motionTime/250)%2:0);
-      const frame = this.frames.seated[frameIndex];
-      setSpriteFrame(this.actor, 'seated', frame, METRICS.seated);
-      this.actor.setDepth(point.y + 1);
-      if (far) {
-        // Facing the wall, knees and shins are forward under the desk. Do not
-        // render the sheet's hanging legs as if they were behind the chair.
-        if (this.layers.chair && this.layers.desk) {
-          const cropHeight = Math.round(frame.height * .72);
-          this.actor.setTexture('seated', `upper-${frameIndex}`)
-            .setOrigin(frame.pivotX, frame.height / cropHeight);
-        }
-      } else {
-        const scale = METRICS.seated / frame.referenceHeight;
-        this.actorUpper.setTexture('seated', `upper-${frameIndex}`).setOrigin(frame.pivotX, 0).setScale(scale)
-          .setPosition(point.x, point.y - frame.height * scale).setDepth(point.y + 4).setVisible(this.layers.actor);
-      }
-    } else if (this.mode === 'walking') {
-      if (direction === 1 || direction === 3) {
-        this.walkFrame = sideUpperFrame(this.motionTime);
-        setSpriteFrame(this.actor, 'sideWalk', this.frames.sideWalk[(direction === 1 ? 0 : 6) + this.walkFrame], METRICS.standing);
-      } else {
-        this.walkFrame = Math.floor(this.motionTime / 125) % 4;
-        setSpriteFrame(this.actor, 'walk', this.frames.walk[direction * 4 + this.walkFrame], METRICS.standing);
-      }
-      this.actor.setDepth(point.y + 1);
-    } else {
-      this.walkFrame = 0;
-      setSpriteFrame(this.actor, 'idle', this.frames.idle[direction], METRICS.standing);
-      this.actor.setDepth(point.y + 1);
-    }
-    this.actor.setPosition(Math.round(point.x), Math.round(point.y)).setVisible(this.layers.actor);
-    if (playerInventory.hand && this.layers.actor) {
-      const seated = !!this.seatedAt, back = seated && direction === 2;
-      const key = seated && !back ? 'rest-seated-hold' : 'rest-hold';
-      const moving = !seated && this.mode === 'walking';
-      const index = moving ? (direction === 0 ? 4 : direction === 2 ? 12 : 8) + ((direction === 1 || direction === 3) ? heldSideFrame(this.motionTime) : Math.floor(this.motionTime / 125) % 4) : direction;
-      const frame = seated && !back ? this.frames.seatedHold[0] : this.frames.hold[index];
-      const height = seated ? METRICS.seated : METRICS.standing;
-      this.actorUpper.setVisible(false);
-      setSpriteFrame(this.actor, key, frame, height);
-      this.actor.setFlipX(moving && direction === 3);
-      if (this.actor.flipX) this.actor.setOrigin(1 - frame.pivotX, 1);
-      this.actor.setDepth(point.y + 1);
-      if (seated && !back) {
-        this.actorUpper.setTexture(key, `held-upper-${frame.name}`).setOrigin(frame.pivotX, 0)
-          .setScale(height / frame.referenceHeight).setPosition(this.actor.x, this.actor.y - frame.height * height / frame.referenceHeight)
-          .setDepth(point.y + 4).setVisible(true);
-      }
-      if (back && this.layers.chair && this.layers.desk) {
-        const crop = Math.round(frame.height * .72);
-        this.actor.setTexture(key, `held-upper-${frame.name}`).setOrigin(frame.pivotX, frame.height / crop);
-      }
-      this.heldItem.draw(this.actor, key, frame, this.gripSlots[key].get(frame.name)!, height, items[playerInventory.hand], point.y + (seated && !back ? 4 : 1), direction);
-    }
-    if (!this.seatedAt && this.mode === 'walking' && (direction === 1 || direction === 3) && this.layers.actor && !playerInventory.hand) {
-      const frame = this.frames.sideWalk.find(frame => frame.name === this.actor.frame.name)!;
-      this.sideLegs.draw(this.actor, frame, METRICS.standing, direction, this.motionTime);
-    }
+    this.walkFrame = this.seatedAt ? 0 : this.mode === 'walking' ? Math.floor(this.motionTime / 125) % 4 : 0;
   }
   update(_time: number, delta: number) {
     if (!this.actor) return;

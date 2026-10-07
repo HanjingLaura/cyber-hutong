@@ -92,7 +92,7 @@ export function createMvpServer({dbPath='data/mvp.sqlite',staticDir=resolve('dis
           const stream={user:user.id,client,res,token};streams.add(stream);startPlayer(user);const player=players.get(user.id);if(player)delete player.disconnectedAt;
           if(!controls.has(user.id))controls.set(user.id,client);
           emit(stream,'world',snapshot(stream));dirty=true;
-          req.on('close',()=>{if(closed)return;streams.delete(stream);if(![...streams].some(s=>s.user===user.id)){const p=players.get(user.id);if(p){p.disconnectedAt=Date.now();life.savePosition(p);}controls.delete(user.id);}else if(controls.get(user.id)===client&&!([...streams].some(s=>s.user===user.id&&s.client===client))){controls.delete(user.id);}dirty=true;});return;
+          req.on('close',()=>{if(closed)return;streams.delete(stream);if(![...streams].some(s=>s.user===user.id)){const p=players.get(user.id);if(p){p.disconnectedAt=Date.now();life.savePosition(p);}controls.delete(user.id);}else if(controls.get(user.id)===client&&!([...streams].some(s=>s.user===user.id&&s.client===client))){/* Another tab of the same user is still open: hand control to it so the user stays the driver (never "other window", never autonomy). */controls.set(user.id,[...streams].find(s=>s.user===user.id).client);}dirty=true;});return;
         }
         if(path==='/api/journal'&&req.method==='GET'){const before=Number(url.searchParams.get('before')||Number.MAX_SAFE_INTEGER);if(!Number.isSafeInteger(before)||before<1)fail(400,'经历页码无效');json(res,200,{entries:life.journal(user.id,before)});return;}
         if(path==='/api/life'&&req.method==='GET'){json(res,200,{bag:life.bag(user.id),collection:life.collection(user.id),offers:life.offers(user.id)});return;}

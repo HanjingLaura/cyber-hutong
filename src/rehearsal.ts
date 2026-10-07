@@ -1,6 +1,5 @@
 import Phaser from 'phaser';
 import { registerRegions } from './frames';
-import { ShopActor } from './shop-actor';
 import { playerInventory } from './player-inventory';
 import { Piano } from './piano';
 import {useDevice,releaseDevice,onlineWorld} from './multiplayer/world-client';
@@ -9,7 +8,7 @@ const seats=[...[172,242,312,382].map((x,i)=>({id:`A${i+1}`,x,y:239})),...[118,1
 type Mode='walk'|'seat'|'piano'|'podium';
 declare global{interface Window{__rehearsalPreview?:{getState:()=>unknown}}}
 export class RehearsalScene extends Phaser.Scene{
-  private actor!:ShopActor;private piano!:Piano;private keys!:Record<string,Phaser.Input.Keyboard.Key>;
+  private actor=false;private piano!:Piano;private keys!:Record<string,Phaser.Input.Keyboard.Key>;
   private chairs:Phaser.GameObjects.Image[]=[];private backs:Phaser.GameObjects.Image[]=[];
   private x=320;private y=339;private facing=2;private mode:Mode='walk';private seated:number|null=null;
   private returnPoint={x:320,y:339};private message='靠近椅子或琴凳按 E。';
@@ -38,7 +37,7 @@ export class RehearsalScene extends Phaser.Scene{
       this.chairs.push(this.add.image(s.x,s.y+10,'concert-chair','chair').setOrigin(.5,1).setDisplaySize(28,42).setDepth(s.y+10));
       this.backs.push(this.add.image(s.x,s.y+10-42,'concert-chair','backrest').setOrigin(.5,0).setDisplaySize(28,42*backHeight/chair.height).setVisible(false));
     });
-    this.actor=new ShopActor(this);this.piano=new Piano(()=>{});
+    this.actor=true;this.piano=new Piano(()=>{});
     this.keys=this.input.keyboard!.addKeys('W,A,S,D,UP,DOWN,LEFT,RIGHT') as Record<string,Phaser.Input.Keyboard.Key>;
     const world=document.querySelector<HTMLElement>('.world')!,clear=()=>{this.input.keyboard?.resetKeys();this.piano.stop();};
     const action=(e:KeyboardEvent)=>{
@@ -106,7 +105,7 @@ export class RehearsalScene extends Phaser.Scene{
       const dx=Number(this.keys.D.isDown||this.keys.RIGHT.isDown)-Number(this.keys.A.isDown||this.keys.LEFT.isDown),dy=Number(this.keys.S.isDown||this.keys.DOWN.isDown)-Number(this.keys.W.isDown||this.keys.UP.isDown);
       if(dx||dy){const step=108*Math.min(delta,32)/1000/Math.hypot(dx,dy),ox=this.x,oy=this.y;if(this.canWalk(this.x+dx*step,this.y))this.x+=dx*step;if(this.canWalk(this.x,this.y+dy*step))this.y+=dy*step;this.facing=dx?dx>0?1:3:dy>0?0:2;moving=this.x!==ox||this.y!==oy;}
     }
-    this.actor.draw(this.x,this.y,this.facing,moving,delta,this.mode==='seat'||this.mode==='piano',this.y+1,undefined,this.mode==='piano'?this.piano.active.length?2:1:0);
+    
     this.backs.forEach((back,i)=>back.setVisible(this.seated===i).setDepth(seats[i].y+2));
     this.chairs.forEach((chair,i)=>chair.setDepth(this.seated===i?seats[i].y-1:seats[i].y+10));
     const t=this.nearest(),button=document.querySelector<HTMLButtonElement>('#interact')!;

@@ -1,5 +1,4 @@
 import Phaser from 'phaser';
-import { ShopActor } from './shop-actor';
 import { playerInventory, type ItemName } from './player-inventory';
 import { PerlerBoard, BEAD_COLORS } from './perler-board';
 import { registerFrames } from './frames';
@@ -12,7 +11,7 @@ const targets:Target[]=[...seats.map((s,index)=>({kind:'seat' as const,x:s.x,y:s
 declare global{interface Window{__perlerPreview?:{getState:()=>unknown}}}
 
 export class PerlerShopScene extends Phaser.Scene{
-  private actor!:ShopActor;private workshop!:PerlerBoard;private boardArt:Phaser.GameObjects.Graphics[]=[];
+  private actor=false;private workshop!:PerlerBoard;private boardArt:Phaser.GameObjects.Graphics[]=[];
   private chairs:Phaser.GameObjects.Image[]=[];
   private keys!:Record<string,Phaser.Input.Keyboard.Key>;
   private x=320;private y=335;private facing=2;private seated:number|null=null;private lastSeat=4;
@@ -37,7 +36,7 @@ export class PerlerShopScene extends Phaser.Scene{
         this.sit(index);
       });this.chairs.push(chair);
     });
-    this.actor=new ShopActor(this);
+    this.actor=true;
     this.workshop=new PerlerBoard(()=>this.drawBoards());this.drawBoards();
     this.keys=this.input.keyboard!.addKeys('W,A,S,D,UP,DOWN,LEFT,RIGHT') as Record<string,Phaser.Input.Keyboard.Key>;
     const world=document.querySelector<HTMLElement>('.world')!,clear=()=>this.input.keyboard?.resetKeys();
@@ -106,7 +105,7 @@ export class PerlerShopScene extends Phaser.Scene{
       const dx=Number(this.keys.D.isDown||this.keys.RIGHT.isDown)-Number(this.keys.A.isDown||this.keys.LEFT.isDown),dy=Number(this.keys.S.isDown||this.keys.DOWN.isDown)-Number(this.keys.W.isDown||this.keys.UP.isDown);
       if(dx||dy){const step=108*Math.min(delta,32)/1000/Math.hypot(dx,dy),ox=this.x,oy=this.y;if(this.canWalk(this.x+dx*step,this.y))this.x+=dx*step;if(this.canWalk(this.x,this.y+dy*step))this.y+=dy*step;this.facing=dx?dx>0?1:3:dy>0?0:2;moving=this.x!==ox||this.y!==oy;}
     }
-    this.actor.draw(this.x,this.y,this.facing,moving,delta,this.seated!==null,this.y+(this.seated!==null?6:1),this.seated!==null?54:undefined,0,this.seated!==null?(this.seated<4?190:296):undefined);
+    
     const t=this.nearest(),button=document.querySelector<HTMLButtonElement>('#interact')!;
     button.disabled=this.workshop.dialog.open||this.seated===null&&!t;
     button.textContent=this.seated!==null?'起身':t?{seat:'坐下拼豆',iron:'使用熨烫台',gallery:'查看作品',stash:'存放 / 拿回物品'}[t.kind]:'靠近圆凳或熨烫台';

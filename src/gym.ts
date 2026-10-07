@@ -1,8 +1,5 @@
 import Phaser from 'phaser';
-import { ShopActor } from './shop-actor';
-import { registerFrames, setSpriteFrame, type SpriteFrame } from './frames';
 import { playerInventory, type ItemName } from './player-inventory';
-import { METRICS } from './layout';
 import { preloadGuest, placeGuest, guestBlocks } from './easter-eggs';
 import {sharedAction,useDevice,releaseDevice,onlineWorld} from './multiplayer/world-client';
 
@@ -20,7 +17,7 @@ const names={run:'使用跑步机',curl:'哑铃弯举',rest:'坐下休息',breat
 declare global {interface Window{__gymPreview?:{getState:()=>unknown}}}
 
 export class GymScene extends Phaser.Scene {
-  private actor!:ShopActor;private curlActor!:Phaser.GameObjects.Image;private curlFrames:SpriteFrame[]=[];
+  private actor=false;
   private belt!:Phaser.GameObjects.Graphics;private keys!:Record<string,Phaser.Input.Keyboard.Key>;
   private x=320;private y=290;private facing=2;private mode:Mode='walk';private machine=0;
   private elapsed=0;private distance=0;private speeds=[4,7,10];private speedIndex=0;
@@ -34,13 +31,11 @@ export class GymScene extends Phaser.Scene {
     preloadGuest(this,'tutu');
     const load=(k:string,u:string)=>{if(!this.textures.exists(k))this.load.image(k,u);};
     load('gym-room',new URL('../assets/drafts/gym-room-v1.png',import.meta.url).href);
-    load('gym-curl',new URL('../assets/drafts/owner-gym-curl-v1.png',import.meta.url).href);
   }
   create(){
     this.add.image(0,0,'gym-room').setOrigin(0).setDisplaySize(640,360).setDepth(-100);
     placeGuest(this,'tutu');
-    this.actor=new ShopActor(this);this.curlFrames=registerFrames(this,'gym-curl',3,1,true);
-    this.curlActor=this.add.image(0,0,'gym-curl').setVisible(false);
+    this.actor=true;
     this.belt=this.add.graphics().setDepth(0);
     this.keys=this.input.keyboard!.addKeys('W,A,S,D,UP,DOWN,LEFT,RIGHT') as Record<string,Phaser.Input.Keyboard.Key>;
     const world=document.querySelector<HTMLElement>('.world')!;
@@ -120,13 +115,12 @@ export class GymScene extends Phaser.Scene {
       const dx=Number(this.keys.D.isDown||this.keys.RIGHT.isDown)-Number(this.keys.A.isDown||this.keys.LEFT.isDown),dy=Number(this.keys.S.isDown||this.keys.DOWN.isDown)-Number(this.keys.W.isDown||this.keys.UP.isDown);
       if(dx||dy){const step=108*Math.min(delta,32)/1000/Math.hypot(dx,dy),ox=this.x,oy=this.y;if(this.canWalk(this.x+dx*step,this.y))this.x+=dx*step;if(this.canWalk(this.x,this.y+dy*step))this.y+=dy*step;this.facing=dx?dx>0?1:3:dy>0?0:2;moving=this.x!==ox||this.y!==oy;}
     }
-    this.curlActor.setVisible(false);this.belt.clear();
+    this.belt.clear();
     if(this.mode==='curl'){
-      this.actor.hide();
+      
       let frame=0;
       if(this.liftStart!==null){const age=this.time.now-this.liftStart;frame=age<170?1:age<400?2:1;if(age>=620){this.reps++;this.liftStart=null;frame=0;this.message=`完成 ${this.reps} 次弯举。`;}}
-      setSpriteFrame(this.curlActor,'gym-curl',this.curlFrames[frame],METRICS.standing);
-      this.curlActor.setPosition(this.x,this.y).setDepth(this.y+1).setVisible(true);
+      void frame;
     }else{
       if(this.mode==='run'){
         this.elapsed+=dt/1000;this.distance+=this.speeds[this.speedIndex]*dt/3600;
@@ -134,7 +128,7 @@ export class GymScene extends Phaser.Scene {
         for(let y=82+shift;y<131;y+=12)this.belt.fillStyle(0x505860).fillRect(this.x-16,y,32,1);
       }
       if(this.mode==='breathe'){this.breathTime+=dt;while(this.breathTime>=8000){this.breaths++;this.breathTime-=8000;}}
-      this.actor.draw(this.x,this.y,this.facing,moving||this.mode==='run',this.mode==='run'?dt*this.speeds[this.speedIndex]/4:dt,this.mode==='rest');
+      
     }
     const target=this.nearest(),button=document.querySelector<HTMLButtonElement>('#interact')!;
     button.disabled=this.dialog.open||this.mode==='walk'&&!target;button.textContent=this.mode==='walk'?target?names[target.kind]:'靠近器械':this.mode==='run'?'下跑步机':this.mode==='curl'?'放回哑铃':this.mode==='rest'?'起身':'结束练习';

@@ -20,7 +20,11 @@ export interface CharacterData {
  carryFrontLoop:number[];carryBackLoop:number[];carryRightLoop:number[];walkLoopLength:number;approvedLegacy:boolean;
  sideWalkLoop?:number[];runLoop?:number[];sideWalkFrameMs?:number;runFrameMs?:number;carrySideFrameMs?:number;
 }
-export const characterRegistry=data as unknown as {version:number;worldHeight:number;seatedHeight:number;sources:Record<string,{file:string;size:number[]}>;members:Record<AvatarRole,CharacterData>;blackLaura:CharacterData};
+export const characterRegistry=data as unknown as {version:number;worldHeight:number;seatedHeight:number;sources:Record<string,{file:string;size:number[]}>;members:Record<AvatarRole,CharacterData>};
+// The black-outfit Laura sheets (laura/approved) are retired. Strip them from the
+// registry so nothing can select them as a default or fallback.
+delete (characterRegistry as unknown as Record<string,unknown>).blackLaura;
+for(const [id,source]of Object.entries(characterRegistry.sources))if(source.file.startsWith('laura/approved/'))delete characterRegistry.sources[id];
 characterRegistry.sources['celine-v1']={file:'../npcs/celine-v1.png',size:[1246,1263]};
 const guestFrame=(index:number):CharacterFrame=>{const f=celine.frames[index],[,,w,h]=f.rect;return {...f,source:'celine-v1',referenceHeight:celine.referenceHeight,pivotX:.5,foot:[w/2,h],seat:[w/2,h*.72],grip:null,gripSide:0,slot:null};};
 const guestFrames=Array.from({length:64},(_,i)=>guestFrame(i===0?0:i===1?2:i===2?1:i===4?10:i===5?11:i>=8&&i<12?6+i%2:i>=16&&i<20?8+i%2:i>=24&&i<30?4+i%2:i===39?10:i>=62?4+i%2:0));
@@ -64,7 +68,10 @@ for(const [role,animation]of Object.entries(teamCarry.members)){
  member.carryRightLoop=animation.carryLoop.map(index=>index+offset);member.carrySideFrameMs=animation.carrySideFrameMs;
 }
 lauraDance.members.laura.indices.forEach((index,i)=>{characterRegistry.members.laura.frames[index]=lauraDance.members.laura.frames[i] as CharacterFrame;});
-const files=import.meta.glob(['../assets/characters/team/v3/*.png','../assets/characters/team/v4/*.png','../assets/characters/team/v8/*.png','../assets/characters/team/v10/*.png','../assets/characters/team/v12/*.png','../assets/characters/laura/v5/*.png','../assets/characters/laura/v6/*.png','../assets/characters/laura/v7/*.png','../assets/characters/laura/approved/*.png','../assets/npcs/celine-v1.png'],{eager:true,query:'?url',import:'default'}) as Record<string,string>;
+const files=import.meta.glob(['../assets/characters/team/v3/*.png','../assets/characters/team/v4/*.png','../assets/characters/team/v8/*.png','../assets/characters/team/v10/*.png','../assets/characters/team/v12/*.png','../assets/characters/laura/v5/*.png','../assets/characters/laura/v6/*.png','../assets/characters/laura/v7/*.png','../assets/npcs/celine-v1.png'],{eager:true,query:'?url',import:'default'}) as Record<string,string>;
 export function characterSource(id:string){const file=characterRegistry.sources[id]?.file,url=id==='celine-v1'?files['../assets/npcs/celine-v1.png']:files['../assets/characters/'+file];if(!url)throw Error('人物素材缺失：'+id);return url;}
 const cache=new Map<string,Promise<HTMLImageElement>>();
 export function characterImage(id:string){const url=characterSource(id);if(!cache.has(url)){const image=new Image();image.src=url;cache.set(url,image.decode().then(()=>image).catch(e=>{cache.delete(url);throw e;}));}return cache.get(url)!;}
+
+/** Decode every sheet a role needs; resolves only when all are ready to draw. */
+export function preloadCharacter(role:AvatarRole){const d=characterRegistry.members[role];return Promise.all([...new Set([...d.frames,...d.carryFrames,...d.officeFrames].map(f=>f.source))].map(characterImage));}

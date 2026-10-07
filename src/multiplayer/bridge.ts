@@ -5,6 +5,7 @@ import { playerInventory } from '../player-inventory';
 import {seatSurface} from '../seating';
 import {canWorkAt} from '../workstations';
 import { TeamAvatar } from './avatar';
+import { preloadCharacter } from '../character-assets';
 import type { Player,Role,User } from './types';
 import {onlineWorld} from './world-client';
 // Existing rooms retain their local object/gameplay controllers. This adapter is
@@ -20,7 +21,7 @@ export class MultiplayerBridge{
   private movedAt=new Map<string,number>();
   private remotePositions=new Map<Role,{x:number;y:number;scene:string;seat:string|null}>();
   private syncTimer:ReturnType<typeof setTimeout>|null=null;
-  constructor(readonly game:Phaser.Game){game.events.on(Phaser.Core.Events.POST_STEP,(_time:number,delta:number)=>this.draw(delta||16));const gate=(e:KeyboardEvent)=>{if(this.user?.role&&(!this.controller||!this.connected)&&[document.querySelector('.world'),game.canvas].includes(document.activeElement)&&['KeyE','KeyF','Space','KeyV'].includes(e.code)){e.preventDefault();e.stopImmediatePropagation();}};window.addEventListener('keydown',gate,true);game.events.once('destroy',()=>{window.removeEventListener('keydown',gate,true);if(this.syncTimer)clearTimeout(this.syncTimer);});}
+  constructor(readonly game:Phaser.Game){void preloadCharacter('laura').catch(()=>{});game.events.on(Phaser.Core.Events.POST_STEP,(_time:number,delta:number)=>this.draw(delta||16));const gate=(e:KeyboardEvent)=>{if(this.user?.role&&(!this.controller||!this.connected)&&[document.querySelector('.world'),game.canvas].includes(document.activeElement)&&['KeyE','KeyF','Space','KeyV'].includes(e.code)){e.preventDefault();e.stopImmediatePropagation();}};window.addEventListener('keydown',gate,true);game.events.once('destroy',()=>{window.removeEventListener('keydown',gate,true);if(this.syncTimer)clearTimeout(this.syncTimer);});}
   get active(){return this.game.scene.getScenes(true).find(s=>s.sys.settings.key in previewKeys) as Room|undefined;}
   state():Player|null{
     const scene=this.active;if(!scene)return null;
@@ -37,11 +38,8 @@ export class MultiplayerBridge{
   stand(){const s=this.active;if(!s)return;if(typeof s.stand==='function')s.stand();else if(typeof s.stop==='function')s.stop();}
   clearTransition(){this.transitioning=false;this.pendingSpawn=null;if(this.syncTimer){clearTimeout(this.syncTimer);this.syncTimer=null;}}
   screen(p:Player){const scene=this.active,office=['hutong','hawaii'].includes(p.scene),reverse=office&&!!scene?.reverse;return {...project(p,reverse),facing:visualFacing(p.facing as Facing,reverse)};}
-  private hideLegacy(scene:Room){const actor=scene.actor;if(actor?.hide)actor.hide();else actor?.setVisible(false);scene.actorUpper?.setVisible(false);scene.sideLegs?.hide();scene.heldItem?.hide();scene.curlActor?.setVisible(false);scene.dancer?.setVisible(false);scene.reflectedDancer?.setVisible(false);scene.reflection?.hide();}
   private draw(delta:number){
     const scene=this.active;let local=this.state();if(!scene||!local)return;
-    // The legacy actor wears the old outfit. Hide it while the claimed avatar loads too.
-    if(this.user?.role)this.hideLegacy(scene);
     if(this.pendingSpawn?.scene===local.scene){this.apply(this.pendingSpawn);local=this.state()!;this.pendingSpawn=null;this.transitioning=false;if(this.syncTimer){clearTimeout(this.syncTimer);this.syncTimer=null;}}
     const self=this.players.find(p=>p.role===this.user?.role);
     scene.input.enabled=!this.user?.role||this.controller&&this.connected;
@@ -61,13 +59,13 @@ export class MultiplayerBridge{
     if(prev&&this.controller&&local.seat===null&&!deviceLock&&this.players.some(p=>p.role!==this.user?.role&&p.scene===local!.scene&&Math.abs(p.x-local!.x)<18&&Math.abs(p.y-local!.y)<10&&Math.hypot(local!.x-p.x,local!.y-p.y)<Math.hypot(prev.x-p.x,prev.y-p.y))){this.apply({...local,...prev});local={...local,...prev,moving:false};}
     this.previous.set(local.scene,{x:local.x,y:local.y});
     if(!this.views.has(scene)){this.views.set(scene,new Map());scene.events.once('shutdown',()=>{this.views.get(scene)?.forEach(v=>v.destroy());this.views.delete(scene);});}
-    const views=this.views.get(scene)!;const visible=this.players.filter(p=>p.scene===local!.scene&&p.role!==this.user?.role);
-    if(this.user?.role)visible.push({...local,role:this.user.role});
+    const views=this.views.get(scene)!;const selfRole=this.user?.role??'laura',visible=this.players.filter(p=>p.scene===local!.scene&&p.role!==selfRole);
+    visible.push({...local,role:this.user?.role??'laura'});
     for(const [id,v] of views)if(!visible.some(p=>p.role===id))v.hide();
     for(const [id,v] of this.mirrors.get(scene)??[])if(!visible.some(p=>p.role===id))v.hide();
     for(const p of visible){
       let view=views.get(p.role);if(!view){view=new TeamAvatar(scene,p.role);views.set(p.role,view);}
-      const own=p.role===this.user?.role;
+      const own=p.role===(this.user?.role??'laura');
       let rendered=p;
       if(!own){const old=this.remotePositions.get(p.role);const alpha=1-Math.exp(-Math.min(delta,100)/80);const continuous=old&&old.scene===p.scene&&old.seat===p.seat&&Math.hypot(p.x-old.x,p.y-old.y)<80;const position={x:continuous?old.x+(p.x-old.x)*alpha:p.x,y:continuous?old.y+(p.y-old.y)*alpha:p.y,scene:p.scene,seat:p.seat};this.remotePositions.set(p.role,position);rendered={...p,...position};}
       const point=this.screen(rendered),office=['hutong','hawaii'].includes(p.scene);

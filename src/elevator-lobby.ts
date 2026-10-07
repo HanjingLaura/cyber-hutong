@@ -1,13 +1,12 @@
 import Phaser from 'phaser';
 import {sharedAction} from './multiplayer/world-client';
-import { ShopActor } from './shop-actor';
 import { playerInventory } from './player-inventory';
 
 // Calibrated to the generated image's inner jambs, rather than the requested prompt coordinates.
 const entrances=[{x:201,y:84,width:98,height:147},{x:420,y:84,width:102,height:147}];
 declare global{interface Window{__elevatorPreview?:{getState:()=>unknown}}}
 export class ElevatorLobbyScene extends Phaser.Scene{
-  private actor!:ShopActor;private panels:Phaser.GameObjects.Graphics[]=[];private indicators!:Phaser.GameObjects.Graphics;
+  private actor=false;private panels:Phaser.GameObjects.Graphics[]=[];private indicators!:Phaser.GameObjects.Graphics;
   private keys!:Record<string,Phaser.Input.Keyboard.Key>;
   private x=320;private y=310;private facing=2;
   private doors=[{progress:0,open:false},{progress:0,open:false}];
@@ -22,7 +21,7 @@ export class ElevatorLobbyScene extends Phaser.Scene{
       else panel.setMask(mask.createGeometryMask());
       this.panels.push(panel);
     });
-    this.indicators=this.add.graphics().setDepth(-70);this.actor=new ShopActor(this);
+    this.indicators=this.add.graphics().setDepth(-70);this.actor=true;
     this.keys=this.input.keyboard!.addKeys('W,A,S,D,UP,DOWN,LEFT,RIGHT') as Record<string,Phaser.Input.Keyboard.Key>;
     const world=document.querySelector<HTMLElement>('.world')!,clear=()=>this.input.keyboard?.resetKeys();
     const action=(event:KeyboardEvent)=>{if(!this.sys.isActive()||event.repeat||![world,this.game.canvas].includes(document.activeElement as HTMLElement))return;if(event.code==='KeyE'){event.preventDefault();this.interact();}};
@@ -68,7 +67,7 @@ export class ElevatorLobbyScene extends Phaser.Scene{
     if(focused){const dx=Number(this.keys.D.isDown||this.keys.RIGHT.isDown)-Number(this.keys.A.isDown||this.keys.LEFT.isDown),dy=Number(this.keys.S.isDown||this.keys.DOWN.isDown)-Number(this.keys.W.isDown||this.keys.UP.isDown);
       if(dx||dy){const step=108*Math.min(delta,32)/1000/Math.hypot(dx,dy),ox=this.x,oy=this.y;if(this.canWalk(this.x+dx*step,this.y))this.x+=dx*step;if(this.canWalk(this.x,this.y+dy*step))this.y+=dy*step;this.facing=dx?dx>0?1:3:dy>0?0:2;moving=this.x!==ox||this.y!==oy;}}
     this.doors.forEach(d=>{d.progress=Phaser.Math.Clamp(d.progress+(d.open?1:-1)*Math.min(delta,50)/700,0,1);});
-    this.drawDoors();this.actor.draw(this.x,this.y,this.facing,moving,delta);
+    this.drawDoors();
     const index=this.nearest(),button=document.querySelector<HTMLButtonElement>('#interact')!;
     button.disabled=index===undefined;button.textContent=index===undefined?'靠近电梯门':`${this.doors[index].open?'关闭':'打开'} ${index+1} 号电梯`;
     document.querySelector('#mode')!.textContent=moving?'在电梯间走动':'站在电梯间';

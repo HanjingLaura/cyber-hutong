@@ -63,6 +63,8 @@ export function createAutonomy(store,life,players,leases=new Map()){
   p.task=null;p.next=now+activityPause(task.kind);save(p);
  }
  function tick(now=Date.now(),delta=100){let changed=false;
+  // Hard rule: a user who is online (any tab, even mid-reconnect) is never driven by autonomy/LLM.
+  for(const id of [...doubles.keys()])if(players.has(id)){reclaim(id);changed=true;}
   if(now>=nextRefresh){nextRefresh=now+5000;for(const a of store.db.prepare('SELECT * FROM accounts WHERE role IS NOT NULL').all()){if(players.has(a.id)){if(doubles.has(a.id))doubles.delete(a.id);}else if(!doubles.has(a.id)){doubles.set(a.id,place(a));changed=true;}}}
   if(director?.tick(now))changed=true;
   life.expire(now);
@@ -85,5 +87,5 @@ export function createAutonomy(store,life,players,leases=new Map()){
   const people=all();
   life.finishMeetings(people);return changed;
  }
- return{tick,get,reclaim,doubles,all,onlineCount,onlineScenes,setDirector(value){director=value;},travel(p,scene,point,storyId,now){releaseSeat(p);p.task={kind:'story',storyId,scene,point,phase:p.scene===scene?'arrive':'exit'};p.path=route(p.scene,[p.x,p.y],p.task.phase==='exit'?rooms[p.scene].exit:point);p.next=now+180000;},holdStory(p,storyId){releaseSeat(p);p.path=[];p.task={kind:'story',storyId,phase:'hold'};p.moving=false;},releaseStory(p,now){p.task=null;p.path=[];p.moving=false;p.next=now+activityPause(p.activity==='working'?'work':'rest');save(p);},saveAll(){for(const p of all())save(p);}};
+ return{isDriven:id=>doubles.has(id)&&!players.has(id),tick,get,reclaim,doubles,all,onlineCount,onlineScenes,setDirector(value){director=value;},travel(p,scene,point,storyId,now){releaseSeat(p);p.task={kind:'story',storyId,scene,point,phase:p.scene===scene?'arrive':'exit'};p.path=route(p.scene,[p.x,p.y],p.task.phase==='exit'?rooms[p.scene].exit:point);p.next=now+180000;},holdStory(p,storyId){releaseSeat(p);p.path=[];p.task={kind:'story',storyId,phase:'hold'};p.moving=false;},releaseStory(p,now){p.task=null;p.path=[];p.moving=false;p.next=now+activityPause(p.activity==='working'?'work':'rest');save(p);},saveAll(){for(const p of all())save(p);}};
 }

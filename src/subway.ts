@@ -1,13 +1,12 @@
 import Phaser from 'phaser';
 import {sharedAction} from './multiplayer/world-client';
-import { ShopActor } from './shop-actor';
 import { playerInventory } from './player-inventory';
 
 // Inner door jambs in the station artwork, in the game's 640 × 360 coordinates.
 const entrances = [{x:85,y:112,width:57,height:82},{x:289,y:112,width:62,height:82},{x:497,y:112,width:57,height:82}];
 declare global { interface Window { __subwayPreview?: {getState:()=>unknown} } }
 export class SubwayScene extends Phaser.Scene {
-  private actor!:ShopActor;
+  private actor=false;
   private panels:Phaser.GameObjects.Graphics[]=[];
   private keys!:Record<string,Phaser.Input.Keyboard.Key>;
   private x=320; private y=305; private facing=2;
@@ -24,7 +23,7 @@ export class SubwayScene extends Phaser.Scene {
       else panel.setMask(mask.createGeometryMask());
       this.panels.push(panel);
     });
-    this.actor=new ShopActor(this);
+    this.actor=true;
     this.keys=this.input.keyboard!.addKeys('W,A,S,D,UP,DOWN,LEFT,RIGHT') as Record<string,Phaser.Input.Keyboard.Key>;
     const world=document.querySelector<HTMLElement>('.world')!;
     const clear=()=>this.input.keyboard?.resetKeys();
@@ -69,7 +68,7 @@ export class SubwayScene extends Phaser.Scene {
       if(dx||dy){const step=108*Math.min(delta,32)/1000/Math.hypot(dx,dy),ox=this.x,oy=this.y;if(this.canWalk(this.x+dx*step,this.y))this.x+=dx*step;if(this.canWalk(this.x,this.y+dy*step))this.y+=dy*step;this.facing=dx?dx>0?1:3:dy>0?0:2;moving=this.x!==ox||this.y!==oy;}
     }
     this.progress=Phaser.Math.Clamp(this.progress+(this.open?1:-1)*Math.min(delta,50)/750,0,1);
-    this.drawDoors();this.actor.draw(this.x,this.y,this.facing,moving,delta);
+    this.drawDoors();
     const near=this.nearest()!==undefined,button=document.querySelector<HTMLButtonElement>('#interact')!;
     button.disabled=!near;button.textContent=near?(this.open?'关闭车门':'打开车门'):'靠近车门';
     document.querySelector('#mode')!.textContent=moving?'在站台走动':'站在五道口站';

@@ -13,8 +13,8 @@ export class TeamAvatar{
  ready=false;private body:Phaser.GameObjects.Image;private upper:Phaser.GameObjects.Image;private prop:Phaser.GameObjects.Image;private arm:Phaser.GameObjects.Image;private label:Phaser.GameObjects.Text;
  private time=0;private direction=-1;private dead=false;private legs:SideWalkLegs;private held:HeldItemView;
  private data;private frameName='';private masked=false;
- constructor(private scene:Phaser.Scene,readonly role:AvatarRole,approvedLaura=false){
-  this.data=approvedLaura&&role==='laura'?characterRegistry.blackLaura:characterRegistry.members[role];
+ constructor(private scene:Phaser.Scene,readonly role:AvatarRole){
+  this.data=characterRegistry.members[role];
   this.body=scene.add.image(0,0,'__WHITE').setVisible(false);this.upper=scene.add.image(0,0,'__WHITE').setVisible(false);this.prop=scene.add.image(0,0,'__WHITE').setVisible(false);this.arm=scene.add.image(0,0,'__WHITE').setVisible(false);
   this.legs=new SideWalkLegs(scene);this.held=new HeldItemView(scene);
   this.label=scene.add.text(0,0,role[0].toUpperCase()+role.slice(1),{fontSize:'9px',fontFamily:'Consolas',color:'#f2ecd8',stroke:'#202723',strokeThickness:2}).setOrigin(.5,1).setVisible(false);

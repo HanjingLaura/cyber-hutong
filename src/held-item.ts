@@ -20,7 +20,7 @@ export class HeldItemView {
     this.scene = scene;
     this.item = scene.add.image(0, 0, 'rest-kit').setVisible(false);
     this.palm = scene.add.graphics().setVisible(false);
-    this.arm = scene.add.image(0, 0, 'rest-hold').setVisible(false);
+    this.arm = scene.add.image(0, 0, '__WHITE').setVisible(false);
   }
 
   hide() { this.item.setVisible(false); this.palm.setVisible(false); this.arm.setVisible(false); }

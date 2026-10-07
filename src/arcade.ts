@@ -1,6 +1,5 @@
 import { BASE } from './base';
 import Phaser from 'phaser';
-import { ShopActor } from './shop-actor';
 import { ArcadeGames, type ArcadeKind } from './arcade-games';
 import { registerFrames } from './frames';
 const machines=[{kind:'mines' as ArcadeKind,name:'扫雷',x:95,y:205},{kind:'spider' as ArcadeKind,name:'蜘蛛纸牌',x:182,y:205},{kind:'claw' as ArcadeKind,name:'抓娃娃',x:269,y:205},{kind:'basketball' as ArcadeKind,name:'投篮',x:125,y:339},{kind:'hockey' as ArcadeKind,name:'空气曲棍球',x:434,y:322}];
@@ -12,7 +11,7 @@ const webMachines=[
 const bench={x:535,y:342,approachX:584,approachY:330};
 declare global {interface Window{__arcadePreview?:{getState:()=>unknown}}}
 export class ArcadeScene extends Phaser.Scene {
-  private actor!:ShopActor;
+  private actor=false;
   private games!:ArcadeGames;
   private keys!:Record<string,Phaser.Input.Keyboard.Key>;
   private x=320;
@@ -34,7 +33,7 @@ export class ArcadeScene extends Phaser.Scene {
     const seat=this.add.image(bench.x,bench.y,'arcade-props-v2',frames[2].name).setOrigin(.5,1).setDisplaySize(88,42).setDepth(342);
     [basketball,hockey].forEach((image,index)=>image.setInteractive({useHandCursor:true}).on('pointerdown',()=>{if(this.games.dialog.open)return;const target=machines[index+3];if(Math.hypot(this.x-target.x,this.y-target.y)<35){this.games.open(target.kind);}else document.querySelector('#hint')!.textContent='走近这台机器再玩。';}));
     seat.setInteractive({useHandCursor:true}).on('pointerdown',()=>{if(!this.games.dialog.open&&(this.seated!==null||this.nearBench()))this.interact();});
-    this.actor=new ShopActor(this);this.games=new ArcadeGames();
+    this.actor=true;this.games=new ArcadeGames();
     this.keys=this.input.keyboard!.addKeys('W,A,S,D,UP,DOWN,LEFT,RIGHT') as Record<string,Phaser.Input.Keyboard.Key>;
     const world=document.querySelector<HTMLElement>('.world')!;
     const action=(event:KeyboardEvent)=>{
@@ -66,7 +65,7 @@ export class ArcadeScene extends Phaser.Scene {
         this.facing=dx?dx>0?1:3:dy>0?0:2;moving=this.x!==ox||this.y!==oy;
       }
     }
-    this.actor.draw(this.x,this.y,this.facing,moving,delta,this.seated!==null,this.seated?346:this.y+1,this.seated?54:undefined);
+    
     const target=this.nearest(),button=document.querySelector<HTMLButtonElement>('#interact')!;
     button.disabled=!target&&!this.nearBench()&&!this.seated;button.textContent=this.seated?'起身':this.nearBench()?'坐下休息':target?`玩${target.name}`:'靠近机器';
     document.querySelector('#mode')!.textContent=this.games.dialog.open?'正在玩游戏':this.seated?'坐着休息':moving?'在娱乐室走动':'站在娱乐室';

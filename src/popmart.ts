@@ -5,14 +5,13 @@ import { preloadGuest, placeGuest, guestBlocks } from './easter-eggs';
 import { gacha } from './gacha';
 import {onlineWorld} from './multiplayer/world-client';
 import { registerRegions } from './frames';
-import { ShopActor } from './shop-actor';
 import { blindBoxes, themes, type Theme, toyNames, toyImage, setToyImages, type ToyRecord } from './blind-box';
 
 type Source = 'shelf' | 'machine';
 const shopFloor=new Phaser.Geom.Polygon([200,150,237.5,150,237.5,287.5,405,287.5,405,150,460,150,550,305,415,310,415,345,225,345,225,310,85,305]);
 declare global { interface Window { __popPreview?: { getState: () => unknown } } }
 export class PopMartScene extends Phaser.Scene {
-  private actor!: ShopActor;
+  private actor=false;
   private keys!: Record<string, Phaser.Input.Keyboard.Key>;
   private x = 320; private y = 316; private facing = 2;
   private source: Source = 'shelf';
@@ -69,7 +68,7 @@ export class PopMartScene extends Phaser.Scene {
     // Use the pixel packaging until matching IP figure art is available. Do not
     // relabel unrelated generic toys or insert photographs into the pixel world.
     setToyImages(Array.from({length:10},(_,i)=>this.boxImages[i%3]));
-    this.actor = new ShopActor(this);
+    this.actor=true;
     this.keys = this.input.keyboard!.addKeys('W,A,S,D,UP,DOWN,LEFT,RIGHT') as Record<string, Phaser.Input.Keyboard.Key>;
     const world = document.querySelector<HTMLElement>('.world')!;
     const action = (event: KeyboardEvent) => {
@@ -223,7 +222,7 @@ export class PopMartScene extends Phaser.Scene {
         this.facing=dx?dx>0?1:3:dy>0?0:2; moving=ox!==this.x||oy!==this.y;
       }
     }
-    this.actor.draw(this.x,this.y,this.facing,moving,delta);
+    
     const target=this.nearest(), button=document.querySelector<HTMLButtonElement>('#interact')!;
     button.disabled=!target; button.textContent=target?target.id==='machine'?'转动扭蛋机':'挑选陈列台盲盒':'靠近陈列台或扭蛋机';
     document.querySelector('#mode')!.textContent=moving?'在 POP MART 走动':'逛 POP MART';
