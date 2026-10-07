@@ -40,7 +40,7 @@ export function contextActions(text) {
     if (!match) continue;
     const key = match[1];
     let label = part.replace(/^.*?(?:按\s*)?[EF](?:\s*\/\s*Esc)?\s*/, '').replace(/^·\s*/, '').trim();
-    label = label.replace(/[。.!！]+$/, '');
+    label = label.replace(/[。.!！，,]+$/, '');
     if (!label) label = key === 'E' ? '互动' : '操作';
     if (/^靠近/.test(part) && key === 'E') label = label || '互动';
     const entry = { code: key === 'E' ? 'KeyE' : 'KeyF', label: label.slice(0, 8) };

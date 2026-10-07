@@ -495,11 +495,11 @@ class HutongScene extends Phaser.Scene {
       hintElement.textContent = this.seatedAt ? (this.mode==='working'?'点电脑 · Esc 起身':'Esc 起身') : this.nearest ? `靠近 ${this.nearest.id}：E 坐下` : 'E 坐下';
       interactButton.disabled = !this.seatedAt && !this.nearest;
       interactButton.textContent = this.seatedAt ? '起身' : this.nearest ? `坐到 ${this.nearest.id}` : '靠近椅子坐下';
-      setGuide('WASD / 方向键移动 · V 换视角', this.seatedAt ? (this.mode==='working'?'自己的工位 · 点击电脑放大 · E / Esc 起身':'坐下休息 · E / Esc 起身') : this.nearest ? `E · ${this.nearest.id} ${canWorkAt(onlineWorld()?.bridge.user?.role??'laura',this.sys.settings.key,this.nearest.id)?'我的工位，坐下办公':'坐下休息'}` : '靠近工位，按 E 坐下');
+      setGuide('WASD / 方向键移动 · V 换视角', this.seatedAt ? (this.mode==='working'?'点电脑 · E 起身':'E 起身') : this.nearest ? `E · ${this.nearest.id} ${canWorkAt(onlineWorld()?.bridge.user?.role??'laura',this.sys.settings.key,this.nearest.id)?'办公':'坐下'}` : 'E 坐下');
       document.querySelector('#seat-state')!.textContent = this.seatedAt ? `${this.seatedAt.id} 使用中 · 其余 ${this.seats.length-1} 位空闲` : this.isHawaii?'':'';
       if(this.isHawaii){
         modeElement.textContent=this.mode==='working'?`在 ${this.seatedAt!.id} 办公`:this.mode==='sit'?`坐在 ${this.seatedAt!.id} 休息`:this.mode==='walking'?'在夏威夷走动':'站在夏威夷';
-        setGuide('WASD / 方向键移动', this.seatedAt ? (this.mode==='working'?'自己的工位 · 点击电脑放大 · E / Esc 起身':'坐下休息 · E / Esc 起身') : this.nearest ? `E · ${this.nearest.id} ${canWorkAt(onlineWorld()?.bridge.user?.role??'laura',this.sys.settings.key,this.nearest.id)?'我的工位，坐下办公':'坐下休息'}` : '靠近工位，按 E 坐下');
+        setGuide('WASD / 方向键移动', this.seatedAt ? (this.mode==='working'?'点电脑 · E 起身':'E 起身') : this.nearest ? `E · ${this.nearest.id} ${canWorkAt(onlineWorld()?.bridge.user?.role??'laura',this.sys.settings.key,this.nearest.id)?'办公':'坐下'}` : 'E 坐下');
         if(this.nearWindow()){
           interactButton.disabled=false;interactButton.textContent=this.curtainDown?'卷起窗帘':'拉下窗帘';
           hintElement.textContent=`靠近窗边：按 E ${interactButton.textContent}。`;
