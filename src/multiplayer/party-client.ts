@@ -68,6 +68,8 @@ export class PartyPresence {
       const character = this.bridge.state();
       this.socket = new PartySocket({
         host,
+        // Matches wrangler Durable Object binding `Hutong` → party route `hutong`.
+        party: 'hutong',
         room: ticket.room || DEFAULT_ROOM,
         id: this.clientId,
         // Keep trying under flaky mobile / high-latency links (8 concurrent clients).

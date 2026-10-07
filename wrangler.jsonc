@@ -1,0 +1,24 @@
+{
+  "name": "cyber-hutong-party",
+  "main": "party/hutong.ts",
+  "compatibility_date": "2024-11-01",
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "Hutong",
+        "class_name": "Hutong"
+      }
+    ]
+  },
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": ["Hutong"]
+    }
+  ],
+  "vars": {
+    // Override on deploy: --var PARTY_CORS_ORIGINS:https://hanjing-laura.vercel.app
+    "PARTY_CORS_ORIGINS": "https://hanjing-laura.vercel.app,https://cyber-hutong.vercel.app,http://127.0.0.1:5173,http://localhost:5173"
+  }
+  // PARTY_AUTH_SECRET is set as a secret: npx wrangler secret put PARTY_AUTH_SECRET
+}

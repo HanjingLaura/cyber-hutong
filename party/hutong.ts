@@ -1,4 +1,5 @@
-import type * as Party from 'partykit/server';
+import type { Connection, ConnectionContext } from 'partyserver';
+import { routePartykitRequest, Server } from 'partyserver';
 import { verifyTicket } from '../shared/party-ticket.mjs';
 import {
   PARTY_ROOM_ID,
@@ -11,26 +12,36 @@ import {
 
 type AuthState = { userId: string; role: string; controller: boolean };
 
-export default class HutongParty implements Party.Server {
-  readonly options = { hibernate: false };
+type Env = {
+  Hutong: DurableObjectNamespace;
+  PARTY_AUTH_SECRET?: string;
+  /** Browser origins allowed for WebSocket CORS (comma-separated). */
+  PARTY_CORS_ORIGINS?: string;
+};
+
+/**
+ * Presence room on the caller's own Cloudflare account (PartyServer).
+ * Managed partykit.dev hits the shared-zone custom-domain limit, so we deploy
+ * here with wrangler → *.workers.dev instead.
+ */
+export class Hutong extends Server {
+  static options = { hibernate: false };
   private state = createRoomState();
   private helloTimers = new Map<string, ReturnType<typeof setTimeout>>();
 
-  constructor(readonly room: Party.Room) {}
-
   private secret() {
-    return String(this.room.env.PARTY_AUTH_SECRET || '');
+    return String(this.env.PARTY_AUTH_SECRET || '');
   }
 
-  private send(conn: Party.Connection, value: unknown) {
+  private send(conn: Connection, value: unknown) {
     conn.send(JSON.stringify(value));
   }
 
-  private broadcast(value: unknown, except: string[] = []) {
-    this.room.broadcast(JSON.stringify(value), except);
+  private emit(value: unknown, except: string[] = []) {
+    this.broadcast(JSON.stringify(value), except);
   }
 
-  onConnect(conn: Party.Connection) {
+  onConnect(conn: Connection, _ctx: ConnectionContext) {
     const timer = setTimeout(() => {
       if (!(conn.state as AuthState | undefined)?.userId) {
         this.send(conn, { type: 'reject', reason: '请先登录后发送 hello' });
@@ -40,43 +51,43 @@ export default class HutongParty implements Party.Server {
     this.helloTimers.set(conn.id, timer);
   }
 
-  async onMessage(message: string | ArrayBuffer, sender: Party.Connection) {
+  async onMessage(conn: Connection, message: string | ArrayBuffer | ArrayBufferView) {
     if (typeof message !== 'string') return;
     let data: any;
     try {
       data = JSON.parse(message);
     } catch {
-      this.send(sender, { type: 'reject', reason: '消息格式无效' });
+      this.send(conn, { type: 'reject', reason: '消息格式无效' });
       return;
     }
 
     if (data?.type === 'ping') {
-      this.send(sender, { type: 'pong', t: data.t ?? Date.now() });
+      this.send(conn, { type: 'pong', t: data.t ?? Date.now() });
       return;
     }
 
     if (data?.type === 'hello') {
       const claims = await verifyTicket(this.secret(), data.ticket);
       if (!claims) {
-        this.send(sender, { type: 'reject', reason: '会话无效或已过期' });
-        sender.close(4003, 'invalid ticket');
+        this.send(conn, { type: 'reject', reason: '会话无效或已过期' });
+        conn.close(4003, 'invalid ticket');
         return;
       }
-      const timer = this.helloTimers.get(sender.id);
+      const timer = this.helloTimers.get(conn.id);
       if (timer) {
         clearTimeout(timer);
-        this.helloTimers.delete(sender.id);
+        this.helloTimers.delete(conn.id);
       }
 
-      const result = applyHello(this.state, sender.id, claims, data.character || {});
-      sender.setState({
+      const result = applyHello(this.state, conn.id, claims, data.character || {});
+      conn.setState({
         userId: result.you.userId,
         role: result.you.role,
         controller: result.you.controller,
       } satisfies AuthState);
 
       if (result.demoted) {
-        const old = this.room.getConnection(result.demoted);
+        const old = this.getConnection(result.demoted);
         if (old) {
           const prev = (old.state || {}) as AuthState;
           old.setState({ ...prev, controller: false });
@@ -84,31 +95,31 @@ export default class HutongParty implements Party.Server {
         }
       }
 
-      this.send(sender, { ...roomSnapshot(this.state), you: result.you });
-      this.broadcast({ type: 'presence', event: 'join', player: result.player }, [sender.id]);
+      this.send(conn, { ...roomSnapshot(this.state), you: result.you });
+      this.emit({ type: 'presence', event: 'join', player: result.player }, [conn.id]);
       return;
     }
 
-    const link = sender.state as AuthState | undefined;
+    const link = conn.state as AuthState | undefined;
     if (!link?.userId) {
-      this.send(sender, { type: 'reject', reason: '请先 hello' });
+      this.send(conn, { type: 'reject', reason: '请先 hello' });
       return;
     }
 
     if (data?.type === 'move') {
-      const result = applyMove(this.state, sender.id, data);
+      const result = applyMove(this.state, conn.id, data);
       if (!result.ok) {
-        this.send(sender, { type: 'reject', reason: result.reason });
+        this.send(conn, { type: 'reject', reason: result.reason });
         return;
       }
-      this.broadcast({ type: 'presence', event: 'update', player: result.player }, [sender.id]);
+      this.emit({ type: 'presence', event: 'update', player: result.player }, [conn.id]);
       return;
     }
 
-    this.send(sender, { type: 'reject', reason: '未知消息' });
+    this.send(conn, { type: 'reject', reason: '未知消息' });
   }
 
-  onClose(conn: Party.Connection) {
+  onClose(conn: Connection) {
     const timer = this.helloTimers.get(conn.id);
     if (timer) {
       clearTimeout(timer);
@@ -116,7 +127,7 @@ export default class HutongParty implements Party.Server {
     }
     const result = applyLeave(this.state, conn.id);
     if (result.takeover) {
-      const next = this.room.getConnection(result.takeover);
+      const next = this.getConnection(result.takeover);
       if (next) {
         const prev = (next.state || {}) as AuthState;
         next.setState({ ...prev, controller: true });
@@ -124,13 +135,13 @@ export default class HutongParty implements Party.Server {
       }
     }
     if (result.left) {
-      this.broadcast({ type: 'presence', event: 'leave', player: { role: result.left.role } });
+      this.emit({ type: 'presence', event: 'leave', player: { role: result.left.role } });
     } else if (result.player) {
-      this.broadcast({ type: 'presence', event: 'update', player: result.player });
+      this.emit({ type: 'presence', event: 'update', player: result.player });
     }
   }
 
-  onError(conn: Party.Connection) {
+  onError(conn: Connection) {
     this.onClose(conn);
   }
 
@@ -138,7 +149,7 @@ export default class HutongParty implements Party.Server {
     return new Response(
       JSON.stringify({
         ok: true,
-        room: this.room.id || PARTY_ROOM_ID,
+        room: this.name || PARTY_ROOM_ID,
         players: roomSnapshot(this.state).players.length,
       }),
       { headers: { 'content-type': 'application/json' } },
@@ -146,4 +157,29 @@ export default class HutongParty implements Party.Server {
   }
 }
 
-HutongParty satisfies Party.Worker;
+function corsHeaders(env: Env, request: Request): Record<string, string> | true {
+  const allowed = String(env.PARTY_CORS_ORIGINS || 'https://hanjing-laura.vercel.app,https://cyber-hutong.vercel.app,http://127.0.0.1:5173,http://localhost:5173')
+    .split(',')
+    .map(s => s.trim())
+    .filter(Boolean);
+  const origin = request.headers.get('Origin') || '';
+  if (!origin) return true;
+  if (allowed.includes(origin) || allowed.includes('*')) {
+    return {
+      'Access-Control-Allow-Origin': origin,
+      'Access-Control-Allow-Methods': 'GET, POST, HEAD, OPTIONS',
+      'Access-Control-Allow-Headers': '*',
+      'Access-Control-Allow-Credentials': 'true',
+    };
+  }
+  return true;
+}
+
+export default {
+  async fetch(request: Request, env: Env): Promise<Response> {
+    return (
+      (await routePartykitRequest(request, env, { cors: corsHeaders(env, request) })) ||
+      new Response('Not Found', { status: 404 })
+    );
+  },
+} satisfies ExportedHandler<Env>;

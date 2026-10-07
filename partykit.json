@@ -1,4 +1,5 @@
 {
+  "$comment": "Legacy managed PartyKit config. New deploys use wrangler.jsonc + PartyServer (partykit.dev zone is full).",
   "name": "cyber-hutong",
   "main": "party/hutong.ts",
   "compatibilityDate": "2024-11-01"

@@ -51,4 +51,4 @@ process.on('SIGTERM', stop);
 
 start(['server/index.mjs'], 'api');
 start(['node_modules/vite/bin/vite.js', '--host', '0.0.0.0'], 'vite');
-start(['node_modules/partykit/dist/bin.mjs', 'dev', '--port', '1999', '--var', `PARTY_AUTH_SECRET=${env.PARTY_AUTH_SECRET}`], 'partykit');
+start(['node_modules/wrangler/bin/wrangler.js', 'dev', '--port', '1999', '--ip', '127.0.0.1'], 'party');
