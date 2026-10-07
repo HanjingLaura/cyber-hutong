@@ -6,7 +6,7 @@ import type {MultiplayerBridge} from './multiplayer/bridge';
 type RoomKey=keyof typeof rooms;
 export function setupNavigation(bridge:MultiplayerBridge,request:(path:string,input?:any)=>Promise<any>,publish:()=>Promise<void>,client:string,notice:(text:string)=>void){
  const dialog=document.createElement('dialog');dialog.id='location-map';dialog.className='social-dialog location-map';
- dialog.innerHTML='<div class="panel-heading"><h2>地点</h2><button type="button" data-cancel>关闭 · Esc</button></div><p data-current></p><div data-places></div><p data-error role="status"></p>';
+ dialog.innerHTML='<div class="panel-heading"><h2>地点</h2><button type="button" data-cancel>关闭</button></div><p data-current></p><div data-places></div><p data-error role="status"></p>';
  document.querySelector('.world')!.append(dialog);let selected:RoomKey|null=null,busy=false;let mark:Phaser.GameObjects.Graphics|undefined,markScene:Phaser.Scene|undefined;
  const exitNear=()=>{const p=bridge.state(),r=p&&rooms[p.scene as RoomKey];return !!p&&!!r&&!p.seat&&Math.hypot(p.x-r.exit[0],p.y-r.exit[1])<28;};
  let exitHint=false,savedGuide='';

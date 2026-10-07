@@ -2,7 +2,7 @@ import geometry from '../shared/interactions.json' with {type:'json'};
 export const celinePolicy={visitMin:5*60000,visitMax:9*60000,speechMin:90*1000,speechMax:180*1000};
 /** World px/s. Matches player hutong/office walk so her aisle trips are ~0.5s, not 15s crawls. */
 export const celineWalk=108;
-export function celineQuestion(roll){return roll<.60?'Amber 呢？':roll<.85?'Jilly 呢？':'Amber 这孩子。';}
+export function celineQuestion(_roll){return '';}
 /** One shared visitor, with persisted random choices rather than per-browser rolls. */
 export function createCeline(store,{random=Math.random,now=Date.now}={}){
  const db=store.db;db.exec('CREATE TABLE IF NOT EXISTS world_npcs(id TEXT PRIMARY KEY,state TEXT NOT NULL)');

@@ -139,8 +139,7 @@ export function createMvpServer({dbPath='data/mvp.sqlite',staticDir=resolve('dis
           if(!rule)fail(400,'彩蛋不存在');if(rule.owner!==user.role)fail(403,'只有对应的人能与这个彩蛋互动');
           const visible=rule.condition==='always'||autonomy.all().some(a=>a.role===rule.owner&&a.scene===rule.room&&(rule.condition!=='working'||a.activity==='working'&&workstations[a.scene]?.[a.role]===a.seat));
           const point=guestPositions[rule.id];if(p.scene!==rule.room||!visible||Math.hypot(p.x-point.x,p.y-point.y)>(rule.id==='ani'?75:42))fail(409,'走近自己的彩蛋再互动');
-          const lines={ani:'Sid，歇会儿吧。',lulu:'Suki，一起慢慢待一会儿。',tutu:'Kay，运动完一起歇歇！',buzz:'Cora，今天想拆哪一盒？',zhu:'Jilly，今天也来听歌啦！',ferret:'Amber，又见面了！'};
-          const reaction={id:rule.id+':'+Date.now(),npc:rule.id,owner:rule.owner,scene:rule.room,x:point.x,y:point.y,text:lines[rule.id],expires:Date.now()+5000};npcReactions.set(rule.id,reaction);
+          const reaction={id:rule.id+':'+Date.now(),npc:rule.id,owner:rule.owner,scene:rule.room,x:point.x,y:point.y,text:'',expires:Date.now()+5000};npcReactions.set(rule.id,reaction);
           life.recordGroup([user.id],'easter',`${name(user.role)} 与${({ani:'Ani',lulu:'噜噜',tutu:'图图',buzz:'巴斯光年',zhu:'朱志鑫',ferret:'富贵貂'})[rule.id]}打了个招呼。`,rule.room,Date.now(),reaction.id);dirty=true;json(res,200,{ok:true,reaction});return;
         }
         if(path==='/api/offer'){checkControl(user,input.client);const result=life.respond(user.id,input.id,input.answer);dirty=true;json(res,200,{offer:result});return;}

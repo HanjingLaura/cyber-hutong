@@ -46,7 +46,7 @@ export class NoodleShopScene extends Phaser.Scene {
       this.dishImages[index]=Array.from({length:6},(_,slot)=>this.add.image(t.x+(slot%3-1)*29,224+Math.floor(slot/3)*8,'product-noodles').setOrigin(.5,1).setVisible(false).setDepth(t.y+.2));
     });
     seats.forEach((s,index)=>{const chair=this.add.image(s.x,s.y,'noodle-kit','stool').setOrigin(.5,1).setDisplaySize(24,23).setDepth(s.y+2);
-      chair.setInteractive({useHandCursor:true}).on('pointerdown',()=>{if(this.dialog.open)return;if(this.seated===index){this.stand();return;}if(this.seated!==null)return;if(Math.hypot(this.x-s.x,this.y-(s.y+19))>=24){this.message='靠近这把凳子再坐下。';return;}this.sit(index);});this.chairs.push(chair);});
+      chair.setInteractive({useHandCursor:true}).on('pointerdown',()=>{if(this.dialog.open)return;if(this.seated===index){this.stand();return;}if(this.seated!==null)return;if(Math.hypot(this.x-s.x,this.y-(s.y+19))>=24){this.message='走近一点';return;}this.sit(index);});this.chairs.push(chair);});
     this.toppings=this.add.graphics().setDepth(265);
     this.actor=true;
     this.keys=this.input.keyboard!.addKeys('W,A,S,D,UP,DOWN,LEFT,RIGHT') as Record<string,Phaser.Input.Keyboard.Key>;
@@ -96,9 +96,9 @@ export class NoodleShopScene extends Phaser.Scene {
     document.querySelector('#noodle-menu-hand')!.textContent=`手中：${playerInventory.hand??'空'}`;
     this.input.keyboard?.resetKeys();this.dialog.showModal();
   }
-  private take(name:ItemName){if(playerInventory.hand){this.message='手上有东西';return;}const source=name==='碗筷'?'utensils':['可乐','冰红茶'].includes(name)?'drinks':'chicken';if(sharedAction('noodle:'+source,'supply',{item:name}))return;playerInventory.hand=name;playerInventory.noodleSeasoning=[];this.message=`拿到了${name}。`;}
+  private take(name:ItemName){if(playerInventory.hand){this.message='手上有东西';return;}const source=name==='碗筷'?'utensils':['可乐','冰红茶'].includes(name)?'drinks':'chicken';if(sharedAction('noodle:'+source,'supply',{item:name}))return;playerInventory.hand=name;playerInventory.noodleSeasoning=[];this.message='';}
   private stand(){if(this.seated===null)return;const s=seats[this.seated];this.x=s.x;this.y=s.y+22;this.seated=null;this.facing=0;}
-  private sit(index:number){const s=seats[index];this.input.keyboard?.resetKeys();this.seated=index;this.x=s.x;this.y=s.y-3;this.facing=2;this.message='F · F 物品 · Esc 起身';document.querySelector<HTMLElement>('.world')!.focus();}
+  private sit(index:number){const s=seats[index];this.input.keyboard?.resetKeys();this.seated=index;this.x=s.x;this.y=s.y-3;this.facing=2;this.message='F 物品 · Esc 起身';document.querySelector<HTMLElement>('.world')!.focus();}
   private interact(){
     if(this.seated!==null){this.stand();return;}
     const target=this.nearest();if(!target)return;
@@ -108,7 +108,7 @@ export class NoodleShopScene extends Phaser.Scene {
     if(target.kind==='noodles'){
       if(playerInventory.hand!=='碗筷'){this.message='先拿碗筷';return;}
       if(sharedAction('noodle:noodles','supply',{item:'米线'}))return;
-      playerInventory.hand='米线';playerInventory.noodleSeasoning=[];this.message='米线好了';return;
+      playerInventory.hand='米线';playerInventory.noodleSeasoning=[];this.message='';return;
     }
     const products:ItemName[]=target.kind==='drinks'?['可乐','冰红茶']:['鸡柳','炸鸡'];
     this.menu(target.kind==='drinks'?'饮料柜':'鸡柳大人',products.map(name=>({name,item:name,disabled:!!playerInventory.hand,run:()=>this.take(name)})));
@@ -116,20 +116,20 @@ export class NoodleShopScene extends Phaser.Scene {
   private season(table:number,name:string){
     const dish=this.dishes[table].find(d=>d?.name==='米线');
     if(!dish){this.message='先放下米线';return;}
-    if(dish.seasoning.includes(name)){this.message=`这碗米线已经加过${name}了。`;return;}
+    if(dish.seasoning.includes(name)){this.message='';return;}
     if(sharedAction(`noodle:table-${table}`,'season',{slot:this.dishes[table].indexOf(dish),item:name}))return;
-    dish.seasoning.push(name);this.message=`米线加了${name}。`;
+    dish.seasoning.push(name);this.message='';
   }
   private openTable(table:number){
     const hand=playerInventory.hand,free=this.dishes[table].findIndex(d=>!d);
     const options:{name:string;item?:ItemName;disabled?:boolean;run:()=>void}[]=[
-      {name:hand?`放下${hand}`:'放下物品',item:hand??undefined,disabled:!hand||free<0,run:()=>{if(sharedAction(`noodle:table-${table}`,'put',{slot:free}))return;if(playerInventory.hand&&free>=0){this.dishes[table][free]={name:playerInventory.hand,seasoning:playerInventory.hand==='米线'?[...playerInventory.noodleSeasoning]:[]};playerInventory.hand=null;this.message='物品已放到桌上。';}}},
+      {name:hand?`放下${hand}`:'放下物品',item:hand??undefined,disabled:!hand||free<0,run:()=>{if(sharedAction(`noodle:table-${table}`,'put',{slot:free}))return;if(playerInventory.hand&&free>=0){this.dishes[table][free]={name:playerInventory.hand,seasoning:playerInventory.hand==='米线'?[...playerInventory.noodleSeasoning]:[]};playerInventory.hand=null;this.message='';}}},
       {name:'加醋',run:()=>this.season(table,'醋')},{name:'加麻油',run:()=>this.season(table,'麻油')},
     ];
-    this.dishes[table].forEach((dish,slot)=>{if(dish)options.push({name:`拿回${dish.name}${dish.seasoning.length?'（'+dish.seasoning.join('、')+'）':''}`,item:dish.name,disabled:!!hand,run:()=>{if(sharedAction(`noodle:table-${table}`,'take',{slot}))return;if(!playerInventory.hand){playerInventory.hand=dish.name;playerInventory.noodleSeasoning=[...dish.seasoning];this.dishes[table][slot]=null;this.message=`拿回了${dish.name}。`;}}});});
+    this.dishes[table].forEach((dish,slot)=>{if(dish)options.push({name:`拿回${dish.name}${dish.seasoning.length?'（'+dish.seasoning.join('、')+'）':''}`,item:dish.name,disabled:!!hand,run:()=>{if(sharedAction(`noodle:table-${table}`,'take',{slot}))return;if(!playerInventory.hand){playerInventory.hand=dish.name;playerInventory.noodleSeasoning=[...dish.seasoning];this.dishes[table][slot]=null;this.message='';}}});});
     if(this.seated!==null){
       const foodSlot=this.dishes[table].findIndex(d=>d&&edible.includes(d.name));
-      options.push({name:'吃东西',disabled:!(hand&&edible.includes(hand))&&foodSlot<0,run:()=>{if(sharedAction(`noodle:table-${table}`,'consume',{slot:Math.max(0,foodSlot),fromHand:!!playerInventory.hand&&edible.includes(playerInventory.hand)}))return;if(playerInventory.hand&&edible.includes(playerInventory.hand)){this.message=`吃完了${playerInventory.hand}。`;playerInventory.hand=null;}else if(foodSlot>=0){this.message=`吃完了${this.dishes[table][foodSlot]!.name}。`;this.dishes[table][foodSlot]=null;}}});
+      options.push({name:'吃东西',disabled:!(hand&&edible.includes(hand))&&foodSlot<0,run:()=>{if(sharedAction(`noodle:table-${table}`,'consume',{slot:Math.max(0,foodSlot),fromHand:!!playerInventory.hand&&edible.includes(playerInventory.hand)}))return;if(playerInventory.hand&&edible.includes(playerInventory.hand)){this.message='';playerInventory.hand=null;}else if(foodSlot>=0){this.message='';this.dishes[table][foodSlot]=null;}}});
     }
     this.menu('餐桌',options);
   }
@@ -155,12 +155,12 @@ export class NoodleShopScene extends Phaser.Scene {
       dish.seasoning.forEach((name,i)=>this.toppings.fillStyle(name==='醋'?0x68452f:0xd1aa41).fillRect(image.x-2+i*4,image.y-7,2,2));
     }));
     const target=this.nearest(),table=this.nearTable(),button=document.querySelector<HTMLButtonElement>('#interact')!,tableButton=document.querySelector<HTMLButtonElement>('#table-action')!;
-    button.disabled=this.dialog.open||this.seated===null&&!target;button.textContent=this.seated!==null?'起身':target?this.label(target):'靠近桌椅或窗口';
-    tableButton.hidden=table===null;tableButton.disabled=this.dialog.open;tableButton.textContent='桌上物品 / 调料 · F';
+    button.disabled=this.dialog.open||this.seated===null&&!target;button.textContent=this.seated!==null?'起身':target?this.label(target):'';
+    tableButton.hidden=table===null;tableButton.disabled=this.dialog.open;tableButton.textContent='桌上物品 / 调料';
     document.querySelector('#mode')!.textContent=this.seated!==null?'坐在米线店':moving?'在米线店走动':'站在米线店';
     document.querySelector('#hint')!.textContent=this.message;
     document.querySelector('#noodle-hand')!.textContent=`手中：${playerInventory.hand??'空'}`;
     document.querySelector('#guide-title')!.textContent='WASD / 方向键移动';
-    document.querySelector('#guide-action')!.textContent=this.seated!==null?'E / Esc 起身 · F 桌上物品':target?`E · ${this.label(target)}`:'靠近窗口、碗筷台或凳子按 E';
+    document.querySelector('#guide-action')!.textContent=this.seated!==null?'E / Esc 起身 · F 桌上物品':target?`E · ${this.label(target)}`:'E 互动';
   }
 }

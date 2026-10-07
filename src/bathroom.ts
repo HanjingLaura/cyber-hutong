@@ -26,7 +26,7 @@ export class BathroomScene extends Phaser.Scene {
   private seated: number|null = null;
   private washing: number|null = null;
   private washStarted = 0;
-  private message = '靠近隔间按 E 开门，再靠近马桶按 E 坐下。';
+  private message = 'E 开门 · E 坐下';
   constructor(){super('bathroom');}
   preload(){
     preloadGuest(this,'ferret');
@@ -110,7 +110,7 @@ export class BathroomScene extends Phaser.Scene {
     if(this.turning[index])return;
     if(!this.open[index])this.toggleDoor(index);
     this.seated=null;this.x=centers[index];this.y=235;this.facing=0;
-    this.message='起身了';
+    this.message='';
   }
   private interact(){
     if(this.washing!==null)return;
@@ -120,11 +120,11 @@ export class BathroomScene extends Phaser.Scene {
     if(target.kind==='toilet'){
       if(this.turning[target.index])return;
       this.seated=target.index;this.x=centers[target.index];this.y=seatedFootY;this.facing=0;
-      this.message=`坐在 ${target.index+1} 号 · F 门 · Esc 起身`;return;
+      this.message=`F 门 · Esc 起身`;return;
     }
     this.washing=target.index;this.x=sinkCenters[target.index];this.y=237;this.facing=2;this.washStarted=this.time.now;
-    this.message='正在洗手…';
-    this.time.delayedCall(1500,()=>{this.washing=null;this.message='洗手完成。';this.water.clear();});
+    this.message='';
+    this.time.delayedCall(1500,()=>{this.washing=null;this.message='';this.water.clear();});
   }
   private canWalk(x:number,y:number){
     if(guestBlocks('ferret',x,y))return false;
@@ -169,14 +169,14 @@ export class BathroomScene extends Phaser.Scene {
     const target=this.nearest(),doorIndex=this.seated??(target&&target.kind!=='sink'?target.index:null);
     const button=document.querySelector<HTMLButtonElement>('#interact')!;
     button.disabled=this.washing!==null||this.seated===null&&!target;
-    button.textContent=this.seated!==null?'起身':target?.kind==='door'?`打开 ${target.index+1} 号隔间`:target?.kind==='toilet'?`坐到 ${target.index+1} 号马桶`:target?.kind==='sink'?'洗手':'靠近隔间或洗手台';
+    button.textContent=this.seated!==null?'起身':target?.kind==='door'?`打开 ${target.index+1} 号隔间`:target?.kind==='toilet'?`坐到 ${target.index+1} 号马桶`:target?.kind==='sink'?'洗手':'';
     const doorButton=document.querySelector<HTMLButtonElement>('#bathroom-door')!;
     doorButton.disabled=doorIndex===null||doorIndex!==null&&this.turning[doorIndex];
-    doorButton.textContent=doorIndex===null?'靠近隔间开关门':`${this.open[doorIndex]?'关':'开'}门 · F`;
+    doorButton.textContent=doorIndex===null?'':`${this.open[doorIndex]?'关':'开'}门`;
     document.querySelector('#mode')!.textContent=this.seated!==null?`坐在 ${this.seated+1} 号马桶上`:this.washing!==null?'正在洗手':moving?'在厕所走动':'站在厕所';
     document.querySelector('#hint')!.textContent=this.message;
     document.querySelector('#guide-title')!.textContent='WASD / 方向键移动';
-    document.querySelector('#guide-action')!.textContent=this.seated!==null?'E / Esc 起身 · F 开关隔间门':target?`E · ${button.textContent}${target.kind==='toilet'?' · F 关门':''}`:'靠近隔间按 E 开门 / 坐下 · 洗手台 E 洗手';
-    document.querySelector('#bathroom-state')!.textContent=centers.map((_,i)=>`${i+1} 号：${this.seated===i?'使用中':this.open[i]?'门开':'门关'}`).join(' · ');
+    document.querySelector('#guide-action')!.textContent=this.seated!==null?'E / Esc 起身 · F 开关隔间门':target?`E · ${button.textContent}${target.kind==='toilet'?' · F 关门':''}`:'E 开门 / 坐下 · E 洗手';
+    document.querySelector('#bathroom-state')!.textContent='';
   }
 }

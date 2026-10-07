@@ -69,11 +69,11 @@ export class ElevatorLobbyScene extends Phaser.Scene{
     this.doors.forEach(d=>{d.progress=Phaser.Math.Clamp(d.progress+(d.open?1:-1)*Math.min(delta,50)/700,0,1);});
     this.drawDoors();
     const index=this.nearest(),button=document.querySelector<HTMLButtonElement>('#interact')!;
-    button.disabled=index===undefined;button.textContent=index===undefined?'靠近电梯门':`${this.doors[index].open?'关闭':'打开'} ${index+1} 号电梯`;
+    button.disabled=index===undefined;button.textContent=index===undefined?'':`${this.doors[index].open?'关闭':'打开'} ${index+1} 号电梯`;
     document.querySelector('#mode')!.textContent=moving?'在电梯间走动':'站在电梯间';
-    document.querySelector('#hint')!.textContent='靠近电梯按 E 开关门；暂不进入轿厢。';
+    document.querySelector('#hint')!.textContent='E 开关门';
     document.querySelector('#elevator-state')!.textContent=`1 号 · ${this.state(0)}　2 号 · ${this.state(1)}`;
     document.querySelector('#guide-title')!.textContent='WASD / 方向键移动';
-    document.querySelector('#guide-action')!.textContent=index===undefined?'靠近电梯按 E 开关门':`E · ${button.textContent}`;
+    document.querySelector('#guide-action')!.textContent=index===undefined?'E 开关门':`E · ${button.textContent}`;
   }
 }

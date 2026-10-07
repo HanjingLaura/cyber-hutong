@@ -10,7 +10,7 @@ type Pose={rect:number[];name:string};
 const WALK=108;
 const urls={celine:new URL('../assets/npcs/celine-v1.png',import.meta.url).href};
 export function pickOfficeGuest(roll:number):Identity|null{return roll<.1?'celine':null;}
-export function pickCelineQuestion(roll:number){return roll<.60?'Amber 呢？':roll<.85?'Jilly 呢？':'Amber 这孩子。';}
+export function pickCelineQuestion(_roll:number){return '';}
 export function preloadOfficeGuests(scene:Phaser.Scene){
  for(const [id,url] of Object.entries(urls))if(!scene.textures.exists(`office-${id}`))scene.load.image(`office-${id}`,url);
  const motion=characterRegistry.members.celine;
@@ -66,7 +66,7 @@ export class OfficeGuest{
   occupies(id:string){return !!this.id&&!this.suppressed&&this.mode==='seated'&&this.seat.id===id;}
   blocks(x:number,y:number){return !!this.id&&!this.suppressed&&this.mode!=='seated'&&Math.abs(x-this.x)<19&&Math.abs(y-this.y)<11;}
   near(_x:number,_y:number){return false;}
-  get prompt(){return this.mode==='seated'?'请 Celine 起身':'请 Celine 回座';}
+  get prompt(){return this.mode==='seated'?'Celine 起身':'Celine 回座';}
   private leave(player?:{x:number;y:number}){
     this.x=this.seat.stand.x;this.y=this.seat.stand.y;this.mode='walking';this.returning=false;
     if(player&&Math.hypot(player.x-this.x,player.y-this.y)<25){
@@ -87,7 +87,7 @@ export class OfficeGuest{
     if(!this.id)return;
     const dt=Math.min(delta,50);this.remaining-=dt;
     this.speechVisible=Math.max(0,this.speechVisible-dt);this.speechRemaining-=dt;
-    if(this.speechRemaining<=0){this.lastQuestion=pickCelineQuestion(Math.random());this.speech.setText(this.lastQuestion);this.speechVisible=6000;this.speechRemaining=90000+Math.random()*90000;}
+    if(this.speechRemaining<=0){this.lastQuestion=pickCelineQuestion(Math.random());this.speech.setText(this.lastQuestion);this.speechVisible=this.lastQuestion?6000:0;this.speechRemaining=90000+Math.random()*90000;}
     if(!this.hawaii){if(this.mode==='standing'&&this.remaining<=0){this.mode='walking';this.target={x:this.x>450?420:480,y:194};}if(this.mode==='walking'){const dx=this.target.x-this.x;if(Math.abs(dx)<1){this.mode='standing';this.remaining=15000+Math.random()*25000;}else{this.x+=Math.sign(dx)*Math.min(Math.abs(dx),dt*WALK/1000);this.facing=dx>0?1:3;this.motion+=dt;}}return;}
     if(this.mode==='seated'){if(this.remaining<=0&&Math.hypot(player.x-this.seat.stand.x,player.y-this.seat.stand.y)>25)this.leave();return;}
     if(this.mode==='standing'){
