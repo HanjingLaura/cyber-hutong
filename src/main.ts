@@ -626,7 +626,7 @@ const game = new Phaser.Game({ type: Phaser.AUTO, width: VIEW_WIDTH / PIXEL_RATI
   scene: [new HutongScene(), RestRoomScene, PopMartScene, new HutongScene('hawaii'), BathroomScene, ConcertScene, ArcadeScene, NoodleShopScene, GymScene, DanceStudioScene, PerlerShopScene, RehearsalScene, ElevatorLobbyScene, SubwayScene], input: { keyboard: true }, banner: false,
 });
 let selectedSceneKey='hutong';
-game.events.once('ready',()=>startSocial(game));
+game.events.once('ready',()=>{try{startSocial(game);}catch(error){console.error(error);}});
 game.events.once('ready',()=>{
   for(const key of ['hutong','rest','pop','hawaii','bathroom','concert','arcade','noodle','gym','dance','perler','rehearsal','elevator','subway']){
     const scene=game.scene.getScene(key);
