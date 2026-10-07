@@ -1,3 +1,4 @@
+import {releaseScene} from '../scene-gate';
 import { apiUrl } from '../base';
 import Phaser from 'phaser';
 import { MultiplayerBridge } from './bridge';
@@ -93,7 +94,7 @@ export function startSocial(game:Phaser.Game){
   async function refresh(){const result=await api('me');user=result.user||null;bridge.user=user;if(!world)world={self:user!,controller:true,players:[],online:[],roster:result.roster||[]};else world.roster=result.roster||world.roster;account();people();}
   function connect(){events?.close();if(!user)return;events=new EventSource(apiUrl('events?client='+encodeURIComponent(client)));
     events.addEventListener('world',e=>{let next:World;try{next=JSON.parse((e as MessageEvent).data) as World;}catch{notice('联机数据异常');return;}const previousController=bridge.controller;world=next;applySelf(next.self);bridge.controller=next.controller;if(previousController&&!next.controller)shared.pause();if(next.controller&&!previousController){/* A viewer tab already mirrors the live pose; re-applying a snapshot here snapped players to stale positions. */if(party.enabled)void party.connect();}bridge.connected=true;connected=true;
-      if(user?.role&&initializedRole!==user.role){const self=next.players.find(p=>p.role===user!.role);if(self){bridge.pendingSpawn=self;initializedRole=user.role;}if(party.enabled){party.reopen();void party.connect();}}
+      if(user?.role&&initializedRole!==user.role){const self=next.players.find(p=>p.role===user!.role);if(self){bridge.pendingSpawn=self;initializedRole=user.role;}else releaseScene();if(party.enabled){party.reopen();void party.connect();}}
       // Connection/control status is intentionally not shown in the HUD.
       $('connection-state').textContent='';$('take-control').hidden=next.controller;
       bridge.claimedRoles=next.roster.filter(p=>p.claimed).map(p=>p.role);account();applyPartyView();const keyboard=bridge.active?.input.keyboard;if(keyboard)keyboard.enabled=next.controller;
@@ -144,7 +145,7 @@ export function startSocial(game:Phaser.Game){
   function updateNear(){const hud=$('near-social'),state=bridge.state();if(!user?.role||!state||!bridge.controller){nearRole=null;hud.hidden=true;return;}let best:Role|null=null,bestDist=55;for(const p of livePlayers()){if(p.role===user.role||p.scene!==state.scene)continue;const d=Math.hypot(p.x-state.x,p.y-state.y);if(d<=bestDist){bestDist=d;best=p.role;}}nearRole=best;hud.hidden=!best;if(best){$('near-label').textContent=title(best);($('near-social').querySelector('[data-near="gift"]') as HTMLButtonElement).disabled=!playerInventory.hand;const inviteBtn=$('near-social').querySelector('[data-near="invite"]') as HTMLButtonElement;inviteBtn.textContent=`去${meetPlaces[playPlaceFor(best)]}`;}
   }
   setInterval(()=>{const pulse=performance.now()-lastPulse>15000;if(pulse)lastPulse=performance.now();void publishPresence(pulse).catch(()=>{});const state=bridge.state();if(party.enabled&&state&&bridge.controller&&performance.now()-lastPartyMove>80){lastPartyMove=performance.now();party.publish(state);}if(party.enabled&&pulse)void party.refreshIfNeeded().catch(()=>{});if(state&&state.scene!==lastRoom){lastRoom=state.scene;lastSent='';if(!peer){messages.clear();loadHistory();}document.body.classList.remove('show-scene-picker');}updateNear();const rect=game.canvas.getBoundingClientRect();for(const [role,b] of bubbles){if(b.expires<performance.now()){b.element.remove();bubbles.delete(role);continue;}const p=role===user?.role?state:livePlayers().find(p=>p.role===role);if(!p||p.scene!==state?.scene||b.scene!==state.scene){b.element.hidden=true;continue;}const screen=bridge.screen(p);b.element.hidden=false;b.element.style.left=Math.max(90,Math.min(innerWidth-90,rect.left+screen.x/640*rect.width))+'px';b.element.style.top=Math.max(62,rect.top+(screen.y-65)/360*rect.height)+'px';}},100);
-  refresh().then(()=>{if(user)connect();else showAccount();}).catch(()=>{$('connection-state').textContent='';showAccount();$('account-error').textContent='联机服务暂未连接，请稍后重试';});
+  refresh().then(()=>{if(!user?.role)releaseScene();if(user)connect();else showAccount();}).catch(()=>{releaseScene();$('connection-state').textContent='';showAccount();$('account-error').textContent='联机服务暂未连接，请稍后重试';});
   window.addEventListener('hutong:hand-changed',()=>{people();});
   window.addEventListener('pagehide',()=>{events?.close();party.disconnect();});
   const connectionLost=()=>{const wasConnected=connected;connected=false;bridge.connected=false;if(wasConnected)shared.pause();$('connection-state').textContent='';};

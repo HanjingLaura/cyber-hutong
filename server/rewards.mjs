@@ -46,7 +46,7 @@ export function createRewards(store,life,world,leases){
    }else fail(400,'奖励操作无效');
    if(item){
     const collected=input.collect===true||!!a.hand;
-    if(collected)life.addCollected(a.id,item);else db.prepare("UPDATE accounts SET hand=?,seasoning='[]' WHERE id=?").run(item,a.id);
+    const origin={scene:p.scene||'',at:Date.now()};if(collected)life.addCollected(a.id,item,[],origin);else{db.prepare("UPDATE accounts SET hand=?,seasoning='[]' WHERE id=?").run(item,a.id);life.setOrigin(a.id,item,origin);}
     db.prepare('UPDATE accounts SET revision=revision+1 WHERE id=?').run(a.id);
     life.record(a.id,'reward',`${input.action==='perler'?'完成的拼豆作品':'抓到的'+item.slice(3)}${collected?'收进了收藏':'拿在了手里'}。`,p.scene);
     result={...result,item,collected};

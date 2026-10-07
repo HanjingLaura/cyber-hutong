@@ -1,3 +1,4 @@
+import {releaseScene} from '../scene-gate';
 import Phaser from 'phaser';
 import geometry from '../../shared/interactions.json';
 import { project,visualFacing,type Facing } from '../layout';
@@ -40,7 +41,7 @@ export class MultiplayerBridge{
   screen(p:Player){const scene=this.active,office=['hutong','hawaii'].includes(p.scene),reverse=office&&!!scene?.reverse;return {...project(p,reverse),facing:visualFacing(p.facing as Facing,reverse)};}
   private draw(delta:number){
     const scene=this.active;let local=this.state();if(!scene||!local)return;
-    if(this.pendingSpawn?.scene===local.scene){this.apply(this.pendingSpawn);local=this.state()!;this.pendingSpawn=null;this.transitioning=false;if(this.syncTimer){clearTimeout(this.syncTimer);this.syncTimer=null;}}
+    if(this.pendingSpawn?.scene===local.scene){this.apply(this.pendingSpawn);local=this.state()!;this.pendingSpawn=null;this.transitioning=false;releaseScene();if(this.syncTimer){clearTimeout(this.syncTimer);this.syncTimer=null;}}
     const self=this.players.find(p=>p.role===this.user?.role);
     scene.input.enabled=!this.user?.role||this.controller&&this.connected;
     if(scene.input.keyboard){const enabled=this.controller&&(!this.user?.role||this.connected)&&!document.querySelector('dialog[open]')&&!/^(INPUT|TEXTAREA)$/.test(document.activeElement?.tagName||'');if(!enabled&&scene.input.keyboard.enabled)scene.input.keyboard.resetKeys();scene.input.keyboard.enabled=enabled;}
