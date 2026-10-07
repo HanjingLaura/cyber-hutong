@@ -290,3 +290,13 @@ input[type=checkbox] { accent-color: #bbc997; width: 16px; height: 16px; }
 /* Refresh gate: stage stays blank until the saved scene is known. */
 body.scene-pending #game,body.scene-pending .scene-caption,body.scene-pending #hud-rail{visibility:hidden}
 body.scene-pending .world::after{content:'载入中…';position:absolute;inset:0;display:grid;place-items:center;color:#d7d9cc;background:#333936;font-size:14px;letter-spacing:.2em;pointer-events:none;z-index:5}
+/* UI polish: toolbar and HUD chips share one pixel-panel look. */
+#game-tools button { background:#1d2a23;border:2px solid #0f1813;box-shadow:inset 0 -2px 0 #0b120e,inset 0 1px 0 #4a5a4e;color:#eee7d6;letter-spacing:.04em; }
+#game-tools button:hover,#game-tools button:focus-visible { background:#2c3d33;color:#fff6da;outline:none;box-shadow:inset 0 -2px 0 #0b120e,inset 0 1px 0 #6d8270,0 0 0 1px #d1c78b; }
+#game-tools button:active { transform:translateY(1px);box-shadow:inset 0 1px 0 #0b120e; }
+#hud-rail > * { border-radius:3px; }
+#hand-actions { gap:6px !important; }
+html.touch-ui .bag-grid { gap:6px; }
+html.touch-ui .cabinet { grid-template-columns:repeat(auto-fill,minmax(100px,1fr));max-height:56dvh; }
+html.touch-ui #life-ui .bag-dialog,html.touch-ui #life-ui .cabinet-dialog { border-width:3px 0 0; }
+.cabinet-item figcaption { flex:1; } .cabinet-item button { margin-top:auto; }
