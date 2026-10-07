@@ -95,14 +95,14 @@ export function startSocial(game:Phaser.Game){
   function connect(){events?.close();if(!user)return;events=new EventSource(apiUrl('events?client='+encodeURIComponent(client)));
     events.addEventListener('world',e=>{let next:World;try{next=JSON.parse((e as MessageEvent).data) as World;}catch{notice('联机数据异常');return;}const previousController=bridge.controller;world=next;applySelf(next.self);bridge.controller=next.controller;if(previousController&&!next.controller)shared.pause();if(next.controller&&!previousController){bridge.stand();const self=next.players.find(p=>p.role===user?.role);if(self)bridge.apply(self);if(party.enabled)void party.connect();}bridge.connected=true;connected=true;
       if(user?.role&&initializedRole!==user.role){const self=next.players.find(p=>p.role===user!.role);if(self){bridge.pendingSpawn=self;initializedRole=user.role;}if(party.enabled){party.reopen();void party.connect();}}
-      const partyHint=party.enabled?(party.connected?' · PartyKit':' · PartyKit…'):'';
-      $('connection-state').textContent=(next.controller?'已连接':'在另一个窗口操作')+partyHint;$('take-control').hidden=next.controller;
+      // Connection/control status is intentionally not shown in the HUD.
+      $('connection-state').textContent='';$('take-control').hidden=next.controller;
       bridge.claimedRoles=next.roster.filter(p=>p.claimed).map(p=>p.role);account();applyPartyView();const keyboard=bridge.active?.input.keyboard;if(keyboard)keyboard.enabled=next.controller;
       lifeUI.receive(next);shared.receive(next);npcUI.receive(next);bridge.npcEpoch=(next as any).npcEpoch??0;
     });
     events.addEventListener('message',e=>{try{receive(JSON.parse((e as MessageEvent).data));}catch{notice('联机消息异常');}});
     events.addEventListener('logout',()=>{hardLogout('登录已结束');});
-    events.onopen=()=>{connected=true;bridge.connected=true;loadHistory();if(user?.role&&party.enabled){party.reopen();void party.connect();}};events.onerror=()=>{const wasConnected=connected;connected=false;bridge.connected=false;if(wasConnected)shared.pause();$('connection-state').textContent='连接中…';};
+    events.onopen=()=>{connected=true;bridge.connected=true;loadHistory();if(user?.role&&party.enabled){party.reopen();void party.connect();}};events.onerror=()=>{const wasConnected=connected;connected=false;bridge.connected=false;if(wasConnected)shared.pause();$('connection-state').textContent='';};
   }
   function playPlaceFor(role:Role):MeetPlace{const online=world?.online.find(p=>p.role===role)||world?.players.find(p=>p.role===role);const scene=online?.scene;return scene&&scene in meetPlaces?scene as MeetPlace:'arcade';}
   async function invite(role:Role,place:MeetPlace){if(!user?.role){showAccount();return;}try{await publishPresence(true);await api('invite',{peer:role,place,client,requestId:crypto.randomUUID()});notice(`已邀请一起去${meetPlaces[place]}`);}catch(e){notice((e as Error).message);}}
@@ -146,7 +146,7 @@ export function startSocial(game:Phaser.Game){
   refresh().then(()=>{if(user)connect();else showAccount();}).catch(()=>{$('connection-state').textContent='';showAccount();$('account-error').textContent='联机服务暂未连接，请稍后重试';});
   window.addEventListener('hutong:hand-changed',()=>{people();});
   window.addEventListener('pagehide',()=>{events?.close();party.disconnect();});
-  const connectionLost=()=>{const wasConnected=connected;connected=false;bridge.connected=false;if(wasConnected)shared.pause();$('connection-state').textContent='连接中…';};
+  const connectionLost=()=>{const wasConnected=connected;connected=false;bridge.connected=false;if(wasConnected)shared.pause();$('connection-state').textContent='';};
   window.addEventListener('offline',()=>{connectionLost();events?.close();party.disconnect();});
   window.addEventListener('online',()=>{if(user){party.reopen();connect();}});
   window.addEventListener('hutong:connection-lost',()=>{connectionLost();if(user&&navigator.onLine){party.reopen();connect();}});
