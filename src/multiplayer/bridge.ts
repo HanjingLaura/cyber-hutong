@@ -44,7 +44,9 @@ export class MultiplayerBridge{
     const self=this.players.find(p=>p.role===this.user?.role);
     scene.input.enabled=!this.user?.role||this.controller&&this.connected;
     if(scene.input.keyboard){const enabled=this.controller&&(!this.user?.role||this.connected)&&!document.querySelector('dialog[open]')&&!/^(INPUT|TEXTAREA)$/.test(document.activeElement?.tagName||'');if(!enabled&&scene.input.keyboard.enabled)scene.input.keyboard.resetKeys();scene.input.keyboard.enabled=enabled;}
-    if(this.user?.role&&self&&self.scene!==local.scene&&!this.transitioning){
+    // Only a viewer tab (or the initial spawn) follows the server's scene. The controlling tab is authoritative;
+    // a stale/remote copy (other serverless instance, offline double) must never yank it to another room.
+    if(this.user?.role&&self&&self.scene!==local.scene&&!this.transitioning&&(!this.controller||this.pendingSpawn)){
       this.transitioning=true;this.pendingSpawn=self;
       if(this.syncTimer)clearTimeout(this.syncTimer);
       this.syncTimer=setTimeout(()=>{this.transitioning=false;this.syncTimer=null;},12000);

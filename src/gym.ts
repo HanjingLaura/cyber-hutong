@@ -61,7 +61,7 @@ export class GymScene extends Phaser.Scene {
   private nearest(){return targets.filter(t=>Math.hypot(this.x-t.x,this.y-t.y)<29).sort((a,b)=>Math.hypot(this.x-a.x,this.y-a.y)-Math.hypot(this.x-b.x,this.y-b.y))[0];}
   private changeSpeed(){if(this.mode==='run')this.speedIndex=(this.speedIndex+1)%this.speeds.length;}
   private lift(){if(this.mode==='curl'&&this.liftStart===null){this.liftStart=this.time.now;this.message='举起，再慢慢放下。';}}
-  private stop(){if(this.mode==='run'||this.mode==='curl')releaseDevice(this.mode==='run'?`run-${this.machine}`:'curl');this.mode='walk';this.liftStart=null;this.breathTime=0;this.x=this.returnPoint.x;this.y=this.returnPoint.y;this.facing=0;this.message='训练结束。';this.belt.clear();}
+  private stop(){const wasWalking=this.mode==='walk';if(this.mode==='run'||this.mode==='curl')releaseDevice(this.mode==='run'?`run-${this.machine}`:'curl');if(wasWalking){this.liftStart=null;return;}this.mode='walk';this.liftStart=null;this.breathTime=0;this.x=this.returnPoint.x;this.y=this.returnPoint.y;this.facing=0;this.message='训练结束。';this.belt.clear();}
   private begin(kind:Mode,index:number){
     this.machine=index;this.mode=kind;this.input.keyboard?.resetKeys();
     if(kind==='run'){this.returnPoint={x:treadmills[index],y:155};this.x=treadmills[index];this.y=127;this.facing=2;this.message='F 切换速度，E / Esc 下机。';return;}
