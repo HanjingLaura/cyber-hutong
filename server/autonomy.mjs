@@ -23,7 +23,7 @@ export function route(scene,from,to,occupied=[]){
  for(let i=0;i<queue.length&&i<7000;i++){const p=queue[i];if(p[0]===b[0]&&p[1]===b[1]){target=p;break;}for(const [dx,dy]of [[6,0],[-6,0],[0,6],[0,-6]]){const n=[p[0]+dx,p[1]+dy],k=key(...n);if(!seen.has(k)&&walkable(scene,...n)&&!occupied.some(o=>Math.hypot(o.x-n[0],o.y-n[1])<19&&Math.hypot(o.x-n[0],o.y-n[1])<=Math.hypot(o.x-p[0],o.y-p[1]))){seen.set(k,p);queue.push(n);}}}
  if(!target)return[];const path=[];for(let p=target;p;p=seen.get(key(...p)))path.unshift(p);path.shift();if(walkable(scene,...to))path.push(to);return path;
 }
-export function createAutonomy(store,life,players,leases=new Map()){
+export function createAutonomy(store,life,players,leases=new Map(),seenLive=()=>false){
  const doubles=new Map();let nextRefresh=0,coffeeOwner=null,director=null;
  const save=p=>life.savePosition(p);
  const releaseSeat=p=>{if(p.seat){const seat=geometry[p.scene].seats[p.seat];if(seat)[p.x,p.y]=seat.approach;p.seat=null;}const old=geometry[p.scene].activities[p.activity]?.find(a=>Math.hypot(p.x-a.at[0],p.y-a.at[1])<8);if(old)[p.x,p.y]=old.approach;for(const [id,l]of leases)if(l.account===p.id)leases.delete(id);p.activity='walk';};
@@ -64,8 +64,8 @@ export function createAutonomy(store,life,players,leases=new Map()){
  }
  function tick(now=Date.now(),delta=100){let changed=false;
   // Hard rule: a user who is online (any tab, even mid-reconnect) is never driven by autonomy/LLM.
-  for(const id of [...doubles.keys()])if(players.has(id)){reclaim(id);changed=true;}
-  if(now>=nextRefresh){nextRefresh=now+5000;for(const a of store.db.prepare('SELECT * FROM accounts WHERE role IS NOT NULL').all()){if(players.has(a.id)){if(doubles.has(a.id))doubles.delete(a.id);}else if(!doubles.has(a.id)){doubles.set(a.id,place(a));changed=true;}}}
+  for(const id of [...doubles.keys()])if(players.has(id)||seenLive(id)){/* drop without saving: the human's pose is newer */director?.cancelFor(id);doubles.delete(id);if(coffeeOwner===id)coffeeOwner=null;for(const [lid,l]of leases)if(l.account===id)leases.delete(lid);changed=true;}
+  if(now>=nextRefresh){nextRefresh=now+5000;for(const a of store.db.prepare('SELECT * FROM accounts WHERE role IS NOT NULL').all()){if(players.has(a.id)||seenLive(a.id)){if(doubles.has(a.id))doubles.delete(a.id);}else if(!doubles.has(a.id)){doubles.set(a.id,place(a));changed=true;}}}
   if(director?.tick(now))changed=true;
   life.expire(now);
   for(const p of doubles.values()){
@@ -87,5 +87,5 @@ export function createAutonomy(store,life,players,leases=new Map()){
   const people=all();
   life.finishMeetings(people);return changed;
  }
- return{isDriven:id=>doubles.has(id)&&!players.has(id),tick,get,reclaim,doubles,all,onlineCount,onlineScenes,setDirector(value){director=value;},travel(p,scene,point,storyId,now){releaseSeat(p);p.task={kind:'story',storyId,scene,point,phase:p.scene===scene?'arrive':'exit'};p.path=route(p.scene,[p.x,p.y],p.task.phase==='exit'?rooms[p.scene].exit:point);p.next=now+180000;},holdStory(p,storyId){releaseSeat(p);p.path=[];p.task={kind:'story',storyId,phase:'hold'};p.moving=false;},releaseStory(p,now){p.task=null;p.path=[];p.moving=false;p.next=now+activityPause(p.activity==='working'?'work':'rest');save(p);},saveAll(){for(const p of all())save(p);}};
+ return{isDriven:id=>doubles.has(id)&&!players.has(id)&&!seenLive(id),tick,get,reclaim,doubles,all,onlineCount,onlineScenes,setDirector(value){director=value;},travel(p,scene,point,storyId,now){releaseSeat(p);p.task={kind:'story',storyId,scene,point,phase:p.scene===scene?'arrive':'exit'};p.path=route(p.scene,[p.x,p.y],p.task.phase==='exit'?rooms[p.scene].exit:point);p.next=now+180000;},holdStory(p,storyId){releaseSeat(p);p.path=[];p.task={kind:'story',storyId,phase:'hold'};p.moving=false;},releaseStory(p,now){p.task=null;p.path=[];p.moving=false;p.next=now+activityPause(p.activity==='working'?'work':'rest');save(p);},saveAll(){for(const p of all())save(p);}};
 }

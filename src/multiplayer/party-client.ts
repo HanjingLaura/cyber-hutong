@@ -16,7 +16,9 @@ function partyHost(): string | null {
 export function mergePartyPlayers(partyPlayers: Player[], ssePlayers: Player[], selfRole?: Role | null): Player[] {
   const map = new Map<string, Player>();
   for (const p of ssePlayers) {
-    if ((p as Player & { offline?: boolean }).offline || p.role === selfRole) map.set(p.role, p);
+    const offline = !!(p as Player & { offline?: boolean }).offline;
+    // Never take an offline (autonomy) copy of yourself: you are live in this tab.
+    if (p.role === selfRole ? !offline : offline) map.set(p.role, p);
   }
   for (const p of partyPlayers) map.set(p.role, p);
   return [...map.values()];
@@ -58,15 +60,22 @@ export class PartyPresence {
     if (!host || this.closed) return;
     this.disconnectSocket();
     try {
-      const ticket = await this.request<{ ticket: string; room: string; expires: number }>('party-ticket', { client: this.clientId });
-      const character = this.bridge.state();
+      let ticket = await this.request<{ ticket: string; room: string; expires: number }>('party-ticket', { client: this.clientId });
+      let issuedAt = Date.now();
       this.socket = new PartySocket({
         host,
         room: ticket.room || DEFAULT_ROOM,
         id: this.clientId,
         maxRetries: 12,
       });
-      this.socket.addEventListener('open', () => {
+      this.socket.addEventListener('open', async () => {
+        // PartySocket auto-reconnects with the same options; tickets live 60s, so a reconnect
+        // must fetch a fresh one or the room rejects the hello and presence silently stops.
+        if (Date.now() - issuedAt > 40_000) {
+          try { ticket = await this.request('party-ticket', { client: this.clientId }); issuedAt = Date.now(); }
+          catch { this.connected = false; this.onChange(); return; }
+        }
+        const character = this.bridge.state();
         this.connected = true;
         this.helloAt = Date.now();
         this.socket?.send(JSON.stringify({
@@ -96,7 +105,9 @@ export class PartyPresence {
     let data: any;
     try { data = JSON.parse(raw); } catch { return; }
     if (data.type === 'reject') {
-      this.notice(data.reason || '联机房间拒绝连接');
+      // Retry with a fresh ticket instead of staying silently disconnected.
+      this.connected = false; this.onChange();
+      if (!this.closed) setTimeout(() => { if (!this.closed && !this.connected) void this.connect(); }, 2000);
       return;
     }
     if (data.type === 'state') {
