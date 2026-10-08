@@ -18,8 +18,11 @@ export function launchApp(app, env) {
     win.addEventListener('blur', mark);
     win.addEventListener('pagehide', mark);
     doc.addEventListener('visibilitychange', onVisibility);
-    if (/Firefox\//.test(win.navigator?.userAgent || '')) {
-      // Firefox shows an error page for unknown top-level schemes; keep the attempt in a hidden frame.
+    const ua = win.navigator?.userAgent || '';
+    const safari = /Safari\//.test(ua) && !/Chrome|Chromium|CriOS|Edg|OPR/.test(ua);
+    if (/Firefox\//.test(ua) || safari) {
+      // Firefox (error page) and Safari (invalid-address alert) complain about unknown top-level schemes;
+      // a hidden frame fails quietly so the website fallback still runs.
       frame = doc.createElement('iframe');
       frame.style.display = 'none';
       frame.src = app.scheme;

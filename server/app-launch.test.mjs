@@ -66,3 +66,13 @@ test('firefox tries the scheme in a hidden frame', async () => {
   assert.equal(e.calls.frames[0].src, 'codex://threads/new');
   assert.equal(e.calls.frames[0].removed, true);
 });
+
+test('safari also uses the hidden frame, chrome on mac does not', async () => {
+  const safari = fakeEnv({ ua: 'Mozilla/5.0 (Macintosh) AppleWebKit/605.1.15 Version/18.0 Safari/605.1.15' });
+  await launchApp(app, { ...safari, mobile: false });
+  assert.equal(safari.calls.frames.length, 1);
+  const chrome = fakeEnv({ ua: 'Mozilla/5.0 (Macintosh) AppleWebKit/537.36 Chrome/130.0 Safari/537.36' });
+  await launchApp(app, { ...chrome, mobile: false });
+  assert.deepEqual(chrome.calls.assign, ['codex://threads/new']);
+  assert.equal(chrome.calls.frames.length, 0);
+});
