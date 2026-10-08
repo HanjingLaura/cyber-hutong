@@ -1,34 +1,32 @@
 import Phaser from 'phaser';
 import {canWorkAt} from './workstations';
 import { registerFrames, setSpriteFrame, type SpriteFrame } from './frames';
-import { canWalk, project, visualFacing, WORKSTATIONS, type Point } from './layout';
+import { project, visualFacing, type Point } from './layout';
+import positions from '../shared/guests.json';
 
-type Worker={role:string;scene:string;seat:string|null;x:number;y:number};
+declare global{interface Window{__aniPreview?:{getState:()=>unknown}}}
+type Worker={role:string;scene:string;seat:string|null;x:number;y:number;activity?:string};
 export function preloadAni(scene:Phaser.Scene){
   scene.load.image('ani-sheet',new URL('../assets/npcs/ani-v2.png',import.meta.url).href);
 }
 
-// A companion follows Sid's work state, rather than an unrelated random roll.
+// Ani belongs to Sid: everyone in the hutong sees her while Sid works at his own desk; only Sid can interact (server enforced).
 export class AniGuest{
   private image:Phaser.GameObjects.Image;
   private frames:SpriteFrame[];
   private present=false;
-  private x=234;private y=194;
+  private x=positions.ani.x;private y=positions.ani.y;
   private reverse=false;private visible=true;private seat:string|null=null;
   constructor(private scene:Phaser.Scene){
     this.frames=registerFrames(scene,'ani-sheet',6,1,true,{x:[0,.176,.334,.508,.681,.839,1],y:[0,1]});
     this.image=scene.add.image(0,0,'ani-sheet').setVisible(false);
     this.image.setInteractive({useHandCursor:true}).on('pointerdown',()=>window.dispatchEvent(new CustomEvent('hutong:npc-interact',{detail:'ani'})));
     scene.events.on('sleep',()=>{this.present=false;this.seat=null;this.image.setVisible(false);});
+    window.__aniPreview={getState:()=>this.snapshot()};
   }
   setWorker(worker:Worker|undefined,player:Point){
-    const working=worker?.role==='sid'&&canWorkAt(worker.role,worker.scene,worker.seat);
-    if(working&&(!this.present||this.seat!==worker!.seat)){
-      const home=WORKSTATIONS.find(s=>s.id===worker!.seat)!;
-      const options=[{x:home.foot.x+42,y:194},{x:home.foot.x-42,y:194},{x:home.foot.x+42,y:211},{x:home.foot.x-42,y:178}];
-      const point=options.find(p=>canWalk(p))??options[0];
-      this.x=point.x;this.y=point.y;
-    }
+    // Same rule as the server (npc-visibility.mjs): Sid, in the hutong, working at his own seat.
+    const working=worker?.role==='sid'&&worker.scene==='hutong'&&(worker.activity??'working')==='working'&&canWorkAt(worker.role,worker.scene,worker.seat);
     this.present=!!working;this.seat=working?worker!.seat:null;
     this.draw(this.reverse,this.visible);
   }
