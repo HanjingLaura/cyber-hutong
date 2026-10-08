@@ -11,7 +11,7 @@ type DeskApp = { id: string; name: string; href: string; icon: string; scheme?: 
 const apps: DeskApp[] = [
   { id: 'grokbot', name: 'Grok Bot', href: 'https://grok.com/', scheme: 'grokbot://app/v1/open', icon: grokIcon },
   { id: 'codex', name: 'Codex', href: 'https://chatgpt.com/codex/', scheme: 'codex://threads/new', icon: codexIcon },
-  { id: 'ani', name: 'Ani', href: 'https://app.ani.cool/', icon: aniIcon },
+  { id: 'ani', name: 'Ani', href: 'https://app.ani.cool/', scheme: 'ani://', icon: aniIcon },
   {
     id: 'feishu', name: '飞书', href: 'https://www.feishu.cn/',
     scheme: 'feishu://applink/client/op/open',
