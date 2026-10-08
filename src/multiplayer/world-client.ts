@@ -2,7 +2,6 @@ import type {MultiplayerBridge} from './bridge';
 import {playerInventory,type ItemName} from '../player-inventory';
 import {blindBoxes,type ToyRecord} from '../blind-box';
 import {gacha} from '../gacha';
-import {setGuestPresence} from '../easter-eggs';
 import {ensureCollectible} from '../collectible-art';
 
 export type RoomObject={id:string;version:number;slots?:any[];open?:boolean;stock?:boolean[]};
@@ -27,11 +26,10 @@ export class WorldClient{
  private appliedScene:unknown;private appliedVersions=new Map<string,number>();private saves=new Map<string,ReturnType<typeof setTimeout>>();
  constructor(readonly bridge:MultiplayerBridge,private request:(path:string,input?:any)=>Promise<any>,private publish:()=>Promise<void>,readonly client:string,readonly notice:(message:string)=>void,private ensureLive:()=>Promise<void>=async()=>{}){service=this;bridge.game.events.on('poststep',()=>{const s=bridge.active;if(s?.actor&&s!==this.appliedScene){heldDevices.clear();pendingDevices.clear();this.appliedVersions.clear();this.appliedScene=s;this.apply();}});}
  pause(){const s=this.bridge.active;if(s){const mode=s.mode;if((s.sys.settings.key==='gym'&&['run','curl'].includes(mode))||mode==='piano'||s.sys.settings.key==='dance')this.bridge.stand();s.piano?.stop();s.beat?.stop();s.input.keyboard?.resetKeys();}for(const id of ['arcade-game','perler-workshop','gym-storage']){const d=document.getElementById(id);if(d instanceof HTMLDialogElement&&d.open)d.close();}heldDevices.clear();pendingDevices.clear();}
- reset(){this.pause();this.bridge.clearTransition();setGuestPresence();this.objects.clear();this.progress=[];this.hydrated='';this.progressSignature='';this.progressVersion=-1;this.appliedVersions.clear();heldDevices.clear();pendingDevices.clear();this.saves.forEach(clearTimeout);this.saves.clear();}
+ reset(){this.pause();this.bridge.clearTransition();this.objects.clear();this.progress=[];this.hydrated='';this.progressSignature='';this.progressVersion=-1;this.appliedVersions.clear();heldDevices.clear();pendingDevices.clear();this.saves.forEach(clearTimeout);this.saves.clear();}
  receive(data:any){
   if(data.celine)this.celine=data.celine;
   if(data.self&&data.self.id!==this.bridge.user?.id)return;
-  if(data.npcs)setGuestPresence(data.npcs);
   if(data.clock)this.clockOffset=data.clock-Date.now();
   const scene=this.bridge.active;if(scene)for(const name of [data.self?.hand,...(data.players??[]).map((p:any)=>p.hand),...(data.objects??[]).flatMap((o:any)=>(o.slots??[]).map((s:any)=>typeof s==='string'?s:s?.name))])if(name)void ensureCollectible(scene,name).catch(()=>{});
   if(data.self&&this.bridge.user?.id===data.self.id&&data.self.revision>(this.bridge.user?.revision??-1)){

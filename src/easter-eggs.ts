@@ -1,13 +1,14 @@
 import Phaser from 'phaser';
 import npcRules from '../shared/npcs.json';
+import positions from '../shared/guests.json';
 
 type Guest='buzz'|'zhu'|'ferret'|'lulu'|'tutu';
 const guests={
-  buzz:{name:'巴斯光年',url:new URL('../assets/npcs/buzz-lightyear-green.png',import.meta.url).href,cut:[46,194,165,296],height:62,x:430,y:253},
-  zhu:{name:'朱志鑫',url:new URL('../assets/npcs/zhu-zhixin-green.png',import.meta.url).href,cut:[56,194,150,296],height:54,x:320,y:145},
-  ferret:{name:'富贵貂',url:new URL('../assets/npcs/fuguidiao-green.png',import.meta.url).href,cut:[45,235,171,255],height:45,x:400,y:269},
-  lulu:{name:'水豚噜噜',url:new URL('../assets/npcs/lulu-v1.png',import.meta.url).href,cut:[30,312,246,363],height:47,x:470,y:270},
-  tutu:{name:'图图',url:new URL('../assets/npcs/tutu-green-v1.png',import.meta.url).href,cut:[43,265,174,225],height:36,x:476,y:280},
+  buzz:{name:'巴斯光年',url:new URL('../assets/npcs/buzz-lightyear-green.png',import.meta.url).href,cut:[46,194,165,296],height:positions.buzz.height,x:positions.buzz.x,y:positions.buzz.y},
+  zhu:{name:'朱志鑫',url:new URL('../assets/npcs/zhu-zhixin-green.png',import.meta.url).href,cut:[56,194,150,296],height:positions.zhu.height,x:positions.zhu.x,y:positions.zhu.y},
+  ferret:{name:'富贵貂',url:new URL('../assets/npcs/fuguidiao-green.png',import.meta.url).href,cut:[45,235,171,255],height:positions.ferret.height,x:positions.ferret.x,y:positions.ferret.y},
+  lulu:{name:'水豚噜噜',url:new URL('../assets/npcs/lulu-v1.png',import.meta.url).href,cut:[30,312,246,363],height:positions.lulu.height,x:positions.lulu.x,y:positions.lulu.y},
+  tutu:{name:'图图',url:new URL('../assets/npcs/tutu-green-v1.png',import.meta.url).href,cut:[43,265,174,225],height:positions.tutu.height,x:positions.tutu.x,y:positions.tutu.y},
 } satisfies Record<Guest,{name:string;url:string;cut:number[];height:number;x:number;y:number}>;
 const guestOwners=Object.fromEntries(npcRules.map(n=>[n.id,n.owner])) as Partial<Record<Guest,string>>;
 
@@ -37,8 +38,6 @@ export function guestCanvas(id:Guest){
  }return memoryImages.get(id)!;
 }
 const placed:{scene:Phaser.Scene;id:Guest;image:Phaser.GameObjects.Image;reflection?:Phaser.GameObjects.Image}[]=[];
-let onlinePresence:string[]|undefined;
-export function setGuestPresence(ids?:string[]){onlinePresence=ids;for(const p of placed){const visible=!ids||ids.includes(p.id);p.image.setVisible(visible);p.reflection?.setVisible(visible);}}
 declare global{interface Window{__easterEggPreview?:{getState:()=>unknown}}}
 export function preloadGuest(scene:Phaser.Scene,id:Guest){scene.load.image(`guest-source-${id}`,guests[id].url);}
 export function placeGuest(scene:Phaser.Scene,id:Guest){
@@ -61,8 +60,9 @@ export function placeGuest(scene:Phaser.Scene,id:Guest){
     reflection=scene.add.image(Math.round(spec.x),Math.round(130-(spec.y-177)*.25),'guest-source-lulu','back')
       .setOrigin(.5,1).setDisplaySize(246/363*spec.height*.62,spec.height*.62).setDepth(-50);
   }
-  placed.push({scene,id,image,reflection});setGuestPresence(onlinePresence);
+  placed.push({scene,id,image,reflection});
   scene.events.once('shutdown',()=>{const index=placed.findIndex(p=>p.image===image);if(index>=0)placed.splice(index,1);});
   window.__easterEggPreview={getState:()=>placed.map(p=>({id:p.id,name:guests[p.id].name,owner:guestOwners[p.id]??null,scene:p.scene.sys.settings.key,active:p.scene.sys.isActive(),x:p.image.x,y:p.image.y,height:p.image.displayHeight,visible:p.image.visible}))};
 }
-export function guestBlocks(id:Guest,x:number,y:number){if(onlinePresence&&!onlinePresence.includes(id))return false;const guest=guests[id];return Math.abs(x-guest.x)<guest.cut[2]/guest.cut[3]*guest.height/2+9&&Math.abs(y-guest.y)<10;}
+// Easter eggs are always in their room for everyone; only the owner can interact (server enforced).
+export function guestBlocks(id:Guest,x:number,y:number){const guest=guests[id];return Math.abs(x-guest.x)<guest.cut[2]/guest.cut[3]*guest.height/2+9&&Math.abs(y-guest.y)<10;}
