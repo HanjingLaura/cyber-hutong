@@ -3,6 +3,8 @@ import aniIcon from '../assets/ui/ani-app-icon.png';
 import grokIcon from '../assets/ui/grokbot-app-icon.png';
 import codexIcon from '../assets/ui/codex-app-icon.png';
 import feishuIcon from '../assets/ui/feishu-app-icon.png';
+import zhipinIcon from '../assets/ui/zhipin-app-icon.png';
+import maimaiIcon from '../assets/ui/maimai-app-icon.png';
 import { launchApp } from './app-launch.mjs';
 import { isTouchDevice } from './mobile/input.mjs';
 
@@ -18,6 +20,8 @@ const apps: DeskApp[] = [
     mobileHref: 'https://applink.feishu.cn/client/op/open?lk_unique=true',
     icon: feishuIcon,
   },
+  { id: 'zhipin', name: 'Boss直聘', href: 'https://www.zhipin.com/', icon: zhipinIcon },
+  { id: 'maimai', name: '脉脉', href: 'https://maimai.cn/', icon: maimaiIcon },
 ];
 
 // Apps whose scheme did nothing this session: later clicks go straight to the website.

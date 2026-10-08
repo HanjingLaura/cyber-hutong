@@ -76,23 +76,25 @@ export class TeamAvatar{
   this.hide();this.frameName=frame.name;
   this.body.setTexture(key,'pose-'+part+'-'+index).setOrigin(pivot,1).setScale(scale*(frame.scaleXRatio??1),scale).setFlipX(flip).setPosition(Math.round(x),Math.round(y)).setDepth(depth).setVisible(true);
   if(seated&&office){
-   if(back)this.body.setTexture(key,'upper-'+part+'-'+index).setOrigin(pivot,h/Math.round(h*.72));
+   // Far row, back to the camera: the chair back sits at footY+2 and the body
+   // default is footY+1, so the backrest covered the torso. Draw the whole
+   // upper body (torso and head) in front of it. The front-facing row is unchanged.
+   if(back)this.body.setTexture(key,'upper-'+part+'-'+index).setOrigin(pivot,h/Math.round(h*.72)).setDepth(depth+3);
    else this.upper.setTexture(key,'upper-'+part+'-'+index).setOrigin(pivot,0).setScale(scale).setFlipX(flip).setPosition(Math.round(x),Math.round(y-h*scale)).setDepth(depth+3).setVisible(true);
-   // Keep the raised phone and head visible above the chair back in the reverse view.
-   if(back&&calling)this.upper.setTexture(key,'call-upper-'+index).setOrigin(pivot,0).setScale(scale).setFlipX(flip).setPosition(Math.round(x),Math.round(y-h*scale)).setDepth(depth+3).setVisible(true);
+   if(back&&calling)this.upper.setTexture(key,'call-upper-'+index).setOrigin(pivot,0).setScale(scale).setFlipX(flip).setPosition(Math.round(x),Math.round(y-h*scale)).setDepth(depth+3.2).setVisible(true);
   }
   const nativeFrame:SpriteFrame={name:'pose-'+part+'-'+index,x:sx,y:sy,width:w,height:h,referenceHeight:fillCarry?h:frame.referenceHeight,pivotX:frame.pivotX};
   if(data.approvedLegacy&&!holding&&moving&&!front&&!back&&!this.masked)this.legs.draw(this.body,nativeFrame,height,direction,this.time);
   if(player.hand?.startsWith('拼豆·')&&!this.scene.textures.exists('bead-item-'+player.hand.slice(3)))void ensureCollectible(this.scene,player.hand).catch(()=>{});
   const item=items[player.hand as ItemName];
   if(item&&frame.grip&&sceneTexture(this.scene,item.texture)){
-   if(frame.slot&&!this.masked)this.held.draw(this.body,key,nativeFrame,frame.slot,height,item,depth,direction);
+   if(frame.slot&&!this.masked)this.held.draw(this.body,key,nativeFrame,frame.slot,height,item,back&&seated&&office?depth+3:depth,direction);
    else{
     const [gx,gy]=frame.grip,sign=flip?-1:1,out=frame.gripSide*sign;
     const px=x+(gx-w*frame.pivotX)*scale*(frame.scaleXRatio??1)*sign,py=y+(gy-h)*scale;
     const propFlip=out!==(item.grip.x>.5?-1:1);
     this.prop.setTexture(item.texture,item.frame).setDisplaySize(item.width,item.height).setOrigin(propFlip?1-item.grip.x:item.grip.x,item.grip.y).setFlipX(propFlip).setPosition(px,py).setDepth(depth+(office&&seated?3.1:.1)).setVisible(true);
-    if(back){const ax=Math.max(0,gx-12),ay=Math.max(0,gy-12);this.arm.setTexture(key,'arm-'+part+'-'+index).setOrigin(flip?1:0,0).setScale(scale).setFlipX(flip).setPosition(x+(ax-w*frame.pivotX)*scale*sign,y+(ay-h)*scale).setDepth(depth+.2).setVisible(true);}
+    if(back){const ax=Math.max(0,gx-12),ay=Math.max(0,gy-12);this.arm.setTexture(key,'arm-'+part+'-'+index).setOrigin(flip?1:0,0).setScale(scale).setFlipX(flip).setPosition(x+(ax-w*frame.pivotX)*scale*sign,y+(ay-h)*scale).setDepth(seated&&office?depth+3.05:depth+.2).setVisible(true);}
    }
   }
   this.label.setPosition(x,y-h*scale-3).setDepth(850).setVisible(label);
