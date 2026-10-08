@@ -24,6 +24,7 @@ export function openStore(path){
   const db=new DatabaseSync(path);db.exec(`PRAGMA journal_mode=WAL; PRAGMA foreign_keys=ON; PRAGMA busy_timeout=5000;
     CREATE TABLE IF NOT EXISTS accounts(id TEXT PRIMARY KEY,username TEXT UNIQUE NOT NULL,password TEXT NOT NULL,role TEXT UNIQUE,profile TEXT NOT NULL DEFAULT '{}',hand TEXT,revision INTEGER NOT NULL DEFAULT 0);
     CREATE TABLE IF NOT EXISTS sessions(token TEXT PRIMARY KEY,account TEXT NOT NULL REFERENCES accounts(id),expires INTEGER NOT NULL);
+    CREATE TABLE IF NOT EXISTS password_resets(account TEXT PRIMARY KEY REFERENCES accounts(id),code_hash TEXT NOT NULL,expires INTEGER NOT NULL,created INTEGER NOT NULL);
     CREATE TABLE IF NOT EXISTS messages(seq INTEGER PRIMARY KEY AUTOINCREMENT,id TEXT UNIQUE NOT NULL,sender TEXT NOT NULL,recipient TEXT,scene TEXT NOT NULL,body TEXT NOT NULL,at INTEGER NOT NULL,npc INTEGER NOT NULL DEFAULT 0);
     CREATE INDEX IF NOT EXISTS messages_thread ON messages(sender,recipient,seq);
     CREATE INDEX IF NOT EXISTS messages_room ON messages(scene,recipient,seq);
@@ -51,6 +52,35 @@ export function openStore(path){
     async login(username,password){
       if(typeof username!=='string'||typeof password!=='string'||password.length>128)fail(401,'用户名或密码不正确');
       return pool.run(async()=>{const row=db.prepare('SELECT * FROM accounts WHERE username=?').get(username);const fallback='00000000000000000000000000000000:'+Buffer.alloc(64).toString('hex');const matches=await passwordMatches(password,row?.password||fallback);if(!row||!matches)fail(401,'用户名或密码不正确');return {token:createSession(row.id),user:publicAccount(row)};});
+    },
+    // Trusted organizer tooling only. No HTTP endpoint exposes code issuance.
+    createPasswordReset(username){return atomic(()=>{
+      const row=db.prepare('SELECT id,username FROM accounts WHERE username=?').get(username);
+      if(!row)fail(404,'账号不存在');
+      const secret=randomBytes(16).toString('hex').toUpperCase(),now=Date.now(),expires=now+30*60*1000;
+      db.prepare('INSERT INTO password_resets VALUES(?,?,?,?) ON CONFLICT(account) DO UPDATE SET code_hash=excluded.code_hash,expires=excluded.expires,created=excluded.created').run(row.id,digest(secret),expires,now);
+      return {username:row.username,code:secret.match(/.{4}/g).join('-'),expires};
+    });},
+    async resetPassword(username,code,password){
+      const invalid=()=>fail(400,'用户名或重置码不正确，重置码也可能已过期或使用');
+      if(typeof username!=='string'||username.length>24||typeof code!=='string'||code.length>160)invalid();
+      const normalized=code.replace(/[\s-]/g,'').toUpperCase();if(!/^[A-F0-9]{32}$/.test(normalized))invalid();
+      if(typeof password!=='string'||password.length<10||password.length>128)fail(400,'密码需为 10–128 位');
+      const hash=digest(normalized);
+      return pool.run(async()=>{
+        const account=db.prepare('SELECT id,username FROM accounts WHERE username=?').get(username);
+        const valid=()=>{const row=account&&db.prepare('SELECT code_hash,expires FROM password_resets WHERE account=?').get(account.id);return !!row&&row.expires>Date.now()&&row.code_hash.length===hash.length&&timingSafeEqual(Buffer.from(row.code_hash),Buffer.from(hash));};
+        if(!valid())invalid();const stored=await passwordHash(password);
+        return atomic(()=>{
+          // Recheck after scrypt yields: two requests must not consume the same code.
+          if(!valid())invalid();
+          db.prepare('UPDATE accounts SET password=? WHERE id=?').run(stored,account.id);
+          db.prepare('DELETE FROM password_resets WHERE account=?').run(account.id);
+          db.prepare('DELETE FROM sessions WHERE account=?').run(account.id);
+          db.prepare('DELETE FROM controllers WHERE account=?').run(account.id);
+          return {id:account.id,username:account.username};
+        });
+      });
     },
     session(token){if(!token)return null;const row=db.prepare('SELECT a.* FROM sessions s JOIN accounts a ON s.account=a.id WHERE s.token=? AND s.expires>?').get(digest(token),Date.now());return publicAccount(row);},
     logout(token){if(token)db.prepare('DELETE FROM sessions WHERE token=?').run(digest(token));},

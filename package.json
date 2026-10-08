@@ -21,6 +21,7 @@
     "test:benchmark": "node scripts/compare-concurrency.mjs",
     "db:backup": "node scripts/database.mjs backup",
     "db:restore": "node scripts/database.mjs restore",
+    "account:reset-code": "node scripts/reset-code.mjs",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview --host 127.0.0.1",
     "test:cloud": "node scripts/verify-turso-replica.mjs"

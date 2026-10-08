@@ -10,6 +10,17 @@ import {prepareReplica} from './replica.mjs';
 import {createMvpServer} from './app.mjs';
 const quiet={warn(){},error(){}};
 async function remoteFixture(t){const dir=mkdtempSync(join(tmpdir(),'hutong-hardening-')),client=createClient({url:'file::memory:'}),apps=[];t.after(async()=>{for(const a of apps){await a.replica.close();a.app?.close();a.db?.close();a.app?.server.closeAllConnections();}client.close();rmSync(dir,{recursive:true,force:true});});return{client,async game(name,wrapper=client){const path=join(dir,name+'.db'),replica=await prepareReplica(path,wrapper,{flushEveryMs:0,log:quiet});const app=createMvpServer({dbPath:path,beforeRequest:()=>replica.pull({reconcilePending:true}),commitRequest:()=>replica.flush({allowTransaction:true})});replica.attach(app.store.db);app.server.listen(0,'127.0.0.1');await once(app.server,'listening');const api=async(route,input,cookie)=>{const res=await fetch('http://127.0.0.1:'+app.server.address().port+'/api/'+route,{method:input===undefined?'GET':'POST',headers:{...(cookie?{cookie}:{}),'Content-Type':'application/json'},body:input===undefined?undefined:JSON.stringify(input)});return{status:res.status,data:await res.json(),cookie:res.headers.get('set-cookie')?.split(';')[0]};};const result={replica,app,api};apps.push(result);return result;},async small(name,wrapper=client){const path=join(dir,name+'.db'),replica=await prepareReplica(path,wrapper,{flushEveryMs:0,log:quiet}),db=new DatabaseSync(path);db.exec('CREATE TABLE IF NOT EXISTS sample(id TEXT PRIMARY KEY,value TEXT); CREATE TABLE IF NOT EXISTS child(id TEXT PRIMARY KEY,parent TEXT REFERENCES sample(id))');replica.attach(db);const result={replica,db};apps.push(result);return result;}};}
+
+test('password reset consumes the organizer code durably and invalidates old sessions across replicas',async t=>{
+ const f=await remoteFixture(t),a=await f.game('reset-a'),registered=await a.api('register',{username:'cloud_reset','password':'old-password-123',role:'cora'});
+ const b=await f.game('reset-b'),second=await b.api('login',{username:'cloud_reset',password:'old-password-123'});
+ const issued=a.app.store.createPasswordReset('cloud_reset');await a.replica.flush();
+ const reset=await b.api('reset-password',{username:'cloud_reset',code:issued.code,password:'new-password-123'});assert.equal(reset.status,200);
+ assert.equal((await a.api('me',undefined,registered.cookie)).data.user,null);assert.equal((await a.api('me',undefined,second.cookie)).data.user,null);
+ assert.equal((await a.api('reset-password',{username:'cloud_reset',code:issued.code,password:'another-password-123'})).status,400);
+ const restarted=await f.game('reset-restart');assert.equal((await restarted.api('login',{username:'cloud_reset',password:'old-password-123'})).status,401);
+ assert.equal((await restarted.api('login',{username:'cloud_reset',password:'new-password-123'})).data.user.role,'cora');
+});
 test('independent instances racing to register one role produce one durable account and session',async t=>{
  const f=await remoteFixture(t),a=await f.game('a'),b=await f.game('b');
  const results=await Promise.all([a.api('register',{username:'replica_one',password:'test-password-123',role:'franco'}),b.api('register',{username:'replica_two',password:'test-password-123',role:'franco'})]);assert.deepEqual(results.map(r=>r.status).sort(),[200,409]);
