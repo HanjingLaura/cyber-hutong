@@ -8,7 +8,7 @@ import {characterRegistry,characterSource,type AvatarRole} from './character-ass
 
 const reviewRoles:AvatarRole[]=[...roles,'celine'];
 
-const actions=['站立','走路','持物站立','持物走路','坐下','坐着持物','弹琴','哑铃','跳舞','跑步','工位打字'];
+const actions=['站立','走路','持物站立','持物走路','坐下','坐着持物','弹琴','哑铃','跳舞','跑步','工位办公（Franco 打电话）','萨克斯（Laura 指挥台彩蛋）'];
 document.querySelector('#member-review')!.classList.add('hto-page');
 document.querySelector('#member-review')!.innerHTML=`<nav class="hto-nav"><a class="hto-link back" href="${BASE}" aria-label="返回赛博胡同">←</a></nav><header class="member-hero"><h1 class="hto-brand">动作检查</h1></header><div class="controls"><label>动作 <select id="team-action">${actions.map((a,i)=>`<option value="${i}">${a}</option>`).join('')}</select></label><label>方向 <select id="team-direction"><option value="0">正面</option><option value="2">背面</option><option value="1">右侧</option><option value="3">左侧</option></select></label><label>持物 <select id="team-item"><option value="咖啡">咖啡</option><option value="水">水瓶</option></select></label><label>Laura <select id="team-laura"><option value="white">白帽衫</option></select></label><button id="team-pause">暂停</button><label>帧 <input id="team-frame" type="range" min="0" max="7" value="0"/></label></div><div id="team-stage"></div><details><summary>人物动作图集</summary><div class="atlas">${reviewRoles.map(role=>`<figure><figcaption>${role}</figcaption>${[...(role==='celine'?['celine-v1','celine-motion-v4']:[role,role+'-carry',...(role==='laura'?Object.keys(characterRegistry.sources).filter(id=>id.startsWith('laura-')&&(id.endsWith('-v5')||id.endsWith('-v6')||id.endsWith('-v7'))):[]),...(characterRegistry.sources[role+'-motion-v4']?[role+'-motion-v4']:[])]),role+'-walk-a-v8',role+'-walk-b-v8',role+'-run-v10',...(role==='celine'?[]:[role+'-carry-walk-v12']),...(role==='laura'?['laura-dance-v12']:[])].map(id=>`<a href="${characterSource(id)}" target="_blank"><img src="${characterSource(id)}" alt="${id}" loading="lazy"/></a>`).join('')}</figure>`).join('')}</div></details>`;
 const action=document.querySelector<HTMLSelectElement>('#team-action')!,direction=document.querySelector<HTMLSelectElement>('#team-direction')!,item=document.querySelector<HTMLSelectElement>('#team-item')!,slider=document.querySelector<HTMLInputElement>('#team-frame')!,laura=document.querySelector<HTMLSelectElement>('#team-laura')!;
@@ -30,8 +30,8 @@ class Review extends Phaser.Scene{
  }
  update(time:number,delta:number){phase=paused?Number(slider.value):Math.floor(time/(Number(action.value)===9?75:100))%8;if(!paused)slider.value=String(phase);const a=Number(action.value),d=Number(direction.value),seated=[4,5,6,10].includes(a),office=a===10;
   this.views.forEach((view,i)=>{const x=80+i%4*160,y=110+Math.floor(i/4)*160,back=d===2,depth=i*10+1;const objects=this.furniture[i];objects.forEach((o,j)=>o.setVisible(seated&&(j===0||office)).setDepth(depth+[-1,2,5,6][j]));if(back){objects[0].setDepth(depth+2);objects[1].setDepth(depth-2);objects[2].setVisible(false);objects[3].setDepth(depth-1).setY(y-65.48);objects[1].setY(y-14.08);}else{objects[1].setY(y+44.88);objects[3].setY(y-6.52);}
-   const player:Omit<Player,'role'>&{role:AvatarRole}={role:view.role,name:view.role,scene:'review',x,y,facing:d,moving:a===1||a===3||a===9,seat:seated?'review-seat':null,hand:[2,3,5].includes(a)?item.value:null,revision:0};
-   view.draw(player,x,y,d,delta,office,61.44,depth,false,a===6?'piano':a===7?'curl':a===8?'dance':a===9?'run':'',seated?y-(back?27:17):undefined,phase);
+   const player:Omit<Player,'role'>&{role:AvatarRole}={role:view.role,name:view.role,scene:a===11?'rehearsal':'review',x,y,facing:d,moving:a===1||a===3||a===9,seat:seated?'review-seat':null,hand:[2,3,5].includes(a)?item.value:null,revision:0};
+   view.draw(player,x,y,d,delta,office,61.44,depth,false,a===6?'piano':a===7?'curl':a===8?'dance':a===9?'run':a===11?'podium':'',seated?y-(back?27:17):undefined,phase);
   });
  }
 }

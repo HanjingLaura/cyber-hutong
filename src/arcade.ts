@@ -1,3 +1,4 @@
+import {sceneWalkable} from '../shared/walkability.mjs';
 import { BASE } from './base';
 import Phaser from 'phaser';
 import { ArcadeGames, type ArcadeKind } from './arcade-games';
@@ -52,7 +53,7 @@ export class ArcadeScene extends Phaser.Scene {
   private nearBench(){return Math.hypot(this.x-bench.approachX,this.y-bench.approachY)<24;}
   private stand(){this.seated=null;this.x=this.returnPoint.x;this.y=this.returnPoint.y;this.facing=0;}
   private interact(){if(this.seated!==null){this.stand();return;}if(this.nearBench()){this.returnPoint={x:this.x,y:this.y};this.seated='bench';this.x=bench.x;this.y=bench.y-3;this.facing=0;this.input.keyboard?.resetKeys();return;}const machine=this.nearest();if(machine){this.input.keyboard?.resetKeys();this.play(machine);}}
-  private canWalk(x:number,y:number){return x>=55&&x<=595&&y>=192&&y<=343&&!(x>72&&x<178&&y>220&&y<335)&&!(x>356&&x<512&&y>247&&y<311)&&!(x>479&&x<591&&y>332);}
+  private canWalk(x:number,y:number){return sceneWalkable('arcade',x,y);}
   update(_time:number,delta:number){
     if(!this.actor)return;
     let moving=false;

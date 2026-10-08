@@ -8,7 +8,8 @@
 // Remote layout (prefix default "hutong_online"):
 //   <prefix>_schema(name, type, tbl, sql)       CREATE statements of local tables/indexes
 //   <prefix>_rows(tbl, pk, data, deleted, ver)  one JSON row per local row, tombstones on delete
-// Conflict policy is row-level last-writer-wins. It does not make the in-memory world shared.
+// Atomic writes use optimistic version checks; a stale writer must retry.
+// This does not make in-memory seat/device leases globally shared.
 import { DatabaseSync } from 'node:sqlite';
 import { mkdirSync, rmSync } from 'node:fs';
 import { dirname } from 'node:path';
@@ -38,7 +39,9 @@ function userTables(db) {
 function upsertRow(db, table, data) {
   const cols = Object.keys(data);
   if (!cols.length) return;
-  db.prepare(`INSERT OR REPLACE INTO ${q(table)}(${cols.map(q).join(',')}) VALUES(${cols.map(() => '?').join(',')})`).run(...cols.map(c => decodeValue(data[c])));
+  const keys=keyColumns(db,table), updates=cols.filter(c=>!keys.includes(c));
+  const conflict=updates.length?`DO UPDATE SET ${updates.map(c=>`${q(c)}=excluded.${q(c)}`).join(',')} WHERE ${updates.map(c=>`${q(table)}.${q(c)} IS NOT excluded.${q(c)}`).join(' OR ')}`:'DO NOTHING';
+  db.prepare(`INSERT INTO ${q(table)}(${cols.map(q).join(',')}) VALUES(${cols.map(() => '?').join(',')}) ON CONFLICT(${keys.map(q).join(',')}) ${conflict}`).run(...cols.map(c => decodeValue(data[c])));
 }
 
 export function remoteTables(prefix = 'hutong_online') {
@@ -51,6 +54,10 @@ async function ensureRemote(client, t) {
     `CREATE TABLE IF NOT EXISTS ${t.schema}(name TEXT PRIMARY KEY, type TEXT NOT NULL, tbl TEXT NOT NULL, sql TEXT NOT NULL)`,
     `CREATE TABLE IF NOT EXISTS ${t.rows}(tbl TEXT NOT NULL, pk TEXT NOT NULL, data TEXT, deleted INTEGER NOT NULL DEFAULT 0, ver INTEGER NOT NULL, PRIMARY KEY(tbl, pk))`,
     `CREATE INDEX IF NOT EXISTS ${t.rows}_ver ON ${t.rows}(ver)`,
+    ...['username','role'].map(field=>`CREATE UNIQUE INDEX IF NOT EXISTS ${t.rows}_account_${field} ON ${t.rows}(json_extract(data,'$.${field}')) WHERE tbl='accounts' AND deleted=0`),
+    `CREATE TRIGGER IF NOT EXISTS ${t.rows}_claims_immutable BEFORE UPDATE ON ${t.rows} WHEN OLD.tbl='role_claims' AND (NEW.deleted<>0 OR NEW.data IS NOT OLD.data) BEGIN SELECT RAISE(ABORT,'role permanently claimed'); END`,
+    `CREATE TRIGGER IF NOT EXISTS ${t.rows}_account_capacity BEFORE INSERT ON ${t.rows} WHEN NEW.tbl='accounts' AND NEW.deleted=0 AND NOT EXISTS(SELECT 1 FROM ${t.rows} WHERE tbl='accounts' AND pk=NEW.pk AND deleted=0) AND (SELECT COUNT(*) FROM ${t.rows} WHERE tbl='accounts' AND deleted=0)>=8 BEGIN SELECT RAISE(ABORT,'account capacity constraint'); END`,
+    ...['INSERT','UPDATE'].map(event=>`CREATE TRIGGER IF NOT EXISTS ${t.rows}_offer_exclusive_${event.toLowerCase()} BEFORE ${event} ON ${t.rows} WHEN NEW.tbl='offers' AND NEW.deleted=0 AND json_extract(NEW.data,'$.status') IN ('pending','accepted') AND EXISTS(SELECT 1 FROM ${t.rows} r WHERE r.tbl='offers' AND r.pk<>NEW.pk AND r.deleted=0 AND json_extract(r.data,'$.status') IN ('pending','accepted') AND json_extract(r.data,'$.kind')=json_extract(NEW.data,'$.kind') AND (json_extract(r.data,'$.sender') IN (json_extract(NEW.data,'$.sender'),json_extract(NEW.data,'$.recipient')) OR json_extract(r.data,'$.recipient') IN (json_extract(NEW.data,'$.sender'),json_extract(NEW.data,'$.recipient')))) BEGIN SELECT RAISE(ABORT,'active invitation constraint'); END`),
   ], 'write');
 }
 
@@ -64,23 +71,26 @@ export async function prepareReplica(path, client, { prefix = 'hutong_online', f
   for (const suffix of ['', '-wal', '-shm', '-journal']) rmSync(path + suffix, { force: true });
   if (path !== ':memory:') mkdirSync(dirname(path), { recursive: true });
   const schema = (await client.execute(`SELECT name, type, tbl, sql FROM ${t.schema}`)).rows;
-  const rows = (await client.execute(`SELECT tbl, pk, data, ver FROM ${t.rows} WHERE deleted = 0 ORDER BY ver`)).rows;
+  // Capture the watermark first: writes during hydration are safely replayed by the next pull.
   const verRow = (await client.execute(`SELECT COALESCE(MAX(ver), 0) AS v FROM ${t.rows}`)).rows[0];
+  const rows = (await client.execute(`SELECT tbl, pk, data, deleted, ver FROM ${t.rows} ORDER BY ver`)).rows;
   let lastVer = Number(verRow?.v ?? 0);
+  const versions=new Map(rows.map(r=>[r.tbl+'\u0000'+r.pk,Number(r.ver)]));
   const loaded = new Set();
   // Rows arrive in version order, not dependency order: load them with foreign keys off.
   const db = new DatabaseSync(path, { enableForeignKeyConstraints: false });
   try {
     db.exec('BEGIN');
     for (const kind of ['table', 'index']) for (const s of schema) if (s.type === kind) {
-      try { db.exec(String(s.sql)); } catch (e) { log.warn?.(`replica: schema ${s.name} skipped: ${e.message}`); }
+      db.exec(String(s.sql));
     }
-    let skipped = 0;
     for (const r of rows) {
-      try { upsertRow(db, String(r.tbl), JSON.parse(String(r.data))); loaded.add(r.tbl + '\u0000' + r.pk); } catch { skipped++; }
+      if(Number(r.deleted))continue;
+      upsertRow(db, String(r.tbl), JSON.parse(String(r.data))); loaded.add(r.tbl + '\u0000' + r.pk);
     }
+    if(db.prepare('PRAGMA foreign_key_check').all().length)throw new Error('replica hydration failed foreign key validation');
+    for(const s of schema)if(s.type==='trigger')db.exec(String(s.sql));
     db.exec('COMMIT');
-    if (skipped) log.warn?.(`replica: ${skipped} remote rows could not be applied locally`);
   } catch (e) { try { db.exec('ROLLBACK'); } catch {} throw e; } finally { db.close(); }
 
   let db2 = null, timer = null, chain = Promise.resolve(), lastPull = Date.now(), closed = false;
@@ -125,7 +135,7 @@ export async function prepareReplica(path, client, { prefix = 'hutong_online', f
   }
 
   async function pushSchema() {
-    const items = db2.prepare("SELECT name, type, tbl_name AS tbl, sql FROM main.sqlite_master WHERE type IN ('table','index') AND sql IS NOT NULL AND name NOT LIKE 'sqlite_%'").all().filter(s => !SKIP.has(s.tbl));
+    const items = db2.prepare("SELECT name, type, tbl_name AS tbl, sql FROM main.sqlite_master WHERE type IN ('table','index','trigger') AND sql IS NOT NULL AND name NOT LIKE 'sqlite_%'").all().filter(s => !SKIP.has(s.tbl));
     await client.batch(items.map(s => ({ sql: `INSERT INTO ${t.schema}(name, type, tbl, sql) VALUES(?,?,?,?) ON CONFLICT(name) DO UPDATE SET type=excluded.type, tbl=excluded.tbl, sql=excluded.sql`, args: [s.name, s.type, s.tbl, s.sql] })), 'write');
   }
 
@@ -135,7 +145,8 @@ export async function prepareReplica(path, client, { prefix = 'hutong_online', f
     return db2.prepare(`${select} WHERE ${keys.map(k => q(k) + ' IS ?').join(' AND ')}`).get(...values) ?? null;
   }
 
-  function flush() {
+  function flush({allowTransaction=false}={}) {
+    if(allowTransaction)return serial(()=>flushRows(true));
     if (flushing) { flushAgain = true; return flushing; }
     const flight = (async () => {
       try {
@@ -156,18 +167,23 @@ export async function prepareReplica(path, client, { prefix = 'hutong_online', f
     return flight;
   }
 
-  async function flushRows() {
-      if (!dbIsOpen(db2) || dbInTx(db2)) return 0;
+  async function flushRows(allowTransaction=false) {
+      if (!dbIsOpen(db2) || dbInTx(db2)&&!allowTransaction) return 0;
       const dirty = db2.prepare('SELECT tbl, pk, generation FROM temp._hto_dirty').all();
       if (!dirty.length) return 0;
       const statements = [];
       for (const { tbl, pk } of dirty) {
         let row = null;
-        try { row = readRow(tbl, pk); } catch { continue; }
-        statements.push({ sql: `INSERT INTO ${t.rows}(tbl, pk, data, deleted, ver) VALUES(?, ?, ?, ?, (SELECT COALESCE(MAX(ver), 0) + 1 FROM ${t.rows})) ON CONFLICT(tbl, pk) DO UPDATE SET data=excluded.data, deleted=excluded.deleted, ver=excluded.ver`, args: [tbl, pk, row ? encode(row) : null, row ? 0 : 1] });
+        row = readRow(tbl, pk);
+        // This NOT NULL violation aborts the entire batch if any row was changed
+        // since our last read. Never overwrite a concurrent gift, claim or queue edit.
+        statements.push({sql:`INSERT INTO ${t.schema}(name,type,tbl,sql) SELECT NULL,'guard',?,NULL WHERE COALESCE((SELECT ver FROM ${t.rows} WHERE tbl=? AND pk=?),0) <> ?`,args:[tbl,tbl,pk,versions.get(tbl+'\u0000'+pk)??0]});
+        statements.push({ sql: `INSERT INTO ${t.rows}(tbl, pk, data, deleted, ver) VALUES(?, ?, ?, ?, (SELECT COALESCE(MAX(ver), 0) + 1 FROM ${t.rows})) ON CONFLICT(tbl, pk) DO UPDATE SET data=excluded.data, deleted=excluded.deleted, ver=excluded.ver RETURNING ver`, args: [tbl, pk, row ? encode(row) : null, row ? 0 : 1] });
       }
       try {
-        for (let i = 0; i < statements.length; i += 200) await client.batch(statements.slice(i, i + 200), 'write');
+        // One atomic batch includes state changes and idempotency receipts.
+        const results=await client.batch(statements,'write');
+        for(let i=0;i<dirty.length;i++)versions.set(dirty[i].tbl+'\u0000'+dirty[i].pk,Number(results[i*2+1].rows[0].ver));
         if (dbIsOpen(db2)) {
           // A request can update this row while the remote batch is in flight.
           // Acknowledge only the generation captured above, leaving newer writes dirty.
@@ -176,18 +192,29 @@ export async function prepareReplica(path, client, { prefix = 'hutong_online', f
         }
       } catch (e) {
         log.error?.('replica: flush failed: ' + e.message);
+        if(/constraint|permanently claimed/i.test(e.message))throw Object.assign(new Error('状态已更新或角色已领取，请刷新后重试'),{status:409});
         throw e;
       }
-      return statements.length;
+      return dirty.length;
   }
 
-  function pull({ maxAgeMs = 0 } = {}) {
+  function pull({ maxAgeMs = 0,reconcilePending=false } = {}) {
     if (pulling) return pulling;
     if (Date.now() - lastPull < maxAgeMs) return Promise.resolve(0);
     pulling = serial(async () => {
       // Requests queued behind a flush must reuse the latest completed read too.
       if (Date.now() - lastPull < maxAgeMs) return 0;
       if (!dbIsOpen(db2)) return 0;
+      if(reconcilePending){
+        // Only unacknowledged background changes can be pending at a request
+        // boundary. A newer authoritative row replaces them before gameplay.
+        const dirty=db2.prepare('SELECT tbl,pk FROM temp._hto_dirty').all();
+        if(dirty.length){
+          const result=await client.execute({sql:`SELECT tbl,pk,data,deleted,ver FROM ${t.rows} WHERE ${dirty.map(()=>'(tbl=? AND pk=?)').join(' OR ')}`,args:dirty.flatMap(r=>[r.tbl,r.pk])});
+          const changed=result.rows.filter(r=>Number(r.ver)!==(versions.get(r.tbl+'\u0000'+r.pk)??0));
+          if(changed.length){db2.exec('UPDATE temp._hto_ctl SET applying=1; BEGIN; PRAGMA defer_foreign_keys=ON;');try{for(const r of changed){if(Number(r.deleted)){const keys=keyColumns(db2,r.tbl);db2.prepare(`DELETE FROM ${q(r.tbl)} WHERE ${keys.map(k=>q(k)+' IS ?').join(' AND ')}`).run(...JSON.parse(r.pk));}else upsertRow(db2,r.tbl,JSON.parse(r.data));db2.prepare('DELETE FROM temp._hto_dirty WHERE tbl=? AND pk=?').run(r.tbl,r.pk);}db2.exec('COMMIT');for(const r of changed)versions.set(r.tbl+'\u0000'+r.pk,Number(r.ver));}catch(e){db2.exec('ROLLBACK');throw e;}finally{db2.exec('UPDATE temp._hto_ctl SET applying=0');}}
+        }
+      }
       let applied = 0;
       for (;;) {
         const result = await client.execute({ sql: `SELECT tbl, pk, data, deleted, ver FROM ${t.rows} WHERE ver > ? ORDER BY ver LIMIT 500`, args: [lastVer] });
@@ -195,23 +222,23 @@ export async function prepareReplica(path, client, { prefix = 'hutong_online', f
         if (dbInTx(db2)) break;
         const local = new Set(userTables(db2)), pending = new Set(db2.prepare('SELECT tbl, pk FROM temp._hto_dirty').all().map(r => r.tbl + '\u0000' + r.pk));
         db2.exec('UPDATE temp._hto_ctl SET applying = 1; BEGIN; PRAGMA defer_foreign_keys = ON;');
+        let candidate=lastVer,count=0;const changes=[];
         try {
           for (const r of result.rows) {
             const tbl = String(r.tbl), pk = String(r.pk);
-            if (!local.has(tbl)) { lastVer = Math.max(lastVer, Number(r.ver)); continue; }
-            // Local dirty rows win and will be pushed with a newer remote version.
-            // Do not let one such row hold up unrelated messages or accounts.
-            if (pending.has(tbl + '\u0000' + pk)) { lastVer = Math.max(lastVer, Number(r.ver)); continue; }
-            try {
+            if (!local.has(tbl))throw new Error('replica unknown table: '+tbl);
+            // Preserve pending local work for the flush conflict check. Request
+            // boundaries reconcile background conflicts before another command.
+            if (pending.has(tbl + '\u0000' + pk)) { candidate = Math.max(candidate, Number(r.ver)); continue; }
               if (Number(r.deleted)) {
                 const keys = keyColumns(db2, tbl);
                 db2.prepare(`DELETE FROM main.${q(tbl)} WHERE ${keys.map(k => q(k) + ' IS ?').join(' AND ')}`).run(...JSON.parse(pk));
               } else upsertRow(db2, tbl, JSON.parse(String(r.data)));
-              applied++;
-            } catch (e) { log.warn?.(`replica: pull skipped ${tbl}: ${e.message}`); }
-            lastVer = Math.max(lastVer, Number(r.ver));
+              count++;changes.push([tbl+'\u0000'+pk,Number(r.ver)]);
+            candidate = Math.max(candidate, Number(r.ver));
           }
           db2.exec('COMMIT');
+          lastVer=candidate;applied+=count;for(const [key,value]of changes)versions.set(key,value);
         } catch (e) { try { db2.exec('ROLLBACK'); } catch {} throw e; } finally { db2.exec('UPDATE temp._hto_ctl SET applying = 0'); }
         if (result.rows.length < 500) break;
       }
@@ -221,11 +248,85 @@ export async function prepareReplica(path, client, { prefix = 'hutong_online', f
     return pulling;
   }
 
+  function checkedTables(tables) {
+    if (!dbIsOpen(db2)) throw Object.assign(new Error('replica is not attached'), { status: 503 });
+    const local = new Set(userTables(db2));
+    if (!Array.isArray(tables) || !tables.length || tables.some(table => typeof table !== 'string' || !local.has(table))) throw new TypeError('invalid authoritative tables');
+    return [...new Set(tables)];
+  }
+
+  function pendingFor(tables) {
+    const wanted = new Set(tables);
+    return db2.prepare('SELECT tbl, pk, generation FROM temp._hto_dirty').all().filter(row => wanted.has(row.tbl));
+  }
+
+  function hasPending(tables) {
+    return pendingFor(checkedTables(tables)).length > 0;
+  }
+
+  // Permission-bearing tables must use remote truth even when an ordinary pull
+  // skipped a failed local write. One complete query also recovers rows whose
+  // remote versions are already behind lastVer, without rewinding other tables.
+  // Dependent tables read only their captured dirty keys, keeping large immutable
+  // image payloads out of the normal metadata refresh.
+  function syncAuthoritativeTables(tables, { pendingTables = [] } = {}) {
+    const wanted = checkedTables(tables);
+    const dependent = pendingTables.length ? checkedTables(pendingTables).filter(table => !wanted.includes(table)) : [];
+    const watched = [...wanted, ...dependent];
+    return serial(async () => {
+      if (!dbIsOpen(db2) || dbInTx(db2)) throw Object.assign(new Error('replica is busy'), { status: 503 });
+      const captured = pendingFor(watched);
+      const generations = new Map(captured.map(row => [row.tbl + '\u0000' + row.pk, row.generation]));
+      const dependentRows = captured.filter(row => dependent.includes(row.tbl));
+      const dependentKeys = dependent.map(table => [table, dependentRows.filter(row => row.tbl === table).map(row => row.pk)]).filter(([, keys]) => keys.length);
+      const result = await client.execute({
+        sql: `SELECT tbl, pk, data, deleted, ver FROM ${t.rows} WHERE tbl IN (${wanted.map(() => '?').join(',')})${dependentKeys.map(() => ' OR (tbl = ? AND pk IN (SELECT value FROM json_each(?)))').join('')} ORDER BY ver`,
+        args: [...wanted, ...dependentKeys.flatMap(([table, keys]) => [table, JSON.stringify(keys)])],
+      });
+      if (!dbIsOpen(db2) || dbInTx(db2)) throw Object.assign(new Error('replica is busy'), { status: 503 });
+      const pending = pendingFor(watched);
+      if (pending.length !== captured.length || pending.some(row => generations.get(row.tbl + '\u0000' + row.pk) !== row.generation)) {
+        // A new request mutated this table while the remote read was in flight.
+        // Preserve its write, but prevent the caller from trusting this snapshot.
+        throw Object.assign(new Error('authoritative state changed during synchronization'), { status: 503 });
+      }
+      const remote = new Map(result.rows.map(row => [String(row.tbl) + '\u0000' + String(row.pk), row]));
+      db2.exec('UPDATE temp._hto_ctl SET applying = 1; BEGIN; PRAGMA defer_foreign_keys = ON;');
+      try {
+        for (const table of wanted) {
+          const keys = keyColumns(db2, table);
+          const key = `json_array(${keys.map(column => q(column)).join(',')})`;
+          const remove = db2.prepare(`DELETE FROM main.${q(table)} WHERE ${keys.map(column => q(column) + ' IS ?').join(' AND ')}`);
+          for (const row of db2.prepare(`SELECT ${key} AS pk FROM main.${q(table)}`).all()) {
+            const authoritative = remote.get(table + '\u0000' + row.pk);
+            if (!authoritative || Number(authoritative.deleted)) remove.run(...JSON.parse(row.pk));
+          }
+        }
+        for (const row of dependentRows) {
+          const authoritative = remote.get(row.tbl + '\u0000' + row.pk);
+          if (!authoritative || Number(authoritative.deleted)) {
+            const keys = keyColumns(db2, row.tbl);
+            db2.prepare(`DELETE FROM main.${q(row.tbl)} WHERE ${keys.map(column => q(column) + ' IS ?').join(' AND ')}`).run(...JSON.parse(row.pk));
+          }
+        }
+        for (const row of result.rows) if (!Number(row.deleted)) upsertRow(db2, String(row.tbl), JSON.parse(String(row.data)));
+        const clear = db2.prepare('DELETE FROM temp._hto_dirty WHERE tbl = ? AND pk = ? AND generation = ?');
+        for (const row of captured) clear.run(row.tbl, row.pk, row.generation);
+        db2.exec('COMMIT');
+        for (const key of versions.keys()) if (wanted.includes(key.slice(0, key.indexOf('\u0000')))) versions.delete(key);
+        for (const row of dependentRows) versions.delete(row.tbl + '\u0000' + row.pk);
+        for (const row of result.rows) versions.set(String(row.tbl) + '\u0000' + String(row.pk), Number(row.ver));
+      } catch (e) { try { db2.exec('ROLLBACK'); } catch {} throw e; }
+      finally { db2.exec('UPDATE temp._hto_ctl SET applying = 0'); }
+      return result.rows.length;
+    });
+  }
+
   async function close() {
     if (closed) return; closed = true; clearInterval(timer);
     try { await flush(); } catch {}
   }
 
-  const handle = { attach, flush, pull, close, get lastVersion() { return lastVer; }, tables: t };
+  const handle = { attach, flush, pull, syncAuthoritativeTables, hasPending, close, get lastVersion() { return lastVer; }, tables: t };
   return handle;
 }

@@ -1,3 +1,4 @@
+import {sceneWalkable} from '../shared/walkability.mjs';
 import Phaser from 'phaser';
 import { playerInventory, type ItemName } from './player-inventory';
 import { preloadGuest, placeGuest, guestBlocks } from './easter-eggs';
@@ -96,17 +97,7 @@ export class GymScene extends Phaser.Scene {
     }
     this.begin(target.kind,target.index);
   }
-  private canWalk(x:number,y:number){
-    if(guestBlocks('tutu',x,y))return false;
-    const inset=32+(350-y)*.09;if(x<inset||x>640-inset||y<90||y>338)return false;
-    if(treadmills.some(cx=>Math.abs(x-cx)<31&&y<143))return false;
-    if(x<90&&y<178)return false; // dumbbell rack
-    if(x>490&&y<185)return false; // barbell and bench
-    if(x>74&&x<143&&y>140&&y<211)return false; // adjustable bench
-    if(x<90&&y>218&&y<305)return false; // drinking water and shelf
-    if(x>565&&y>210&&y<266)return false; // rolled mats
-    return true;
-  }
+  private canWalk(x:number,y:number){return !guestBlocks('tutu',x,y)&&sceneWalkable('gym',x,y);}
   update(_time:number,delta:number){
     if(!this.actor)return;
     let moving=false;const dt=Math.min(delta,50);

@@ -1,0 +1,25 @@
+#ktv-menu { width:min(520px,94vw);max-height:85dvh;overflow:auto;padding:20px;background:var(--hto-surface);color:var(--hto-panel-ink);border:2px solid var(--hto-panel-border);font-family:var(--hto-font); }
+#ktv-menu::backdrop { background:#101713c0; }
+#ktv-menu .ktv-heading { display:flex;align-items:center;justify-content:space-between;gap:16px; }
+#ktv-menu h2 { margin:0;font-size:20px; }
+#ktv-menu h3 { margin:22px 0 8px;font-size:14px; }
+#ktv-menu p { line-height:1.6; }
+#ktv-menu .ktv-library { display:grid;gap:0; }
+#ktv-menu .ktv-song { display:flex;align-items:center;justify-content:space-between;gap:16px;padding:12px 0;border-bottom:1px solid var(--hto-line); }
+#ktv-menu small { display:block;color:var(--hto-ink-soft);font-size:12px;margin-top:3px; }
+#ktv-menu .ktv-actions { display:flex;flex-wrap:wrap;gap:8px; }
+#ktv-menu ol { padding-left:22px;line-height:1.8;max-height:140px;overflow:auto; }
+#ktv-menu [data-ktv-message] { min-height:24px;color:var(--hto-ink-bright); }
+#ktv-dock { position:absolute;right:14px;top:58px;z-index:30;width:min(230px,45%);padding:10px 12px;background:var(--hto-panel);border:1px solid var(--hto-panel-border);color:var(--hto-panel-ink);font-size:12px;line-height:1.5; }
+#ktv-dock p { margin:0 0 8px; }
+#ktv-dock button { padding:6px 9px;font-size:12px; }
+#ktv-sing-actions { display:flex;flex-wrap:wrap;gap:6px;margin-top:8px; }
+#ktv-score { display:block;margin-top:6px;font-variant-numeric:tabular-nums; }
+#ktv-beat { display:flex;gap:3px;margin-top:10px; }
+#ktv-beat span { flex:1;text-align:center;padding:3px 0;border:1px solid var(--hto-line-strong);color:var(--hto-ink-soft);font-variant-numeric:tabular-nums; }
+#ktv-beat .is-current { border-color:var(--hto-focus);color:var(--hto-ink-bright); }
+#ktv-beat .is-pulse { background:var(--hto-focus);color:var(--hto-bg-deep); }
+html.touch-ui #ktv-dock { width:250px;max-width:66%; }
+html.touch-ui #ktv-dock button { min-height:40px; }
+@media(max-width:650px) { #ktv-dock { top:92px;right:8px;padding:8px;width:190px;max-width:49%;font-size:11px; } #ktv-menu { padding:14px; } #ktv-menu button { min-height:40px; } }
+@media(max-height:480px) { #ktv-dock { top:54px; } #ktv-menu { max-height:95dvh; } }

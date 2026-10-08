@@ -6,6 +6,7 @@
 
 - 线上：<https://hanjing-laura.vercel.app/cyber-hutong/>（地鼠：`/cyber-hutong/moles`）
 - 场景与玩法：[多人 MVP 与边界](docs/playable-mvp.md)、[场景衔接设计](docs/scene-navigation-design.md)
+- KTV 包厢：沙发落座、原创短曲点歌、灯光与麦克风节拍互动，操作和验证见 [docs/ktv-scene.md](docs/ktv-scene.md)
 - Vercel 部署、Turso 持久化与限制：[docs/vercel-deploy.md](docs/vercel-deploy.md)
 - PartyKit 联机：[docs/partykit.md](docs/partykit.md)
 - 胡同地鼠与 Arduino Uno 接线：[docs/hutong-moles.md](docs/hutong-moles.md)
@@ -29,6 +30,8 @@ WASD / 方向键移动，E 互动，Esc 退出，V 切换视角。
 npm test            # 服务端测试（含 PartyKit 协议 / Turso 复制层）
 npm run test:moles  # 地鼠模拟验收
 npm run build       # tsc + vite build
+node scripts/verify-ktv.cjs # KTV 桌面 / 触屏检查（先启动 npm run dev）
+node scripts/verify-album.cjs # 场景相册桌面 / 触屏检查（先 npm run build，使用独立测试数据库）
 ```
 
 不要提交 `.env*`、`.dev.vars`、`data/`、`*.sqlite`、`references/private/`。仓库只包含游戏运行时实际加载的素材，

@@ -3,6 +3,7 @@ import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { resolve,extname,sep } from 'node:path';
 import { openStore,fail } from './store.mjs';
+import {createAlbum} from './album.mjs';
 import { roles,replyFor } from './personas.mjs';
 import rooms from '../shared/rooms.json' with {type:'json'};
 import interactions from '../shared/interactions.json' with {type:'json'};
@@ -21,20 +22,22 @@ import npcFeedback from '../shared/npc-feedback.json' with {type:'json'};
 import {randomUUID} from 'node:crypto';
 import {issueTicket} from '../shared/party-ticket.mjs';
 import {PARTY_ROOM_ID} from '../shared/party-room.mjs';
-export const scenes=['hutong','hawaii','rest','pop','bathroom','concert','arcade','noodle','gym','dance','perler','rehearsal','elevator','subway'];
+import {durableRequests} from './durable-request.mjs';
+export const scenes=['hutong','hawaii','rest','pop','bathroom','concert','arcade','noodle','gym','dance','perler','rehearsal','elevator','subway','ktv'];
 const partySecret=()=>process.env.PARTY_AUTH_SECRET||'';
 const items=['咖啡','可乐','气泡水','薯片','面包','火腿肠','辣条','马卡龙','蛋糕','冰红茶','碗筷','米线','鸡柳','炸鸡','水','扭蛋·粉色小熊','扭蛋·薄荷兔子','扭蛋·蓝色机器人','扭蛋·橘猫','扭蛋·紫色小巫师','扭蛋·皇冠小熊'];
 const json=(res,status,value)=>{res.writeHead(status,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'});res.end(JSON.stringify(value));};
 const cookie=req=>String(req.headers.cookie||'').split(';').map(v=>v.trim()).find(v=>v.startsWith('hutong_session='))?.slice(15);
-async function body(req){let size=0,parts=[];for await(const part of req){size+=part.length;if(size>16384)fail(413,'请求内容过长');parts.push(part);}try{return JSON.parse(Buffer.concat(parts).toString()||'{}');}catch{fail(400,'请求格式不正确');}}
+async function body(req,limit=16384){if(req.hutongBody!==undefined){try{return JSON.parse(req.hutongBody.toString()||'{}');}catch{fail(400,'请求格式不正确');}}if(Number(req.headers['content-length'])>limit)fail(413,'请求内容过长');let size=0,parts=[];for await(const part of req){size+=part.length;if(size>limit)fail(413,'请求内容过长');parts.push(part);}try{return JSON.parse(Buffer.concat(parts).toString()||'{}');}catch{fail(400,'请求格式不正确');}}
 const name=role=>role[0].toUpperCase()+role.slice(1);
 // Public deployments live under /cyber-hutong/ (Vite base). Requests may arrive with or without that prefix.
 export const basePath=(process.env.HUTONG_BASE_PATH??'/cyber-hutong').replace(/\/+$/,'');
 export const stripBase=url=>{const i=url.indexOf('?'),path=i===-1?url:url.slice(0,i),query=i===-1?'':url.slice(i);let next=path===basePath||path.startsWith(basePath+'/')?(path.slice(basePath.length)||'/'):path;if(next.startsWith('/api/')&&next.length>5)next=next.replace(/\/+$/,'');return next+query;};
 const allowedHosts=()=>String(process.env.HUTONG_ALLOWED_HOSTS||'').split(',').map(v=>v.trim().toLowerCase()).filter(Boolean);
 const clientAddress=req=>process.env.VERCEL?String(req.headers['x-forwarded-for']||'').split(',')[0].trim()||req.socket.remoteAddress:req.socket.remoteAddress;
-export function createMvpServer({dbPath='data/mvp.sqlite',staticDir=resolve('dist'),llmOptions={}}={}){
+export function createMvpServer({dbPath='data/mvp.sqlite',staticDir=resolve('dist'),llmOptions={},albumCommit=async()=>{},beforeRequest,commitRequest,albumSeedImage}={}){
   const store=openStore(dbPath),players=new Map(),streams=new Set(),rates=new Map();
+  const album=createAlbum(store,{seedImage:albumSeedImage});
   const controlStmt={get:store.db.prepare('SELECT client,at FROM controllers WHERE account=?'),set:store.db.prepare('INSERT INTO controllers(account,client,at) VALUES(?,?,?) ON CONFLICT(account) DO UPDATE SET client=excluded.client,at=excluded.at'),del:store.db.prepare('DELETE FROM controllers WHERE account=?')};
     // Control lives in SQLite (replicated across Vercel instances). Instances must only release control they can
   // prove is theirs/stale; deleting it from one instance used to demote the user's live tab on another instance.
@@ -53,25 +56,30 @@ export function createMvpServer({dbPath='data/mvp.sqlite',staticDir=resolve('dis
   const rewards=createRewards(store,life,world,leases);
   const npcReactions=createNpcReactions(store.db);
   const celine=createCeline(store);
-  let dirty=true,poseDirty=false,lastFull=0,closed=false,visitorSignature='';
+  let dirty=true,poseDirty=false,lastFull=0,closed=false,visitorSignature='',paused=false,pendingEvents=[],transportJobs=[];
   const live=role=>[...players.values()].find(p=>p.role===role&&!p.disconnectedAt);
-  const cleanPlayer=p=>{const a=store.byId(p.id);return {role:p.role,name:name(p.role),scene:p.scene,x:p.x,y:p.y,facing:p.facing,moving:p.moving,seat:p.seat,hand:a.hand,revision:a.revision,activity:p.activity};};
-  life.setSceneProvider(scene=>({version:1,actors:autonomy.all().filter(p=>p.scene===scene).map(cleanPlayer),objects:world.snapshot(scene),npcs:visibleNpcs(npcRules.filter(rule=>rule.room===scene),autonomy.all(),workstations).map(rule=>({id:rule.id,...guestPositions[rule.id],text:npcReactions.get(rule.id)?.expires>Date.now()?npcReactions.get(rule.id).text:undefined})).concat((()=>{const v=celine.snapshot(autonomy.all());return v.scene===scene?[{...v,height:61.44}]:[];})())}),id=>{const p=autonomy.all().find(p=>p.id===id);return p?cleanPlayer(p):null;});
-  const emit=(stream,type,data)=>{if(stream.res.writableEnded||stream.res.destroyed)return;const payload=`event: ${type}\ndata: ${JSON.stringify(data)}\n\n`;if(stream.res.writableLength>256000){stream.res.destroy();return;}stream.res.write(payload);};
+  const cleanPlayer=p=>{const a=store.byId(p.id);return {role:p.role,name:name(p.role),scene:p.scene,x:p.x,y:p.y,facing:p.facing,moving:p.moving,seat:p.seat,hand:a.hand,revision:a.revision,activity:p.activity,travelId:p.travelId};};
+  // Remote humans are visible poses, never local NPC doubles. This also makes
+  // an accepted pair visible together when their HTTP/SSE connections differ.
+  const visibleActors=()=>{const actors=autonomy.all(),ids=new Set(actors.map(p=>p.id));for(const a of store.db.prepare('SELECT a.id,a.role FROM accounts a JOIN live_presence l ON l.account=a.id WHERE l.at>? AND a.role IS NOT NULL').all(Date.now()-60000)){if(ids.has(a.id))continue;const p=life.position(a.id);if(p)actors.push({id:a.id,role:a.role,moving:false,...p});}return actors;};
+  life.setSceneProvider(scene=>({version:1,actors:visibleActors().filter(p=>p.scene===scene).map(cleanPlayer),objects:world.snapshot(scene),npcs:visibleNpcs(npcRules.filter(rule=>rule.room===scene),visibleActors(),workstations).map(rule=>({id:rule.id,...guestPositions[rule.id],text:npcReactions.get(rule.id)?.expires>Date.now()?npcReactions.get(rule.id).text:undefined})).concat((()=>{const v=celine.snapshot(visibleActors());return v.scene===scene?[{...v,height:61.44}]:[];})())}),id=>{const p=visibleActors().find(p=>p.id===id);return p?cleanPlayer(p):null;});
+  const emit=(stream,type,data)=>{if(paused&&commitRequest){pendingEvents.push(()=>emit(stream,type,data));return;}if(stream.res.writableEnded||stream.res.destroyed)return;const payload=`event: ${type}\ndata: ${JSON.stringify(data)}\n\n`;if(stream.res.writableLength>256000){stream.res.destroy();return;}stream.res.write(payload);};
+  const transport=fn=>{if(paused)transportJobs.push(fn);else fn();};
   const roomFor=id=>players.get(id)?.scene||'hutong';
-  const snapshot=stream=>{if(!controls.has(stream.user))controls.set(stream.user,stream.client);else adoptStale(stream.user,stream.client);const user=store.publicAccount(store.byId(stream.user));return {self:user,controller:controls.get(stream.user)===stream.client,players:autonomy.all().filter(p=>p.scene===roomFor(stream.user)).map(p=>({...cleanPlayer(p),offline:autonomy.doubles.has(p.id)})),online:[...players.values()].filter(p=>!p.disconnectedAt).map(p=>({role:p.role,scene:p.scene})),roster:store.roster(),objects:world.snapshot(roomFor(stream.user)),progress:world.progress(stream.user),progressVersion:user.progressVersion,bag:life.bag(stream.user),collection:life.collection(stream.user),offers:life.offers(stream.user),recent:life.recent(stream.user),clock:Date.now(),leases:[...leases].map(([id,l])=>({id,role:l.role})),celine:celine.snapshot(autonomy.all()),npcEpoch:Math.floor(Date.now()/20000),npcReactions:[...npcReactions.values()].filter(r=>r.scene===roomFor(stream.user)&&r.expires>Date.now()),npcs:visibleNpcs(npcRules,autonomy.all(),workstations).map(rule=>rule.id)};};
+  const snapshot=stream=>{if(!controls.has(stream.user))controls.set(stream.user,stream.client);else adoptStale(stream.user,stream.client);const user=store.publicAccount(store.byId(stream.user));return {self:user,travel:life.travel(stream.user),controller:controls.get(stream.user)===stream.client,players:visibleActors().filter(p=>p.scene===roomFor(stream.user)).map(p=>({...cleanPlayer(p),offline:autonomy.doubles.has(p.id)})),online:visibleActors().filter(p=>!p.disconnectedAt&&!autonomy.doubles.has(p.id)).map(p=>({role:p.role,scene:p.scene})),roster:store.roster(),objects:world.snapshot(roomFor(stream.user)),progress:world.progress(stream.user),progressVersion:user.progressVersion,bag:life.bag(stream.user),collection:life.collection(stream.user),offers:life.offers(stream.user),recent:life.recent(stream.user),clock:Date.now(),leases:[...leases].map(([id,l])=>({id,role:l.role})),celine:celine.snapshot(visibleActors()),npcEpoch:Math.floor(Date.now()/20000),npcReactions:[...npcReactions.values()].filter(r=>r.scene===roomFor(stream.user)&&r.expires>Date.now()),npcs:visibleNpcs(npcRules,visibleActors(),workstations).map(rule=>rule.id)};};
   const release=id=>{for(const [key,l]of leases)if(l.account===id)leases.delete(key);};
   const publishMessage=message=>{for(const s of streams){const own=store.byId(s.user)?.role;if(message.recipient?own===message.sender||own===message.recipient:roomFor(s.user)===message.scene)emit(s,'message',message);}};
   const director=createDirector(store,life,autonomy,world,llm,{publish:publishMessage});autonomy.setDirector(director);
   const poseSnapshot=()=>{
-    const actors=autonomy.all(),clock=Date.now();
+    const actors=visibleActors(),clock=Date.now();
     return {players:actors.map(p=>({...cleanPlayer(p),offline:autonomy.doubles.has(p.id)})),
-      online:[...players.values()].filter(p=>!p.disconnectedAt).map(p=>({role:p.role,scene:p.scene})),
+      online:visibleActors().filter(p=>!p.disconnectedAt&&!autonomy.doubles.has(p.id)).map(p=>({role:p.role,scene:p.scene})),
       clock,leases:[...leases].map(([id,l])=>({id,role:l.role})),celine:celine.snapshot(actors),
       npcEpoch:Math.floor(clock/20000),npcReactions:[...npcReactions.values()].filter(r=>r.expires>clock),
       npcs:visibleNpcs(npcRules,actors,workstations).map(rule=>rule.id)};
   };
   const flush=()=>{
+    if(paused)return;
     if(dirty){
       dirty=false;poseDirty=false;lastFull=Date.now();
       // Several tabs of one account share personal state, but never its control flag.
@@ -83,7 +91,7 @@ export function createMvpServer({dbPath='data/mvp.sqlite',staticDir=resolve('dis
       poseDirty=false;if(!streams.size)return;
       const state=poseSnapshot();
       for(const s of streams){adoptStale(s.user,s.client);emit(s,'pose',{...state,
-        players:state.players.filter(p=>p.scene===roomFor(s.user)),controller:controls.get(s.user)===s.client});}
+        players:state.players.filter(p=>p.scene===roomFor(s.user)),travel:life.travel(s.user),controller:controls.get(s.user)===s.client});}
     }
   };
   const limited=(key,max,ms=60000)=>{const now=Date.now(),entry=rates.get(key);if(!entry||entry.until<now){rates.set(key,{n:1,until:now+ms});return;}if(++entry.n>max)fail(429,'操作太快，请稍后重试');};
@@ -94,8 +102,10 @@ export function createMvpServer({dbPath='data/mvp.sqlite',staticDir=resolve('dis
   const adoptStale=(id,client)=>{const current=controls.get(id);if(current&&current!==client&&controls.stale(id,25000)&&![...streams].some(s=>s.user===id&&s.client===current)&&[...streams].some(s=>s.user===id&&s.client===client)){controls.set(id,client);dirty=true;}};
   const checkControlOnly=(user,client)=>{if(typeof client!=='string'||client.length>80)fail(409,'角色在另一个窗口操作，请点击接管');adoptStale(user.id,client);const current=controls.get(user.id);markLive(user.id);if(!current){controls.set(user.id,client);return;}if(current!==client)fail(409,'角色在另一个窗口操作，请点击接管');controls.touch(user.id,client);};
   const startPlayer=user=>{if(!user.role)return;markLive(user.id);if(players.has(user.id))return;const homes={suki:[288,207],sid:[192,207],jilly:[192,182],laura:[384,207],kay:[480,207],franco:[480,182],cora:[288,182],amber:[384,182]};const [x,y]=homes[user.role];const previous=autonomy.reclaim(user.id)||life.position(user.id);const p={id:user.id,role:user.role,scene:'hutong',x,y,facing:0,moving:false,seat:null,activity:'walk',...previous,at:Date.now()};if(p.seat){const seat=interactions[p.scene].seats[p.seat];if(seat)[p.x,p.y]=seat.approach;p.seat=null;}const oldActivity=interactions[p.scene].activities[p.activity]?.find(a=>Math.hypot(p.x-a.at[0],p.y-a.at[1])<8);if(oldActivity)[p.x,p.y]=oldActivity.approach;p.activity='walk';p.moving=false;p.fresh=true;players.set(user.id,p);dirty=true;};
-  const server=createServer(async(req,res)=>{
+  const reconcileTravel=()=>{for(const p of autonomy.all()){const t=life.travel(p.id);if(t&&p.travelId!==t.offer){release(p.id);director.cancelFor(p.id);Object.assign(p,t.ack?(life.position(p.id)??t.state):t.state,{task:null,path:[],next:Date.now()+30000,at:Date.now(),fresh:false});dirty=true;}}};
+  const handle=async(req,res)=>{
     try{
+      reconcileTravel();
       req.url=stripBase(req.url||'/');const url=new URL(req.url,'http://localhost'),path=url.pathname;
       if(path.startsWith('/api/')){
         // Vite proxy and production must preserve the browser-facing Host header.
@@ -125,6 +135,21 @@ export function createMvpServer({dbPath='data/mvp.sqlite',staticDir=resolve('dis
           setSession(res,result.token);json(res,200,{user:result.user,roster:store.roster()});return;
         }
         if(!user)fail(401,'请先登录');
+        if(path==='/api/albums'||path==='/api/album-photo'){
+          if(!user.role)fail(409,'请先领取角色');
+          if(req.method==='GET'){
+            if(path==='/api/albums'){json(res,200,album.list(url.searchParams.get('scene'),user));return;}
+            const image=album.image(url.searchParams.get('id'),user);
+            res.writeHead(200,{'Content-Type':'image/jpeg','Content-Length':image.length,'Cache-Control':'private, no-store','X-Content-Type-Options':'nosniff','Cross-Origin-Resource-Policy':'same-origin','Content-Security-Policy':"default-src 'none'"});res.end(image);return;
+          }
+          if(req.method!=='POST')fail(405,'请使用 GET 或 POST');
+          limited('album:'+user.id,40);
+          const input=await body(req,path==='/api/albums'?1_060_000:16384);
+          startPlayer(user);
+          const result=path==='/api/albums'?{photo:album.upload(input,user,roomFor(user.id))}:album.update(input,user);
+          try{if(!commitRequest)await albumCommit();}catch(e){console.error('album persistence failed: '+e.message);fail(503,'照片尚未完成保存，请稍后重试');}
+          json(res,path==='/api/albums'?201:200,result);return;
+        }
         if(path==='/api/events'&&req.method==='GET'){
           const client=url.searchParams.get('client');if(!client||client.length>80)fail(400,'连接编号无效');
           if(streams.size>=128||[...streams].filter(s=>s.user===user.id).length>=4)fail(429,'连接数已满');
@@ -133,7 +158,7 @@ export function createMvpServer({dbPath='data/mvp.sqlite',staticDir=resolve('dis
           // A refreshed tab gets a new client id; take over from a controller that has no stream here and has gone quiet (touch() refreshes every 10s while active).
           if(!controls.has(user.id)||(!([...streams].some(s=>s.user===user.id&&s.client===controls.get(user.id)))&&controls.stale(user.id,25000)))controls.set(user.id,client);
           emit(stream,'world',snapshot(stream));dirty=true;
-          req.on('close',()=>{if(closed)return;streams.delete(stream);if(![...streams].some(s=>s.user===user.id)){const p=players.get(user.id);if(p){p.disconnectedAt=Date.now();life.savePosition(p);}controls.release(user.id,client);}else if(controls.get(user.id)===client&&!([...streams].some(s=>s.user===user.id&&s.client===client))){/* Another tab of the same user is still open: hand control to it so the user stays the driver (never "other window", never autonomy). */controls.set(user.id,[...streams].find(s=>s.user===user.id).client);}dirty=true;});return;
+          req.on('close',()=>transport(()=>{if(closed)return;streams.delete(stream);if(![...streams].some(s=>s.user===user.id)){const p=players.get(user.id);if(p){p.disconnectedAt=Date.now();life.savePosition(p);}controls.release(user.id,client);}else if(controls.get(user.id)===client&&!([...streams].some(s=>s.user===user.id&&s.client===client))){/* Another tab of the same user is still open: hand control to it so the user stays the driver (never "other window", never autonomy). */controls.set(user.id,[...streams].find(s=>s.user===user.id).client);}dirty=true;}));return;
         }
         if(path==='/api/journal'&&req.method==='GET'){const before=Number(url.searchParams.get('before')||Number.MAX_SAFE_INTEGER);if(!Number.isSafeInteger(before)||before<1)fail(400,'经历页码无效');json(res,200,{entries:life.journal(user.id,before)});return;}
         if(path==='/api/life'&&req.method==='GET'){json(res,200,{bag:life.bag(user.id),collection:life.collection(user.id),offers:life.offers(user.id)});return;}
@@ -153,9 +178,9 @@ export function createMvpServer({dbPath='data/mvp.sqlite',staticDir=resolve('dis
         if(path==='/api/control'){if(typeof input.client!=='string'||input.client.length>80)fail(400,'连接编号无效');startPlayer(user);if(controls.get(user.id)!==input.client){const p=players.get(user.id),geometry=interactions[p.scene],seat=geometry.seats[p.seat],activity=geometry.activities[p.activity]?.find(a=>Math.hypot(p.x-a.at[0],p.y-a.at[1])<8),point=seat?.approach??activity?.approach;if(point){p.x=point[0];p.y=point[1];}p.seat=null;p.activity='walk';release(user.id);}controls.set(user.id,input.client);dirty=true;json(res,200,{ok:true,player:cleanPlayer(players.get(user.id))});return;}
         if(path==='/api/transition'){
           checkControl(user,input.client);const p=players.get(user.id),from=rooms[p.scene],to=rooms[input.target];
-          if(!to||input.target===p.scene)fail(400,'地点无效');
+          if(typeof input.target!=='string'||!Object.hasOwn(rooms,input.target)||input.target===p.scene)fail(400,'地点无效');
           if(p.seat||[...leases.values()].some(l=>l.account===user.id)||!['walk',undefined].includes(p.activity)||Math.hypot(p.x-from.exit[0],p.y-from.exit[1])>30)fail(409,'先结束互动，走到出口');
-          release(user.id);Object.assign(p,{scene:input.target,x:to.exit[0],y:to.exit[1],seat:null,moving:false,facing:0,at:Date.now()});dirty=true;
+          release(user.id);Object.assign(p,{scene:input.target,x:to.exit[0],y:to.exit[1],seat:null,moving:false,facing:0,at:Date.now()});life.savePosition(p);dirty=true;
           json(res,200,{player:cleanPlayer(p),self:store.publicAccount(store.byId(user.id)),objects:world.snapshot(p.scene)});return;
         }
         if(path==='/api/inventory'){checkControl(user,input.client);limited('inventory:'+user.id,30,10000);const result=life.inventory(user.id,input,roomFor(user.id));dirty=true;json(res,200,result);return;}
@@ -163,23 +188,23 @@ export function createMvpServer({dbPath='data/mvp.sqlite',staticDir=resolve('dis
         if(path==='/api/npc'){
           checkControl(user,input.client);limited('npc:'+user.id,1,3000);const rule=npcRules.find(n=>n.id===input.npc),p=players.get(user.id);
           if(!rule)fail(400,'彩蛋不存在');if(rule.owner!==user.role)fail(403,'只有对应的人能与这个彩蛋互动');
-          const visible=npcVisible(rule,autonomy.all(),workstations);
+          const visible=npcVisible(rule,visibleActors(),workstations);
           const point=guestPositions[rule.id];if(p.scene!==rule.room||!visible||Math.hypot(p.x-point.x,p.y-point.y)>(rule.id==='ani'?75:42))fail(409,'走近自己的彩蛋再互动');
           const feedback=npcFeedback[rule.id],started=Date.now();
           const reaction={id:rule.id+':'+randomUUID(),npc:rule.id,owner:rule.owner,scene:rule.room,x:point.x,y:point.y,text:feedback.text,started,expires:started+feedback.duration};npcReactions.set(rule.id,reaction);
           life.recordGroup([user.id],'easter',`${name(user.role)} 与${({ani:'Ani',lulu:'噜噜',tutu:'图图',buzz:'巴斯光年',zhu:'朱志鑫',ferret:'富贵貂'})[rule.id]}打了个招呼。${feedback.text}`,rule.room,started,reaction.id);dirty=true;json(res,200,{ok:true,reaction,clock:Date.now()});return;
         }
-        if(path==='/api/offer'){checkControl(user,input.client);const result=life.respond(user.id,input.id,input.answer);dirty=true;json(res,200,{offer:result});return;}
-        if(path==='/api/invite'){checkControl(user,input.client);limited('invite:'+user.id,10,10000);const b=store.byRole(input.peer);if(!b)fail(400,'对方尚未领取角色');const result=life.send(user.id,input.peer,'meet',input.requestId,roomFor(user.id),undefined,input.place||'rest');dirty=true;json(res,200,{offer:result});return;}
+        if(path==='/api/offer'){checkControl(user,input.client);const result=life.respond(user.id,input.id,input.answer);reconcileTravel();dirty=true;json(res,200,{offer:result,travel:life.travel(user.id),player:cleanPlayer(players.get(user.id))});return;}
+        if(path==='/api/invite'){checkControl(user,input.client);limited('invite:'+user.id,10,10000);const b=store.byRole(input.peer);if(!b)fail(400,'对方尚未领取角色');const result=life.send(user.id,input.peer,'meet',input.requestId,roomFor(user.id),undefined,input.place??'rest');dirty=true;json(res,200,{offer:result});return;}
         if(path==='/api/object'){
           if(['hutong:celine','hawaii:celine'].includes(input.object))fail(403,'Celine 会自己活动');
           checkControl(user,input.client);limited('object:'+user.id,60,10000);const result=world.interact(user,players.get(user.id),input,players);dirty=true;json(res,200,result);return;
         }
         if(path==='/api/lease'){
           checkControl(user,input.client);const p=players.get(user.id),id=p.scene+':'+input.device;
-          const allowed={arcade:['mines','spider','claw','basketball','hockey'],gym:['run-0','run-1','run-2','curl'],rehearsal:['piano'],dance:['music']};
+          const allowed={arcade:['mines','spider','claw','basketball','hockey'],gym:['run-0','run-1','run-2','curl'],rehearsal:['piano'],dance:['music'],ktv:['mic']};
           if(!allowed[p.scene]?.includes(input.device))fail(400,'设备无效');
-          if(input.release){if(leases.get(id)?.account===user.id)leases.delete(id);}else{const at=interactions[p.scene].devices?.[input.device];if(!at)fail(400,'设备位置无效');if(Math.hypot(p.x-at[0],p.y-at[1])>40)fail(409,'请走到设备附近');if(store.byId(user.id).hand&&['gym','rehearsal'].includes(p.scene))fail(409,'先放下手中物品');const old=leases.get(id);if(old&&old.account!==user.id)fail(409,'设备有人使用');leases.set(id,{account:user.id,role:user.role,at:Date.now()});}dirty=true;json(res,200,{ok:true});return;
+          if(input.release){if(leases.get(id)?.account===user.id)leases.delete(id);}else{const at=interactions[p.scene].devices?.[input.device];if(!at)fail(400,'设备位置无效');if(Math.hypot(p.x-at[0],p.y-at[1])>40)fail(409,'请走到设备附近');if(store.byId(user.id).hand&&['gym','rehearsal','ktv'].includes(p.scene))fail(409,'先放下手中物品');const old=leases.get(id);if(old&&old.account!==user.id)fail(409,'设备有人使用');leases.set(id,{account:user.id,role:user.role,at:Date.now()});}dirty=true;json(res,200,{ok:true});return;
         }
         if(path==='/api/progress'){
           if(!['bead','score','draft'].includes(input.kind)||typeof input.key!=='string'||input.key.length>80)fail(400,'记录无效');
@@ -196,19 +221,21 @@ export function createMvpServer({dbPath='data/mvp.sqlite',staticDir=resolve('dis
           if(!scenes.includes(input.scene)||!Number.isFinite(input.x)||!Number.isFinite(input.y)||input.x<20||input.x>620||input.y<90||input.y>355||!Number.isInteger(input.facing)||input.facing<0||input.facing>3)fail(400,'位置无效');
           if(input.seat!==null&&(typeof input.seat!=='string'||input.seat.length>50))fail(400,'座位无效');
           const p=players.get(user.id),now=Date.now();
+          const travel=life.travel(user.id);if(travel&&input.travelId!==travel.offer)fail(409,'邀请已切换场景，正在同步');
           // A player record created on this (serverless) instance from a stale DB pose must adopt the client's live pose.
-          const fresh=!!p.fresh&&input.seat===null&&walkable(input.scene,input.x,input.y);if(fresh){p.scene=input.scene;p.x=input.x;p.y=input.y;p.at=now;}
+          const fresh=!!p.fresh&&!travel&&input.seat===null&&walkable(input.scene,input.x,input.y);if(fresh){p.scene=input.scene;p.x=input.x;p.y=input.y;p.at=now;}
           if(input.scene!==p.scene)fail(409,'请从出口切换场景');
           const distance=Math.hypot(p.x-input.x,p.y-input.y),elapsed=Math.min(3000,now-p.at);
           const geometry=interactions[p.scene],near=(point,x,y,r)=>Math.hypot(x-point[0],y-point[1])<=r;
           let anchored=false;
-          if(input.seat!==null){const anchor=geometry.seats[input.seat];if(!anchor||!near(anchor.at,input.x,input.y,6))fail(409,'请使用实际座位');if(input.seat!==p.seat&&!near(anchor.approach,p.x,p.y,38))fail(409,'请走到椅子附近');if(p.scene==='bathroom'&&!world.snapshot('bathroom').find(o=>o.id==='bathroom:door-'+input.seat)?.open)fail(409,'先打开隔间门');anchored=true;}
+          if(input.seat!==null){const anchor=Object.hasOwn(geometry.seats,input.seat)?geometry.seats[input.seat]:null;if(!anchor||!near(anchor.at,input.x,input.y,6))fail(409,'请使用实际座位');if(input.seat!==p.seat&&!near(anchor.approach,p.x,p.y,38))fail(409,'请走到椅子附近');if(p.scene==='bathroom'&&!world.snapshot('bathroom').find(o=>o.id==='bathroom:door-'+input.seat)?.open)fail(409,'先打开隔间门');anchored=true;}
           else if(p.seat){const anchor=geometry.seats[p.seat];anchored=!!anchor&&near(anchor.approach,input.x,input.y,40);}
           const activity=['hutong','hawaii'].includes(p.scene)?(input.seat?(workstations[p.scene]?.[p.role]===input.seat?'working':'sit'):'walk'):typeof input.activity==='string'?input.activity:'walk';
           if(p.activity!==activity&&geometry.activities[p.activity])anchored||=geometry.activities[p.activity].some(a=>near(a.at,p.x,p.y,6)&&near(a.approach,input.x,input.y,40));
           if(geometry.activities[activity]){const anchor=geometry.activities[activity].find(a=>near(a.at,input.x,input.y,6)&&((p.activity===activity&&near(a.at,p.x,p.y,6))||near(a.approach,p.x,p.y,40)));if(!anchor||anchor.device&&leases.get(p.scene+':'+anchor.device)?.account!==user.id)fail(409,'请先使用附近的设备');anchored=true;}
           if(!anchored&&distance>180*elapsed/1000+14)fail(409,'移动过快，请重试');
-          if(input.scene==='hawaii'&&input.seat==='HL3'){const visitor=celine.snapshot(autonomy.all());if(visitor.scene==='hawaii'&&visitor.seat==='HL3')fail(409,'Celine 正坐在这张椅子上');}
+          if(!anchored&&!walkable(p.scene,input.x,input.y,p.scene==='bathroom'?{doors:world.snapshot('bathroom').filter(o=>o.id.startsWith('bathroom:door-')).map(o=>!!o.open)}:undefined))fail(409,'请走在可通行区域');
+          if(input.scene==='hawaii'&&input.seat==='HL3'){const visitor=celine.snapshot(visibleActors());if(visitor.scene==='hawaii'&&visitor.seat==='HL3')fail(409,'Celine 正坐在这张椅子上');}
           if(input.seat&&[...players.values()].some(other=>other.id!==user.id&&other.scene===input.scene&&other.seat===input.seat))fail(409,'这个座位已经有人了');
           if(input.hand!==null&&!items.includes(input.hand)&&!(typeof input.hand==='string'&&(plushNames.some(n=>input.hand==='娃娃·'+n)||rewards.art(input.hand))))fail(400,'物品无效');
           const next=store.publicAccount(store.byId(user.id));
@@ -220,14 +247,14 @@ export function createMvpServer({dbPath='data/mvp.sqlite',staticDir=resolve('dis
             else if(activity==='sit')life.record(user.id,'rest','坐在椅子上休息。',p.scene,Date.now(),{routine:true,key:`rest:sit:${p.scene}`});
             else if(previousActivity==='working')life.record(user.id,'work','离开工位，结束了这段办公。',p.scene,Date.now(),{routine:true,key:`work:end:${p.scene}`});
           }
-          poseDirty=true;json(res,200,{self:next,player:cleanPlayer(p)});return;
+          if(travel){if(!travel.ack)life.savePosition(p);life.ackTravel(user.id,travel.offer);life.finishMeetings(autonomy.all());}poseDirty=true;json(res,200,{self:next,player:cleanPlayer(p)});return;
         }
         if(path==='/api/chat'){
           limited('chat:'+user.id,12,10000);const text=typeof input.text==='string'?input.text.trim():'';if(!text||text.length>200)fail(400,'消息需为 1–200 个字');
           const peer=input.peer||null;if(peer&&(!roles.includes(peer)||peer===user.role))fail(400,'私聊对象无效');
           const existed=store.db.prepare('SELECT seq FROM messages WHERE id=?').get(user.role+':'+input.requestId);const scene=roomFor(user.id),message=store.message(user.role,peer,scene,text,input.requestId);publishMessage(message);
           if(peer&&!live(peer)&&!existed){const owner=store.byRole(peer),profile=owner?JSON.parse(owner.profile):{},thread=user.role+':'+peer;if(owner&&(llm.configured?(!profile.confirmed||profile.autoReply):(profile.confirmed&&profile.autoReply))&&Date.now()-(replyCooldown.get(thread)||0)>20000){replyCooldown.set(thread,Date.now());
-            void llm.reply(peer,text,user.role,scene).then(reply=>{if(closed||live(peer)||!reply)return;publishMessage(store.message(peer,user.role,scene,reply,'reply:'+user.role+':'+input.requestId,true));}).catch(()=>{});
+            void llm.reply(peer,text,user.role,scene).then(reply=>{if(closed||paused||live(peer)||!reply)return;publishMessage(store.message(peer,user.role,scene,reply,'reply:'+user.role+':'+input.requestId,true));}).catch(()=>{});
           }}json(res,200,{message});return;
         }
         if(path==='/api/interact'){
@@ -253,7 +280,10 @@ export function createMvpServer({dbPath='data/mvp.sqlite',staticDir=resolve('dis
       const mime={'.html':'text/html; charset=utf-8','.js':'text/javascript','.css':'text/css','.png':'image/png','.jpg':'image/jpeg','.json':'application/json'};
       res.writeHead(200,{'Content-Type':mime[extname(file)]||'application/octet-stream','X-Content-Type-Options':'nosniff'});res.end(content);
     }catch(e){if(!res.headersSent)json(res,e.status||500,{error:e.status?e.message:'服务暂时不可用'});else res.end();if(!e.status)console.error(e.message);}
-  });
-  const timer=setInterval(()=>{if(autonomy.tick())poseDirty=true;const v=celine.snapshot(autonomy.all()),signature=JSON.stringify([v.scene,v.mode,v.seat,Math.round(v.x),Math.round(v.y),v.question]);if(signature!==visitorSignature){visitorSignature=signature;poseDirty=true;}if(Date.now()-lastFull>=1000)dirty=true;flush();},100),heartbeat=setInterval(()=>{for(const s of streams)markLive(s.user);for(const [key,value] of rates)if(value.until<Date.now())rates.delete(key);for(const s of [...streams]){if(!store.session(s.token)){emit(s,'logout',{});s.res.end();streams.delete(s);if(![...streams].some(x=>x.user===s.user)){const p=players.get(s.user);if(p){p.disconnectedAt=Date.now();life.savePosition(p);}controls.delete(s.user);}dirty=true;}else s.res.write(': heartbeat\n\n');}for(const [id,p]of players){if(p.disconnectedAt&&Date.now()-p.disconnectedAt>45000){/* The user may be live on another instance: never clobber their newer pose/control. */if(!seenLive(id,45000))life.savePosition(p);players.delete(id);release(id);if(controls.stale(id))controls.delete(id);dirty=true;}else if(!p.disconnectedAt&&Date.now()-p.at>45000){p.seat=null;release(id);dirty=true;}}},15000);timer.unref();heartbeat.unref();
+  };
+  const maps=[players,autonomy.doubles,leases,liveMarks,replyCooldown];
+  const request=durableRequests({db:store.db,handle,before:beforeRequest,commit:commitRequest,suspend:value=>{paused=value;if(!value)for(const job of transportJobs.splice(0)){try{job();}catch(e){console.error('stream cleanup failed: '+e.message);}}},capture:()=>maps.map(m=>structuredClone([...m])),restore:saved=>{maps.forEach((m,i)=>{m.clear();for(const [k,v]of saved[i])m.set(k,v);});for(const a of store.db.prepare('SELECT id FROM accounts').all())world.invalidate(a.id);pendingEvents=[];dirty=true;},publish:()=>{paused=false;const events=pendingEvents;pendingEvents=[];for(const event of events)event();}});
+  const server=createServer(request);
+  const timer=setInterval(()=>{if(paused)return;try{reconcileTravel();if(autonomy.tick())poseDirty=true;const v=celine.snapshot(visibleActors()),signature=JSON.stringify([v.scene,v.mode,v.seat,Math.round(v.x),Math.round(v.y),v.question]);if(signature!==visitorSignature){visitorSignature=signature;poseDirty=true;}if(Date.now()-lastFull>=1000)dirty=true;flush();}catch(e){console.error('world tick failed: '+e.message);}},100),heartbeat=setInterval(()=>{if(paused)return;try{for(const s of streams)markLive(s.user);for(const [key,value] of rates)if(value.until<Date.now())rates.delete(key);for(const s of [...streams]){if(!store.session(s.token)){emit(s,'logout',{});s.res.end();streams.delete(s);if(![...streams].some(x=>x.user===s.user)){const p=players.get(s.user);if(p){p.disconnectedAt=Date.now();life.savePosition(p);}controls.delete(s.user);}dirty=true;}else s.res.write(': heartbeat\n\n');}for(const [id,p]of players){if(p.disconnectedAt&&Date.now()-p.disconnectedAt>45000){/* The user may be live on another instance: never clobber their newer pose/control. */if(!seenLive(id,45000))life.savePosition(p);players.delete(id);release(id);if(controls.stale(id))controls.delete(id);dirty=true;}else if(!p.disconnectedAt&&Date.now()-p.at>45000){p.seat=null;release(id);dirty=true;}}}catch(e){console.error('heartbeat failed: '+e.message);}},15000);timer.unref();heartbeat.unref();
   return {server,store,life,autonomy,director,llm,players,streams,close(){if(closed)return;closed=true;director.close();llm.close();autonomy.saveAll();clearInterval(timer);clearInterval(heartbeat);for(const s of streams)s.res.end();streams.clear();server.close();store.close();}};
 }

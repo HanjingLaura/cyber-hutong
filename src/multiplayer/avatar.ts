@@ -18,13 +18,15 @@ export class TeamAvatar{
   this.body=scene.add.image(0,0,'__WHITE').setVisible(false);this.upper=scene.add.image(0,0,'__WHITE').setVisible(false);this.prop=scene.add.image(0,0,'__WHITE').setVisible(false);this.arm=scene.add.image(0,0,'__WHITE').setVisible(false);
   this.legs=new SideWalkLegs(scene);this.held=new HeldItemView(scene);
   this.label=scene.add.text(0,0,role[0].toUpperCase()+role.slice(1),{fontSize:'9px',fontFamily:'Consolas',color:'#f2ecd8',stroke:'#202723',strokeThickness:2}).setOrigin(.5,1).setVisible(false);
-  const sources=[...new Set([...this.data.frames,...this.data.carryFrames,...this.data.officeFrames].map(f=>f.source))];
+  const poses=[this.data.frames,this.data.carryFrames,this.data.officeFrames,this.data.podiumFrames??[]];
+  const sources=[...new Set(poses.flat().map(f=>f.source))];
   Promise.all([gachaReady(),Promise.all(sources.map(async id=>[id,await characterImage(id)] as const))]).then(([,images])=>{
    if(this.dead||!scene.sys.game)return;registerGachaTextures(scene);
    for(const [id,image]of images){const key='team-v3-'+id;if(!scene.textures.exists(key))scene.textures.addImage(key,image);}
-   [this.data.frames,this.data.carryFrames,this.data.officeFrames].forEach((frames,part)=>frames.forEach((frame,index)=>{
+   poses.forEach((frames,part)=>frames.forEach((frame,index)=>{
     const texture=scene.textures.get('team-v3-'+frame.source),[x,y,w,h]=frame.rect,name='pose-'+part+'-'+index;
     if(!texture.has(name)){texture.add(name,0,x,y,w,h);texture.add('upper-'+part+'-'+index,0,x,y,w,Math.round(h*.72));
+     if(this.data.officeAction==='call'&&part===2)texture.add('call-upper-'+index,0,x,y,w,Math.round(h*.58));
      if(frame.grip){const [gx,gy]=frame.grip,ax=Math.max(0,gx-12),ay=Math.max(0,gy-12);texture.add('arm-'+part+'-'+index,0,x+ax,y+ay,Math.min(16,w-ax),Math.min(18,h-ay));}
     }
    }));this.ready=true;
@@ -40,9 +42,13 @@ export class TeamAvatar{
   if(previewPhase!==undefined)this.time=previewPhase*125;
   const data=this.data,seated=!!player.seat,holding=!!player.hand,front=direction===0,back=direction===2,phase=previewPhase??Math.floor(this.time/125)%4;
   const working=office&&seated&&(player.scene==='review'||canWorkAt(player.role,player.scene,player.seat));
+  // A call uses its own complete phone pose; inventory stays in the player's hand state.
+  const calling=working&&data.officeAction==='call';
+  const saxophone=player.scene==='rehearsal'&&mode==='podium'&&!!data.podiumFrames?.length;
   let part=0,index=front?0:back?2:1;
-  if(holding){part=1;index=seated?(back?5:front?4:25):moving?(front?data.carryFrontLoop[phase%4]:back?data.carryBackLoop[phase%4]:data.carryRightLoop[(previewPhase??Math.floor(performance.now()/(data.carrySideFrameMs??125)))%data.carryRightLoop.length]):(front?0:back?2:24);}
-  else if(working){part=2;index=(back?2:0)+(previewPhase===undefined?Math.floor(performance.now()/250):previewPhase)%2;}
+  if(saxophone){part=3;index=(previewPhase??Math.floor(performance.now()/(data.podiumFrameMs??320)))%data.podiumFrames!.length;}
+  else if(holding&&!calling){part=1;index=seated?(back?5:front?4:25):moving?(front?data.carryFrontLoop[phase%4]:back?data.carryBackLoop[phase%4]:data.carryRightLoop[(previewPhase??Math.floor(performance.now()/(data.carrySideFrameMs??125)))%data.carryRightLoop.length]):(front?0:back?2:24);}
+  else if(working){part=2;index=(back?2:0)+(previewPhase===undefined?Math.floor(performance.now()/(data.officeFrameMs??250)):previewPhase)%2;}
   else if(mode==='piano'){part=0;index=6+(previewPhase===undefined?Math.floor(performance.now()/250):previewPhase)%2;}
   else if(seated)index=back?5:front?4:39;
   else if(mode==='run'){
@@ -56,7 +62,7 @@ export class TeamAvatar{
   else if(mode==='dance'||mode==='practice')index=(back?54:46)+(previewPhase===undefined?Math.floor(performance.now()/400):previewPhase)%2;
   else if(mode==='curl')index=30+(previewPhase===undefined?Math.floor(performance.now()/650):previewPhase)%2;
   else if(moving)index=front?8+phase%4:back?16+phase%4:data.sideWalkLoop?data.sideWalkLoop[(previewPhase??Math.floor(this.time/(data.sideWalkFrameMs??250)))%data.sideWalkLoop.length]:24+(data.approvedLegacy?sideUpperFrame(this.time):Math.floor(this.time/125)%6);
-  const frame=(part===2?data.officeFrames:part?data.carryFrames:data.frames)[index],key='team-v3-'+frame.source,[sx,sy,w,h]=frame.rect;
+  const frame=(part===3?data.podiumFrames!:part===2?data.officeFrames:part?data.carryFrames:data.frames)[index],key='team-v3-'+frame.source,[sx,sy,w,h]=frame.rect;
   // Standing hold must share one on-screen height. Side-carry v12 is head-normalized
   // (taller crop than referenceHeight); front/back carry uses the atlas max. Fill the
   // crop to the standing height so left/right hold matches hold-walk and idle hold.
@@ -65,13 +71,15 @@ export class TeamAvatar{
   const scale=height/(fillCarry?h:frame.referenceHeight),flip=direction===3,pivot=flip?1-frame.pivotX:frame.pivotX;
   if(seated&&seatSurface!==undefined)y=seatSurface+(h-frame.seat[1])*scale;
   // Move the front-facing seated worker toward the desk; the monitor covers part of the hands.
-  if(seated&&office&&!holding&&front)y-=height*.03+1;
+  if(seated&&office&&(!holding||calling)&&front)y-=height*.03+1;
   if(!fillCarry)y+=height*(frame.offsetYRatio??0);
   this.hide();this.frameName=frame.name;
   this.body.setTexture(key,'pose-'+part+'-'+index).setOrigin(pivot,1).setScale(scale*(frame.scaleXRatio??1),scale).setFlipX(flip).setPosition(Math.round(x),Math.round(y)).setDepth(depth).setVisible(true);
   if(seated&&office){
    if(back)this.body.setTexture(key,'upper-'+part+'-'+index).setOrigin(pivot,h/Math.round(h*.72));
    else this.upper.setTexture(key,'upper-'+part+'-'+index).setOrigin(pivot,0).setScale(scale).setFlipX(flip).setPosition(Math.round(x),Math.round(y-h*scale)).setDepth(depth+3).setVisible(true);
+   // Keep the raised phone and head visible above the chair back in the reverse view.
+   if(back&&calling)this.upper.setTexture(key,'call-upper-'+index).setOrigin(pivot,0).setScale(scale).setFlipX(flip).setPosition(Math.round(x),Math.round(y-h*scale)).setDepth(depth+3).setVisible(true);
   }
   const nativeFrame:SpriteFrame={name:'pose-'+part+'-'+index,x:sx,y:sy,width:w,height:h,referenceHeight:fillCarry?h:frame.referenceHeight,pivotX:frame.pivotX};
   if(data.approvedLegacy&&!holding&&moving&&!front&&!back&&!this.masked)this.legs.draw(this.body,nativeFrame,height,direction,this.time);

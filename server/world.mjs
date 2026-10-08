@@ -1,5 +1,6 @@
 import {randomInt} from 'node:crypto';
 import {fail} from './store.mjs';
+import {changeKtvPlayer,emptyKtvPlayer,ktvLights,ktvTargets} from '../shared/ktv.mjs';
 
 export const supplies={
  'rest:vending':{at:[119,150],items:['可乐','气泡水','薯片','面包','火腿肠','辣条']},
@@ -11,6 +12,8 @@ export const supplies={
  'gym:water':{at:[46,307],items:['水']},
 };
 export const objects={
+ 'ktv:player':{at:ktvTargets.terminal,...emptyKtvPlayer()},
+ 'ktv:lights':{at:ktvTargets.lights,mode:0},
  'rest:fridge':{at:[180,150],slots:['面包','马卡龙','蛋糕',null,null,null,null,null,null]},
  ...Object.fromEntries([200,360,520].map((x,i)=>[`rest:table-${i}`,{at:[x,245],slots:Array(6).fill(null)}])),
  ...Object.fromEntries([213,439].map((x,i)=>[`noodle:table-${i}`,{at:[x,285],slots:Array(6).fill(null)}])),
@@ -59,6 +62,10 @@ export function createWorld(store,life){
     if(!o||typeof o.open!=='boolean')fail(400,'不能开关');
     if(input.object.startsWith('bathroom:')){const n=input.object.split('-')[1];if([...players.values()].some(other=>other.id!==user.id&&other.scene==='bathroom'&&other.seat===n))fail(409,'隔间有人使用');}
     o.open=!o.open;save(o);
+   }else if(input.object==='ktv:player'&&['queue','skip','play'].includes(input.action)){
+    try{Object.assign(o,changeKtvPlayer(o,input.action,input.song));}catch(error){fail(400,error.message);}save(o);
+   }else if(input.object==='ktv:lights'&&input.action==='light'){
+    o.mode=(o.mode+1)%ktvLights.length;save(o);
    }else if(input.action==='draw'){
     if(!o?.stock||!Number.isInteger(slot)||slot<0||slot>=18||!o.stock[slot])fail(409,'这盒已被取走');
     o.stock[slot]=false;save(o);const theme=input.object.split(':')[1],pool={story:[0,1,2],classic:[6,7,8,9],bikini:[3,4,5],all:[0,1,2,3,4,5,6,7,8,9]}[theme];

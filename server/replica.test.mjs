@@ -1,12 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, rmSync } from 'node:fs';
+import { mkdtempSync, rmSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { createClient } from '@libsql/client';
 import { createMvpServer } from './app.mjs';
 import { prepareReplica } from './replica.mjs';
 import { DatabaseSync } from 'node:sqlite';
+import { createAlbum } from './album.mjs';
 
 const quiet = { warn() {}, error() {} };
 const deferred = () => { let resolve; const promise = new Promise(r => { resolve = r; }); return { promise, resolve }; };
@@ -84,7 +85,7 @@ async function smallReplica(t, intercept = {}) {
   };
   const replica = await prepareReplica(join(dir, 'local.db'), wrapper, { flushEveryMs: 0, log: quiet });
   const db = new DatabaseSync(join(dir, 'local.db'));
-  db.exec('CREATE TABLE sample(id TEXT PRIMARY KEY, value TEXT NOT NULL)');
+  db.exec('CREATE TABLE sample(id TEXT PRIMARY KEY, value TEXT NOT NULL); CREATE TABLE sample_chunks(photo TEXT NOT NULL, part INTEGER NOT NULL, data BLOB NOT NULL, PRIMARY KEY(photo,part));');
   replica.attach(db);
   await replica.flush();
   t.after(async () => { await replica.close(); db.close(); client.close(); rmSync(dir, { recursive: true, force: true }); });
@@ -155,9 +156,13 @@ test('a pending local row does not delay unrelated remote updates',async t=>{
   assert.equal(await f.replica.pull(),1);
   assert.equal(f.db.prepare("SELECT value FROM sample WHERE id='item'").get().value,'local-pending');
   assert.equal(f.db.prepare("SELECT value FROM sample WHERE id='other'").get().value,'new-message');
+  await assert.rejects(f.replica.flush(),e=>e.status===409);
+  await f.replica.pull({reconcilePending:true});
+  assert.equal(f.db.prepare("SELECT value FROM sample WHERE id='item'").get().value,'older-remote');
+  f.db.prepare("UPDATE sample SET value='retried' WHERE id='item'").run();
   await f.replica.flush();
   const saved=(await f.client.execute("SELECT data,ver FROM hutong_online_rows WHERE pk='[\"item\"]'")).rows[0];
-  assert.equal(JSON.parse(saved.data).value,'local-pending');assert.ok(saved.ver>2);
+  assert.equal(JSON.parse(saved.data).value,'retried');assert.ok(saved.ver>2);
 });
 
 test('continuous writes cannot starve a queued remote read', async t => {
@@ -209,4 +214,103 @@ test('a flush arriving during completion starts a new flight and acknowledges it
   assert.equal(fixture.db.prepare('SELECT COUNT(*) AS n FROM temp._hto_dirty').get().n,0);
   const saved=(await fixture.client.execute("SELECT data FROM hutong_online_rows WHERE tbl='sample'")).rows[0];
   assert.equal(JSON.parse(saved.data).value,'newer');
+});
+
+test('authoritative album sync discards a failed public ACL after another instance revokes access', async t => {
+  const dir = mkdtempSync(join(tmpdir(), 'hutong-replica-acl-')), remote = createClient({url:'file::memory:'});
+  let offline = false;
+  const wrapper = { execute: (...args) => remote.execute(...args), batch: (...args) => offline ? Promise.reject(new Error('network offline')) : remote.batch(...args) };
+  const a = await instance(dir, 'a', wrapper);
+  let b;
+  t.after(async () => { offline=false; await a.close(); await b?.close(); remote.close(); rmSync(dir, {recursive:true,force:true}); });
+  const laura = (await a.app.store.register('acl_laura', 'test-password-123', 'laura')).user;
+  const jilly = (await a.app.store.register('acl_jilly', 'test-password-123', 'jilly')).user;
+  const albumA = createAlbum(a.app.store);
+  const photo = albumA.upload({scene:'hutong', image:readFileSync(new URL('./fixtures/album-photo.jpg',import.meta.url)).toString('base64'),caption:'ACL regression',visibility:'selected',recipients:['jilly'],requestId:crypto.randomUUID()},laura,'hutong');
+  await a.replica.flush();
+  b = await instance(dir, 'b', remote);
+  const albumB = createAlbum(b.app.store);
+  await b.replica.flush();
+  albumA.update({action:'share',id:photo.id,visibility:'public',recipients:[]},laura);
+  offline=true; await assert.rejects(a.replica.flush(), /network offline/); offline=false;
+  albumB.update({action:'share',id:photo.id,visibility:'selected',recipients:[]},laura);
+  await b.replica.flush();
+  await a.replica.pull();
+  assert.ok(albumA.image(photo.id,jilly).length, 'ordinary pull skips dirty ACLs even while advancing its watermark');
+  const watermark = a.replica.lastVersion;
+  await a.replica.syncAuthoritativeTables(['album_photos']);
+  assert.equal(a.replica.lastVersion,watermark,'targeted refresh does not rewind the shared watermark');
+  assert.equal(a.replica.hasPending(['album_photos']),false);
+  assert.throws(() => albumA.image(photo.id,jilly), {status:404});
+  albumA.update({action:'share',id:photo.id,visibility:'selected',recipients:['jilly']},laura);
+  await a.replica.flush();
+  await b.replica.pull();
+  assert.ok(albumB.image(photo.id,jilly).length,'reconciliation resets version guards so the next legitimate edit commits');
+  albumA.update({action:'share',id:photo.id,visibility:'public',recipients:[]},laura);
+  albumB.update({action:'delete',id:photo.id},laura);
+  await b.replica.flush();
+  await a.replica.syncAuthoritativeTables(['album_photos']);
+  assert.throws(() => albumA.image(photo.id,laura), {status:404}, 'remote tombstone overrides dirty local ACL');
+});
+
+test('authoritative sync removes absent failed rows but retains unrelated pending game state', async t => {
+  const f = await smallReplica(t);
+  f.db.prepare("INSERT INTO sample VALUES('failed-upload','private')").run();
+  f.db.prepare('INSERT INTO sample_chunks VALUES(?,?,?)').run('unrelated',0,Buffer.from('keep'));
+  await f.replica.syncAuthoritativeTables(['sample']);
+  assert.equal(f.db.prepare('SELECT COUNT(*) AS n FROM sample').get().n,0);
+  assert.equal(f.replica.hasPending(['sample']),false);
+  assert.equal(f.replica.hasPending(['sample_chunks']),true);
+  assert.equal(Buffer.from(f.db.prepare('SELECT data FROM sample_chunks').get().data).toString(),'keep');
+});
+
+test('authoritative sync preserves pending rows on read failure or a newer local generation', async t => {
+  let gate, offline=false;
+  const f = await smallReplica(t,{async execute(client,statement){
+    if(typeof statement==='object' && statement.sql.includes('WHERE tbl IN')) {
+      if(offline) throw new Error('remote unavailable');
+      if(gate){const paused=gate;gate=null;paused.started.resolve();await paused.release.promise;}
+    }
+    return client.execute(statement);
+  }});
+  f.db.prepare("INSERT INTO sample VALUES('item','captured')").run();
+  offline=true;
+  await assert.rejects(f.replica.syncAuthoritativeTables(['sample']),/remote unavailable/);
+  assert.equal(f.replica.hasPending(['sample']),true);
+  assert.equal(f.db.prepare("SELECT value FROM sample WHERE id='item'").get().value,'captured');
+  offline=false;
+  for(const mutate of [() => f.db.prepare("UPDATE sample SET value='newer' WHERE id='item'").run(), () => f.db.prepare("INSERT INTO sample VALUES('new-item','new')").run()]) {
+    const paused={started:deferred(),release:deferred()};gate=paused;
+    const syncing=f.replica.syncAuthoritativeTables(['sample']);await paused.started.promise;
+    mutate();paused.release.resolve();
+    await assert.rejects(syncing,{status:503});
+    assert.equal(f.replica.hasPending(['sample']),true);
+    assert.equal(f.db.prepare("SELECT value FROM sample WHERE id='item'").get().value,'newer');
+  }
+  await f.replica.flush();
+  assert.equal(f.replica.hasPending(['sample']),false,'race rejection keeps writes available for their own commit');
+});
+
+test('authoritative metadata sync reconciles only pending dependent chunks and resets their version guards', async t => {
+  const f = await smallReplica(t);
+  f.db.prepare("INSERT INTO sample VALUES('photo','failed-local')").run();
+  f.db.prepare('INSERT INTO sample_chunks VALUES(?,?,?)').run('photo',0,Buffer.from('losing-copy'));
+  f.db.prepare('INSERT INTO sample_chunks VALUES(?,?,?)').run('absent-photo',0,Buffer.from('aborted'));
+  await f.client.batch([
+    {sql:'INSERT INTO hutong_online_rows VALUES(?,?,?,?,?)',args:['sample','["photo"]',JSON.stringify({id:'photo',value:'remote-winner'}),0,1]},
+    {sql:'INSERT INTO hutong_online_rows VALUES(?,?,?,?,?)',args:['sample_chunks','["photo",0]',JSON.stringify({photo:'photo',part:0,data:{$b64:Buffer.from('winning-copy').toString('base64')}}),0,2]},
+    {sql:'INSERT INTO hutong_online_rows VALUES(?,?,?,?,?)',args:['sample_chunks','["clean-photo",0]',JSON.stringify({photo:'clean-photo',part:0,data:{$b64:Buffer.from('clean-copy').toString('base64')}}),0,3]},
+  ],'write');
+  await assert.rejects(f.replica.flush(),{status:409});
+  await f.replica.pull();
+  await f.replica.syncAuthoritativeTables(['sample'],{pendingTables:['sample_chunks']});
+  assert.equal(f.replica.hasPending(['sample','sample_chunks']),false);
+  assert.equal(f.db.prepare("SELECT value FROM sample WHERE id='photo'").get().value,'remote-winner');
+  assert.equal(Buffer.from(f.db.prepare("SELECT data FROM sample_chunks WHERE photo='photo'").get().data).toString(),'winning-copy');
+  assert.equal(f.db.prepare("SELECT COUNT(*) AS n FROM sample_chunks WHERE photo='absent-photo'").get().n,0);
+  assert.equal(Buffer.from(f.db.prepare("SELECT data FROM sample_chunks WHERE photo='clean-photo'").get().data).toString(),'clean-copy');
+  f.db.prepare("UPDATE sample SET value='legitimate-edit' WHERE id='photo'").run();
+  f.db.prepare("UPDATE sample_chunks SET data=? WHERE photo='photo'").run(Buffer.from('legitimate-edit'));
+  await f.replica.flush();
+  assert.equal(f.replica.hasPending(['sample','sample_chunks']),false,'a losing upload can recover both metadata and chunk guards');
 });

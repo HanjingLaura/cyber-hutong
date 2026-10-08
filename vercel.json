@@ -5,6 +5,7 @@
   "functions": {
     "api/index.mjs": {
       "maxDuration": 300,
+      "includeFiles": "server/album-seeds/photos.json",
       "excludeFiles": "{dist,assets}/**"
     }
   },

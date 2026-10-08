@@ -86,7 +86,7 @@ try{
   }}return results;
  });
  seated.forEach(r=>{assert.equal(r.poses[0].frame.startsWith('pose-2-'),r.own);if(r.own)assert.notEqual(r.poses[0].pose,r.poses[1].pose);else assert.equal(r.poses[0].pose,r.poses[1].pose);});
- console.log('Verified eight members animate typing only at their own desk and stay seated idle at other desks.');
+ console.log('Verified eight members animate desk work (Franco calls) only at their own desk and stay seated idle at other desks.');
  assert.deepEqual(errors,[]);
  console.log('Verified nine rendered members, login/register, eight isolated browser accounts and eight live connections.');
 }finally{await browser.close();await vite.close();backend.close();}

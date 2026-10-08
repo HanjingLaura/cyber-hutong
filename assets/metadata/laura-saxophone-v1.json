@@ -1,0 +1,106 @@
+{
+  "sources": {
+    "laura-saxophone-v1": {
+      "file": "team/v12/laura-saxophone.png",
+      "size": [
+        1536,
+        1024
+      ]
+    }
+  },
+  "frames": [
+    {
+      "name": "saxophone-front-0",
+      "source": "laura-saxophone-v1",
+      "rect": [
+        368,
+        28,
+        251,
+        457
+      ],
+      "referenceHeight": 458,
+      "pivotX": 0.5,
+      "foot": [
+        125.5,
+        457
+      ],
+      "seat": [
+        125.5,
+        329.03999999999996
+      ],
+      "grip": null,
+      "gripSide": 0,
+      "slot": null
+    },
+    {
+      "name": "saxophone-front-1",
+      "source": "laura-saxophone-v1",
+      "rect": [
+        912,
+        28,
+        251,
+        457
+      ],
+      "referenceHeight": 458,
+      "pivotX": 0.5,
+      "foot": [
+        125.5,
+        457
+      ],
+      "seat": [
+        125.5,
+        329.03999999999996
+      ],
+      "grip": null,
+      "gripSide": 0,
+      "slot": null
+    },
+    {
+      "name": "saxophone-front-2",
+      "source": "laura-saxophone-v1",
+      "rect": [
+        368,
+        539,
+        251,
+        458
+      ],
+      "referenceHeight": 458,
+      "pivotX": 0.5,
+      "foot": [
+        125.5,
+        458
+      ],
+      "seat": [
+        125.5,
+        329.76
+      ],
+      "grip": null,
+      "gripSide": 0,
+      "slot": null
+    },
+    {
+      "name": "saxophone-front-3",
+      "source": "laura-saxophone-v1",
+      "rect": [
+        912,
+        539,
+        251,
+        458
+      ],
+      "referenceHeight": 458,
+      "pivotX": 0.5,
+      "foot": [
+        125.5,
+        458
+      ],
+      "seat": [
+        125.5,
+        329.76
+      ],
+      "grip": null,
+      "gripSide": 0,
+      "slot": null
+    }
+  ],
+  "frameMs": 320
+}

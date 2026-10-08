@@ -15,3 +15,4 @@ output/
 skills-lock.json
 .partykit/
 .wrangler/
+server/album-seeds/*.jpg

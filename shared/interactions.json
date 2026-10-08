@@ -974,5 +974,85 @@
   "seats": {},
   "devices": {},
   "activities": {}
+ },
+ "ktv": {
+  "seats": {
+   "A1": {
+    "at": [
+     145,
+     191
+    ],
+    "approach": [
+     145,
+     207
+    ],
+    "surfaceY": 164
+   },
+   "A2": {
+    "at": [
+     210,
+     191
+    ],
+    "approach": [
+     210,
+     207
+    ],
+    "surfaceY": 164
+   },
+   "A3": {
+    "at": [
+     280,
+     191
+    ],
+    "approach": [
+     280,
+     207
+    ],
+    "surfaceY": 164
+   },
+   "L1": {
+    "at": [
+     65,
+     210
+    ],
+    "approach": [
+     105,
+     210
+    ],
+    "surfaceY": 189
+   },
+   "L2": {
+    "at": [
+     65,
+     240
+    ],
+    "approach": [
+     105,
+     240
+    ],
+    "surfaceY": 217
+   }
+  },
+  "devices": {
+   "mic": [
+    417,
+    225
+   ]
+  },
+  "activities": {
+   "sing": [
+    {
+     "at": [
+      399,
+      205
+     ],
+     "approach": [
+      417,
+      225
+     ],
+     "device": "mic"
+    }
+   ]
+  }
  }
 }
