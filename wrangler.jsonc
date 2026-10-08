@@ -1,0 +1,14 @@
+{
+  "name": "cyber-hutong-party",
+  "main": "party/cloudflare.mjs",
+  "account_id": "3903a798bfdab0051495773730ce518a",
+  "compatibility_date": "2024-11-01",
+  "workers_dev": true,
+  "keep_vars": true,
+  "durable_objects": {
+    "bindings": [{ "name": "Hutong", "class_name": "Hutong" }]
+  },
+  "exports": {
+    "Hutong": { "type": "durable-object", "storage": "sqlite" }
+  }
+}

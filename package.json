@@ -12,6 +12,7 @@
     "dev:client": "vite --host 127.0.0.1",
     "dev:party": "partykit dev --port 1999",
     "deploy:party": "partykit deploy",
+    "deploy:cloudflare": "npx --yes wrangler@4.148.0 deploy",
     "start": "node server/index.mjs",
     "test": "node --test server/*.test.mjs",
     "test:moles": "node --test scripts/moles.test.mjs",
@@ -28,6 +29,7 @@
     "@libsql/client": "^0.18.0",
     "@vercel/functions": "^3.9.11",
     "partykit": "^0.0.115",
+    "partyserver": "0.5.10",
     "partysocket": "^1.3.0",
     "phaser": "4.2.1"
   },

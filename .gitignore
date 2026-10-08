@@ -14,3 +14,4 @@ output/
 .agents/
 skills-lock.json
 .partykit/
+.wrangler/
