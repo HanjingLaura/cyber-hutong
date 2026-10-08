@@ -3,13 +3,43 @@ import aniIcon from '../assets/ui/ani-app-icon.png';
 import grokIcon from '../assets/ui/grokbot-app-icon.png';
 import codexIcon from '../assets/ui/codex-app-icon.png';
 import feishuIcon from '../assets/ui/feishu-app-icon.png';
+import { launchApp } from './app-launch.mjs';
+import { isTouchDevice } from './mobile/input.mjs';
 
-const apps = [
-  { id: 'grokbot', name: 'Grok Bot', href: 'https://grok.com/', icon: grokIcon },
-  { id: 'codex', name: 'Codex', href: 'https://chatgpt.com/codex/', icon: codexIcon },
+type DeskApp = { id: string; name: string; href: string; icon: string; scheme?: string; mobileHref?: string };
+
+const apps: DeskApp[] = [
+  { id: 'grokbot', name: 'Grok Bot', href: 'https://grok.com/', scheme: 'grokbot://app/v1/open', icon: grokIcon },
+  { id: 'codex', name: 'Codex', href: 'https://chatgpt.com/codex/', scheme: 'codex://threads/new', icon: codexIcon },
   { id: 'ani', name: 'Ani', href: 'https://app.ani.cool/', icon: aniIcon },
-  { id: 'feishu', name: '飞书', href: 'https://www.feishu.cn/', icon: feishuIcon },
-] as const;
+  {
+    id: 'feishu', name: '飞书', href: 'https://www.feishu.cn/',
+    scheme: 'feishu://applink/client/op/open',
+    mobileHref: 'https://applink.feishu.cn/client/op/open?lk_unique=true',
+    icon: feishuIcon,
+  },
+];
+
+// Apps whose scheme did nothing this session: later clicks go straight to the website.
+const noApp = new Set<string>();
+
+function touchDevice() {
+  return isTouchDevice({ coarse: matchMedia('(pointer: coarse)').matches, maxTouchPoints: navigator.maxTouchPoints || 0, finePointer: matchMedia('(any-pointer: fine)').matches && !matchMedia('(pointer: coarse)').matches });
+}
+
+function onAppClick(event: MouseEvent, app: DeskApp, link: HTMLAnchorElement) {
+  if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+  const mobile = touchDevice();
+  if (mobile && app.mobileHref) link.href = app.mobileHref;
+  if (mobile || !app.scheme || noApp.has(app.id) || link.dataset.launching) return;
+  event.preventDefault();
+  link.dataset.launching = '1';
+  void launchApp(app, { win: window, doc: document, mobile: false }).then(result => {
+    delete link.dataset.launching;
+    link.dataset.launched = result;
+    if (result !== 'app') noApp.add(app.id);
+  });
+}
 
 let root: HTMLDialogElement | null = null;
 
@@ -41,6 +71,7 @@ function ensure() {
     link.target = '_blank';
     link.rel = 'noopener noreferrer';
     link.dataset.app = app.id;
+    link.addEventListener('click', event => onAppClick(event, app, link));
     link.innerHTML = `<img src="${app.icon}" alt="" width="64" height="64" draggable="false"/><span>${app.name}</span>`;
     icons.append(link);
   }

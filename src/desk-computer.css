@@ -173,3 +173,5 @@
 #desk-computer { padding-top:34px;overflow:visible; }
 #desk-computer .desk-titlebar { top:-34px;right:0; }
 #desk-computer .desk-close { width:32px;height:28px; }
+
+.desk-app[data-launching] { opacity:.6; }
