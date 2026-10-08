@@ -59,8 +59,12 @@ npm run deploy:cloudflare
 
 `wrangler.jsonc` 保留生产 Worker 名称、账号与 `Hutong` Durable Object 类及绑定，声明现有 SQLite namespace 为 live，不进行删除或重命名；`keep_vars` 保留平台变量。`party/cloudflare.mjs` 将 Cloudflare 生命周期转接给 `party/hutong.ts`，复用同一套认证、移动和接管逻辑。它同时支持客户端默认的 `/parties/main/:room` 和原有 `/parties/hutong/:room`，两种路径进入同一房间。
 
+使用 declarative `exports` 后，后续部署和回滚的配置都必须保留这项 live 声明，不应改回 legacy `migrations` 流程。广播只发送给已完成有效 hello 的连接，未认证连接不能接收位置和手持物。
+
 本地真实 Wrangler / Chrome WebSocket 验证：8 个玩家、32 条连接，10 秒内发送 800 次移动，收到全部 24,800 条广播，两个路由均通过认证，8 个主控窗口关闭后全部完成接管。
 
 Vercel API 排除 `dist` 和 `assets` 静态文件，避免把约 138 MiB 的浏览器资源复制进函数。资源仍由 CDN 提供；函数保留 `server`、`shared` 和运行依赖。函数体积与生产 API、资源必须在平台部署后核验，不能把包大小改善直接当作冷启动耗时的测量。
+
+2026-10-08 的 Vercel preview 已确认 API 函数从 138.89 MB 减至 4.43 MB，健康接口返回正常、游戏登录页面及静态资源正常加载。
 
 保留的 WATCH：独立 serverless 实例之间仍是行级后写覆盖，不能保证共享物品、座位和设备跨实例的全局互斥。本次修复不改变这一架构边界。

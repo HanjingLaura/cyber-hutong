@@ -27,7 +27,11 @@ export default class HutongParty implements Party.Server {
   }
 
   private broadcast(value: unknown, except: string[] = []) {
-    this.room.broadcast(JSON.stringify(value), except);
+    const message = JSON.stringify(value);
+    const excluded = new Set(except);
+    for (const conn of this.room.getConnections()) {
+      if ((conn.state as AuthState | undefined)?.userId && !excluded.has(conn.id)) conn.send(message);
+    }
   }
 
   onConnect(conn: Party.Connection) {

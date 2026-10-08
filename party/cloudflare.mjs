@@ -12,7 +12,7 @@ export class Hutong extends Server {
     this.party = new HutongParty({
       get id() { return server.name; },
       env: this.env,
-      broadcast: (message, except) => this.broadcast(message, except),
+      getConnections: () => this.getConnections(),
       getConnection: id => this.getConnection(id),
     });
   }
@@ -47,7 +47,7 @@ export default {
       'Access-Control-Allow-Methods': 'GET, POST, HEAD, OPTIONS',
       'Access-Control-Allow-Headers': '*',
       'Access-Control-Allow-Credentials': 'true',
-    } : true;
+    } : false;
     return await routePartykitRequest(routeRequest(request), env, { cors }) || new Response('Not Found', { status: 404 });
   },
 };
