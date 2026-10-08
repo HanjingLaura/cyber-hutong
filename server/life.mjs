@@ -44,7 +44,9 @@ export function createLife(store){
 };
  const journal=(account,before=Number.MAX_SAFE_INTEGER)=>db.prepare('SELECT seq,kind,body,scene,at,event_id AS eventId,data FROM experiences WHERE account=? AND seq<? AND routine=0 ORDER BY seq DESC LIMIT 50').all(account,before).map(e=>({...e,data:JSON.parse(e.data)}));
  const recent=account=>db.prepare('SELECT seq,kind,body,scene,at FROM experiences WHERE account=? AND routine=0 ORDER BY seq DESC LIMIT 5').all(account);
- const savePosition=p=>db.prepare('INSERT INTO positions VALUES(?,?,?) ON CONFLICT(account) DO UPDATE SET state=excluded.state,at=excluded.at').run(p.id,JSON.stringify({scene:p.scene,x:p.x,y:p.y,facing:p.facing,seat:p.seat,activity:p.activity,travelId:p.travelId}),Date.now());
+ // Only an explicit validated presence checkpoint can publish a marker.
+ // Old instance teardown/autonomy saves must never revive a revoked token.
+ const savePosition=(p,{checkpoint}={})=>db.prepare('INSERT INTO positions VALUES(?,?,?) ON CONFLICT(account) DO UPDATE SET state=excluded.state,at=excluded.at').run(p.id,JSON.stringify({scene:p.scene,x:p.x,y:p.y,facing:p.facing,seat:p.seat,activity:p.activity,travelId:p.travelId,checkpoint}),Date.now());
  const position=id=>{const row=db.prepare('SELECT state FROM positions WHERE account=?').get(id);if(!row)return null;try{const p=JSON.parse(row.state);return typeof p.scene==='string'&&Object.hasOwn(rooms,p.scene)&&Number.isFinite(p.x)&&Number.isFinite(p.y)?p:null;}catch{return null;}};
  // The accepted relocation is durable even if the rendezvous later times out.
  // A reconnect must receive it before its old scene can send presence again.

@@ -5,7 +5,7 @@ import ts from 'typescript';
 
 // Run the production closure without starting Phaser, DOM UI, or real transports.
 const source = readFileSync(new URL('../src/multiplayer/social.ts', import.meta.url), 'utf8');
-const start = source.indexOf('  async function publishPresence(force=false)');
+const start = source.indexOf('  async function publishPresence(');
 const end = source.indexOf('  function livePlayers()', start);
 assert.ok(start >= 0 && end > start, 'production presence closure must be available');
 const compiled = ts.transpileModule(source.slice(start, end) + '\nreturn publishPresence;', {
@@ -110,4 +110,12 @@ test('failed forced confirmations reject the action and release pending state fo
   assert.equal(f.requests.length, 2);
   assert.equal(f.requests[1].input.x, 330);
   f.accept(1); await retry;
+});
+
+test('navigation checkpoint confirms the source while regular presence stays paused during travel',async()=>{
+ const f=fixture();f.bridge.transitioning=true;
+ await f.publish(true);assert.equal(f.requests.length,0);
+ const checkpoint={};await f.publish(true,checkpoint);
+ assert.equal(f.requests.length,1);assert.equal(f.requests[0].input.checkpoint,true);
+ f.bridge.pendingSpawn={};await f.publish(true,{});assert.equal(f.requests.length,1,'pending destination spawn is never published as a source');
 });
