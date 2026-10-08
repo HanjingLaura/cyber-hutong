@@ -222,7 +222,6 @@ class HutongScene extends Phaser.Scene {
     this.textures.get('held-water').add('bottle', 0, 6, 2, 6, 11);
     this.frames.desk.forEach((frame, index) => this.addSlice('furniture', frame, `panel-${index}`, .42, true));
     this.addSlice('furniture', this.frames.chair[0], 'backrest', .58, false);
-    this.addSlice('furniture', this.frames.chair[1], 'backrest-near', .58, false);
     this.room = this.add.image(0, 0, this.isHawaii?'hawaii-wall':'wall').setOrigin(0).setDisplaySize(VIEW_WIDTH, VIEW_HEIGHT).setDepth(-100);
     this.groups.room.push(this.room);
     // The room art keeps a dark margin under the floor. Cover it so a sprite
@@ -391,11 +390,11 @@ class HutongScene extends Phaser.Scene {
       const chairScale = this.furnitureScales.chair;
       seat.chair.setTexture('furniture', chairFrame.name).setOrigin(.5, 1).setScale(chairScale.x, chairScale.y);
       seat.chair.setPosition(point.x, point.y).setDepth(point.y).setVisible(this.layers.chair);
-      const backrestFrame = this.frames.chair[far?0:1];
+      const backrestFrame = this.frames.chair[0];
       const occupied = this.seatedAt === seat || !!this.officeGuest?.occupies(seat.id) || !!onlineWorld()?.bridge.players.some(p => p.scene === this.sys.settings.key && p.seat === seat.id);
-      seat.back.setTexture('furniture', far?'backrest':'backrest-near').setOrigin(.5, 0).setScale(chairScale.x, chairScale.y)
+      seat.back.setTexture('furniture', 'backrest').setOrigin(.5, 0).setScale(chairScale.x, chairScale.y)
         .setPosition(point.x, point.y - backrestFrame.height * chairScale.y)
-        .setDepth(point.y + 2).setVisible(this.layers.chair && occupied);
+        .setDepth(point.y + 2).setVisible(this.layers.chair && far && occupied);
       const computerIndex = index * 2 + Number(this.seatedAt===seat&&this.mode==='working'||!!onlineWorld()?.bridge.players.some(p=>p.scene===this.sys.settings.key&&p.seat===seat.id&&canWorkAt(p.role,p.scene,p.seat)));
       const laptopScale = this.furnitureScales.laptop;
       const computerPoint = project({ x: seat.foot.x, y: scaleRowPoint({ x: 0, y: floorY(seat.row === 'culture' ? 35 : 305) }, seat.row).y }, this.reverse);
