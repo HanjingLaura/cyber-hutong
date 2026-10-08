@@ -280,6 +280,7 @@ input[type=checkbox] { accent-color: #bbc997; width: 16px; height: 16px; }
 #npc-ui { position:absolute;inset:0;pointer-events:none;z-index:1015; }
 #npc-interact { position:static;left:auto;bottom:auto;top:auto;pointer-events:auto;font-size:12px;padding:6px 10px;font-family:var(--hto-mono);background:#17231ce8;border:1px solid #889c6f;color:#fff6da; }
 .npc-speech { position:absolute;transform:translate(-50%,-100%);max-width:220px;padding:7px 10px;background:#f2e9cf;color:#2b302d;border:2px solid #353f35;font:13px Consolas,"Microsoft YaHei",monospace;line-height:1.5; }
+.npc-effect { position:absolute;transform:translate(-50%,-100%);image-rendering:pixelated;pointer-events:none; }
 #perler-collection h3 { font-size:15px;margin:18px 0 0;border-top:1px solid #a3977d;padding-top:12px; }
 @media(max-width:540px) { .perler-workshop { padding:10px; }.perler-workspace { grid-template-columns:minmax(0,1fr) 120px;gap:10px; }.perler-heading h2 { font-size:16px; } }
 

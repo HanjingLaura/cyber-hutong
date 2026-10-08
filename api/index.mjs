@@ -5,6 +5,7 @@ import { join } from 'node:path';
 import { waitUntil } from '@vercel/functions';
 import { createMvpServer, stripBase } from '../server/app.mjs';
 import { prepareReplica } from '../server/replica.mjs';
+import { createStreamReplicaSync } from '../server/stream-replica.mjs';
 
 const dataDir = process.env.VERCEL ? '/tmp/hutong-online' : join(process.cwd(), 'data');
 mkdirSync(dataDir, { recursive: true });
@@ -26,6 +27,7 @@ replica?.attach(app.store.db);
 // End SSE streams before the function's maxDuration so EventSource reconnects cleanly.
 const sseMs = Number(process.env.HUTONG_SSE_MAX_MS || 240000);
 const fresh = /\/api\/(me|login|register|events|claim|logout|inventory|control|party-ticket)$/;
+const watchReplicaStreams = replica ? createStreamReplicaSync(replica) : null;
 
 export default async function handler(req, res) {
   req.url = stripBase(req.url || '/');
@@ -35,6 +37,8 @@ export default async function handler(req, res) {
   }
   const done = new Promise(resolve => { res.once('finish', resolve); res.once('close', resolve); });
   if (path === '/api/events') {
+    const release = watchReplicaStreams?.();
+    if (release) void done.then(release);
     const timer = setTimeout(() => { if (!res.writableEnded) res.end(); }, sseMs);
     res.once('close', () => clearTimeout(timer));
   }
