@@ -84,12 +84,13 @@ export async function prepareReplica(path, client, { prefix = 'hutong_online', f
   } catch (e) { try { db.exec('ROLLBACK'); } catch {} throw e; } finally { db.close(); }
 
   let db2 = null, timer = null, chain = Promise.resolve(), lastPull = Date.now(), closed = false;
+  let pulling = null, flushing = null, flushAgain = false;
   const serial = job => { const next = chain.then(job, job); chain = next.catch(() => {}); return next; };
 
   function attach(target) {
     db2 = target;
-    db2.exec(`CREATE TEMP TABLE IF NOT EXISTS _hto_dirty(tbl TEXT NOT NULL, pk TEXT NOT NULL); CREATE INDEX IF NOT EXISTS temp._hto_dirty_key ON _hto_dirty(tbl, pk);
-      CREATE TEMP TABLE IF NOT EXISTS _hto_ctl(applying INTEGER NOT NULL); DELETE FROM temp._hto_ctl; INSERT INTO temp._hto_ctl VALUES(0);`);
+    db2.exec(`CREATE TEMP TABLE IF NOT EXISTS _hto_dirty(tbl TEXT NOT NULL, pk TEXT NOT NULL, generation INTEGER NOT NULL DEFAULT 0); CREATE INDEX IF NOT EXISTS temp._hto_dirty_key ON _hto_dirty(tbl, pk);
+      CREATE TEMP TABLE IF NOT EXISTS _hto_ctl(applying INTEGER NOT NULL, generation INTEGER NOT NULL); DELETE FROM temp._hto_ctl; INSERT INTO temp._hto_ctl VALUES(0, 0);`);
     // Trigger bodies must use unqualified names (older SQLite builds reject schema-qualified targets).
     const when = 'WHEN (SELECT applying FROM _hto_ctl) = 0';
     for (const table of userTables(db2)) {
@@ -97,7 +98,9 @@ export async function prepareReplica(path, client, { prefix = 'hutong_online', f
       const tag = table.replace(/[^A-Za-z0-9_]/g, '_');
       const name = "'" + table.replaceAll("'", "''") + "'";
       // No UNIQUE constraint: an outer UPSERT's conflict policy overrides OR IGNORE inside trigger bodies.
-      const ins = p => `INSERT INTO _hto_dirty(tbl, pk) SELECT ${name}, ${key(p)} WHERE NOT EXISTS (SELECT 1 FROM _hto_dirty WHERE tbl = ${name} AND pk = ${key(p)});`;
+      const ins = p => `UPDATE _hto_ctl SET generation = generation + 1;
+        UPDATE _hto_dirty SET generation = (SELECT generation FROM _hto_ctl) WHERE tbl = ${name} AND pk = ${key(p)};
+        INSERT INTO _hto_dirty(tbl, pk, generation) SELECT ${name}, ${key(p)}, (SELECT generation FROM _hto_ctl) WHERE NOT EXISTS (SELECT 1 FROM _hto_dirty WHERE tbl = ${name} AND pk = ${key(p)});`;
       db2.exec(`DROP TRIGGER IF EXISTS temp._hto_i_${tag}; DROP TRIGGER IF EXISTS temp._hto_u_${tag}; DROP TRIGGER IF EXISTS temp._hto_d_${tag};
         CREATE TEMP TRIGGER _hto_i_${tag} AFTER INSERT ON main.${q(table)} ${when} BEGIN ${ins('NEW')} END;
         CREATE TEMP TRIGGER _hto_u_${tag} AFTER UPDATE ON main.${q(table)} ${when} BEGIN ${ins('OLD')} ${ins('NEW')} END;
@@ -133,9 +136,29 @@ export async function prepareReplica(path, client, { prefix = 'hutong_online', f
   }
 
   function flush() {
-    return serial(async () => {
+    if (flushing) { flushAgain = true; return flushing; }
+    const flight = (async () => {
+      try {
+        let total = 0;
+        do {
+          flushAgain = false;
+          // Each pass queues behind waiting reads; callers still await every follow-up.
+          total += await serial(flushRows);
+        } while (flushAgain && dbIsOpen(db2));
+        return total;
+      } finally {
+        // Release in the same continuation as loop exit. A .finally() microtask
+        // would let a late caller join a flight that can no longer drain its write.
+        if (flushing === flight) flushing = null;
+      }
+    })();
+    flushing = flight;
+    return flight;
+  }
+
+  async function flushRows() {
       if (!dbIsOpen(db2) || dbInTx(db2)) return 0;
-      const dirty = db2.prepare('SELECT DISTINCT tbl, pk FROM temp._hto_dirty').all();
+      const dirty = db2.prepare('SELECT tbl, pk, generation FROM temp._hto_dirty').all();
       if (!dirty.length) return 0;
       const statements = [];
       for (const { tbl, pk } of dirty) {
@@ -146,20 +169,24 @@ export async function prepareReplica(path, client, { prefix = 'hutong_online', f
       try {
         for (let i = 0; i < statements.length; i += 200) await client.batch(statements.slice(i, i + 200), 'write');
         if (dbIsOpen(db2)) {
-          const clear = db2.prepare('DELETE FROM temp._hto_dirty WHERE tbl = ? AND pk = ?');
-          for (const d of dirty) clear.run(d.tbl, d.pk);
+          // A request can update this row while the remote batch is in flight.
+          // Acknowledge only the generation captured above, leaving newer writes dirty.
+          const clear = db2.prepare('DELETE FROM temp._hto_dirty WHERE tbl = ? AND pk = ? AND generation = ?');
+          for (const d of dirty) clear.run(d.tbl, d.pk, d.generation);
         }
       } catch (e) {
         log.error?.('replica: flush failed: ' + e.message);
         throw e;
       }
       return statements.length;
-    });
   }
 
   function pull({ maxAgeMs = 0 } = {}) {
+    if (pulling) return pulling;
     if (Date.now() - lastPull < maxAgeMs) return Promise.resolve(0);
-    return serial(async () => {
+    pulling = serial(async () => {
+      // Requests queued behind a flush must reuse the latest completed read too.
+      if (Date.now() - lastPull < maxAgeMs) return 0;
       if (!dbIsOpen(db2)) return 0;
       let applied = 0;
       for (;;) {
@@ -168,12 +195,13 @@ export async function prepareReplica(path, client, { prefix = 'hutong_online', f
         if (dbInTx(db2)) break;
         const local = new Set(userTables(db2)), pending = new Set(db2.prepare('SELECT tbl, pk FROM temp._hto_dirty').all().map(r => r.tbl + '\u0000' + r.pk));
         db2.exec('UPDATE temp._hto_ctl SET applying = 1; BEGIN; PRAGMA defer_foreign_keys = ON;');
-        let blocked = false;
         try {
           for (const r of result.rows) {
             const tbl = String(r.tbl), pk = String(r.pk);
             if (!local.has(tbl)) { lastVer = Math.max(lastVer, Number(r.ver)); continue; }
-            if (pending.has(tbl + '\u0000' + pk)) { blocked = true; break; }
+            // Local dirty rows win and will be pushed with a newer remote version.
+            // Do not let one such row hold up unrelated messages or accounts.
+            if (pending.has(tbl + '\u0000' + pk)) { lastVer = Math.max(lastVer, Number(r.ver)); continue; }
             try {
               if (Number(r.deleted)) {
                 const keys = keyColumns(db2, tbl);
@@ -185,11 +213,12 @@ export async function prepareReplica(path, client, { prefix = 'hutong_online', f
           }
           db2.exec('COMMIT');
         } catch (e) { try { db2.exec('ROLLBACK'); } catch {} throw e; } finally { db2.exec('UPDATE temp._hto_ctl SET applying = 0'); }
-        if (blocked || result.rows.length < 500) break;
+        if (result.rows.length < 500) break;
       }
       lastPull = Date.now();
       return applied;
-    });
+    }).finally(() => { pulling = null; });
+    return pulling;
   }
 
   async function close() {

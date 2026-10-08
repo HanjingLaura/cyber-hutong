@@ -106,6 +106,7 @@ export function applyHello(state, connId, claims, pose = {}) {
   if (demoted) viewers.add(demoted);
 
   const isController = controllerConn === connId;
+  if (!isController) viewers.add(connId);
   // Controllers may refresh pose; pure viewers keep the authoritative controller pose.
   const entry = {
     ...base,

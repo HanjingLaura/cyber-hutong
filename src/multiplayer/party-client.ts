@@ -31,9 +31,12 @@ export class PartyPresence {
   private players = new Map<Role, Player>();
   connected = false;
   enabled = false;
-  private helloAt = 0;
   private lastMove = '';
   private closed = false;
+  private generation = 0;
+  private connecting: Promise<void> | null = null;
+  private controller = false;
+  private retryTimer: ReturnType<typeof setTimeout> | null = null;
 
   constructor(
     private bridge: MultiplayerBridge,
@@ -57,50 +60,69 @@ export class PartyPresence {
     return this.list().map(p => ({ role: p.role, scene: p.scene }));
   }
 
-  async connect() {
+  async connect(force = false) {
     const host = partyHost();
     if (!host || this.closed) return;
+    if (!force && this.connecting) return this.connecting;
+    if (!force && this.socket && this.socket.readyState !== this.socket.CLOSED) return;
     this.disconnectSocket();
+    const generation = this.generation;
+    const current = () => !this.closed && generation === this.generation;
+    const attempt = (async () => {
     try {
       let ticket = await this.request<{ ticket: string; room: string; expires: number }>('party-ticket', { client: this.clientId });
+      if (!current()) return;
       let issuedAt = Date.now();
-      this.socket = new PartySocket({
+      const socket = new PartySocket({
         host,
         room: ticket.room || DEFAULT_ROOM,
         id: this.clientId,
         maxRetries: 12,
       });
-      this.socket.addEventListener('open', async () => {
+      this.socket = socket;
+      socket.addEventListener('open', async () => {
+        if (!current()) return;
         // PartySocket auto-reconnects with the same options; tickets live 60s, so a reconnect
         // must fetch a fresh one or the room rejects the hello and presence silently stops.
         if (Date.now() - issuedAt > 40_000) {
           try { ticket = await this.request('party-ticket', { client: this.clientId }); issuedAt = Date.now(); }
-          catch { this.connected = false; this.onChange(); return; }
+          catch { if (current()) { this.connected = false; this.onChange(); socket.close(); } return; }
         }
+        if (!current()) return;
         const character = this.bridge.state();
-        this.connected = true;
-        this.helloAt = Date.now();
-        this.socket?.send(JSON.stringify({
+        this.connected = false;
+        this.controller = false;
+        this.lastMove = '';
+        socket.send(JSON.stringify({
           type: 'hello',
           ticket: ticket.ticket,
           character: character || undefined,
         }));
         this.onChange();
       });
-      this.socket.addEventListener('message', (event) => this.receive(String(event.data)));
-      this.socket.addEventListener('close', () => {
+      socket.addEventListener('message', (event) => { if (current()) this.receive(String(event.data)); });
+      socket.addEventListener('close', () => {
+        if (!current()) return;
         this.connected = false;
+        this.controller = false;
         this.onChange();
       });
-      this.socket.addEventListener('error', () => {
+      socket.addEventListener('error', () => {
+        if (!current()) return;
         this.connected = false;
+        this.controller = false;
         this.onChange();
       });
     } catch (e) {
+      if (!current()) return;
       this.connected = false;
       this.notice((e as Error).message || 'PartyKit 连接失败');
       this.onChange();
     }
+    })();
+    this.connecting = attempt;
+    try { await attempt; }
+    finally { if (current()) this.connecting = null; }
   }
 
   private receive(raw: string) {
@@ -108,13 +130,15 @@ export class PartyPresence {
     try { data = JSON.parse(raw); } catch { return; }
     if (data.type === 'reject') {
       // Retry with a fresh ticket instead of staying silently disconnected.
-      this.connected = false; this.onChange();
-      if (!this.closed) setTimeout(() => { if (!this.closed && !this.connected) void this.connect(); }, 2000);
+      this.connected = false; this.controller = false; this.onChange();
+      this.disconnectSocket();
+      if (!this.closed) this.retryTimer = setTimeout(() => { this.retryTimer = null; if (!this.closed && !this.connected) void this.connect(); }, 2000);
       return;
     }
     if (data.type === 'state') {
       this.players.clear();
       for (const p of data.players || []) this.players.set(p.role, p);
+      this.controller = data.you?.controller === true;
       this.connected = true;
       this.onChange();
       return;
@@ -125,13 +149,13 @@ export class PartyPresence {
       this.onChange();
       return;
     }
-    if (data.type === 'control') this.onChange();
+    if (data.type === 'control') { this.controller = data.controller === true; this.onChange(); }
   }
 
   /** Push local pose to PartyKit. Returns true when a message was sent. */
   publish(state: Player | null, force = false) {
-    if (!this.socket || this.socket.readyState !== this.socket.OPEN || !state) return false;
-    if (!this.bridge.controller) return false;
+    if (!this.connected || !this.socket || this.socket.readyState !== this.socket.OPEN || !state) return false;
+    if (!this.controller || !this.bridge.controller) return false;
     const signature = JSON.stringify([state.scene, state.x, state.y, state.facing, state.moving, state.seat, state.hand, state.activity]);
     if (!force && signature === this.lastMove) return false;
     this.lastMove = signature;
@@ -152,16 +176,22 @@ export class PartyPresence {
 
   async refreshIfNeeded() {
     if (!this.enabled || this.closed) return;
-    if (Date.now() - this.helloAt < 45_000 && this.connected) return;
+    if (this.connected) return;
     await this.connect();
   }
 
   private disconnectSocket() {
+    this.generation++;
+    this.connecting = null;
+    if (this.retryTimer) clearTimeout(this.retryTimer);
+    this.retryTimer = null;
     if (this.socket) {
-      this.socket.close();
+      const socket = this.socket;
       this.socket = null;
+      socket.close();
     }
     this.connected = false;
+    this.controller = false;
   }
 
   disconnect() {

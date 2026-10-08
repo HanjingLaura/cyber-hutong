@@ -50,7 +50,7 @@ export function createMvpServer({dbPath='data/mvp.sqlite',staticDir=resolve('dis
   const rewards=createRewards(store,life,world,leases);
   const npcReactions=new Map();
   const celine=createCeline(store);
-  let dirty=true,closed=false,visitorSignature='';
+  let dirty=true,poseDirty=false,lastFull=0,closed=false,visitorSignature='';
   const live=role=>[...players.values()].find(p=>p.role===role&&!p.disconnectedAt);
   const cleanPlayer=p=>{const a=store.byId(p.id);return {role:p.role,name:name(p.role),scene:p.scene,x:p.x,y:p.y,facing:p.facing,moving:p.moving,seat:p.seat,hand:a.hand,revision:a.revision,activity:p.activity};};
   life.setSceneProvider(scene=>({version:1,actors:autonomy.all().filter(p=>p.scene===scene).map(cleanPlayer),objects:world.snapshot(scene),npcs:visibleNpcs(npcRules.filter(rule=>rule.room===scene),autonomy.all(),workstations).map(rule=>({id:rule.id,...guestPositions[rule.id],text:npcReactions.get(rule.id)?.expires>Date.now()?npcReactions.get(rule.id).text:undefined})).concat((()=>{const v=celine.snapshot(autonomy.all());return v.scene===scene?[{...v,height:61.44}]:[];})())}),id=>{const p=autonomy.all().find(p=>p.id===id);return p?cleanPlayer(p):null;});
@@ -60,7 +60,29 @@ export function createMvpServer({dbPath='data/mvp.sqlite',staticDir=resolve('dis
   const release=id=>{for(const [key,l]of leases)if(l.account===id)leases.delete(key);};
   const publishMessage=message=>{for(const s of streams){const own=store.byId(s.user)?.role;if(message.recipient?own===message.sender||own===message.recipient:roomFor(s.user)===message.scene)emit(s,'message',message);}};
   const director=createDirector(store,life,autonomy,world,llm,{publish:publishMessage});autonomy.setDirector(director);
-  const flush=()=>{if(dirty){dirty=false;for(const s of streams)emit(s,'world',snapshot(s));}};
+  const poseSnapshot=()=>{
+    const actors=autonomy.all(),clock=Date.now();
+    return {players:actors.map(p=>({...cleanPlayer(p),offline:autonomy.doubles.has(p.id)})),
+      online:[...players.values()].filter(p=>!p.disconnectedAt).map(p=>({role:p.role,scene:p.scene})),
+      clock,leases:[...leases].map(([id,l])=>({id,role:l.role})),celine:celine.snapshot(actors),
+      npcEpoch:Math.floor(clock/20000),npcReactions:[...npcReactions.values()].filter(r=>r.expires>clock),
+      npcs:visibleNpcs(npcRules,actors,workstations).map(rule=>rule.id)};
+  };
+  const flush=()=>{
+    if(dirty){
+      dirty=false;poseDirty=false;lastFull=Date.now();
+      // Several tabs of one account share personal state, but never its control flag.
+      const cache=new Map();
+      for(const s of streams){if(!cache.has(s.user))cache.set(s.user,snapshot(s));
+        else adoptStale(s.user,s.client);
+        emit(s,'world',{...cache.get(s.user),controller:controls.get(s.user)===s.client});}
+    }else if(poseDirty){
+      poseDirty=false;if(!streams.size)return;
+      const state=poseSnapshot();
+      for(const s of streams){adoptStale(s.user,s.client);emit(s,'pose',{...state,
+        players:state.players.filter(p=>p.scene===roomFor(s.user)),controller:controls.get(s.user)===s.client});}
+    }
+  };
   const limited=(key,max,ms=60000)=>{const now=Date.now(),entry=rates.get(key);if(!entry||entry.until<now){rates.set(key,{n:1,until:now+ms});return;}if(++entry.n>max)fail(429,'操作太快，请稍后重试');};
   const cookieFlags=()=>`HttpOnly; SameSite=Strict; Path=/${process.env.COOKIE_SECURE==='1'||process.env.VERCEL==='1'?'; Secure':''}`;
   const setSession=(res,token)=>res.setHeader('Set-Cookie',`hutong_session=${token}; ${cookieFlags()}; Max-Age=604800`);
@@ -194,7 +216,7 @@ export function createMvpServer({dbPath='data/mvp.sqlite',staticDir=resolve('dis
             else if(activity==='sit')life.record(user.id,'rest','坐在椅子上休息。',p.scene,Date.now(),{routine:true,key:`rest:sit:${p.scene}`});
             else if(previousActivity==='working')life.record(user.id,'work','离开工位，结束了这段办公。',p.scene,Date.now(),{routine:true,key:`work:end:${p.scene}`});
           }
-          dirty=true;json(res,200,{self:next,player:cleanPlayer(p)});return;
+          poseDirty=true;json(res,200,{self:next,player:cleanPlayer(p)});return;
         }
         if(path==='/api/chat'){
           limited('chat:'+user.id,12,10000);const text=typeof input.text==='string'?input.text.trim():'';if(!text||text.length>200)fail(400,'消息需为 1–200 个字');
@@ -228,6 +250,6 @@ export function createMvpServer({dbPath='data/mvp.sqlite',staticDir=resolve('dis
       res.writeHead(200,{'Content-Type':mime[extname(file)]||'application/octet-stream','X-Content-Type-Options':'nosniff'});res.end(content);
     }catch(e){if(!res.headersSent)json(res,e.status||500,{error:e.status?e.message:'服务暂时不可用'});else res.end();if(!e.status)console.error(e.message);}
   });
-  const timer=setInterval(()=>{if(autonomy.tick())dirty=true;const v=celine.snapshot(autonomy.all()),signature=JSON.stringify([v.scene,v.mode,v.seat,Math.round(v.x),Math.round(v.y),v.question]);if(signature!==visitorSignature){visitorSignature=signature;dirty=true;}flush();},100),heartbeat=setInterval(()=>{for(const s of streams)markLive(s.user);for(const [key,value] of rates)if(value.until<Date.now())rates.delete(key);for(const s of [...streams]){if(!store.session(s.token)){emit(s,'logout',{});s.res.end();streams.delete(s);if(![...streams].some(x=>x.user===s.user)){const p=players.get(s.user);if(p){p.disconnectedAt=Date.now();life.savePosition(p);}controls.delete(s.user);}dirty=true;}else s.res.write(': heartbeat\n\n');}for(const [id,p]of players){if(p.disconnectedAt&&Date.now()-p.disconnectedAt>45000){/* The user may be live on another instance: never clobber their newer pose/control. */if(!seenLive(id,45000))life.savePosition(p);players.delete(id);release(id);if(controls.stale(id))controls.delete(id);dirty=true;}else if(!p.disconnectedAt&&Date.now()-p.at>45000){p.seat=null;release(id);dirty=true;}}},15000);timer.unref();heartbeat.unref();
+  const timer=setInterval(()=>{if(autonomy.tick())poseDirty=true;const v=celine.snapshot(autonomy.all()),signature=JSON.stringify([v.scene,v.mode,v.seat,Math.round(v.x),Math.round(v.y),v.question]);if(signature!==visitorSignature){visitorSignature=signature;poseDirty=true;}if(Date.now()-lastFull>=1000)dirty=true;flush();},100),heartbeat=setInterval(()=>{for(const s of streams)markLive(s.user);for(const [key,value] of rates)if(value.until<Date.now())rates.delete(key);for(const s of [...streams]){if(!store.session(s.token)){emit(s,'logout',{});s.res.end();streams.delete(s);if(![...streams].some(x=>x.user===s.user)){const p=players.get(s.user);if(p){p.disconnectedAt=Date.now();life.savePosition(p);}controls.delete(s.user);}dirty=true;}else s.res.write(': heartbeat\n\n');}for(const [id,p]of players){if(p.disconnectedAt&&Date.now()-p.disconnectedAt>45000){/* The user may be live on another instance: never clobber their newer pose/control. */if(!seenLive(id,45000))life.savePosition(p);players.delete(id);release(id);if(controls.stale(id))controls.delete(id);dirty=true;}else if(!p.disconnectedAt&&Date.now()-p.at>45000){p.seat=null;release(id);dirty=true;}}},15000);timer.unref();heartbeat.unref();
   return {server,store,life,autonomy,director,llm,players,streams,close(){if(closed)return;closed=true;director.close();llm.close();autonomy.saveAll();clearInterval(timer);clearInterval(heartbeat);for(const s of streams)s.res.end();streams.clear();server.close();store.close();}};
 }

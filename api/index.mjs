@@ -25,13 +25,13 @@ replica?.attach(app.store.db);
 
 // End SSE streams before the function's maxDuration so EventSource reconnects cleanly.
 const sseMs = Number(process.env.HUTONG_SSE_MAX_MS || 240000);
-const fresh = /\/api\/(me|login|register|events|claim|logout|inventory|control|presence)$/;
+const fresh = /\/api\/(me|login|register|events|claim|logout|inventory|control|party-ticket)$/;
 
 export default async function handler(req, res) {
   req.url = stripBase(req.url || '/');
   const path = req.url.split('?')[0];
   if (replica) {
-    try { await replica.pull({ maxAgeMs: fresh.test(path) ? 0 : 2000 }); } catch (e) { console.error('replica pull failed: ' + e.message); }
+    try { await replica.pull({ maxAgeMs: path === '/api/presence' ? 250 : fresh.test(path) ? 0 : 2000 }); } catch (e) { console.error('replica pull failed: ' + e.message); }
   }
   const done = new Promise(resolve => { res.once('finish', resolve); res.once('close', resolve); });
   if (path === '/api/events') {

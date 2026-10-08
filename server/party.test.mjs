@@ -72,6 +72,34 @@ test('party room hello/move/leave keeps single controller and broadcasts poses',
   assert.equal(roomSnapshot(state).players.length, 1);
 });
 
+test('closing a controller promotes an ordinary viewer and preserves the live pose', () => {
+  const state = createRoomState();
+  const claims = { userId: 'u-laura', role: 'laura', username: 'laura' };
+  applyHello(state, 'controller', { ...claims, client: 'a', controller: true }, { scene: 'rest', x: 300, y: 200 });
+  applyHello(state, 'viewer', { ...claims, client: 'b', controller: false }, { scene: 'hutong', x: 100, y: 190 });
+  const leave = applyLeave(state, 'controller');
+  assert.equal(leave.left, null);
+  assert.equal(leave.takeover, 'viewer');
+  assert.equal(roomSnapshot(state).players.length, 1);
+  assert.equal(roomSnapshot(state).players[0].scene, 'rest');
+  assert.equal(roomSnapshot(state).players[0].x, 300);
+  assert.equal(applyMove(state, 'viewer', { x: 310, y: 200 }).ok, true);
+  assert.equal(applyLeave(state, 'viewer').left.role, 'laura');
+  assert.equal(roomSnapshot(state).players.length, 0);
+});
+
+test('a closed viewer is skipped when transferring control to remaining viewers', () => {
+  const state = createRoomState();
+  const claims = { userId: 'u-laura', role: 'laura', username: 'laura' };
+  applyHello(state, 'controller', { ...claims, controller: true });
+  applyHello(state, 'closed-viewer', { ...claims, controller: false });
+  applyHello(state, 'live-viewer', { ...claims, controller: false });
+  assert.equal(applyLeave(state, 'closed-viewer').left, null);
+  assert.equal(applyLeave(state, 'controller').takeover, 'live-viewer');
+  assert.equal(applyMove(state, 'live-viewer', { x: 330, y: 220 }).ok, true);
+  assert.equal(roomSnapshot(state).players.length, 1);
+});
+
 test('party-ticket API requires session, role and shared secret', async t => {
   const previous = process.env.PARTY_AUTH_SECRET;
   process.env.PARTY_AUTH_SECRET = secret;
