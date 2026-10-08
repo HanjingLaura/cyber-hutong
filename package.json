@@ -16,6 +16,8 @@
     "test": "node --test server/*.test.mjs",
     "test:moles": "node --test scripts/moles.test.mjs",
     "test:soak": "node scripts/soak.mjs",
+    "test:concurrency": "node --test server/concurrency.test.mjs server/party-client.test.mjs server/presence-client.test.mjs server/api-client.test.mjs server/party.test.mjs server/replica.test.mjs",
+    "test:benchmark": "node scripts/compare-concurrency.mjs",
     "db:backup": "node scripts/database.mjs backup",
     "db:restore": "node scripts/database.mjs restore",
     "build": "tsc --noEmit && vite build",

@@ -7,6 +7,18 @@ import {mkdtempSync,rmSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 
+test('a progress revision changed by another instance invalidates the local cached collection',async()=>{
+ const store=openStore(':memory:');
+ try{
+  const account=await store.register('remote_progress','test-password-123'),first=createWorld(store),second=createWorld(store);
+  assert.deepEqual(first.progress(account.user.id),[]);
+  second.write(account.user.id,'toy','remote-one',{toy:3});
+  assert.equal(first.progress(account.user.id)[0].data.toy,3);
+  second.write(account.user.id,'toy','remote-one',{toy:4});
+  assert.equal(first.progress(account.user.id)[0].data.toy,4);
+ }finally{store.close();}
+});
+
 test('shared storage preserves inventory across races, retries and database reopen',async()=>{
  const dir=mkdtempSync(join(tmpdir(),'hutong-world-')),path=join(dir,'world.sqlite');let store=openStore(path);
  try{
