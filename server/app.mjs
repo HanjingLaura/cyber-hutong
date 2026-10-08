@@ -134,6 +134,15 @@ export function createMvpServer({dbPath='data/mvp.sqlite',staticDir=resolve('dis
           const result=path==='/api/register'?await store.register(input.username,input.password,input.role??null):await store.login(input.username,input.password);
           setSession(res,result.token);json(res,200,{user:result.user,roster:store.roster()});return;
         }
+        if(path==='/api/reset-password'){
+          if(req.method!=='POST')fail(405,'请使用 POST');
+          limited('reset:'+clientAddress(req),6);
+          const input=await body(req),account=await store.resetPassword(input.username,input.code,input.password);
+          const disconnect=()=>{for(const stream of [...streams])if(stream.user===account.id){emit(stream,'logout',{});stream.res.end();streams.delete(stream);}dirty=true;};
+          if(paused&&commitRequest)pendingEvents.push(disconnect);else disconnect();
+          res.setHeader('Set-Cookie',`hutong_session=; ${cookieFlags()}; Max-Age=0`);
+          json(res,200,{ok:true});return;
+        }
         if(!user)fail(401,'请先登录');
         if(path==='/api/albums'||path==='/api/album-photo'){
           if(!user.role)fail(409,'请先领取角色');
