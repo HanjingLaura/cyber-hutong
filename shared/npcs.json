@@ -1,7 +1,7 @@
 [
  {"id":"ani","owner":"sid","room":"hutong","condition":"working"},
- {"id":"lulu","owner":"suki","room":"dance","condition":"present"},
- {"id":"tutu","owner":"kay","room":"gym","condition":"present"},
+ {"id":"lulu","owner":"suki","room":"dance","condition":"always"},
+ {"id":"tutu","owner":"kay","room":"gym","condition":"always"},
  {"id":"buzz","owner":"cora","room":"pop","condition":"always"},
  {"id":"zhu","owner":"jilly","room":"concert","condition":"always"},
  {"id":"ferret","owner":"amber","room":"bathroom","condition":"always"}

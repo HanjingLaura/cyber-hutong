@@ -63,6 +63,6 @@ export function placeGuest(scene:Phaser.Scene,id:Guest){
   }
   placed.push({scene,id,image,reflection});setGuestPresence(onlinePresence);
   scene.events.once('shutdown',()=>{const index=placed.findIndex(p=>p.image===image);if(index>=0)placed.splice(index,1);});
-  window.__easterEggPreview={getState:()=>placed.map(p=>({id:p.id,name:guests[p.id].name,owner:guestOwners[p.id]??null,scene:p.scene.sys.settings.key,active:p.scene.sys.isActive(),x:p.image.x,y:p.image.y,height:p.image.displayHeight}))};
+  window.__easterEggPreview={getState:()=>placed.map(p=>({id:p.id,name:guests[p.id].name,owner:guestOwners[p.id]??null,scene:p.scene.sys.settings.key,active:p.scene.sys.isActive(),x:p.image.x,y:p.image.y,height:p.image.displayHeight,visible:p.image.visible}))};
 }
 export function guestBlocks(id:Guest,x:number,y:number){if(onlinePresence&&!onlinePresence.includes(id))return false;const guest=guests[id];return Math.abs(x-guest.x)<guest.cut[2]/guest.cut[3]*guest.height/2+9&&Math.abs(y-guest.y)<10;}
