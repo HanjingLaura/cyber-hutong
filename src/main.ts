@@ -224,6 +224,10 @@ class HutongScene extends Phaser.Scene {
     this.addSlice('furniture', this.frames.chair[0], 'backrest', .58, false);
     this.room = this.add.image(0, 0, this.isHawaii?'hawaii-wall':'wall').setOrigin(0).setDisplaySize(VIEW_WIDTH, VIEW_HEIGHT).setDepth(-100);
     this.groups.room.push(this.room);
+    // The room art keeps a dark margin under the floor. Cover it so a sprite
+    // whose y is off the map cannot show a name or a head below the baseboard.
+    const floorCut=291;
+    this.add.rectangle(VIEW_WIDTH/2,(floorCut+VIEW_HEIGHT)/2,VIEW_WIDTH,VIEW_HEIGHT-floorCut,this.isHawaii?0x2b3039:0x272c35).setDepth(10000);
     if(this.isHawaii)this.officeWindow=new OfficeWindow(this);
     for (const row of DESK_ROWS) {
       const workstation = this.workstations.find(seat => seat.row === row.row)!;
