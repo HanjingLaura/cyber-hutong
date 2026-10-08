@@ -92,7 +92,7 @@ async function paint(canvas:HTMLCanvasElement,e:MemoryEntry,bridge:MultiplayerBr
    for(const [frameName,positions,h]of [['plant',[104,464],28.8],['cup',[329,492],11.2]]as[string,number[],number][]){const f=decor.get(frameName),w=f.cutWidth/f.cutHeight*h;for(const x of positions)layers.push({depth:249.12,draw:()=>context.drawImage(decorSource,f.cutX,f.cutY,f.cutWidth,f.cutHeight,320+(x-320)*.8-w/2,233.4-h,w,h)});}
   }
   const backrest=bridge.game.textures.get('furniture').get('backrest'),source=bridge.game.textures.get('furniture').getSourceImage() as CanvasImageSource,base=(bridge.game.scene.getScene('hutong') as any).frames.chair[0],scale=48/base.width;
-  for(const p of actors.filter(p=>p.seat))layers.push({depth:p.y+2,draw:()=>context.drawImage(source,backrest.cutX,backrest.cutY,backrest.cutWidth,backrest.cutHeight,p.x-24,p.y-base.height*scale,48,backrest.cutHeight*scale)});
+  for(const p of actors.filter(p=>p.seat&&p.facing===2))layers.push({depth:p.y+2,draw:()=>context.drawImage(source,backrest.cutX,backrest.cutY,backrest.cutWidth,backrest.cutHeight,p.x-24,p.y-base.height*scale,48,backrest.cutHeight*scale)});
  }
  for(const actor of prepared.filter(a=>a!==null).sort((a,b)=>a.p.y-b.p.y)){
   const p0=actor.p,depth=p0.seat?(e.scene==='bathroom'?196:p0.y+(e.scene==='arcade'?7:e.scene==='perler'?6:e.scene==='noodle'?4:1)):p0.y+1;
@@ -102,10 +102,10 @@ async function paint(canvas:HTMLCanvasElement,e:MemoryEntry,bridge:MultiplayerBr
   const fillCarry=!!p.hand&&!p.seat,scale=height/(fillCarry?h:frame.referenceHeight),flip=p.facing===3;
   const surface=office&&p.seat?p.y-(p.facing===0?17:27):seatSurface(e.scene,p.seat);
   let y=p.seat&&surface!==undefined?surface+(h-frame.seat[1])*scale:p.y;
-  if(p.seat&&office&&!p.hand&&p.facing===0)y-=24;
+  if(p.seat&&office&&!p.hand&&p.facing===0)y-=height*.03+1;
   if(!fillCarry)y+=height*(frame.offsetYRatio??0);
   context.save();context.translate(Math.round(p.x),Math.round(y));context.scale(flip?-1:1,1);
-  const width=w*scale*(frame.scaleXRatio??1),visibleHeight=p.seat&&office?Math.round(h*.72):h;context.drawImage(image,sx,sy,w,visibleHeight,-width*frame.pivotX,-h*scale,width,visibleHeight*scale);
+  const width=w*scale*(frame.scaleXRatio??1),visibleHeight=p.seat&&office&&p.facing===2?Math.round(h*.72):h;context.drawImage(image,sx,sy,w,visibleHeight,-width*frame.pivotX,-h*scale,width,visibleHeight*scale);
   const item=p.hand?items[p.hand]:null;
   if(item&&frame.grip&&bridge.game.textures.exists(item.texture)){
    const texture=bridge.game.textures.get(item.texture),f=texture.get(item.frame),source=texture.getSourceImage() as HTMLImageElement;

@@ -127,6 +127,9 @@ export class OfficeGuest{
       const scale=61.44/frame.referenceHeight;
       this.body.setTexture(`office-motion-${frame.source}`,`motion-${index}`).setScale(scale*(frame.scaleXRatio??1),scale).setOrigin(d===3?1-frame.pivotX:frame.pivotX,1).setPosition(p.x,p.y+61.44*(frame.offsetYRatio??0));
     }
-    if(seated)this.body.setTexture(key,`upper-${index}`).setOrigin(.5,h/Math.round(h*.72));
+    if(seated){
+      if(d===2)this.body.setTexture(key,`upper-${index}`).setOrigin(.5,h/Math.round(h*.72));
+      else this.upper.setTexture(key,`upper-${index}`).setOrigin(.5,0).setScale(scale).setPosition(p.x,p.y-h*scale).setDepth(p.y+4).setVisible(visible);
+    }
   }
 }
