@@ -121,7 +121,7 @@ test('emotes play invites and score shouts keep co-play lively without leaving t
   const invite=await api('invite',{peer:'sid',place:'arcade',client:'a',requestId:'play-arcade'},a.cookie);assert.equal(invite.status,200);assert.equal(invite.data.offer.item,'arcade');
   assert.equal((await api('offer',{client:'b',id:invite.data.offer.id,answer:'accept'},b.cookie)).status,200);
   for(const p of app.players.values())Object.assign(p,{scene:'arcade',x:300,y:200});
-  app.autonomy.tick();assert.equal(app.life.meeting(a.id),undefined);
+  app.life.ackTravel(a.id,invite.data.offer.id);app.life.ackTravel(b.id,invite.data.offer.id);app.autonomy.tick();assert.equal(app.life.meeting(a.id),undefined);
   assert.ok(app.life.journal(a.id).some(e=>e.body.includes('娱乐室')));
   assert.equal((await api('progress',{kind:'score',key:'basketball',data:{value:12},client:'a'},a.cookie)).status,200);
   assert.ok((await api('history',undefined,a.cookie)).data.messages.some(m=>m.body.includes('投篮纪录')));

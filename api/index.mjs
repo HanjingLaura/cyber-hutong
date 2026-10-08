@@ -21,20 +21,27 @@ if (url) {
   console.warn('TURSO_DATABASE_URL missing: using ephemeral local SQLite (data is lost when the instance stops).');
 }
 
-const app = createMvpServer({ dbPath, staticDir: join(process.cwd(), 'dist') });
+const app = createMvpServer({ dbPath, staticDir: join(process.cwd(), 'dist'),
+  beforeRequest: async req=>{
+    if (!replica) return;
+    const path=stripBase(req.url||'/').split('?')[0];
+    const albumRequest=path==='/api/albums'||path==='/api/album-photo';
+    await replica.pull({maxAgeMs:req.method==='POST'?0:req.url?.includes('/presence')?250:0,reconcilePending:!albumRequest});
+    if (albumRequest) {
+      await replica.syncAuthoritativeTables(['album_photos'], {pendingTables:['album_photo_chunks']});
+      if (replica.hasPending(['album_photos','album_photo_chunks'])) throw Object.assign(new Error('相册正在同步，请稍后重试'),{status:503});
+    }
+  },
+  commitRequest:replica?()=>replica.flush({allowTransaction:true}):undefined });
 replica?.attach(app.store.db);
 
 // End SSE streams before the function's maxDuration so EventSource reconnects cleanly.
 const sseMs = Number(process.env.HUTONG_SSE_MAX_MS || 240000);
-const fresh = /\/api\/(me|login|register|events|claim|logout|inventory|control|party-ticket)$/;
 const watchReplicaStreams = replica ? createStreamReplicaSync(replica) : null;
 
 export default async function handler(req, res) {
   req.url = stripBase(req.url || '/');
   const path = req.url.split('?')[0];
-  if (replica) {
-    try { await replica.pull({ maxAgeMs: path === '/api/presence' ? 250 : fresh.test(path) ? 0 : 2000 }); } catch (e) { console.error('replica pull failed: ' + e.message); }
-  }
   const done = new Promise(resolve => { res.once('finish', resolve); res.once('close', resolve); });
   if (path === '/api/events') {
     const release = watchReplicaStreams?.();

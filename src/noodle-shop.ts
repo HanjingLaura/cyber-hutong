@@ -1,3 +1,4 @@
+import {sceneWalkable} from '../shared/walkability.mjs';
 import Phaser from 'phaser';
 import { registerRegions } from './frames';
 import { playerInventory, items, type ItemName } from './player-inventory';
@@ -133,12 +134,7 @@ export class NoodleShopScene extends Phaser.Scene {
     }
     this.menu('餐桌',options);
   }
-  private canWalk(x:number,y:number){
-    if(x<38||x>602||y<174||y>346)return false;
-    if(tables.some(t=>Math.abs(x-t.x)<74&&y>t.y-28&&y<t.y+7))return false;
-    if(seats.some(s=>Math.abs(x-s.x)<14&&Math.abs(y-s.y)<10))return false;
-    return true;
-  }
+  private canWalk(x:number,y:number){return sceneWalkable('noodle',x,y);}
   update(_time:number,delta:number){
     if(!this.actor)return;
     let moving=false;

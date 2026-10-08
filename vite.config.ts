@@ -17,6 +17,6 @@ export default defineConfig(({ command }) => ({
   build: { rollupOptions: { input: { game: 'index.html', moles: 'moles.html', members: 'members.html' } } },
   server: {
     proxy: { '/api': { target:'http://127.0.0.1:8788',changeOrigin:false } },
-    fs: { deny: ['.env', '.env.*', '*.{crt,pem}', '**/references/private/**'] },
+    fs: { deny: ['.env', '.env.*', '*.{crt,pem}', '**/references/private/**', '**/server/album-seeds/**'] },
   },
 }));

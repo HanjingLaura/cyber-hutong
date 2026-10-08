@@ -1,0 +1,106 @@
+{
+  "sources": {
+    "franco-office-call-v1": {
+      "file": "team/v12/franco-office-call.png",
+      "size": [
+        1254,
+        1254
+      ]
+    }
+  },
+  "frames": [
+    {
+      "name": "call-front-0",
+      "source": "franco-office-call-v1",
+      "rect": [
+        253,
+        86,
+        265,
+        503
+      ],
+      "referenceHeight": 503,
+      "pivotX": 0.5,
+      "foot": [
+        132.5,
+        503
+      ],
+      "seat": [
+        132.5,
+        362.15999999999997
+      ],
+      "grip": null,
+      "gripSide": 0,
+      "slot": null
+    },
+    {
+      "name": "call-front-1",
+      "source": "franco-office-call-v1",
+      "rect": [
+        715,
+        86,
+        265,
+        503
+      ],
+      "referenceHeight": 503,
+      "pivotX": 0.5,
+      "foot": [
+        132.5,
+        503
+      ],
+      "seat": [
+        132.5,
+        362.15999999999997
+      ],
+      "grip": null,
+      "gripSide": 0,
+      "slot": null
+    },
+    {
+      "name": "call-back-0",
+      "source": "franco-office-call-v1",
+      "rect": [
+        268,
+        666,
+        281,
+        483
+      ],
+      "referenceHeight": 503,
+      "pivotX": 0.5,
+      "foot": [
+        140.5,
+        483
+      ],
+      "seat": [
+        140.5,
+        347.76
+      ],
+      "grip": null,
+      "gripSide": 0,
+      "slot": null
+    },
+    {
+      "name": "call-back-1",
+      "source": "franco-office-call-v1",
+      "rect": [
+        727,
+        666,
+        283,
+        483
+      ],
+      "referenceHeight": 503,
+      "pivotX": 0.5,
+      "foot": [
+        141.5,
+        483
+      ],
+      "seat": [
+        141.5,
+        347.76
+      ],
+      "grip": null,
+      "gripSide": 0,
+      "slot": null
+    }
+  ],
+  "frameMs": 600
+}

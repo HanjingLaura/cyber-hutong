@@ -1,3 +1,4 @@
+import {sceneWalkable} from '../shared/walkability.mjs';
 import Phaser from 'phaser';
 import { preloadGuest, placeGuest, guestBlocks } from './easter-eggs';
 import geometry from '../shared/interactions.json';
@@ -73,11 +74,7 @@ export class ConcertScene extends Phaser.Scene {
     const seat=this.nearest();if(!seat)return;
     this.seated=seats.indexOf(seat);this.x=seat.x;this.y=seat.y;this.facing=2;
   }
-  private canWalk(x:number,y:number){
-    if(guestBlocks('zhu',x,y))return false;
-    if(x<55||x>585||y<159||y>349)return false;
-    return !seats.some(s=>Math.abs(x-s.x)<18&&y>s.y-14&&y<s.y+13);
-  }
+  private canWalk(x:number,y:number){return !guestBlocks('zhu',x,y)&&sceneWalkable('concert',x,y);}
   update(_time:number,delta:number){
     if(!this.actor)return;
     let moving=false;

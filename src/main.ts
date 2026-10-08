@@ -20,6 +20,7 @@ import { PerlerShopScene } from './perler-shop';
 import { RehearsalScene } from './rehearsal';
 import { ElevatorLobbyScene } from './elevator-lobby';
 import { SubwayScene } from './subway';
+import { KtvScene } from './ktv';
 import { markScene, setGuide } from './hud';
 import { openDeskComputer, closeDeskComputer, deskComputerOpen } from './desk-computer';
 import { playerInventory, type ItemName } from './player-inventory';
@@ -62,7 +63,7 @@ declare global { interface Window { __hawaiiPreview?: { getState: () => PreviewS
 
 document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
   <header><h1>hutong-online</h1><p>WASD 移动 · E 互动</p></header>
-  <nav class="scene-nav" aria-label="场景视角"><button data-scene="culture" aria-pressed="true">胡同</button><button data-scene="opposite" aria-pressed="false">胡同</button><button data-scene="rest" aria-pressed="false">休息室</button><button data-scene="pop" aria-pressed="false">POP MART</button><button data-scene="hawaii" aria-pressed="false">夏威夷</button><button data-scene="bathroom" aria-pressed="false">厕所</button><button data-scene="concert" aria-pressed="false">演唱会</button><button data-scene="arcade" aria-pressed="false">娱乐室</button><button data-scene="noodle" aria-pressed="false">米线店</button><button data-scene="gym" aria-pressed="false">健身房</button><button data-scene="dance" aria-pressed="false">舞室</button><button data-scene="perler" aria-pressed="false">拼豆店</button><button data-scene="rehearsal" aria-pressed="false">排练厅</button><button data-scene="elevator" aria-pressed="false">电梯间</button><button data-scene="subway" aria-pressed="false">五道口站</button></nav>
+  <nav class="scene-nav" aria-label="场景视角"><button data-scene="culture" aria-pressed="true">胡同</button><button data-scene="opposite" aria-pressed="false">胡同</button><button data-scene="rest" aria-pressed="false">休息室</button><button data-scene="pop" aria-pressed="false">POP MART</button><button data-scene="hawaii" aria-pressed="false">夏威夷</button><button data-scene="bathroom" aria-pressed="false">厕所</button><button data-scene="ktv" aria-pressed="false">KTV</button><button data-scene="concert" aria-pressed="false">演唱会</button><button data-scene="arcade" aria-pressed="false">娱乐室</button><button data-scene="noodle" aria-pressed="false">米线店</button><button data-scene="gym" aria-pressed="false">健身房</button><button data-scene="dance" aria-pressed="false">舞室</button><button data-scene="perler" aria-pressed="false">拼豆店</button><button data-scene="rehearsal" aria-pressed="false">排练厅</button><button data-scene="elevator" aria-pressed="false">电梯间</button><button data-scene="subway" aria-pressed="false">五道口站</button></nav>
   <main>
     <div class="stage-column">
       <section class="world" tabindex="0" aria-label="胡同游戏，方向键移动，E 互动，V 切换视角">
@@ -519,12 +520,12 @@ class HutongScene extends Phaser.Scene {
 holdScene();
 const game = new Phaser.Game({ type: Phaser.AUTO, width: VIEW_WIDTH / PIXEL_RATIO, height: VIEW_HEIGHT / PIXEL_RATIO, parent: 'game', backgroundColor: '#333936',
   pixelArt: true, roundPixels: true, scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH },
-  scene: [new HutongScene(), RestRoomScene, PopMartScene, new HutongScene('hawaii'), BathroomScene, ConcertScene, ArcadeScene, NoodleShopScene, GymScene, DanceStudioScene, PerlerShopScene, RehearsalScene, ElevatorLobbyScene, SubwayScene], input: { keyboard: true }, banner: false,
+  scene: [new HutongScene(), RestRoomScene, PopMartScene, new HutongScene('hawaii'), BathroomScene, ConcertScene, ArcadeScene, NoodleShopScene, GymScene, DanceStudioScene, PerlerShopScene, RehearsalScene, ElevatorLobbyScene, SubwayScene, KtvScene], input: { keyboard: true }, banner: false,
 });
 let selectedSceneKey='hutong';
 game.events.once('ready',()=>{try{startSocial(game);}catch(error){console.error('startSocial failed',error);}try{mountTouchControls();}catch(error){console.error('touch controls failed',error);}});
 game.events.once('ready',()=>{
-  for(const key of ['hutong','rest','pop','hawaii','bathroom','concert','arcade','noodle','gym','dance','perler','rehearsal','elevator','subway']){
+  for(const key of ['hutong','rest','pop','hawaii','bathroom','concert','arcade','noodle','gym','dance','perler','rehearsal','elevator','subway','ktv']){
     const scene=game.scene.getScene(key);
     scene.events.on('create',()=>{if(key!==selectedSceneKey)game.scene.sleep(key);});
   }
@@ -535,6 +536,7 @@ window.addEventListener('hutong:navigate',event=>{navigationAuthorized=true;try{
 for (const button of document.querySelectorAll<HTMLButtonElement>('[data-scene]')) button.addEventListener('click', () => {
   if(!navigationAuthorized&&!((import.meta as any).env.DEV&&location.search.includes('debug=1')))return;
   const target = button.dataset.scene!;
+  const ktv=target==='ktv';
   world.dataset.area=target;
   for (const tab of document.querySelectorAll('[data-scene]')) tab.setAttribute('aria-pressed', String(tab === button));
   const rest = target === 'rest', pop = target === 'pop', hawaii=target==='hawaii', bathroom=target==='bathroom', concert=target==='concert', arcade=target==='arcade', noodle=target==='noodle', gym=target==='gym', dance=target==='dance', perler=target==='perler', rehearsal=target==='rehearsal', elevator=target==='elevator', subway=target==='subway';
@@ -547,10 +549,10 @@ for (const button of document.querySelectorAll<HTMLButtonElement>('[data-scene]'
   updateLayerLabel('laptop',hawaii?'六台独立电脑':'八台独立电脑');
   document.querySelector('#hutong-controls .review-actions + .note')!.textContent='';
   document.querySelector('#hutong-controls .seat-state + .note')!.textContent='';
-  document.querySelector<HTMLElement>('#hutong-controls')!.hidden = rest || pop || bathroom || concert || arcade || noodle || gym || dance || perler || rehearsal || elevator || subway;
+  document.querySelector<HTMLElement>('#hutong-controls')!.hidden = rest || pop || bathroom || concert || arcade || noodle || gym || dance || perler || rehearsal || elevator || subway || ktv;
   document.querySelector<HTMLElement>('#rest-controls')!.hidden = !rest;
   document.querySelector<HTMLElement>('#pop-controls')!.hidden = !pop;
-  viewButton.hidden = rest || pop || hawaii || bathroom || concert || arcade || noodle || gym || dance || perler || rehearsal || elevator || subway;
+  viewButton.hidden = rest || pop || hawaii || bathroom || concert || arcade || noodle || gym || dance || perler || rehearsal || elevator || subway || ktv;
   document.querySelector<HTMLButtonElement>('#table-action')!.hidden = true;
   document.querySelector<HTMLElement>('#walk-review')!.hidden = true;
   markScene(hawaii?'夏威夷':pop ? 'POP MART' : rest ? '休息室' : '胡同');
@@ -627,9 +629,10 @@ for (const button of document.querySelectorAll<HTMLButtonElement>('[data-scene]'
     document.querySelector('.scene-caption span:last-child')!.textContent='';
     document.querySelector('.keys')!.innerHTML='WASD / 方向键移动<br>E 开关列车车门';
   }
-  const activeKey = subway?'subway':elevator?'elevator':rehearsal?'rehearsal' :perler?'perler' :dance?'dance' :gym?'gym' :noodle?'noodle':arcade?'arcade':concert?'concert':bathroom?'bathroom':hawaii?'hawaii':pop ? 'pop' : rest ? 'rest' : 'hutong';
+  if(ktv){markScene('KTV');setGuide('WASD / 方向键移动','E 点歌 / 拿麦 / 坐下');document.querySelector('.keys')!.innerHTML='WASD / 方向键移动<br>E 点歌 / 拿麦 / 坐下 / 灯光<br>拿麦后 Space 唱一拍 · Esc 结束';}
+  const activeKey = ktv?'ktv':subway?'subway':elevator?'elevator':rehearsal?'rehearsal' :perler?'perler' :dance?'dance' :gym?'gym' :noodle?'noodle':arcade?'arcade':concert?'concert':bathroom?'bathroom':hawaii?'hawaii':pop ? 'pop' : rest ? 'rest' : 'hutong';
   selectedSceneKey=activeKey;
-  for (const key of ['hutong', 'rest', 'pop', 'hawaii', 'bathroom', 'concert', 'arcade', 'noodle', 'gym', 'dance', 'perler', 'rehearsal', 'elevator', 'subway']) {
+  for (const key of ['hutong', 'rest', 'pop', 'hawaii', 'bathroom', 'concert', 'arcade', 'noodle', 'gym', 'dance', 'perler', 'rehearsal', 'elevator', 'subway', 'ktv']) {
     const scene = game.scene.getScene(key);
     scene.input.keyboard?.resetKeys();
     if (key !== activeKey && game.scene.isActive(key)) game.scene.sleep(key);

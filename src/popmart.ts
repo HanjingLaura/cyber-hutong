@@ -1,3 +1,4 @@
+import {sceneWalkable} from '../shared/walkability.mjs';
 import {gachaImages,gachaNames,gachaItems,registerGachaTextures} from './gacha-assets';
 import {playerInventory,type ItemName} from './player-inventory';
 import Phaser from 'phaser';
@@ -192,13 +193,7 @@ export class PopMartScene extends Phaser.Scene {
     document.querySelector('#pop-collection')!.innerHTML=toyNames.map((name,toy)=>{const n=owned(toy);return `<div class="lineup-toy${n?'':' locked'}" title="${name}"><img alt="${name}" src="${toyImage(toy)}"/>${n>1?`<b>×${n}</b>`:''}</div>`;}).join('');
     document.querySelector('#pop-legacy')!.textContent='';
   }
-  private canWalk(x:number,y:number) {
-    if(guestBlocks('buzz',x,y))return false;
-    if(!Phaser.Geom.Polygon.Contains(shopFloor,x,y))return false;
-    if(x>240&&x<400&&y>171&&y<283)return false;
-    if(x>416&&x<459&&y<150)return false;
-    return true;
-  }
+  private canWalk(x:number,y:number){return !guestBlocks('buzz',x,y)&&sceneWalkable('pop',x,y);}
   update(_time:number,delta:number) {
     if(!this.actor)return;
     if(this.menu.open&&this.source==='machine')this.drawGacha();

@@ -1,3 +1,4 @@
+import {sceneWalkable} from '../shared/walkability.mjs';
 import Phaser from 'phaser';
 import {sharedAction} from './multiplayer/world-client';
 import { playerInventory } from './player-inventory';
@@ -41,7 +42,7 @@ export class SubwayScene extends Phaser.Scene {
   private nearest(){return entrances.map((e,index)=>({index,x:e.x+e.width/2,y:242})).filter(e=>Math.hypot(this.x-e.x,this.y-e.y)<36).sort((a,b)=>Math.hypot(this.x-a.x,this.y-a.y)-Math.hypot(this.x-b.x,this.y-b.y))[0]?.index;}
   private state(){return '';}
   private interact(){if(this.nearest()!==undefined){if(sharedAction('subway:doors','toggle'))return;this.open=!this.open;}}
-  private canWalk(x:number,y:number){return x>=40&&x<=600&&y>=226&&y<=343;}
+  private canWalk(x:number,y:number){return sceneWalkable('subway',x,y);}
   private drawDoors(){
     entrances.forEach((e,i)=>{
       const art=this.panels[i],half=e.width/2,travel=Math.round(this.progress*half);

@@ -25,7 +25,7 @@ export class WorldClient{
  private queue=Promise.resolve();private hydrated='';private progressSignature='';
  private appliedScene:unknown;private appliedVersions=new Map<string,number>();private saves=new Map<string,ReturnType<typeof setTimeout>>();
  constructor(readonly bridge:MultiplayerBridge,private request:(path:string,input?:any)=>Promise<any>,private publish:()=>Promise<void>,readonly client:string,readonly notice:(message:string)=>void,private ensureLive:()=>Promise<void>=async()=>{}){service=this;bridge.game.events.on('poststep',()=>{const s=bridge.active;if(s?.actor&&s!==this.appliedScene){heldDevices.clear();pendingDevices.clear();this.appliedVersions.clear();this.appliedScene=s;this.apply();}});}
- pause(){const s=this.bridge.active;if(s){const mode=s.mode;if((s.sys.settings.key==='gym'&&['run','curl'].includes(mode))||mode==='piano'||s.sys.settings.key==='dance')this.bridge.stand();s.piano?.stop();s.beat?.stop();s.input.keyboard?.resetKeys();}for(const id of ['arcade-game','perler-workshop','gym-storage']){const d=document.getElementById(id);if(d instanceof HTMLDialogElement&&d.open)d.close();}heldDevices.clear();pendingDevices.clear();}
+ pause(){const s=this.bridge.active;if(s){const mode=s.mode;if((s.sys.settings.key==='gym'&&['run','curl'].includes(mode))||mode==='piano'||s.sys.settings.key==='dance'||s.sys.settings.key==='ktv')this.bridge.stand();s.piano?.stop();s.beat?.stop();s.input.keyboard?.resetKeys();}for(const id of ['arcade-game','perler-workshop','gym-storage']){const d=document.getElementById(id);if(d instanceof HTMLDialogElement&&d.open)d.close();}heldDevices.clear();pendingDevices.clear();}
  reset(){this.pause();this.bridge.clearTransition();this.objects.clear();this.progress=[];this.hydrated='';this.progressSignature='';this.progressVersion=-1;this.appliedVersions.clear();heldDevices.clear();pendingDevices.clear();this.saves.forEach(clearTimeout);this.saves.clear();}
  receive(data:any){
   if(data.celine)this.celine=data.celine;
@@ -61,6 +61,7 @@ export class WorldClient{
    if(key==='bathroom'&&id.startsWith('door-')){const i=Number(id.split('-')[1]);if(s.doors[i])s.setDoorOpen(i,o.open);}
    if(key==='elevator'&&id.startsWith('door-')){const door=s.doors?.[Number(id.split('-')[1])];if(door)door.open=!!o.open;}
    if(key==='subway'&&id==='doors')s.open=o.open;
+   if(key==='ktv')s.applyKtv?.(id,o);
    if(key==='pop'&&o.stock)blindBoxes.data.shelf[id as keyof typeof blindBoxes.data.shelf]=o.stock.map(v=>v?0:null);
   }
   if(changed&&key==='rest'&&s.fridgeMenu?.open)s.renderFridge();

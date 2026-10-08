@@ -1,3 +1,4 @@
+import {sceneWalkable} from '../shared/walkability.mjs';
 import Phaser from 'phaser';
 import { playerInventory, type ItemName } from './player-inventory';
 import { DanceBeat } from './dance-beat';
@@ -98,14 +99,7 @@ export class DanceStudioScene extends Phaser.Scene {
     }
     this.returnPoint={x:this.x,y:this.y};this.mode='sit';this.x=88;this.y=282;this.facing=0;this.message='Esc 起身';
   }
-  private canWalk(x:number,y:number){
-    if(guestBlocks('lulu',x,y))return false;
-    if(x<30+(340-y)*.1||x>610-(340-y)*.1||y<177||y>338)return false;
-    if(x<115&&y<171)return false;
-    if(x>530&&y<169)return false;
-    if(x<160&&y>239&&y<290)return false;
-    return true;
-  }
+  private canWalk(x:number,y:number){return !guestBlocks('lulu',x,y)&&sceneWalkable('dance',x,y);}
   update(_time:number,delta:number){
     if(!this.actor)return;
     const dt=Math.min(delta,50);let moving=false;

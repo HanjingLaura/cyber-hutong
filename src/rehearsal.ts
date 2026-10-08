@@ -1,14 +1,16 @@
+import {sceneWalkable} from '../shared/walkability.mjs';
 import Phaser from 'phaser';
 import { registerRegions } from './frames';
 import { playerInventory } from './player-inventory';
 import { Piano } from './piano';
+import { Saxophone } from './saxophone';
 import {useDevice,releaseDevice,onlineWorld} from './multiplayer/world-client';
 
 const seats=[...[172,242,312,382].map((x,i)=>({id:`A${i+1}`,x,y:239})),...[118,180,242,304,366,428].map((x,i)=>({id:`B${i+1}`,x,y:309}))].map(s=>({...s,approachY:s.y+21}));
 type Mode='walk'|'seat'|'piano'|'podium';
 declare global{interface Window{__rehearsalPreview?:{getState:()=>unknown}}}
 export class RehearsalScene extends Phaser.Scene{
-  private actor=false;private piano!:Piano;private keys!:Record<string,Phaser.Input.Keyboard.Key>;
+  private actor=false;private piano!:Piano;private saxophone=new Saxophone();private keys!:Record<string,Phaser.Input.Keyboard.Key>;
   private chairs:Phaser.GameObjects.Image[]=[];private backs:Phaser.GameObjects.Image[]=[];
   private x=320;private y=339;private facing=2;private mode:Mode='walk';private seated:number|null=null;
   private returnPoint={x:320,y:339};private message='E 坐下';
@@ -39,7 +41,8 @@ export class RehearsalScene extends Phaser.Scene{
     });
     this.actor=true;this.piano=new Piano(()=>{});
     this.keys=this.input.keyboard!.addKeys('W,A,S,D,UP,DOWN,LEFT,RIGHT') as Record<string,Phaser.Input.Keyboard.Key>;
-    const world=document.querySelector<HTMLElement>('.world')!,clear=()=>{this.input.keyboard?.resetKeys();this.piano.stop();};
+    const world=document.querySelector<HTMLElement>('.world')!,clear=()=>{this.input.keyboard?.resetKeys();this.piano.stop();this.saxophone.stop();};
+    const resume=()=>{if(this.sys.isActive()&&this.mode==='podium'&&this.isLaura()&&onlineWorld()?.bridge.controller!==false)void this.saxophone.start();};
     const action=(e:KeyboardEvent)=>{
       if(!this.sys.isActive()||document.querySelector('dialog[open]'))return;
       if(e.code==='Escape'&&this.mode!=='walk'&&!/^(INPUT|TEXTAREA)$/.test(document.activeElement?.tagName??'')){e.preventDefault();this.stand();world.focus();return;}
@@ -51,13 +54,15 @@ export class RehearsalScene extends Phaser.Scene{
     };
     const release=(e:KeyboardEvent)=>this.piano.keyUp(e.code);
     window.addEventListener('keydown',action);window.addEventListener('keyup',release);window.addEventListener('blur',clear);
+    window.addEventListener('focus',resume);
     // Pointer piano keys deliberately do not steal focus; sidebar actions restore it.
     world.addEventListener('blur',clear);
+    world.addEventListener('focus',resume);
     this.events.on('sleep',()=>{clear();if(this.mode!=='walk')this.stand();});
-    this.events.once('shutdown',()=>{this.piano.dispose();window.removeEventListener('keydown',action);window.removeEventListener('keyup',release);window.removeEventListener('blur',clear);world.removeEventListener('blur',clear);});
+    this.events.once('shutdown',()=>{this.piano.dispose();this.saxophone.dispose();window.removeEventListener('keydown',action);window.removeEventListener('keyup',release);window.removeEventListener('blur',clear);window.removeEventListener('focus',resume);world.removeEventListener('blur',clear);world.removeEventListener('focus',resume);});
     document.querySelector('#interact')!.addEventListener('click',()=>{if(this.sys.isActive()){this.interact();world.focus();}});
     document.querySelector('#rehearsal-piano-close')!.addEventListener('click',()=>{if(this.sys.isActive()){this.stand();world.focus();}});
-    window.__rehearsalPreview={getState:()=>({ready:true,active:this.sys.isActive(),x:this.x,y:this.y,facing:this.facing,mode:this.mode,seated:this.seated===null?null:seats[this.seated].id,seats,nearest:this.nearest(),notes:this.piano.active,notesPlayed:this.piano.notesPlayed,hand:playerInventory.hand,message:this.message})};world.focus();
+    window.__rehearsalPreview={getState:()=>({ready:true,active:this.sys.isActive(),x:this.x,y:this.y,facing:this.facing,mode:this.mode,seated:this.seated===null?null:seats[this.seated].id,seats,nearest:this.nearest(),notes:this.piano.active,notesPlayed:this.piano.notesPlayed,saxophonePlaying:this.saxophone.playing,saxophoneNotesPlayed:this.saxophone.notesPlayed,hand:playerInventory.hand,message:this.message})};world.focus();
   }
   private nearest(){
     const candidates=[...seats.map((s,i)=>({kind:'seat' as const,index:i,x:s.x,y:s.approachY})),{kind:'piano' as const,index:0,x:536,y:246},{kind:'podium' as const,index:0,x:320,y:219}];
@@ -68,7 +73,7 @@ export class RehearsalScene extends Phaser.Scene{
     const seat=this.seated===null?undefined:seats[this.seated];
     const exit=this.mode==='piano'?{x:536,y:246}:seat?{x:seat.x,y:seat.approachY}:{x:320,y:219};
     if(this.mode==='piano')releaseDevice('piano');
-    this.piano.stop();this.mode='walk';this.seated=null;const point=this.freeExit(exit);this.x=point.x;this.y=point.y;this.facing=0;
+    this.piano.stop();this.saxophone.stop();this.mode='walk';this.seated=null;const point=this.freeExit(exit);this.x=point.x;this.y=point.y;this.facing=0;
     (document.querySelector('#rehearsal-piano') as HTMLElement).hidden=true;this.message='E 坐下';this.input.keyboard?.resetKeys();
   }
   private freeExit(exit:{x:number;y:number}){
@@ -84,14 +89,10 @@ export class RehearsalScene extends Phaser.Scene{
     this.returnPoint={x:this.x,y:this.y};this.mode=t.kind;this.facing=2;this.input.keyboard?.resetKeys();
     if(t.kind==='seat'){this.seated=t.index;this.x=seats[t.index].x;this.y=seats[t.index].y;this.message='Esc 起身';}
     if(t.kind==='piano'){this.x=536;this.y=223;(document.querySelector('#rehearsal-piano') as HTMLElement).hidden=false;this.message='Z 行弹琴 · ↑↓ 音区 · Esc 起身';}
-    if(t.kind==='podium'){this.x=320;this.y=181;this.facing=0;this.message='Esc 下台';}
+    if(t.kind==='podium'){this.x=320;this.y=181;this.facing=0;this.message=this.isLaura()?'吹萨克斯 · E / Esc 下台':'Esc 下台';if(this.isLaura())void this.saxophone.start();}
   }
-  private canWalk(x:number,y:number){
-    if(x<45||x>600||y<179||y>347)return false;
-    if(x>472&&x<600&&y<232)return false;
-    if(x>278&&x<362&&y<198)return false;
-    return !seats.some(s=>Math.abs(x-s.x)<20&&((y>s.y-14&&y<s.y+14)||(y>s.y-45&&y<s.y-31)));
-  }
+  private isLaura(){return (onlineWorld()?.bridge.user?.role??'laura')==='laura';}
+  private canWalk(x:number,y:number){return sceneWalkable('rehearsal',x,y);}
   update(_time:number,delta:number){
     if(!this.actor)return;let moving=false;
     // Recover old saved positions that landed inside a chair after standing.
@@ -114,6 +115,6 @@ export class RehearsalScene extends Phaser.Scene{
     document.querySelector('#hint')!.textContent=this.message;
     document.querySelector('#rehearsal-state')!.textContent='';
     document.querySelector('#guide-title')!.textContent='WASD / 方向键移动';
-    document.querySelector('#guide-action')!.textContent=this.mode==='piano'?'Z / Q 两排弹琴 · ↑↓ 切换音区 · Esc 起身':this.mode!=='walk'?'E / Esc 起身':t?`E · ${button.textContent}`:'';
+    document.querySelector('#guide-action')!.textContent=this.mode==='piano'?'Z / Q 两排弹琴 · ↑↓ 切换音区 · Esc 起身':this.mode==='podium'&&this.isLaura()?'吹萨克斯 · E / Esc 下台':this.mode!=='walk'?'E / Esc 起身':t?`E · ${button.textContent}`:'';
   }
 }

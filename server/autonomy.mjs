@@ -2,19 +2,11 @@ import rooms from '../shared/rooms.json' with {type:'json'};
 import geometry from '../shared/interactions.json' with {type:'json'};
 import desks from '../shared/workstations.json' with {type:'json'};
 import {habits} from './personas.mjs';
-import {meetPlaces} from './life.mjs';
+import {validMeetPlace} from './life.mjs';
 export const activityPause=(kind='rest')=>(kind==='work'?30*60000:10*60000)+Math.random()*(kind==='work'?60*60000:15*60000);
 
-export function walkable(scene,x,y){
- const seats=Object.values(geometry[scene].seats);
- if(scene==='hutong'||scene==='hawaii')return (x>=69&&x<=603&&y>=166&&y<=221)||(x>=586&&x<=608&&y>=130&&y<=260);
- if(scene==='rest')return x>=52&&x<=590&&y>=140&&y<=278&&!['200','360','520'].some(cx=>((x-Number(cx))/44)**2+((y-267)/24.2)**2<1)&&!seats.some(s=>Math.abs(x-s.at[0])<19&&y>s.at[1]-14&&y<s.at[1]+3);
- if(scene==='noodle')return x>=38&&x<=602&&y>=174&&y<=346&&![213,439].some(cx=>Math.abs(x-cx)<74&&y>257&&y<292)&&!seats.some(s=>Math.abs(x-s.at[0])<14&&Math.abs(y-s.at[1])<10);
- if(scene==='pop')return x>=55&&x<=585&&y>=155&&y<=338&&!(x>240&&x<400&&y>171&&y<283);
- if(scene==='concert')return x>=55&&x<=585&&y>=159&&y<=349&&!seats.some(s=>Math.abs(x-s.at[0])<18&&y>s.at[1]-14&&y<s.at[1]+13);
- if(scene==='gym'){const inset=32+(350-y)*.09;return x>=inset&&x<=640-inset&&y>=90&&y<=338&&![225,320,415].some(cx=>Math.abs(x-cx)<31&&y<143)&&!(x<90&&y<178)&&!(x>490&&y<185)&&!(x>74&&x<143&&y>140&&y<211)&&!(x<90&&y>218&&y<305)&&!(x>565&&y>210&&y<266);}
- return x>=55&&x<=585&&y>=192&&y<=338;
-}
+export {sceneWalkable as walkable} from '../shared/walkability.mjs';
+import {sceneWalkable as walkable} from '../shared/walkability.mjs';
 // Grid routing is constrained by furniture; do not interpolate straight through desks.
 export function route(scene,from,to,occupied=[]){
  const step=6,key=(x,y)=>`${x},${y}`,snap=([x,y])=>[Math.round(x/step)*step,Math.round(y/step)*step];
@@ -41,7 +33,7 @@ export function createAutonomy(store,life,players,leases=new Map(),seenLive=()=>
   const favorites=/米线/.test(fact)?['noodle']:/健身/.test(fact)?['gym']:/演唱会/.test(fact)?['concert']:/POP|下楼/.test(fact)?['pop','rest']:['rest'];
   const roll=Math.random(),pair=p.role==='amber'?'cora':p.role==='cora'?'amber':p.role==='laura'?'amber':null,friend=all().find(o=>o.role===pair);
   const occupied=onlineScenes();
-  const meetPlace=meeting&&meetPlaces[meeting.item]?meeting.item:'rest';
+  const meetPlace=meeting&&validMeetPlace(meeting.item)?meeting.item:'rest';
   // When humans are online, prefer their rooms so offline doubles stay visible rather than vanishing into empty scenes.
   let destination=meeting?meetPlace:roll<.45?'hutong':roll<.65?'rest':roll<.8?p.scene:friend&&roll>.95?friend.scene:favorites[Math.floor(Math.random()*favorites.length)];
   if(!meeting&&occupied.length&&roll>=.35&&roll<.8)destination=occupied[Math.floor(Math.random()*occupied.length)];
@@ -69,6 +61,8 @@ export function createAutonomy(store,life,players,leases=new Map(),seenLive=()=>
   if(director?.tick(now))changed=true;
   life.expire(now);
   for(const p of doubles.values()){
+   if(!Object.hasOwn(rooms,p.scene)||p.task?.scene!==undefined&&!Object.hasOwn(rooms,p.task.scene)){p.scene='hutong';[p.x,p.y]=rooms.hutong.exit;p.task=null;p.path=[];p.seat=null;p.activity='walk';}
+   const command=life.travel(p.id);if(command&&p.travelId!==command.offer){releaseSeat(p);Object.assign(p,command.ack?(life.position(p.id)??command.state):command.state,{task:null,path:[],next:now+30000});save(p);changed=true;}if(command&&!command.ack){life.ackTravel(p.id,command.offer);changed=true;}
    const offer=life.offers(p.id).find(o=>o.recipient===p.id&&o.status==='pending');if(offer){try{life.respond(p.id,offer.id,offer.kind==='gift'&&store.byId(p.id).hand?'reject':'accept');if(!p.task?.storyId){p.task=null;p.path=[];p.next=now;}changed=true;}catch{}}
    if(p.task?.kind==='meet'&&!life.meeting(p.id)){p.task=null;p.path=[];p.next=now+30000;}
    for(const l of leases.values())if(l.account===p.id)l.at=now;

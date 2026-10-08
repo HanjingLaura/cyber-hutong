@@ -1,0 +1,12 @@
+export type KtvSong={id:string;name:string;bpm:number;notes:number[];lines:string[]};
+export type KtvPlayer={queue:string[];playing:boolean;started:number;offset:number};
+export const ktvSongs:KtvSong[];
+export const ktvLights:string[];
+export const ktvTargets:Record<'terminal'|'mic'|'lights',number[]>;
+export const ktvObstacles:number[][];
+export function ktvWalkable(x:number,y:number):boolean;
+export function songDuration(song:KtvSong):number;
+export function emptyKtvPlayer():KtvPlayer;
+export function ktvPlayback(state:KtvPlayer,now?:number):{queue:string[];song:KtvSong|null;elapsed:number;playing:boolean};
+export function changeKtvPlayer(state:KtvPlayer,action:string,id?:string,now?:number):KtvPlayer;
+export function ktvBeatResult(elapsed:number,bpm:number):{index:number;grade:string;points:number};

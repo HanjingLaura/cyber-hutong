@@ -2,6 +2,7 @@
 import Phaser from 'phaser';
 
 const roomTextures:Record<string,{key:string;url:string}[]>={
+ ktv:[{key:'ktv-room',url:new URL('../assets/drafts/ktv-room-v1.png',import.meta.url).href}],
  hutong:[
   {key:'wall',url:new URL('../assets/drafts/hutong-wall-view-v5.png',import.meta.url).href},
   {key:'reverse',url:new URL('../assets/drafts/hutong-reverse-view-v5.png',import.meta.url).href},

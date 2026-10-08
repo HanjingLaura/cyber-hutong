@@ -22,16 +22,16 @@ test('gifts reserve their item, rejection and expiry do not lose it; acceptance 
  assert.ok(life.journal(a.id).some(e=>e.body.includes('收下了')));
 });
 test('meetups require acceptance, finish on actual co-location, cancel and timeout stay terminal',async t=>{
- const {life,a,b}=await fixture(t);const one=life.send(a.id,'sid','meet','meet-1','hutong');life.respond(b.id,one.id,'accept');life.finishMeetings([{id:a.id,role:'laura',scene:'hutong',x:320,y:190},{id:b.id,role:'sid',scene:'rest',x:320,y:190}]);assert.ok(life.meeting(a.id));life.finishMeetings([{id:a.id,role:'laura',scene:'rest',x:320,y:190},{id:b.id,role:'sid',scene:'rest',x:320,y:195}]);assert.equal(life.meeting(a.id),undefined);
+ const {life,a,b}=await fixture(t);const one=life.send(a.id,'sid','meet','meet-1','hutong');life.respond(b.id,one.id,'accept');life.ackTravel(a.id,one.id);life.ackTravel(b.id,one.id);life.finishMeetings([{id:a.id,role:'laura',scene:'hutong',x:320,y:190},{id:b.id,role:'sid',scene:'rest',x:320,y:190}]);assert.ok(life.meeting(a.id));life.finishMeetings([{id:a.id,role:'laura',scene:'rest',x:320,y:190},{id:b.id,role:'sid',scene:'rest',x:320,y:195}]);assert.equal(life.meeting(a.id),undefined);
  const two=life.send(a.id,'sid','meet','meet-2','hutong');life.respond(b.id,two.id,'accept');life.respond(a.id,two.id,'cancel');assert.equal(life.respond(b.id,two.id,'accept').status,'cancelled');const three=life.send(a.id,'sid','meet','meet-3','hutong');life.expire(three.expires+1);assert.equal(life.offers(a.id).length,0);
 });
 test('play invites finish in arcade dance or gym instead of only the rest room',async t=>{
  const {life,a,b}=await fixture(t);assert.throws(()=>life.send(a.id,'sid','meet','bad-place','hutong',undefined,'pop'),/地点无效/);
- const arcade=life.send(a.id,'sid','meet','arcade-1','hutong',undefined,'arcade');assert.equal(arcade.item,'arcade');life.respond(b.id,arcade.id,'accept');
+ const arcade=life.send(a.id,'sid','meet','arcade-1','hutong',undefined,'arcade');assert.equal(arcade.item,'arcade');life.respond(b.id,arcade.id,'accept');life.ackTravel(a.id,arcade.id);life.ackTravel(b.id,arcade.id);
  life.finishMeetings([{id:a.id,role:'laura',scene:'rest',x:320,y:190},{id:b.id,role:'sid',scene:'rest',x:320,y:195}]);assert.ok(life.meeting(a.id),'rest room does not complete an arcade invite');
  life.finishMeetings([{id:a.id,role:'laura',scene:'arcade',x:300,y:200},{id:b.id,role:'sid',scene:'arcade',x:310,y:205}]);assert.equal(life.meeting(a.id),undefined);
  assert.ok(life.journal(a.id).some(e=>e.body.includes('娱乐室')));
- const dance=life.send(a.id,'sid','meet','dance-1','hutong',undefined,'dance');life.respond(b.id,dance.id,'accept');
+ const dance=life.send(a.id,'sid','meet','dance-1','hutong',undefined,'dance');life.respond(b.id,dance.id,'accept');life.ackTravel(a.id,dance.id);life.ackTravel(b.id,dance.id);
  life.finishMeetings([{id:a.id,role:'laura',scene:'dance',x:400,y:250},{id:b.id,role:'sid',scene:'dance',x:405,y:252}]);assert.ok(life.journal(a.id).some(e=>e.body.includes('舞室')));
 });
 test('offline rules use furniture routes and surrender to the human without two copies',async t=>{

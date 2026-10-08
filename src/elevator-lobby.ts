@@ -1,3 +1,4 @@
+import {sceneWalkable} from '../shared/walkability.mjs';
 import Phaser from 'phaser';
 import {sharedAction} from './multiplayer/world-client';
 import { playerInventory } from './player-inventory';
@@ -35,13 +36,7 @@ export class ElevatorLobbyScene extends Phaser.Scene{
   private nearest(){return entrances.map((e,index)=>({index,x:e.x+e.width/2,y:e.y+e.height+22})).filter(t=>Math.hypot(this.x-t.x,this.y-t.y)<36).sort((a,b)=>Math.hypot(this.x-a.x,this.y-a.y)-Math.hypot(this.x-b.x,this.y-b.y))[0]?.index;}
   private state(i:number){const d=this.doors[i];return d.progress<=0?'已关闭':d.progress>=1?'已打开':d.open?'正在打开':'正在关闭';}
   private interact(){const index=this.nearest();if(index===undefined)return;if(sharedAction(`elevator:door-${index}`,'toggle'))return;this.doors[index].open=!this.doors[index].open;}
-  private canWalk(x:number,y:number){
-    // Cabins are visible scenery only: opening a door never removes this boundary.
-    if(x<43||x>597||y<242||y>340)return false;
-    if(x>328&&x<390&&y<257)return false;
-    if(x<107&&y<264)return false;
-    return true;
-  }
+  private canWalk(x:number,y:number){return sceneWalkable('elevator',x,y);}
   private drawDoors(){
     this.indicators.clear();
     entrances.forEach((e,i)=>{

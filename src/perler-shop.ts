@@ -1,3 +1,4 @@
+import {sceneWalkable} from '../shared/walkability.mjs';
 import Phaser from 'phaser';
 import { playerInventory, type ItemName } from './player-inventory';
 import { PerlerBoard, BEAD_COLORS } from './perler-board';
@@ -78,16 +79,7 @@ export class PerlerShopScene extends Phaser.Scene{
     if(t.kind==='iron'){this.workshop.open(this.lastSeat);this.message='';return;}
     this.sit(t.index);
   }
-  private canWalk(x:number,y:number){
-    if(x<35+(350-y)*.025||x>605-(350-y)*.025||y<124||y>341)return false;
-    if(x>126&&x<514&&tableRows.some(top=>y>top-8&&y<top+68))return false;
-    if(seats.some(s=>Math.abs(x-s.x)<22&&Math.abs(y-s.y)<6))return false;
-    if(x>527&&y<168)return false; // ironing cabinet, including sprite-width clearance
-    if(x<81&&y>230&&y<317)return false; // storage cabinet
-    if(x>565&&y>246&&y<327)return false; // display easel
-    if(x<70&&y<131)return false; // planter and side bench
-    return true;
-  }
+  private canWalk(x:number,y:number){return sceneWalkable('perler',x,y);}
   private drawBoards(){
     this.boardArt.forEach(art=>art.clear());
     seats.forEach((s,index)=>{const left=s.x-27,top=tableRows[index<4?0:1]+3;const cells=this.workshop.cellsAt(index),art=this.boardArt[index<4?0:1];

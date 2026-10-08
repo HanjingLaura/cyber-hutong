@@ -12,12 +12,13 @@ import {onlineWorld} from './world-client';
 // Existing rooms retain their local object/gameplay controllers. This adapter is
 // the sole boundary between their coordinates and the multiplayer presentation.
 type Room=Phaser.Scene&Record<string,any>;
-const previewKeys:Record<string,string>={hutong:'__hutongPreview',hawaii:'__hawaiiPreview',rest:'__restPreview',pop:'__popPreview',bathroom:'__bathroomPreview',concert:'__concertPreview',arcade:'__arcadePreview',noodle:'__noodlePreview',gym:'__gymPreview',dance:'__dancePreview',perler:'__perlerPreview',rehearsal:'__rehearsalPreview',elevator:'__elevatorPreview',subway:'__subwayPreview'};
+const previewKeys:Record<string,string>={hutong:'__hutongPreview',hawaii:'__hawaiiPreview',rest:'__restPreview',pop:'__popPreview',bathroom:'__bathroomPreview',concert:'__concertPreview',arcade:'__arcadePreview',noodle:'__noodlePreview',gym:'__gymPreview',dance:'__dancePreview',perler:'__perlerPreview',rehearsal:'__rehearsalPreview',elevator:'__elevatorPreview',subway:'__subwayPreview',ktv:'__ktvPreview'};
 export class MultiplayerBridge{
   user:User|null=null;players:Player[]=[];onlineRoles:Role[]=[];controller=true;connected=false;
   npcEpoch=0;claimedRoles:Role[]=[];
   transitioning=false;
   pendingSpawn:Player|null=null;
+  travelId:string|undefined;
   private views=new Map<Phaser.Scene,Map<Role,TeamAvatar>>();private previous=new Map<string,{x:number;y:number}>();private mirrors=new Map<Phaser.Scene,Map<Role,TeamAvatar>>();
   private movedAt=new Map<string,number>();
   private remotePositions=new Map<Role,{x:number;y:number;scene:string;seat:string|null}>();
@@ -33,7 +34,7 @@ export class MultiplayerBridge{
     if(moving)this.movedAt.set(key,performance.now());
     const role=this.user?.role||'laura';
     const mode=windowState.mode??scene.mode??'walk',activity=['hutong','hawaii'].includes(key)?(seat?(canWorkAt(role,key,String(seat))?'working':'sit'):'walk'):['standing','walking'].includes(mode)?'walk':mode;
-    return {role,name:role,scene:key,x:windowState.x,y:windowState.y,facing:windowState.facing??scene.facing??0,moving:moving||performance.now()-(this.movedAt.get(key)||0)<100||windowState.mode==='run',seat:seat===null?null:String(seat),hand:playerInventory.hand,revision:this.user?.revision||0,activity};
+    return {role,name:role,scene:key,x:windowState.x,y:windowState.y,facing:windowState.facing??scene.facing??0,moving:moving||performance.now()-(this.movedAt.get(key)||0)<100||windowState.mode==='run',seat:seat===null?null:String(seat),hand:playerInventory.hand,revision:this.user?.revision||0,activity,travelId:this.travelId};
   }
   apply(p:Player){const scene=this.active;if(!scene||scene.sys.settings.key!==p.scene)return;if('actorX' in scene){scene.actorX=p.x;scene.actorY=p.y;}else{scene.x=p.x;scene.y=p.y;}scene.facing=p.facing;}
   stand(){const s=this.active;if(!s)return;if(typeof s.stand==='function')s.stand();else if(typeof s.stop==='function')s.stop();}
@@ -42,7 +43,7 @@ export class MultiplayerBridge{
   private draw(delta:number){
     const scene=this.active;let local=this.state();if(!scene||!local)return;
     if(this.pendingSpawn?.scene===local.scene){this.apply(this.pendingSpawn);local=this.state()!;this.pendingSpawn=null;this.transitioning=false;releaseScene();if(this.syncTimer){clearTimeout(this.syncTimer);this.syncTimer=null;}}
-    const self=this.players.find(p=>p.role===this.user?.role);
+    const self=this.pendingSpawn??this.players.find(p=>p.role===this.user?.role);
     scene.input.enabled=!this.user?.role||this.controller&&this.connected;
     if(scene.input.keyboard){const enabled=this.controller&&(!this.user?.role||this.connected)&&!document.querySelector('dialog[open]')&&!/^(INPUT|TEXTAREA)$/.test(document.activeElement?.tagName||'');if(!enabled&&scene.input.keyboard.enabled)scene.input.keyboard.resetKeys();scene.input.keyboard.enabled=enabled;}
     // Only a viewer tab (or the initial spawn) follows the server's scene. The controlling tab is authoritative;
@@ -75,7 +76,7 @@ export class MultiplayerBridge{
       const doorOpen=p.scene==='bathroom'&&p.seat?(onlineWorld()?.objects.get('bathroom:door-'+p.seat)?.open??scene.open?.[Number(p.seat)]??false):true;
       const showName=!(p.scene==='bathroom'&&p.seat&&!doorOpen);
       const height=p.scene==='concert'&&p.seat?({A:54,B:61.44,C:66}[p.seat[0]]??61.44):['perler','noodle','arcade'].includes(p.scene)&&p.seat?54:61.44;
-      view.draw(p,point.x,point.y,point.facing,delta,office,height,p.scene==='bathroom'&&p.seat?196:point.y+(p.scene==='arcade'&&p.seat?7:p.scene==='perler'&&p.seat?6:p.scene==='noodle'&&p.seat?4:1),showName,own&&this.controller?scene.mode:p.activity??'',office&&p.seat?point.y-(point.facing===0?17:27):seatSurface(p.scene,p.seat));
+      view.draw(p,point.x,point.y,point.facing,delta,office,height,p.scene==='bathroom'&&p.seat?196:p.scene==='rehearsal'&&p.activity==='podium'?191:point.y+(p.scene==='arcade'&&p.seat?7:p.scene==='perler'&&p.seat?6:p.scene==='noodle'&&p.seat?4:1),showName,own&&this.controller?scene.mode:p.activity??'',office&&p.seat?point.y-(point.facing===0?17:27):seatSurface(p.scene,p.seat));
       if(p.scene==='dance'&&view.ready){
         if(!this.mirrors.has(scene)){this.mirrors.set(scene,new Map());scene.events.once('shutdown',()=>{this.mirrors.get(scene)?.forEach(v=>v.destroy());this.mirrors.delete(scene);});}
         const mirrors=this.mirrors.get(scene)!;let mirror=mirrors.get(p.role);

@@ -6,6 +6,8 @@ import teamWalk from '../assets/metadata/team-walk-v8.json';
 import teamRun from '../assets/metadata/team-run-v10.json';
 import teamCarry from '../assets/metadata/team-carry-v12.json';
 import lauraDance from '../assets/metadata/laura-dance-v12.json';
+import francoCall from '../assets/metadata/franco-office-call-v1.json';
+import lauraSax from '../assets/metadata/laura-saxophone-v1.json';
 import celine from '../assets/metadata/celine-v1.json';
 import type {Role} from './multiplayer/types';
 import type {GripSlot} from './held-item';
@@ -19,6 +21,8 @@ export interface CharacterData {
  seat:string;frames:CharacterFrame[];carryFrames:CharacterFrame[];officeFrames:CharacterFrame[];
  carryFrontLoop:number[];carryBackLoop:number[];carryRightLoop:number[];walkLoopLength:number;approvedLegacy:boolean;
  sideWalkLoop?:number[];runLoop?:number[];sideWalkFrameMs?:number;runFrameMs?:number;carrySideFrameMs?:number;
+ officeAction?:'call';officeFrameMs?:number;
+ podiumFrames?:CharacterFrame[];podiumFrameMs?:number;
 }
 export const characterRegistry=data as unknown as {version:number;worldHeight:number;seatedHeight:number;sources:Record<string,{file:string;size:number[]}>;members:Record<AvatarRole,CharacterData>};
 // The black-outfit Laura sheets (laura/approved) are retired. Strip them from the
@@ -68,10 +72,17 @@ for(const [role,animation]of Object.entries(teamCarry.members)){
  member.carryRightLoop=animation.carryLoop.map(index=>index+offset);member.carrySideFrameMs=animation.carrySideFrameMs;
 }
 lauraDance.members.laura.indices.forEach((index,i)=>{characterRegistry.members.laura.frames[index]=lauraDance.members.laura.frames[i] as CharacterFrame;});
+Object.assign(characterRegistry.sources,francoCall.sources);
+characterRegistry.members.franco.officeFrames=francoCall.frames as CharacterFrame[];
+characterRegistry.members.franco.officeAction='call';
+characterRegistry.members.franco.officeFrameMs=francoCall.frameMs;
+Object.assign(characterRegistry.sources,lauraSax.sources);
+characterRegistry.members.laura.podiumFrames=lauraSax.frames as CharacterFrame[];
+characterRegistry.members.laura.podiumFrameMs=lauraSax.frameMs;
 const files=import.meta.glob(['../assets/characters/team/v3/*.png','../assets/characters/team/v4/*.png','../assets/characters/team/v8/*.png','../assets/characters/team/v10/*.png','../assets/characters/team/v12/*.png','../assets/characters/laura/v5/*.png','../assets/characters/laura/v6/*.png','../assets/characters/laura/v7/*.png','../assets/npcs/celine-v1.png'],{eager:true,query:'?url',import:'default'}) as Record<string,string>;
 export function characterSource(id:string){const file=characterRegistry.sources[id]?.file,url=id==='celine-v1'?files['../assets/npcs/celine-v1.png']:files['../assets/characters/'+file];if(!url)throw Error('人物素材缺失：'+id);return url;}
 const cache=new Map<string,Promise<HTMLImageElement>>();
 export function characterImage(id:string){const url=characterSource(id);if(!cache.has(url)){const image=new Image();image.src=url;cache.set(url,image.decode().then(()=>image).catch(e=>{cache.delete(url);throw e;}));}return cache.get(url)!;}
 
 /** Decode every sheet a role needs; resolves only when all are ready to draw. */
-export function preloadCharacter(role:AvatarRole){const d=characterRegistry.members[role];return Promise.all([...new Set([...d.frames,...d.carryFrames,...d.officeFrames].map(f=>f.source))].map(characterImage));}
+export function preloadCharacter(role:AvatarRole){const d=characterRegistry.members[role];return Promise.all([...new Set([...d.frames,...d.carryFrames,...d.officeFrames,...(d.podiumFrames??[])].map(f=>f.source))].map(characterImage));}

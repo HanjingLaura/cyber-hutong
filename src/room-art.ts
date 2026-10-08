@@ -1,4 +1,5 @@
 const art:Record<string,string>={
+ ktv:new URL('../assets/maps/memories/ktv.png',import.meta.url).href,
  // Map cards use the compact 640×360 previews — not full room drafts.
  hutong:new URL('../assets/maps/memories/hutong.png',import.meta.url).href,
  hawaii:new URL('../assets/maps/memories/hawaii.png',import.meta.url).href,

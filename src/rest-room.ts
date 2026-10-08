@@ -1,3 +1,4 @@
+import {sceneWalkable} from '../shared/walkability.mjs';
 import Phaser from 'phaser';
 import { registerRegions, type SpriteFrame } from './frames';
 import { CONTENT_SCALE, METRICS, PIXEL_RATIO } from './layout';
@@ -287,14 +288,7 @@ export class RestRoomScene extends Phaser.Scene {
   private timeEventCoffee() {
     this.brewTimer = this.time.delayedCall(1400, () => { this.brewing = false; this.coffeeReady = true; this.message(''); });
   }
-  private canWalk(x: number, y: number) {
-    if (x < 52 || x > 590 || y < 140 || y > 278) return false;
-    for (const center of tableCenters) {
-      if (((x - center) / tableCollision.radiusX) ** 2 + ((y - tableFloorY) / tableCollision.radiusY) ** 2 < 1) return false;
-    }
-    if (chairSeats.some(seat => Math.abs(x - seat.x) < 19 && y > seat.y - 14 && y < seat.y + 3)) return false;
-    return true;
-  }
+  private canWalk(x:number,y:number){return sceneWalkable('rest',x,y);}
   update(_now: number, delta: number) {
     const focus = document.activeElement;
     const accepts = focus === document.querySelector('.world') || focus === this.game.canvas;
