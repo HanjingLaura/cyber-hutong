@@ -71,17 +71,16 @@ export class TeamAvatar{
   const scale=height/(fillCarry?h:frame.referenceHeight),flip=direction===3,pivot=flip?1-frame.pivotX:frame.pivotX;
   if(seated&&seatSurface!==undefined)y=seatSurface+(h-frame.seat[1])*scale;
   // Move the front-facing seated worker toward the desk; the monitor covers part of the hands.
-  if(seated&&office&&(!holding||calling)&&front)y-=height*.03+1;
+  if(seated&&office&&(!holding||calling)&&front)y-=24;
   if(!fillCarry)y+=height*(frame.offsetYRatio??0);
   this.hide();this.frameName=frame.name;
   this.body.setTexture(key,'pose-'+part+'-'+index).setOrigin(pivot,1).setScale(scale*(frame.scaleXRatio??1),scale).setFlipX(flip).setPosition(Math.round(x),Math.round(y)).setDepth(depth).setVisible(true);
   if(seated&&office){
-   // Far row, back to the camera: the chair back is footY+2 and the body is
-   // footY+1, so the whole mesh stays in front of the jacket. The head rises
-   // above the backrest on its own. Only the phone at the ear is drawn in front.
-   if(back)this.body.setTexture(key,'upper-'+part+'-'+index).setOrigin(pivot,h/Math.round(h*.72));
-   else this.upper.setTexture(key,'upper-'+part+'-'+index).setOrigin(pivot,0).setScale(scale).setFlipX(flip).setPosition(Math.round(x),Math.round(y-h*scale)).setDepth(depth+3).setVisible(true);
-   if(back&&calling){const px=Math.round(w*.76),py=Math.round(h*.26),pw=w-px,ph=Math.round(h*.24),sx=scale*(frame.scaleXRatio??1);this.upper.setTexture(key,'call-phone-'+index).setOrigin((pivot*w-px)/pw,-py/ph).setScale(sx,scale).setFlipX(flip).setPosition(Math.round(x),Math.round(y-h*scale)).setDepth(depth+3).setVisible(true);}
+   // Both rows: the chair back is footY+2 and the body is footY+1, so the
+   // whole mesh stays in front of the jacket. The head rises above the
+   // backrest on its own. Only the phone at the ear is drawn in front.
+   this.body.setTexture(key,'upper-'+part+'-'+index).setOrigin(pivot,h/Math.round(h*.72));
+   if(back&&calling){const px=Math.round(w*.76),py=Math.round(h*.26),pw=w-px,ph=Math.round(h*.24),phoneScale=scale*(frame.scaleXRatio??1);this.upper.setTexture(key,'call-phone-'+index).setOrigin((pivot*w-px)/pw,-py/ph).setScale(phoneScale,scale).setFlipX(flip).setPosition(Math.round(x),Math.round(y-h*scale)).setDepth(depth+3).setVisible(true);}
   }
   const nativeFrame:SpriteFrame={name:'pose-'+part+'-'+index,x:sx,y:sy,width:w,height:h,referenceHeight:fillCarry?h:frame.referenceHeight,pivotX:frame.pivotX};
   if(data.approvedLegacy&&!holding&&moving&&!front&&!back&&!this.masked)this.legs.draw(this.body,nativeFrame,height,direction,this.time);
@@ -93,7 +92,7 @@ export class TeamAvatar{
     const [gx,gy]=frame.grip,sign=flip?-1:1,out=frame.gripSide*sign;
     const px=x+(gx-w*frame.pivotX)*scale*(frame.scaleXRatio??1)*sign,py=y+(gy-h)*scale;
     const propFlip=out!==(item.grip.x>.5?-1:1);
-    this.prop.setTexture(item.texture,item.frame).setDisplaySize(item.width,item.height).setOrigin(propFlip?1-item.grip.x:item.grip.x,item.grip.y).setFlipX(propFlip).setPosition(px,py).setDepth(depth+(office&&seated&&!back?3.1:.1)).setVisible(true);
+    this.prop.setTexture(item.texture,item.frame).setDisplaySize(item.width,item.height).setOrigin(propFlip?1-item.grip.x:item.grip.x,item.grip.y).setFlipX(propFlip).setPosition(px,py).setDepth(depth+.1).setVisible(true);
     if(back){const ax=Math.max(0,gx-12),ay=Math.max(0,gy-12);this.arm.setTexture(key,'arm-'+part+'-'+index).setOrigin(flip?1:0,0).setScale(scale).setFlipX(flip).setPosition(x+(ax-w*frame.pivotX)*scale*sign,y+(ay-h)*scale).setDepth(depth+.2).setVisible(true);}
    }
   }
