@@ -49,7 +49,9 @@ test('storyInterval follows mvp-spec T(N) for 0-8 online people',()=>{
 
 test('director look-back clock and candidate bias adapt to online occupancy',async t=>{
  let clock=Date.now();
+ const scheduledAt=clock;
  t.mock.method(Date,'now',()=>clock);
+ t.mock.method(Math,'random',()=>0); // Exercise the exact lower jitter boundary.
  const app=createMvpServer({dbPath:':memory:',llmOptions:{key:''}});
  t.after(()=>app.close());
  for(const role of roles)await app.store.register('occ_'+role,'test-password-123',role);
@@ -57,7 +59,7 @@ test('director look-back clock and candidate bias adapt to online occupancy',asy
  for(const p of app.autonomy.doubles.values())p.next=Infinity;
 
  const next=app.director.status().nextAt;
- assert.ok(next>=clock+12*60000&&next<=clock+18*60000,'N=0 uses 15min ±20% look-back window');
+ assert.ok(next>=scheduledAt+12*60000&&next<=scheduledAt+18*60000,'N=0 uses 15min ±20% from the scheduling time');
  assert.equal(app.director.status().online,0);
 
  const laura=app.store.byRole('laura');
