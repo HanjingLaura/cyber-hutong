@@ -177,10 +177,18 @@ export function createMvpServer({dbPath='data/mvp.sqlite',staticDir=resolve('dis
         startPlayer(user);
         if(path==='/api/control'){if(typeof input.client!=='string'||input.client.length>80)fail(400,'连接编号无效');startPlayer(user);if(controls.get(user.id)!==input.client){const p=players.get(user.id),geometry=interactions[p.scene],seat=geometry.seats[p.seat],activity=geometry.activities[p.activity]?.find(a=>Math.hypot(p.x-a.at[0],p.y-a.at[1])<8),point=seat?.approach??activity?.approach;if(point){p.x=point[0];p.y=point[1];}p.seat=null;p.activity='walk';release(user.id);}controls.set(user.id,input.client);dirty=true;json(res,200,{ok:true,player:cleanPlayer(players.get(user.id))});return;}
         if(path==='/api/transition'){
-          checkControl(user,input.client);const p=players.get(user.id),from=rooms[p.scene],to=rooms[input.target];
+          checkControl(user,input.client);const p=players.get(user.id);
+          if(input.checkpoint!==undefined){
+            const saved=life.position(user.id),checkpoint=saved?.checkpoint;
+            if(typeof input.checkpoint!=='string'||!checkpoint||checkpoint.id!==input.checkpoint||checkpoint.client!==input.client||Date.now()-checkpoint.at>120000||saved.scene!==p.scene||(!p.fresh&&checkpoint.at<p.at))fail(409,'位置确认已过期，请重试');
+            // This pose was validated by /presence and committed before acknowledgment.
+            // Warm serverless replicas may still hold an older local pose.
+            Object.assign(p,saved,{at:checkpoint.at,fresh:false});
+          }
+          const from=rooms[p.scene],to=rooms[input.target];
           if(typeof input.target!=='string'||!Object.hasOwn(rooms,input.target)||input.target===p.scene)fail(400,'地点无效');
           if(p.seat||[...leases.values()].some(l=>l.account===user.id)||!['walk',undefined].includes(p.activity)||Math.hypot(p.x-from.exit[0],p.y-from.exit[1])>30)fail(409,'先结束互动，走到出口');
-          release(user.id);Object.assign(p,{scene:input.target,x:to.exit[0],y:to.exit[1],seat:null,moving:false,facing:0,at:Date.now()});life.savePosition(p);dirty=true;
+          release(user.id);delete p.checkpoint;Object.assign(p,{scene:input.target,x:to.exit[0],y:to.exit[1],seat:null,moving:false,facing:0,at:Date.now()});life.savePosition(p);dirty=true;
           json(res,200,{player:cleanPlayer(p),self:store.publicAccount(store.byId(user.id)),objects:world.snapshot(p.scene)});return;
         }
         if(path==='/api/inventory'){checkControl(user,input.client);limited('inventory:'+user.id,30,10000);const result=life.inventory(user.id,input,roomFor(user.id));dirty=true;json(res,200,result);return;}
@@ -241,13 +249,17 @@ export function createMvpServer({dbPath='data/mvp.sqlite',staticDir=resolve('dis
           const next=store.publicAccount(store.byId(user.id));
           for(const l of leases.values())if(l.account===user.id)l.at=now;
           const previousActivity=p.activity;
-          delete p.fresh;Object.assign(p,{scene:input.scene,x:input.x,y:input.y,facing:input.facing,moving:input.moving===true,seat:input.seat,activity:activity.slice(0,20),at:now});if(now-(p.savedAt||0)>5000){life.savePosition(p);p.savedAt=now;}
+          // A checkpoint from any replica expires on the next valid ordinary pose.
+          const revokeCheckpoint=input.checkpoint!==true&&!!(p.checkpoint||life.position(user.id)?.checkpoint);
+          delete p.fresh;delete p.checkpoint;Object.assign(p,{scene:input.scene,x:input.x,y:input.y,facing:input.facing,moving:input.moving===true,seat:input.seat,activity:activity.slice(0,20),at:now});
+          if(input.checkpoint===true)p.checkpoint={id:randomUUID(),client:input.client,at:now};
+          if(input.checkpoint===true||revokeCheckpoint||now-(p.savedAt||0)>5000){life.savePosition(p,{checkpoint:p.checkpoint});p.savedAt=now;}
           if(previousActivity!==activity){
             if(activity==='working')life.record(user.id,'work','开始在自己的工位办公。',p.scene,Date.now(),{routine:true,key:`work:start:${p.scene}`});
             else if(activity==='sit')life.record(user.id,'rest','坐在椅子上休息。',p.scene,Date.now(),{routine:true,key:`rest:sit:${p.scene}`});
             else if(previousActivity==='working')life.record(user.id,'work','离开工位，结束了这段办公。',p.scene,Date.now(),{routine:true,key:`work:end:${p.scene}`});
           }
-          if(travel){if(!travel.ack)life.savePosition(p);life.ackTravel(user.id,travel.offer);life.finishMeetings(autonomy.all());}poseDirty=true;json(res,200,{self:next,player:cleanPlayer(p)});return;
+          if(travel){if(!travel.ack)life.savePosition(p,{checkpoint:p.checkpoint});life.ackTravel(user.id,travel.offer);life.finishMeetings(autonomy.all());}poseDirty=true;json(res,200,{self:next,player:cleanPlayer(p),...(p.checkpoint?{checkpoint:p.checkpoint.id}:{})});return;
         }
         if(path==='/api/chat'){
           limited('chat:'+user.id,12,10000);const text=typeof input.text==='string'?input.text.trim():'';if(!text||text.length>200)fail(400,'消息需为 1–200 个字');

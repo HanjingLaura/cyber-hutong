@@ -1,10 +1,10 @@
 import {roomArt} from './room-art';
 import rooms from '../shared/rooms.json';
 import {project} from './layout';
-import {warmRoom} from './asset-warmup';
+import {warmRoom,prepareRoom} from './asset-warmup';
 import type {MultiplayerBridge} from './multiplayer/bridge';
 type RoomKey=keyof typeof rooms;
-export function setupNavigation(bridge:MultiplayerBridge,request:(path:string,input?:any)=>Promise<any>,publish:()=>Promise<void>,client:string,notice:(text:string)=>void){
+export function setupNavigation(bridge:MultiplayerBridge,request:(path:string,input?:any)=>Promise<any>,publish:()=>Promise<string>,client:string,notice:(text:string)=>void){
  const dialog=document.createElement('dialog');dialog.id='location-map';dialog.className='social-dialog location-map';
  dialog.innerHTML='<div class="panel-heading"><h2 id="location-title">地点</h2><button type="button" data-cancel>关闭</button></div><p data-current></p><p data-error role="status"></p><button type="button" data-find-exit hidden>出口方向</button><div data-places></div>';
  dialog.setAttribute('aria-labelledby','location-title');
@@ -36,7 +36,7 @@ export function setupNavigation(bridge:MultiplayerBridge,request:(path:string,in
    for(const [key,r]of Object.entries(rooms).filter(([,room])=>room.group===group)){
     const b=document.createElement('button');b.type='button';b.dataset.place=key;b.disabled=p?.scene===key;
     const frame=document.createElement('span');frame.className='place-frame';
-    const img=document.createElement('img');img.src=roomArt(key);img.alt='';img.loading='lazy';img.decoding='async';
+    const img=document.createElement('img');img.src=roomArt(key);img.alt='';img.loading='lazy';img.decoding='async';img.fetchPriority='low';
     const enter=document.createElement('span');enter.className='place-enter';enter.dataset.enterPlace='';enter.textContent='进入';enter.hidden=true;
     frame.append(img,enter);
     const name=document.createElement('span');name.className='place-name';name.textContent=r.name;
@@ -45,7 +45,7 @@ export function setupNavigation(bridge:MultiplayerBridge,request:(path:string,in
      if(b.disabled||busy)return;
      const keyPlace=key as RoomKey;
      if(selected===keyPlace){void go(keyPlace);return;}
-     selected=keyPlace;syncSelection();warmRoom(keyPlace);
+     selected=keyPlace;syncSelection();warmRoom(keyPlace,bridge.game);
     };
     section.append(b);
    }
@@ -54,6 +54,7 @@ export function setupNavigation(bridge:MultiplayerBridge,request:(path:string,in
   bridge.active?.input.keyboard?.resetKeys();if(!dialog.open)dialog.showModal();
  };
  dialog.querySelector('[data-cancel]')!.addEventListener('click',()=>dialog.close());dialog.addEventListener('close',()=>{selected=null;document.querySelector<HTMLElement>('.world')!.focus();});
+ dialog.addEventListener('cancel',event=>{if(busy)event.preventDefault();});
  const changeScene=async(key:string)=>{const target=key==='hutong'?'culture':key;window.dispatchEvent(new CustomEvent('hutong:navigate',{detail:target}));const scene=bridge.game.scene.getScene(key);
   const deadline=performance.now()+12000;while(!scene.sys.isActive()||!(scene as any).actor){if(performance.now()>deadline)throw new Error('地点载入失败，请重试');await new Promise(resolve=>setTimeout(resolve,50));}
   return scene;
@@ -62,20 +63,21 @@ export function setupNavigation(bridge:MultiplayerBridge,request:(path:string,in
   if(busy)return;
   if(!exitNear()){findExit();return;}
   if(document.querySelector('dialog[open]:not(#location-map)'))return;
-  const before=bridge.state()!;busy=true;bridge.transitioning=true;let committed=false;
+  const before=bridge.state()!,preparation=new AbortController();busy=true;bridge.transitioning=true;let committed=false;
+  (dialog.querySelector('[data-cancel]') as HTMLButtonElement).disabled=true;
   dialog.querySelector('[data-error]')!.textContent='正在载入地点…';
   dialog.querySelectorAll<HTMLButtonElement>('[data-place]').forEach(b=>b.disabled=true);
-  warmRoom(target);
   try{
    if(bridge.user?.role&&(!bridge.connected||!bridge.controller))throw new Error('连接恢复后再切换地点');
-   // Prepare textures before moving the server-owned player or releasing its seat.
+   // Confirm the source pose while decoding destination textures. Commit travel only after both succeed.
+   const [,checkpoint]=await Promise.all([prepareRoom(target,bridge.game,(done,total)=>{dialog.querySelector('[data-error]')!.textContent=`正在载入地点… ${done}/${total}`;},preparation.signal),bridge.user?.role?publish():Promise.resolve(undefined)]);
    const destination=bridge.game.scene.getScene(target);
    if(!destination.sys.isSleeping()&&!destination.sys.isActive()){await new Promise<void>((resolve,reject)=>{const cleanup=()=>{clearTimeout(timer);destination.events.off('create',created);destination.load.off('loaderror',failed);};const failed=()=>{cleanup();bridge.game.scene.stop(target);reject(new Error('素材加载失败，请重试'));};const created=()=>{cleanup();resolve();};const timer=setTimeout(()=>{cleanup();bridge.game.scene.stop(target);reject(new Error('素材加载超时'));},12000);destination.events.once('create',created);destination.load.once('loaderror',failed);bridge.game.scene.run(target);});bridge.game.scene.sleep(target);}
    let player={...before,scene:target,x:rooms[target].exit[0],y:rooms[target].exit[1],seat:null,facing:0};
-   if(bridge.user?.role){await publish();const result=await request('transition',{target,client});player=result.player;committed=true;bridge.players=bridge.players.filter(p=>p.role!==bridge.user?.role);bridge.players.push(player);}
+   if(bridge.user?.role){dialog.querySelector('[data-error]')!.textContent='正在进入地点…';const result=await request('transition',{target,client,checkpoint});player=result.player;committed=true;bridge.players=bridge.players.filter(p=>p.role!==bridge.user?.role);bridge.players.push(player);}
    await changeScene(target);bridge.apply(player);dialog.close();document.querySelector<HTMLElement>('.world')!.focus();
   }catch(e){notice((e as Error).message);const current=committed?bridge.players.find(p=>p.role===bridge.user?.role):before;if(current){await changeScene(current.scene);bridge.apply(current);}
-  }finally{busy=false;bridge.transitioning=false;if(dialog.open)open();}
+  }finally{preparation.abort();busy=false;bridge.transitioning=false;(dialog.querySelector('[data-cancel]') as HTMLButtonElement).disabled=false;if(dialog.open)open();}
  };
  document.querySelector('#room-open')!.addEventListener('click',open);
  const key=(e:KeyboardEvent)=>{if(e.code==='KeyE'&&!e.repeat&&!dialog.open&&!document.querySelector('dialog[open]')&&document.activeElement===document.querySelector('.world')&&exitNear()){e.preventDefault();e.stopImmediatePropagation();open();}};

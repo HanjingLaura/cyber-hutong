@@ -520,6 +520,7 @@ class HutongScene extends Phaser.Scene {
 
 holdScene();
 const game = new Phaser.Game({ type: Phaser.AUTO, width: VIEW_WIDTH / PIXEL_RATIO, height: VIEW_HEIGHT / PIXEL_RATIO, parent: 'game', backgroundColor: '#333936',
+  loader:{imageLoadType:'HTMLImageElement'},
   pixelArt: true, roundPixels: true, scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH },
   scene: [new HutongScene(), RestRoomScene, PopMartScene, new HutongScene('hawaii'), BathroomScene, ConcertScene, ArcadeScene, NoodleShopScene, GymScene, DanceStudioScene, PerlerShopScene, RehearsalScene, ElevatorLobbyScene, SubwayScene, KtvScene], input: { keyboard: true }, banner: false,
 });

@@ -66,7 +66,7 @@ export function startSocial(game:Phaser.Game){
   function close(id:string){const el=$(id);if(el instanceof HTMLDialogElement)el.close();else el.hidden=true;focus();}
   function updateBadges(){const total=[...unread.values()].reduce((n,v)=>n+v,0);for(const id of ['chat-open','people-open'] as const){const button=$(id);button.dataset.badge=total?String(total>9?'9+':total):'';button.setAttribute('aria-label',total?`${button.textContent}，${total} 条未读私聊`:button.textContent||'');}}
   const shared=new WorldClient(bridge,api,()=>publishPresence(true),client,notice,()=>ensureLive());
-  setupNavigation(bridge,api,()=>publishPresence(true),client,notice);
+  setupNavigation(bridge,api,async()=>{const checkpoint:{id?:string}={};await publishPresence(true,checkpoint);if(!checkpoint.id)throw new Error('位置尚未确认，请重试');return checkpoint.id;},client,notice);
   const lifeUI=setupLifeUI(bridge,api,()=>publishPresence(true),client,notice);
   const albumUI=setupAlbumUI(bridge,api,notice);
   for(const id of ['memory-open','settings-open'])$('more-actions').append($(id));
@@ -166,16 +166,17 @@ export function startSocial(game:Phaser.Game){
   },true);
   let pauseTimer:ReturnType<typeof setTimeout>|undefined;
   async function ensureLive(){const deadline=Date.now()+8000;while(!connected&&!party.connected&&Date.now()<deadline)await new Promise(r=>setTimeout(r,100));if(!connected&&!party.connected)throw new Error('连接恢复后再操作');if(!bridge.controller){await api('control',{client});bridge.controller=true;if(party.enabled)void party.connect(true);}}
-  async function publishPresence(force=false){
+  async function publishPresence(force=false,transitionCheckpoint?:{id?:string}){
     while(force&&presenceRequest)await presenceRequest;
-    if(!user?.role||(!connected&&!party.connected)||!bridge.controller||presenceRequest||bridge.transitioning||bridge.pendingSpawn)return;
+    if(!user?.role||(!connected&&!party.connected)||!bridge.controller||presenceRequest||(bridge.transitioning&&!transitionCheckpoint)||bridge.pendingSpawn)return;
     const state=bridge.state();if(!state)return;party.publish(state,force);
     const signature=JSON.stringify(state),now=performance.now();
     // PartyKit carries live motion. HTTP only checkpoints it and confirms gameplay actions.
     if(!force&&(signature===lastSent||now-lastHttpPresence<(party.connected?1000:100)))return;
     lastHttpPresence=now;
     const job=(async()=>{try{
-      const result=await api<{self:User;player:Player}>('presence',{...state,client});
+      const result=await api<{self:User;player:Player;checkpoint?:string}>('presence',{...state,client,...(transitionCheckpoint?{checkpoint:true}:{})});
+      if(transitionCheckpoint)transitionCheckpoint.id=result.checkpoint;
       if(user?.id!==result.self.id)return;applySelf(result.self);lastSent=signature;
     }catch(e){const err=e as Error&{status?:number};if(err.status===409){
       if(/座位|椅子|设备|隔间/.test(err.message))bridge.stand();lastSent='';
