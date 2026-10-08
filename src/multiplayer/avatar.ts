@@ -26,7 +26,7 @@ export class TeamAvatar{
    poses.forEach((frames,part)=>frames.forEach((frame,index)=>{
     const texture=scene.textures.get('team-v3-'+frame.source),[x,y,w,h]=frame.rect,name='pose-'+part+'-'+index;
     if(!texture.has(name)){texture.add(name,0,x,y,w,h);texture.add('upper-'+part+'-'+index,0,x,y,w,Math.round(h*.72));
-     if(this.data.officeAction==='call'&&part===2)texture.add('call-upper-'+index,0,x,y,w,Math.round(h*.5));
+     if(this.data.officeAction==='call'&&part===2){const px=Math.round(w*.76),py=Math.round(h*.26),ph=Math.round(h*.24);texture.add('call-phone-'+index,0,x+px,y+py,w-px,ph);}
      if(frame.grip){const [gx,gy]=frame.grip,ax=Math.max(0,gx-12),ay=Math.max(0,gy-12);texture.add('arm-'+part+'-'+index,0,x+ax,y+ay,Math.min(16,w-ax),Math.min(18,h-ay));}
     }
    }));this.ready=true;
@@ -77,12 +77,11 @@ export class TeamAvatar{
   this.body.setTexture(key,'pose-'+part+'-'+index).setOrigin(pivot,1).setScale(scale*(frame.scaleXRatio??1),scale).setFlipX(flip).setPosition(Math.round(x),Math.round(y)).setDepth(depth).setVisible(true);
   if(seated&&office){
    // Far row, back to the camera: the chair back is footY+2 and the body is
-   // footY+1, so the mesh stays in front of the jacket and arms. Head and
-   // shoulders rise above the backrest on their own. The phone slice is only
-   // the top half (head, ear, phone), not the torso.
+   // footY+1, so the whole mesh stays in front of the jacket. The head rises
+   // above the backrest on its own. Only the phone at the ear is drawn in front.
    if(back)this.body.setTexture(key,'upper-'+part+'-'+index).setOrigin(pivot,h/Math.round(h*.72));
    else this.upper.setTexture(key,'upper-'+part+'-'+index).setOrigin(pivot,0).setScale(scale).setFlipX(flip).setPosition(Math.round(x),Math.round(y-h*scale)).setDepth(depth+3).setVisible(true);
-   if(back&&calling)this.upper.setTexture(key,'call-upper-'+index).setOrigin(pivot,0).setScale(scale).setFlipX(flip).setPosition(Math.round(x),Math.round(y-h*scale)).setDepth(depth+3).setVisible(true);
+   if(back&&calling){const px=Math.round(w*.76),py=Math.round(h*.26),pw=w-px,ph=Math.round(h*.24),sx=scale*(frame.scaleXRatio??1);this.upper.setTexture(key,'call-phone-'+index).setOrigin((pivot*w-px)/pw,-py/ph).setScale(sx,scale).setFlipX(flip).setPosition(Math.round(x),Math.round(y-h*scale)).setDepth(depth+3).setVisible(true);}
   }
   const nativeFrame:SpriteFrame={name:'pose-'+part+'-'+index,x:sx,y:sy,width:w,height:h,referenceHeight:fillCarry?h:frame.referenceHeight,pivotX:frame.pivotX};
   if(data.approvedLegacy&&!holding&&moving&&!front&&!back&&!this.masked)this.legs.draw(this.body,nativeFrame,height,direction,this.time);
