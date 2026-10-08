@@ -18,7 +18,7 @@
   border: 0;
   background:
     linear-gradient(180deg, #0d161288 0%, #15231d55 42%, #15231dcc 100%),
-    url('../../assets/drafts/login-office-background.png') center/cover no-repeat;
+    var(--login-art) center/cover no-repeat;
   color: var(--ink);
   image-rendering: pixelated;
   box-shadow: none;

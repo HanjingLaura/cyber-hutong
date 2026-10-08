@@ -24,12 +24,13 @@ export function touchEnvironment() {
 export function lockViewport() {
   let meta = document.querySelector<HTMLMetaElement>('meta[name="viewport"]');
   if (!meta) { meta = document.createElement('meta'); meta.name = 'viewport'; document.head.append(meta); }
-  meta.content = 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover';
-  // iOS Safari ignores user-scalable for pinch; block gesture + double-tap zoom explicitly.
-  for (const type of ['gesturestart', 'gesturechange', 'gestureend']) document.addEventListener(type, e => e.preventDefault(), { passive: false });
+  meta.content = 'width=device-width, initial-scale=1, viewport-fit=cover';
+  const gameGesture=(target:EventTarget|null)=>target instanceof Element&&!!target.closest('#game,#touch-controls');
+  // Lock gestures on gameplay surfaces; account and social panels remain zoomable.
+  for (const type of ['gesturestart', 'gesturechange', 'gestureend']) document.addEventListener(type, e => {if(gameGesture(e.target))e.preventDefault();}, { passive: false });
   let lastTouch = 0;
-  document.addEventListener('touchend', e => { const now = Date.now(); if (now - lastTouch < 320 && !(e.target as HTMLElement).closest('input,textarea,select')) e.preventDefault(); lastTouch = now; }, { passive: false });
-  document.addEventListener('touchmove', e => { if (e.touches.length > 1) { e.preventDefault(); return; } const t = e.target as HTMLElement; if (!t.closest('.social-panel,dialog,#chat-history,#people-list,.scroll-y')) e.preventDefault(); }, { passive: false });
+  document.addEventListener('touchend', e => { const now = Date.now(); if (now - lastTouch < 320 && gameGesture(e.target)) e.preventDefault(); lastTouch = now; }, { passive: false });
+  document.addEventListener('touchmove', e => { if (gameGesture(e.target)) e.preventDefault(); }, { passive: false });
   const keep = () => { if (scrollX || scrollY) scrollTo(0, 0); };
   addEventListener('scroll', keep, { passive: true });
   visualViewport?.addEventListener('resize', () => { document.documentElement.style.setProperty('--vvh', visualViewport!.height + 'px'); keep(); });
@@ -44,6 +45,9 @@ export function mountTouchControls() {
   root.innerHTML = `<div id="stick-zone" aria-label="移动摇杆"><div id="stick-base"><div id="stick-knob"></div></div></div>
     <div id="touch-actions"><button id="touch-secondary" type="button" hidden></button><button id="touch-primary" type="button"><span>互动</span></button></div>`;
   document.body.append(root);
+  const hint=document.createElement('aside');hint.id='orientation-hint';hint.innerHTML='<span>横屏可以看得更清楚</span><button type="button" aria-label="关闭横屏提示">知道了</button>';
+  let hintDismissed=false;try{hintDismissed=sessionStorage.getItem('hutong:landscape-hint')==='dismissed';}catch{}
+  hint.hidden=hintDismissed;hint.querySelector('button')!.onclick=()=>{hint.hidden=true;try{sessionStorage.setItem('hutong:landscape-hint','dismissed');}catch{}};document.body.append(hint);
   const zone = root.querySelector<HTMLElement>('#stick-zone')!, base = root.querySelector<HTMLElement>('#stick-base')!, knob = root.querySelector<HTMLElement>('#stick-knob')!;
   const primary = root.querySelector<HTMLButtonElement>('#touch-primary')!, secondary = root.querySelector<HTMLButtonElement>('#touch-secondary')!;
   let pointer: number | null = null, origin = { x: 0, y: 0 }, held = new Set<string>();
