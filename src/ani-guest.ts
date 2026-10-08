@@ -3,6 +3,7 @@ import {canWorkAt} from './workstations';
 import { registerFrames, setSpriteFrame, type SpriteFrame } from './frames';
 import { project, visualFacing, type Point } from './layout';
 import positions from '../shared/guests.json';
+import { npcPose } from './npc-feedback';
 
 declare global{interface Window{__aniPreview?:{getState:()=>unknown}}}
 type Worker={role:string;scene:string;seat:string|null;x:number;y:number;activity?:string};
@@ -40,7 +41,8 @@ export class AniGuest{
     const point=project({x:this.x,y:this.y},reverse);
     const facing=visualFacing(0,reverse);
     setSpriteFrame(this.image,'ani-sheet',this.frames[facing===2?1:0],61.44);
-    this.image.setPosition(point.x,point.y).setDepth(point.y+1).setVisible(true);
+    const pose=npcPose('ani');
+    this.image.setPosition(point.x,point.y+pose.y).setAngle((reverse?-1:1)*pose.angle).setDepth(point.y+1).setVisible(true);
   }
   snapshot(){return {id:'ani',owner:'sid',present:this.present,seat:this.seat,x:this.x,y:this.y,screen:project({x:this.x,y:this.y},this.reverse),visible:this.image.visible,frame:this.image.frame.name,poseCount:this.frames.length};}
 }

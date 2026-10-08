@@ -16,6 +16,9 @@ import {createBailian} from './llm.mjs';
 import {createDirector} from './director.mjs';
 import {createRewards,plushNames} from './rewards.mjs';
 import {createCeline} from './celine.mjs';
+import {createNpcReactions} from './npc-reactions.mjs';
+import npcFeedback from '../shared/npc-feedback.json' with {type:'json'};
+import {randomUUID} from 'node:crypto';
 import {issueTicket} from '../shared/party-ticket.mjs';
 import {PARTY_ROOM_ID} from '../shared/party-room.mjs';
 export const scenes=['hutong','hawaii','rest','pop','bathroom','concert','arcade','noodle','gym','dance','perler','rehearsal','elevator','subway'];
@@ -48,7 +51,7 @@ export function createMvpServer({dbPath='data/mvp.sqlite',staticDir=resolve('dis
   const leases=new Map();const life=createLife(store),autonomy=createAutonomy(store,life,players,leases,id=>seenLive(id));
   const world=createWorld(store,life),replyCooldown=new Map(),llm=createBailian(store,life,llmOptions);
   const rewards=createRewards(store,life,world,leases);
-  const npcReactions=new Map();
+  const npcReactions=createNpcReactions(store.db);
   const celine=createCeline(store);
   let dirty=true,poseDirty=false,lastFull=0,closed=false,visitorSignature='';
   const live=role=>[...players.values()].find(p=>p.role===role&&!p.disconnectedAt);
@@ -162,8 +165,9 @@ export function createMvpServer({dbPath='data/mvp.sqlite',staticDir=resolve('dis
           if(!rule)fail(400,'彩蛋不存在');if(rule.owner!==user.role)fail(403,'只有对应的人能与这个彩蛋互动');
           const visible=npcVisible(rule,autonomy.all(),workstations);
           const point=guestPositions[rule.id];if(p.scene!==rule.room||!visible||Math.hypot(p.x-point.x,p.y-point.y)>(rule.id==='ani'?75:42))fail(409,'走近自己的彩蛋再互动');
-          const reaction={id:rule.id+':'+Date.now(),npc:rule.id,owner:rule.owner,scene:rule.room,x:point.x,y:point.y,text:'',expires:Date.now()+5000};npcReactions.set(rule.id,reaction);
-          life.recordGroup([user.id],'easter',`${name(user.role)} 与${({ani:'Ani',lulu:'噜噜',tutu:'图图',buzz:'巴斯光年',zhu:'朱志鑫',ferret:'富贵貂'})[rule.id]}打了个招呼。`,rule.room,Date.now(),reaction.id);dirty=true;json(res,200,{ok:true,reaction});return;
+          const feedback=npcFeedback[rule.id],started=Date.now();
+          const reaction={id:rule.id+':'+randomUUID(),npc:rule.id,owner:rule.owner,scene:rule.room,x:point.x,y:point.y,text:feedback.text,started,expires:started+feedback.duration};npcReactions.set(rule.id,reaction);
+          life.recordGroup([user.id],'easter',`${name(user.role)} 与${({ani:'Ani',lulu:'噜噜',tutu:'图图',buzz:'巴斯光年',zhu:'朱志鑫',ferret:'富贵貂'})[rule.id]}打了个招呼。${feedback.text}`,rule.room,started,reaction.id);dirty=true;json(res,200,{ok:true,reaction,clock:Date.now()});return;
         }
         if(path==='/api/offer'){checkControl(user,input.client);const result=life.respond(user.id,input.id,input.answer);dirty=true;json(res,200,{offer:result});return;}
         if(path==='/api/invite'){checkControl(user,input.client);limited('invite:'+user.id,10,10000);const b=store.byRole(input.peer);if(!b)fail(400,'对方尚未领取角色');const result=life.send(user.id,input.peer,'meet',input.requestId,roomFor(user.id),undefined,input.place||'rest');dirty=true;json(res,200,{offer:result});return;}

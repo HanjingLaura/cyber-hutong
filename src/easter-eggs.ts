@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import npcRules from '../shared/npcs.json';
 import positions from '../shared/guests.json';
+import { npcPose } from './npc-feedback';
 
 type Guest='buzz'|'zhu'|'ferret'|'lulu'|'tutu';
 const guests={
@@ -61,7 +62,12 @@ export function placeGuest(scene:Phaser.Scene,id:Guest){
       .setOrigin(.5,1).setDisplaySize(246/363*spec.height*.62,spec.height*.62).setDepth(-50);
   }
   placed.push({scene,id,image,reflection});
-  scene.events.once('shutdown',()=>{const index=placed.findIndex(p=>p.image===image);if(index>=0)placed.splice(index,1);});
+  const animate=()=>{
+    const pose=npcPose(id);image.setPosition(spec.x+pose.x,spec.y+pose.y).setAngle(pose.angle);
+    if(reflection)reflection.setPosition(Math.round(spec.x+pose.x),Math.round(130-(spec.y+pose.y-177)*.25)).setAngle(-pose.angle);
+  };
+  scene.events.on('update',animate);
+  scene.events.once('shutdown',()=>{scene.events.off('update',animate);const index=placed.findIndex(p=>p.image===image);if(index>=0)placed.splice(index,1);});
   window.__easterEggPreview={getState:()=>placed.map(p=>({id:p.id,name:guests[p.id].name,owner:guestOwners[p.id]??null,scene:p.scene.sys.settings.key,active:p.scene.sys.isActive(),x:p.image.x,y:p.image.y,height:p.image.displayHeight,visible:p.image.visible}))};
 }
 // Easter eggs are always in their room for everyone; only the owner can interact (server enforced).
