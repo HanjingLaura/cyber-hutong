@@ -10,7 +10,7 @@ const RADIUS = 56;
 function send(code: string, down: boolean) {
   const [key, keyCode] = KEY[code];
   const world = document.querySelector<HTMLElement>('.world');
-  if (world && document.activeElement !== world && !document.querySelector('dialog[open]')) world.focus({ preventScroll: true });
+  if (down && world && document.activeElement !== world && !document.querySelector('dialog[open]')) world.focus({ preventScroll: true });
   const event = new KeyboardEvent(down ? 'keydown' : 'keyup', { key, code, bubbles: true, cancelable: true });
   Object.defineProperty(event, 'keyCode', { get: () => keyCode });
   Object.defineProperty(event, 'which', { get: () => keyCode });
@@ -77,7 +77,7 @@ export function mountTouchControls() {
   let last = '';
   const refresh = () => {
     const text = document.querySelector('#guide-action')?.textContent ?? '';
-    const modal = !!document.querySelector('dialog[open]');
+    const modal = !!document.querySelector('dialog[open],#people-panel:not([hidden]),#chat-panel:not([hidden])');
     root.classList.toggle('hidden', modal);
     if (modal && pointer !== null) release();
     if (text !== last) {

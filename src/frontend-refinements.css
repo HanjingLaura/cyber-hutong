@@ -13,6 +13,22 @@
 #connection-panel button{font:inherit;font-size:12px}
 .account-guidance{font:12px/1.7 var(--hto-mono);margin:0 0 16px;color:inherit;overflow-wrap:anywhere}
 .account-guidance[hidden]{display:none}
+/* Compact single-line roster: keep names and action labels intact. */
+#people-panel:not([hidden]){display:flex;flex-direction:column;box-sizing:border-box;width:min(440px,calc(100vw - 28px));max-height:min(70dvh,calc(100dvh - 96px));padding:12px;overflow:hidden}
+#people-panel .panel-heading{flex:none;margin-bottom:4px}
+#people-panel #people-list{min-height:0;overflow:auto;touch-action:pan-x pan-y pinch-zoom;scrollbar-width:thin;scrollbar-color:#889c6f #17231c}
+#people-panel .person-row{flex-wrap:nowrap;gap:6px;padding:10px 0;align-items:center;font-size:12px;min-width:max-content}
+#people-panel .person-row>span{flex:1 0 88px;line-height:1.5;white-space:nowrap}
+#people-panel .person-row button{flex:0 0 auto;white-space:nowrap;font-size:11px;min-height:32px;padding:5px 6px;line-height:1.4}
+#people-panel #take-control{flex:none;margin-top:12px}
+html.touch-ui #people-panel .person-row button{min-height:44px;min-width:44px}
+html.touch-ui #people-panel{padding-bottom:calc(env(safe-area-inset-bottom) + 12px)}
+html:has(#people-panel:not([hidden])) #near-social{display:none}
+@media(max-width:440px){
+ #people-panel .person-row{font-size:11px;gap:4px}
+ #people-panel .person-row>span{flex-basis:78px}
+ #people-panel .person-row button{font-size:10px;padding:5px 4px}
+}
 #orientation-hint{position:fixed;z-index:45;top:calc(env(safe-area-inset-top) + 58px);right:8px;width:max-content;max-width:calc(100vw - 90px);justify-self:auto;box-sizing:border-box;display:flex;align-items:center;gap:6px;color:#e8dfbf;font:12px var(--hto-mono)}
 #orientation-hint[hidden],html:has(dialog[open]) #orientation-hint{display:none}
 html:has(#connection-panel:not([hidden])) #orientation-hint{display:none}
@@ -24,8 +40,6 @@ html.touch-ui #account-dialog input,html.touch-ui #chat-input,html.touch-ui .soc
 html.touch-ui #account-dialog[data-entry="true"]{height:var(--vvh,100dvh);box-sizing:border-box;padding:16px 12px;border-radius:0}
 html.touch-ui #account-dialog[data-entry="true"] .account-wall{padding:22px 20px;max-height:100%;box-sizing:border-box}
 html.touch-ui #near-social{gap:4px;padding:6px 8px}
-html.touch-ui .person-row{flex-wrap:wrap;gap:6px}
-html.touch-ui .person-row>span{flex-basis:100%}
 html.touch-ui #connection-panel{top:calc(env(safe-area-inset-top) + 58px);right:8px;left:8px;max-width:none;z-index:12}
 html.touch-ui #connection-panel #connection-state{flex:1}
 html.touch-ui .npc-speech{max-width:min(170px,calc(100vw - 24px));padding:6px 8px;line-height:1.45}
@@ -35,5 +49,5 @@ html.touch-ui .npc-speech{max-width:min(170px,calc(100vw - 24px));padding:6px 8p
  html.touch-ui #stick-zone{height:42%}
  html.touch-ui #scene-mark{position:fixed;top:calc(env(safe-area-inset-top) + 68px);left:8px}
 }
-@media(orientation:landscape){#orientation-hint{display:none}}
+@media(orientation:landscape){#orientation-hint{display:none}html.touch-ui #stick-zone{height:calc(100% - env(safe-area-inset-top) - 56px)}}
 @media(prefers-reduced-motion:reduce){.location-map [data-place] img{transition:none}}
