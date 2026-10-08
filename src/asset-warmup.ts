@@ -1,5 +1,5 @@
 /** Browser + Phaser texture warmup so room switches hit cache instead of cold downloads. */
-import Phaser from 'phaser';
+import type Phaser from 'phaser';
 
 const roomTextures:Record<string,{key:string;url:string}[]>={
  ktv:[{key:'ktv-room',url:new URL('../assets/drafts/ktv-room-v1.png',import.meta.url).href}],
@@ -56,37 +56,31 @@ const sharedActor=[
 ];
 
 const httpWarm=new Set<string>();
+const queue:string[]=[];
+let active=0;
+const canPrefetch=()=>{const connection=(navigator as Navigator&{connection?:{saveData?:boolean;effectiveType?:string}}).connection;return !connection?.saveData&&!['slow-2g','2g'].includes(connection?.effectiveType??'');};
+function drain(){
+ while(active<2&&queue.length){
+  const url=queue.shift()!,image=new Image();active++;
+  let completed=false;
+  const finish=()=>{if(completed)return;completed=true;clearTimeout(timer);image.onload=null;image.onerror=null;active--;drain();};
+  const timer=setTimeout(()=>{image.removeAttribute('src');httpWarm.delete(url);finish();},10000);
+  image.onload=finish;image.onerror=()=>{httpWarm.delete(url);finish();};
+  image.decoding='async';image.src=url;
+ }
+}
 function warmUrl(url:string){
  if(httpWarm.has(url))return;
  httpWarm.add(url);
- const image=new Image();
- image.decoding='async';
- image.src=url;
+ queue.push(url);
 }
 
 /** Queue HTTP warm for a room's heavy textures (and shared actor sheets). */
 export function warmRoom(room:string){
+ if(!canPrefetch())return;
  for(const entry of sharedActor)warmUrl(entry.url);
  for(const entry of roomTextures[room]||[])warmUrl(entry.url);
-}
-
-/** Idle-time warmup: shared sheets first, then every room background. */
-export function startAssetWarmup(game:Phaser.Game){
- const rooms=Object.keys(roomTextures);
- let index=0;
- const step=()=>{
-  if(!game.textures)return;
-  if(index===0)for(const entry of sharedActor)warmUrl(entry.url);
-  const room=rooms[index++];
-  if(!room)return;
-  warmRoom(room);
-  const idle=(window as Window &{requestIdleCallback?:(cb:()=>void,opts?:{timeout:number})=>number}).requestIdleCallback;
-  if(idle)idle(step,{timeout:1200});
-  else setTimeout(step,180);
- };
- const idle=(window as Window &{requestIdleCallback?:(cb:()=>void,opts?:{timeout:number})=>number}).requestIdleCallback;
- if(idle)idle(step,{timeout:800});
- else setTimeout(step,400);
+ drain();
 }
 
 /** Skip Phaser download when the texture is already in the game cache. */

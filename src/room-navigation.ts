@@ -1,4 +1,4 @@
-import {roomArt,allRoomArt} from './room-art';
+import {roomArt} from './room-art';
 import rooms from '../shared/rooms.json';
 import {project} from './layout';
 import {warmRoom} from './asset-warmup';
@@ -6,10 +6,13 @@ import type {MultiplayerBridge} from './multiplayer/bridge';
 type RoomKey=keyof typeof rooms;
 export function setupNavigation(bridge:MultiplayerBridge,request:(path:string,input?:any)=>Promise<any>,publish:()=>Promise<void>,client:string,notice:(text:string)=>void){
  const dialog=document.createElement('dialog');dialog.id='location-map';dialog.className='social-dialog location-map';
- dialog.innerHTML='<div class="panel-heading"><h2>地点</h2><button type="button" data-cancel>关闭</button></div><p data-current></p><div data-places></div><p data-error role="status"></p>';
+ dialog.innerHTML='<div class="panel-heading"><h2 id="location-title">地点</h2><button type="button" data-cancel>关闭</button></div><p data-current></p><p data-error role="status"></p><button type="button" data-find-exit hidden>出口方向</button><div data-places></div>';
+ dialog.setAttribute('aria-labelledby','location-title');
  document.querySelector('.world')!.append(dialog);let selected:RoomKey|null=null,busy=false;let mark:Phaser.GameObjects.Graphics|undefined,markScene:Phaser.Scene|undefined;
  const exitNear=()=>{const p=bridge.state(),r=p&&rooms[p.scene as RoomKey];return !!p&&!!r&&!p.seat&&Math.hypot(p.x-r.exit[0],p.y-r.exit[1])<28&&!(bridge.active as any)?.prefersInteraction?.();};
  let exitHint=false,savedGuide='';
+ const findExit=()=>{dialog.close();const p=bridge.state(),r=p&&rooms[p.scene as RoomKey];if(!p||!r)return;const point=project({x:r.exit[0],y:r.exit[1]},['hutong','hawaii'].includes(p.scene)&&!!bridge.active?.reverse);const direction=point.x<213?'左侧':point.x>427?'右侧':point.y>240?'下方':point.y<120?'上方':'中间';notice(`出口在画面${direction}，走到那里后再互动`);};
+ dialog.querySelector('[data-find-exit]')!.addEventListener('click',findExit);
  const syncSelection=()=>{
   dialog.querySelectorAll<HTMLButtonElement>('[data-place]').forEach(button=>{
    const on=button.dataset.place===selected;
@@ -17,14 +20,16 @@ export function setupNavigation(bridge:MultiplayerBridge,request:(path:string,in
    button.classList.toggle('is-selected',on);
    const enter=button.querySelector<HTMLElement>('[data-enter-place]');
    if(enter)enter.hidden=!on;
+   if(enter)enter.textContent=exitNear()?'进入':'先到出口';
   });
  };
  const open=()=>{
   if(busy)return;
-  if(!exitNear()||document.querySelector('dialog[open]')){notice('先走到出口');return;}
+  if(document.querySelector('dialog[open]:not(#location-map)'))return;
   selected=null;const p=bridge.state();
   dialog.querySelector('[data-current]')!.textContent='当前位置：'+(p?rooms[p.scene as RoomKey].name:'');
-  dialog.querySelector('[data-error]')!.textContent='';
+  dialog.querySelector('[data-error]')!.textContent=exitNear()?'选择地点，再点一次进入':'可以查看所有地点。切换地点前，请先走到当前房间的出口。';
+  (dialog.querySelector('[data-find-exit]') as HTMLButtonElement).hidden=exitNear();
   const list=dialog.querySelector('[data-places]')!;list.replaceChildren();
   for(const group of ['办公','休闲','出行']){
    const section=document.createElement('section'),label=document.createElement('strong');label.textContent=group;section.append(label);
@@ -46,8 +51,7 @@ export function setupNavigation(bridge:MultiplayerBridge,request:(path:string,in
    }
    list.append(section);
   }
-  for(const url of allRoomArt()){const tip=new Image();tip.decoding='async';tip.src=url;}
-  bridge.active?.input.keyboard?.resetKeys();dialog.showModal();
+  bridge.active?.input.keyboard?.resetKeys();if(!dialog.open)dialog.showModal();
  };
  dialog.querySelector('[data-cancel]')!.addEventListener('click',()=>dialog.close());dialog.addEventListener('close',()=>{selected=null;document.querySelector<HTMLElement>('.world')!.focus();});
  const changeScene=async(key:string)=>{const target=key==='hutong'?'culture':key;window.dispatchEvent(new CustomEvent('hutong:navigate',{detail:target}));const scene=bridge.game.scene.getScene(key);
@@ -56,8 +60,10 @@ export function setupNavigation(bridge:MultiplayerBridge,request:(path:string,in
  };
  const go=async(target:RoomKey)=>{
   if(busy)return;
-  if(!exitNear()||document.querySelector('dialog[open]:not(#location-map)')){notice('先走到出口');return;}
+  if(!exitNear()){findExit();return;}
+  if(document.querySelector('dialog[open]:not(#location-map)'))return;
   const before=bridge.state()!;busy=true;bridge.transitioning=true;let committed=false;
+  dialog.querySelector('[data-error]')!.textContent='正在载入地点…';
   dialog.querySelectorAll<HTMLButtonElement>('[data-place]').forEach(b=>b.disabled=true);
   warmRoom(target);
   try{
