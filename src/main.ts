@@ -387,9 +387,10 @@ class HutongScene extends Phaser.Scene {
       seat.chair.setTexture('furniture', chairFrame.name).setOrigin(.5, 1).setScale(chairScale.x, chairScale.y);
       seat.chair.setPosition(point.x, point.y).setDepth(point.y).setVisible(this.layers.chair);
       const backrestFrame = this.frames.chair[0];
+      const occupied = this.seatedAt === seat || !!this.officeGuest?.occupies(seat.id) || !!onlineWorld()?.bridge.players.some(p => p.scene === this.sys.settings.key && p.seat === seat.id);
       seat.back.setTexture('furniture', 'backrest').setOrigin(.5, 0).setScale(chairScale.x, chairScale.y)
         .setPosition(point.x, point.y - backrestFrame.height * chairScale.y)
-        .setDepth(point.y + 2).setVisible(this.layers.chair && far && (this.seatedAt === seat||!!this.officeGuest?.occupies(seat.id)));
+        .setDepth(point.y + 2).setVisible(this.layers.chair && far && occupied);
       const computerIndex = index * 2 + Number(this.seatedAt===seat&&this.mode==='working'||!!onlineWorld()?.bridge.players.some(p=>p.scene===this.sys.settings.key&&p.seat===seat.id&&canWorkAt(p.role,p.scene,p.seat)));
       const laptopScale = this.furnitureScales.laptop;
       const computerPoint = project({ x: seat.foot.x, y: scaleRowPoint({ x: 0, y: floorY(seat.row === 'culture' ? 35 : 305) }, seat.row).y }, this.reverse);
@@ -483,7 +484,7 @@ class HutongScene extends Phaser.Scene {
     }
     this.drawActor();
     this.officeGuest?.update(delta,{x:this.actorX,y:this.actorY,seat:this.seatedAt?.id??null});
-    const guestSeat=JSON.stringify([this.officeGuest?.snapshot().mode,onlineWorld()?.bridge.players.filter(p=>p.scene===this.sys.settings.key&&canWorkAt(p.role,p.scene,p.seat)).map(p=>p.seat).sort()]);
+    const guestSeat=JSON.stringify([this.officeGuest?.snapshot().mode,onlineWorld()?.bridge.players.filter(p=>p.scene===this.sys.settings.key&&p.seat).map(p=>p.seat+':'+(canWorkAt(p.role,p.scene,p.seat)?'1':'0')).sort()]);
     if(guestSeat!==this.guestSeatState){this.guestSeatState=guestSeat;this.lastHud='';this.drawFurniture();}
     this.officeGuest?.draw(this.reverse,this.layers.actor);
     this.aniGuest?.draw(this.reverse,this.layers.actor);
