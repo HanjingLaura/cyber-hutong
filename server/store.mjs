@@ -51,7 +51,18 @@ export function openStore(path){
     },
     async login(username,password){
       if(typeof username!=='string'||typeof password!=='string'||password.length>128)fail(401,'用户名或密码不正确');
-      return pool.run(async()=>{const row=db.prepare('SELECT * FROM accounts WHERE username=?').get(username);const fallback='00000000000000000000000000000000:'+Buffer.alloc(64).toString('hex');const matches=await passwordMatches(password,row?.password||fallback);if(!row||!matches)fail(401,'用户名或密码不正确');return {token:createSession(row.id),user:publicAccount(row)};});
+      return pool.run(async()=>{
+        const row=db.prepare('SELECT * FROM accounts WHERE username=?').get(username),fallback='00000000000000000000000000000000:'+Buffer.alloc(64).toString('hex');
+        const matches=await passwordMatches(password,row?.password||fallback);
+        return atomic(()=>{
+          // scrypt yields: a local reset may have changed credentials while it ran.
+          const current=row&&byId(row.id);if(!current||!matches||current.password!==row.password)fail(401,'用户名或密码不正确');
+          // This guarded no-op records the account's remote version in the same
+          // replica batch as the session. A concurrent reset aborts both writes.
+          db.prepare('UPDATE accounts SET password=password WHERE id=?').run(row.id);
+          return {token:createSession(row.id),user:publicAccount(current)};
+        });
+      });
     },
     // Trusted organizer tooling only. No HTTP endpoint exposes code issuance.
     createPasswordReset(username){return atomic(()=>{

@@ -36,7 +36,7 @@ if(process.argv[1]&&resolve(process.argv[1])===fileURLToPath(import.meta.url)){
  let client;
  try{
    const {values}=parseArgs({options:{username:{type:'string'},production:{type:'boolean'},db:{type:'string'},'env-file':{type:'string'},help:{type:'boolean'}}});
-   if(values.help){console.log('用法：npm run account:reset-code -- --username laura [--production --env-file .env.production.local | --db data/mvp.sqlite]');}
+   if(values.help){console.log('用法：node scripts/reset-code.mjs --username laura [--production --env-file .env.production.local | --db data/mvp.sqlite]');}
    else{
      if(values['env-file'])process.loadEnvFile(values['env-file']);
      if(values.production){

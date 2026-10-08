@@ -21,6 +21,19 @@ test('password reset consumes the organizer code durably and invalidates old ses
  const restarted=await f.game('reset-restart');assert.equal((await restarted.api('login',{username:'cloud_reset',password:'old-password-123'})).status,401);
  assert.equal((await restarted.api('login',{username:'cloud_reset',password:'new-password-123'})).data.user.role,'cora');
 });
+
+test('old-password login cannot publish a session after a concurrent password reset commits',async t=>{
+ const f=await remoteFixture(t),a=await f.game('reset-race-a');await a.api('register',{username:'race_reset',password:'old-password-123',role:'jilly'});
+ const issued=a.app.store.createPasswordReset('race_reset');await a.replica.flush();
+ let gate=false,entered,release;const arrived=new Promise(r=>entered=r),wait=new Promise(r=>release=r);
+ const wrapper={execute:(...args)=>f.client.execute(...args),async batch(statements,mode){if(gate&&statements.some(s=>s.args?.[0]==='sessions')){entered();await wait;}return f.client.batch(statements,mode);}};
+ const b=await f.game('reset-race-b',wrapper);gate=true;
+ const login=b.api('login',{username:'race_reset',password:'old-password-123'});
+ await arrived;let reset;try{reset=await a.api('reset-password',{username:'race_reset',code:issued.code,password:'new-password-123'});}finally{release();}
+ assert.equal(reset.status,200);const late=await login;assert.equal(late.status,409);assert.equal(late.cookie,undefined);
+ const c=await f.game('reset-race-c');assert.equal((await c.api('login',{username:'race_reset',password:'old-password-123'})).status,401);
+ assert.equal((await c.api('login',{username:'race_reset',password:'new-password-123'})).status,200);
+});
 test('independent instances racing to register one role produce one durable account and session',async t=>{
  const f=await remoteFixture(t),a=await f.game('a'),b=await f.game('b');
  const results=await Promise.all([a.api('register',{username:'replica_one',password:'test-password-123',role:'franco'}),b.api('register',{username:'replica_two',password:'test-password-123',role:'franco'})]);assert.deepEqual(results.map(r=>r.status).sort(),[200,409]);

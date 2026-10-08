@@ -13,7 +13,7 @@
 正式环境：
 
 ```powershell
-npm run account:reset-code -- --production --env-file .env.production.local --username laura
+node scripts/reset-code.mjs --production --env-file .env.production.local --username laura
 ```
 
 `--username` 必须是已注册账号的准确用户名。环境文件需提供 `TURSO_DATABASE_URL`、`TURSO_AUTH_TOKEN`，以及非默认数据库所需的 `HUTONG_TURSO_PREFIX`。凭据不进入网页，也不提交 Git。正式环境缺少数据库配置时，命令会报错，不会改用本地库。
@@ -21,7 +21,7 @@ npm run account:reset-code -- --production --env-file .env.production.local --us
 本地环境：
 
 ```powershell
-npm run account:reset-code -- --db data/mvp.sqlite --username laura
+node scripts/reset-code.mjs --db data/mvp.sqlite --username laura
 ```
 
 命令只生成重置码，不修改密码。数据库写入成功后才会输出码；不会通过网页提供生成接口。可以随时重新生成新的码，无需变更账号或角色。
