@@ -24,7 +24,7 @@ export function setupNPCUI(bridge:MultiplayerBridge,request:(path:string,input?:
  const draw=()=>{
   const n=nearest();button.hidden=!n||!bridge.controller||!bridge.connected||!!document.querySelector('dialog[open]');button.disabled=busy;button.textContent=n?'与'+names[n.id]+'互动':'';
   const rect=bridge.game.canvas.getBoundingClientRect(),world=document.querySelector('.world')!.getBoundingClientRect(),scene=bridge.active?.sys.settings.key;
-  const shown=new Set<string>();
+  const shown=new Set<string>(),placed:DOMRect[]=[];
   for(const rule of rules){
    const feedback=npcFeedback(rule.id);if(!feedback||feedback.reaction.scene!==scene||!visible.includes(rule.id))continue;
    const r=feedback.reaction;shown.add(rule.id);let view=views.get(rule.id);
@@ -32,7 +32,13 @@ export function setupNPCUI(bridge:MultiplayerBridge,request:(path:string,input?:
    if(view.bubble.textContent!==r.text)view.bubble.textContent=r.text;
    const point=bridge.screen({scene:r.scene,x:r.x,y:r.y,facing:0} as any),left=rect.left-world.left+point.x/640*rect.width,top=rect.top-world.top+point.y/360*rect.height;
    const height=(positions as Record<string,{height:number}>)[rule.id].height;
-   view.bubble.style.left=left+'px';view.bubble.style.top=top-(height+12)/360*rect.height+'px';
+   const bubbleWidth=view.bubble.offsetWidth,bubbleHeight=view.bubble.offsetHeight;
+   const bubbleLeft=Math.max(bubbleWidth/2+8,Math.min(world.width-bubbleWidth/2-8,left));
+   let bubbleTop=Math.max(bubbleHeight+60,top-(height+12)/360*rect.height);
+   for(const box of placed)if(bubbleLeft+bubbleWidth/2>box.left&&bubbleLeft-bubbleWidth/2<box.right&&bubbleTop>box.top&&bubbleTop-bubbleHeight<box.bottom)bubbleTop=box.top-8;
+   bubbleTop=Math.max(bubbleHeight+60,bubbleTop);
+   view.bubble.style.left=bubbleLeft+'px';view.bubble.style.top=bubbleTop+'px';
+   placed.push(new DOMRect(bubbleLeft-bubbleWidth/2,bubbleTop-bubbleHeight,bubbleWidth,bubbleHeight));
    view.canvas.style.left=left+'px';view.canvas.style.top=top+'px';view.canvas.style.width=96/640*rect.width+'px';view.canvas.style.height=96/360*rect.height+'px';
    view.canvas.dataset.reaction=r.id;paintNpcFeedback(view.canvas,rule.id,height);
   }

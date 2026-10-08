@@ -8,6 +8,7 @@ import { OfficeGuest, preloadOfficeGuests } from './office-guests';
 import Phaser from 'phaser';
 import { mountTouchControls } from './mobile/controls';
 import './style.css';
+import './frontend-refinements.css';
 import { RestRoomScene } from './rest-room';
 import { PopMartScene } from './popmart';
 import { BathroomScene } from './bathroom';
@@ -528,7 +529,6 @@ game.events.once('ready',()=>{
     const scene=game.scene.getScene(key);
     scene.events.on('create',()=>{if(key!==selectedSceneKey)game.scene.sleep(key);});
   }
-  import('./asset-warmup').then(({startAssetWarmup})=>startAssetWarmup(game)).catch(()=>{});
 });
 let navigationAuthorized=false;
 window.addEventListener('hutong:navigate',event=>{navigationAuthorized=true;try{document.querySelector<HTMLButtonElement>(`[data-scene="${(event as CustomEvent).detail}"]`)?.click();}finally{navigationAuthorized=false;}});

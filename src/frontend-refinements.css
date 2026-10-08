@@ -1,0 +1,39 @@
+/* Existing olive pixel chrome: clearer hierarchy and reachable controls. */
+#more-tools,#near-more{position:relative;pointer-events:auto}
+#more-tools summary,#near-more summary{cursor:pointer;list-style:none;color:#eee8d8;background:#17231ccc;border-bottom:2px solid #c2c5a3;padding:7px 12px;font-size:12px}
+#more-tools summary::marker,#near-more summary::marker{content:''}
+#more-tools summary::-webkit-details-marker,#near-more summary::-webkit-details-marker{display:none}
+#more-tools summary:focus-visible,#near-more summary:focus-visible{outline:2px solid #f2c94c;outline-offset:2px}
+#more-actions,#near-more>div{position:absolute;top:calc(100% + 4px);right:0;min-width:130px;display:grid;gap:4px;padding:6px;background:#17231c;border:1px solid #889c6f;z-index:10}
+#more-actions button,#near-more>div button{text-align:left;white-space:nowrap}
+#near-more summary{font-size:11px;padding:3px 7px;border:0}
+#connection-panel{position:absolute;top:54px;right:14px;width:auto;justify-self:auto;box-sizing:border-box;max-width:calc(100vw - 28px);display:flex;gap:8px;align-items:center;background:#17231c;padding:8px 10px;border:1px solid #d3bb71;pointer-events:auto}
+#connection-panel[hidden]{display:none}
+#connection-panel #connection-state{display:block;font-size:12px;line-height:1.5;color:#fff6da}
+#connection-panel button{font:inherit;font-size:12px}
+.account-guidance{font:12px/1.7 var(--hto-mono);margin:0 0 16px;color:inherit;overflow-wrap:anywhere}
+.account-guidance[hidden]{display:none}
+#orientation-hint{position:fixed;z-index:45;top:calc(env(safe-area-inset-top) + 58px);right:8px;width:max-content;max-width:calc(100vw - 90px);justify-self:auto;box-sizing:border-box;display:flex;align-items:center;gap:6px;color:#e8dfbf;font:12px var(--hto-mono)}
+#orientation-hint[hidden],html:has(dialog[open]) #orientation-hint{display:none}
+html:has(#connection-panel:not([hidden])) #orientation-hint{display:none}
+#orientation-hint button{min-height:44px;min-width:44px;padding:6px;font:inherit;background:#17231c;border:1px solid #889c6f}
+html.touch-ui #game-tools{overflow:visible;gap:4px}
+html.touch-ui #game-tools button,html.touch-ui #game-tools summary,html.touch-ui #near-social button,html.touch-ui #near-social summary{min-width:44px;min-height:44px;box-sizing:border-box;font-size:13px;padding:10px 9px}
+html.touch-ui .social-panel button,html.touch-ui .social-dialog button,html.touch-ui #connection-panel button,html.touch-ui #hand-actions button,html.touch-ui #npc-interact{min-height:44px;min-width:44px}
+html.touch-ui #account-dialog input,html.touch-ui #chat-input,html.touch-ui .social-dialog textarea{font-size:16px}
+html.touch-ui #account-dialog[data-entry="true"]{height:var(--vvh,100dvh);box-sizing:border-box;padding:16px 12px;border-radius:0}
+html.touch-ui #account-dialog[data-entry="true"] .account-wall{padding:22px 20px;max-height:100%;box-sizing:border-box}
+html.touch-ui #near-social{gap:4px;padding:6px 8px}
+html.touch-ui .person-row{flex-wrap:wrap;gap:6px}
+html.touch-ui .person-row>span{flex-basis:100%}
+html.touch-ui #connection-panel{top:calc(env(safe-area-inset-top) + 58px);right:8px;left:8px;max-width:none;z-index:12}
+html.touch-ui #connection-panel #connection-state{flex:1}
+html.touch-ui .npc-speech{max-width:min(170px,calc(100vw - 24px));padding:6px 8px;line-height:1.45}
+@media(orientation:portrait){
+ html.touch-ui.game-fullscreen #game>canvas,html.touch-ui .game-fullscreen #game>canvas{top:calc(env(safe-area-inset-top) + 112px)!important;transform:translateX(-50%)!important}
+ html.touch-ui .game-fullscreen #hud-rail{top:calc(env(safe-area-inset-top) + 112px + 56.25vw + 12px);left:8px;right:8px;max-width:none;width:auto}
+ html.touch-ui #stick-zone{height:42%}
+ html.touch-ui #scene-mark{position:fixed;top:calc(env(safe-area-inset-top) + 68px);left:8px}
+}
+@media(orientation:landscape){#orientation-hint{display:none}}
+@media(prefers-reduced-motion:reduce){.location-map [data-place] img{transition:none}}
