@@ -9,6 +9,7 @@ import { TeamAvatar } from './avatar';
 import { preloadCharacter } from '../character-assets';
 import type { Player,Role,User } from './types';
 import {onlineWorld} from './world-client';
+import {shouldEnableGameKeyboard} from '../keyboard-gate.mjs';
 // Existing rooms retain their local object/gameplay controllers. This adapter is
 // the sole boundary between their coordinates and the multiplayer presentation.
 type Room=Phaser.Scene&Record<string,any>;
@@ -23,7 +24,46 @@ export class MultiplayerBridge{
   private movedAt=new Map<string,number>();
   private remotePositions=new Map<Role,{x:number;y:number;scene:string;seat:string|null}>();
   private syncTimer:ReturnType<typeof setTimeout>|null=null;
-  constructor(readonly game:Phaser.Game){void preloadCharacter('laura').catch(()=>{});game.events.on(Phaser.Core.Events.POST_STEP,(_time:number,delta:number)=>this.draw(delta||16));const gate=(e:KeyboardEvent)=>{if(this.user?.role&&(!this.controller||!this.connected)&&[document.querySelector('.world'),game.canvas].includes(document.activeElement)&&['KeyE','KeyF','Space','KeyV'].includes(e.code)){e.preventDefault();e.stopImmediatePropagation();}};window.addEventListener('keydown',gate,true);game.events.once('destroy',()=>{window.removeEventListener('keydown',gate,true);if(this.syncTimer)clearTimeout(this.syncTimer);});}
+  constructor(readonly game:Phaser.Game){
+    void preloadCharacter('laura').catch(()=>{});
+    game.events.on(Phaser.Core.Events.POST_STEP,(_time:number,delta:number)=>this.draw(delta||16));
+    // Capture-phase sync runs before Phaser's bubble listener, so login/chat fields keep WASD/arrows.
+    const sync=()=>this.syncKeyboardGate();
+    const gate=(e:KeyboardEvent)=>{
+      sync();
+      if(this.user?.role&&(!this.controller||!this.connected)&&[document.querySelector('.world'),game.canvas].includes(document.activeElement)&&['KeyE','KeyF','Space','KeyV'].includes(e.code)){e.preventDefault();e.stopImmediatePropagation();}
+    };
+    window.addEventListener('keydown',gate,true);
+    window.addEventListener('keyup',sync,true);
+    document.addEventListener('focusin',sync,true);
+    document.addEventListener('focusout',sync,true);
+    game.events.once('destroy',()=>{
+      window.removeEventListener('keydown',gate,true);
+      window.removeEventListener('keyup',sync,true);
+      document.removeEventListener('focusin',sync,true);
+      document.removeEventListener('focusout',sync,true);
+      if(this.syncTimer)clearTimeout(this.syncTimer);
+    });
+  }
+  /** Enable Phaser key capture/movement only with .world (or canvas) focus and no typing UI. */
+  private syncKeyboardGate(){
+    const scene=this.active;if(!scene?.input.keyboard)return;
+    const enabled=shouldEnableGameKeyboard({
+      activeElement:document.activeElement,
+      world:document.querySelector('.world'),
+      canvas:this.game.canvas,
+      dialogOpen:!!document.querySelector('dialog[open]'),
+      controller:this.controller,
+      userHasRole:!!this.user?.role,
+      connected:this.connected,
+    });
+    if(!enabled&&scene.input.keyboard.enabled)scene.input.keyboard.resetKeys();
+    scene.input.keyboard.enabled=enabled;
+    // addKeys() registers WASD/arrows for preventDefault on the shared KeyboardManager.
+    // Plugin.enabled=false alone does not stop that; toggle global capture for form typing.
+    if(enabled)scene.input.keyboard.enableGlobalCapture();
+    else scene.input.keyboard.disableGlobalCapture();
+  }
   get active(){return this.game.scene.getScenes(true).find(s=>s.sys.settings.key in previewKeys) as Room|undefined;}
   state():Player|null{
     const scene=this.active;if(!scene)return null;
@@ -45,7 +85,7 @@ export class MultiplayerBridge{
     if(this.pendingSpawn?.scene===local.scene){this.apply(this.pendingSpawn);local=this.state()!;this.pendingSpawn=null;this.transitioning=false;releaseScene();if(this.syncTimer){clearTimeout(this.syncTimer);this.syncTimer=null;}}
     const self=this.pendingSpawn??this.players.find(p=>p.role===this.user?.role);
     scene.input.enabled=!this.user?.role||this.controller&&this.connected;
-    if(scene.input.keyboard){const enabled=this.controller&&(!this.user?.role||this.connected)&&!document.querySelector('dialog[open]')&&!/^(INPUT|TEXTAREA)$/.test(document.activeElement?.tagName||'');if(!enabled&&scene.input.keyboard.enabled)scene.input.keyboard.resetKeys();scene.input.keyboard.enabled=enabled;}
+    this.syncKeyboardGate();
     // Only a viewer tab (or the initial spawn) follows the server's scene. The controlling tab is authoritative;
     // a stale/remote copy (other serverless instance, offline double) must never yank it to another room.
     if(this.user?.role&&self&&self.scene!==local.scene&&!this.transitioning&&(!this.controller||this.pendingSpawn)){
