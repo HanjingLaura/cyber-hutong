@@ -14,6 +14,7 @@ import {dockPrompt} from '../hud';
 import {PartyPresence,mergePartyPlayers} from './party-client';
 import {api} from './api';
 import {connectionStatus} from './connection-state.mjs';
+import {isTypingTarget} from '../keyboard-gate.mjs';
 import loginBackground from '../../assets/drafts/login-office-background.png?url';
 export {api} from './api';
 const title=(role:string)=>role[0].toUpperCase()+role.slice(1);
@@ -191,10 +192,12 @@ export function startSocial(game:Phaser.Game){
   $('fullscreen-toggle').onclick=async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else await document.documentElement.requestFullscreen();}catch{notice('当前窗口不支持切换全屏');}};
   $('near-social').onclick=e=>{const button=(e.target as HTMLElement).closest<HTMLButtonElement>('button[data-near]');if(!button||!nearRole)return;const action=button.dataset.near!;if(action==='chat')openChat(nearRole);else if(action==='invite')void invite(nearRole,playPlaceFor(nearRole));else if(action==='greet'||action==='gift')void interact(nearRole,action);else if(action==='wave'||action==='cheer'||action==='bow')void emote(action);};
   window.addEventListener('keydown',e=>{
+    // Escape still dismisses side panels while chat input is focused; otherwise leave keys to the form/dialog.
+    if(e.key==='Escape'&&!($('account-dialog') as HTMLDialogElement).open){$('people-panel').hidden=true;$('chat-panel').hidden=true;document.body.classList.remove('show-scene-picker','show-game-details');}
+    if(isTypingTarget(document.activeElement)||document.querySelector('dialog[open]'))return;
     const worldFocused=document.activeElement===document.querySelector('.world');
     if(e.key==='Enter'&&worldFocused){e.preventDefault();openChat(lastChatContext);}
-    if(worldFocused&&bridge.controller&&user?.role&&!document.querySelector('dialog[open]')&&['Digit1','Digit2','Digit3','Numpad1','Numpad2','Numpad3'].includes(e.code)){e.preventDefault();void emote(e.code.includes('1')?'wave':e.code.includes('2')?'cheer':'bow');}
-    if(e.key==='Escape'&&!($('account-dialog') as HTMLDialogElement).open){$('people-panel').hidden=true;$('chat-panel').hidden=true;document.body.classList.remove('show-scene-picker','show-game-details');}
+    if(worldFocused&&bridge.controller&&user?.role&&['Digit1','Digit2','Digit3','Numpad1','Numpad2','Numpad3'].includes(e.code)){e.preventDefault();void emote(e.code.includes('1')?'wave':e.code.includes('2')?'cheer':'bow');}
     if(user?.role&&!bridge.controller&&[document.querySelector('.world'),game.canvas].includes(document.activeElement)&&/^(Arrow|Key[WASDEFV]|Space|Escape)/.test(e.code)){e.stopImmediatePropagation();e.preventDefault();}
   },true);
   let pauseTimer:ReturnType<typeof setTimeout>|undefined;
