@@ -186,7 +186,7 @@ export function startSocial(game:Phaser.Game){
   $('logout').onclick=async()=>{try{await api('logout',{});hardLogout();await refresh();}catch(e){notice((e as Error).message);}};
   $('people-open').onclick=()=>{$('people-panel').hidden=!$('people-panel').hidden;if(!$('people-panel').hidden)$('chat-panel').hidden=true;people();};$('chat-open').onclick=()=>openChat(lastChatContext);$('chat-room').onclick=()=>openChat(null);
   $('chat-form').onsubmit=async e=>{e.preventDefault();if(!user?.role){showAccount();return;}if(sending)return;const input=$('chat-input') as HTMLInputElement,text=input.value.trim();if(!text)return;sending=true;const button=$('chat-form').querySelector('button')!;button.disabled=true;button.textContent='发送中…';try{await api('chat',{text,peer,requestId:crypto.randomUUID()});input.value='';}catch(e){notice((e as Error).message);}finally{sending=false;button.disabled=false;button.textContent='发送';}};
-  $('take-control').onclick=async()=>{const button=$('take-control') as HTMLButtonElement;if(button.disabled)return;button.disabled=true;button.textContent='正在接管…';try{await api('control',{client});if(party.enabled){party.reopen();void party.connect(true);}}catch(e){notice((e as Error).message);}finally{button.disabled=false;button.textContent='在这个窗口接管';}};
+  $('take-control').onclick=async()=>{const button=$('take-control') as HTMLButtonElement;if(button.disabled)return;button.disabled=true;button.textContent='正在接管…';try{const result=await api<{player?:Player}>('control',{client});if(result.player&&user?.role){bridge.pendingSpawn=result.player;initializedRole=user.role;}if(party.enabled){party.reopen();void party.connect(true);}}catch(e){notice((e as Error).message);}finally{button.disabled=false;button.textContent='在这个窗口接管';}};
   $('details-open').hidden=!(import.meta as any).env.DEV||!location.search.includes('debug=1');$('details-open').onclick=()=>document.body.classList.toggle('show-game-details');
   $('fullscreen-toggle').onclick=async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else await document.documentElement.requestFullscreen();}catch{notice('当前窗口不支持切换全屏');}};
   $('near-social').onclick=e=>{const button=(e.target as HTMLElement).closest<HTMLButtonElement>('button[data-near]');if(!button||!nearRole)return;const action=button.dataset.near!;if(action==='chat')openChat(nearRole);else if(action==='invite')void invite(nearRole,playPlaceFor(nearRole));else if(action==='greet'||action==='gift')void interact(nearRole,action);else if(action==='wave'||action==='cheer'||action==='bow')void emote(action);};
@@ -201,8 +201,15 @@ export function startSocial(game:Phaser.Game){
   async function ensureLive(){const deadline=Date.now()+8000;while(!connected&&!party.connected&&Date.now()<deadline)await new Promise(r=>setTimeout(r,100));if(!connected&&!party.connected)throw new Error('连接恢复后再操作');if(!bridge.controller){await api('control',{client});bridge.controller=true;if(party.enabled)void party.connect(true);}}
   async function publishPresence(force=false,transitionCheckpoint?:{id?:string}){
     while(force&&presenceRequest)await presenceRequest;
+    bridge.connected=connected||party.connected;
+    if(transitionCheckpoint){
+      if(!user?.role)throw new Error('请先登录');
+      if(!connected&&!party.connected)throw new Error('连接恢复后再切换地点');
+      if(!bridge.controller)throw new Error('角色在另一个窗口操作，请点击接管');
+      if(bridge.pendingSpawn)throw new Error('位置尚未确认，请重试');
+    }
     if(!user?.role||(!connected&&!party.connected)||!bridge.controller||presenceRequest||(bridge.transitioning&&!transitionCheckpoint)||bridge.pendingSpawn)return;
-    const state=bridge.state();if(!state)return;party.publish(state,force);
+    const state=bridge.state();if(!state){if(transitionCheckpoint)throw new Error('位置尚未确认，请重试');return;}party.publish(state,force);
     const signature=JSON.stringify(state),now=performance.now();
     // PartyKit carries live motion. HTTP only checkpoints it and confirms gameplay actions.
     if(!force&&(signature===lastSent||now-lastHttpPresence<(party.connected?1000:100)))return;

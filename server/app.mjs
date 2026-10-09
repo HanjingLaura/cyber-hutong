@@ -101,7 +101,23 @@ export function createMvpServer({dbPath='data/mvp.sqlite',staticDir=resolve('dis
   // A controller that has no stream here and has been quiet for 25s (a closed/refreshed tab) yields to a tab that is streaming.
   const adoptStale=(id,client)=>{const current=controls.get(id);if(current&&current!==client&&controls.stale(id,25000)&&![...streams].some(s=>s.user===id&&s.client===current)&&[...streams].some(s=>s.user===id&&s.client===client)){controls.set(id,client);dirty=true;}};
   const checkControlOnly=(user,client)=>{if(typeof client!=='string'||client.length>80)fail(409,'角色在另一个窗口操作，请点击接管');adoptStale(user.id,client);const current=controls.get(user.id);markLive(user.id);if(!current){controls.set(user.id,client);return;}if(current!==client)fail(409,'角色在另一个窗口操作，请点击接管');controls.touch(user.id,client);};
-  const startPlayer=user=>{if(!user.role)return;markLive(user.id);if(players.has(user.id))return;const homes={suki:[288,207],sid:[192,207],jilly:[192,182],laura:[384,207],kay:[480,207],franco:[480,182],cora:[288,182],amber:[384,182]};const [x,y]=homes[user.role];const previous=autonomy.reclaim(user.id)||life.position(user.id);const p={id:user.id,role:user.role,scene:'hutong',x,y,facing:0,moving:false,seat:null,activity:'walk',...previous,at:Date.now()};if(p.seat){const seat=interactions[p.scene].seats[p.seat];if(seat)[p.x,p.y]=seat.approach;p.seat=null;}const oldActivity=interactions[p.scene].activities[p.activity]?.find(a=>Math.hypot(p.x-a.at[0],p.y-a.at[1])<8);if(oldActivity)[p.x,p.y]=oldActivity.approach;p.activity='walk';p.moving=false;p.fresh=true;players.set(user.id,p);dirty=true;};
+  const startPlayer=user=>{if(!user.role)return;markLive(user.id);
+    const durable=life.position(user.id);
+    if(players.has(user.id)){
+      const p=players.get(user.id);
+      // Warm replicas keep in-memory poses across SSE lifetimes. After a tab refresh the
+      // prior stream is disconnected: adopt any durable transition committed elsewhere.
+      // Never clobber a live controller pose with an older hutong row from a lagged save.
+      if(durable){
+        if(durable.checkpoint)p.checkpoint=durable.checkpoint;else delete p.checkpoint;
+        if(p.disconnectedAt&&(durable.scene!==p.scene||(durable.travelId&&durable.travelId!==p.travelId))){
+          Object.assign(p,{scene:durable.scene,x:durable.x,y:durable.y,facing:Number.isInteger(durable.facing)?durable.facing:0,seat:null,activity:'walk',moving:false,travelId:durable.travelId,fresh:true,at:Date.now()});
+          dirty=true;
+        }
+      }
+      return;
+    }
+    const homes={suki:[288,207],sid:[192,207],jilly:[192,182],laura:[384,207],kay:[480,207],franco:[480,182],cora:[288,182],amber:[384,182]};const [x,y]=homes[user.role];const previous=autonomy.reclaim(user.id)||durable;const p={id:user.id,role:user.role,scene:'hutong',x,y,facing:0,moving:false,seat:null,activity:'walk',...previous,at:Date.now()};if(p.seat){const seat=interactions[p.scene].seats[p.seat];if(seat)[p.x,p.y]=seat.approach;p.seat=null;}const oldActivity=interactions[p.scene].activities[p.activity]?.find(a=>Math.hypot(p.x-a.at[0],p.y-a.at[1])<8);if(oldActivity)[p.x,p.y]=oldActivity.approach;p.activity='walk';p.moving=false;p.fresh=true;players.set(user.id,p);dirty=true;};
   const reconcileTravel=()=>{for(const p of autonomy.all()){const t=life.travel(p.id);if(t&&p.travelId!==t.offer){release(p.id);director.cancelFor(p.id);Object.assign(p,t.ack?(life.position(p.id)??t.state):t.state,{task:null,path:[],next:Date.now()+30000,at:Date.now(),fresh:false});dirty=true;}}};
   const handle=async(req,res)=>{
     try{
@@ -189,7 +205,11 @@ export function createMvpServer({dbPath='data/mvp.sqlite',staticDir=resolve('dis
           checkControl(user,input.client);const p=players.get(user.id);
           if(input.checkpoint!==undefined){
             const saved=life.position(user.id),checkpoint=saved?.checkpoint;
-            if(typeof input.checkpoint!=='string'||!checkpoint||checkpoint.id!==input.checkpoint||checkpoint.client!==input.client||Date.now()-checkpoint.at>120000||saved.scene!==p.scene||(!p.fresh&&checkpoint.at<p.at))fail(409,'位置确认已过期，请重试');
+            // Reject only when this warm replica's live pose moved away from the durable
+            // exit after the marker was issued. Same-exit pulses with a newer local `at`
+            // (common across Vercel instances) must still consume a valid marker.
+            const diverged=!!saved&&(saved.scene!==p.scene||Math.hypot(p.x-saved.x,p.y-saved.y)>14);
+            if(typeof input.checkpoint!=='string'||!checkpoint||checkpoint.id!==input.checkpoint||checkpoint.client!==input.client||Date.now()-checkpoint.at>120000||saved.scene!==p.scene||(!p.fresh&&checkpoint.at<p.at&&diverged))fail(409,'位置确认已过期，请重试');
             // This pose was validated by /presence and committed before acknowledgment.
             // Warm serverless replicas may still hold an older local pose.
             Object.assign(p,saved,{at:checkpoint.at,fresh:false});
@@ -197,7 +217,7 @@ export function createMvpServer({dbPath='data/mvp.sqlite',staticDir=resolve('dis
           const from=rooms[p.scene],to=rooms[input.target];
           if(typeof input.target!=='string'||!Object.hasOwn(rooms,input.target)||input.target===p.scene)fail(400,'地点无效');
           if(p.seat||[...leases.values()].some(l=>l.account===user.id)||!['walk',undefined].includes(p.activity)||Math.hypot(p.x-from.exit[0],p.y-from.exit[1])>30)fail(409,'先结束互动，走到出口');
-          release(user.id);delete p.checkpoint;Object.assign(p,{scene:input.target,x:to.exit[0],y:to.exit[1],seat:null,moving:false,facing:0,at:Date.now()});life.savePosition(p);dirty=true;
+          release(user.id);delete p.checkpoint;Object.assign(p,{scene:input.target,x:to.exit[0],y:to.exit[1],seat:null,moving:false,facing:0,activity:'walk',at:Date.now()});life.savePosition(p,{checkpoint:undefined});dirty=true;
           json(res,200,{player:cleanPlayer(p),self:store.publicAccount(store.byId(user.id)),objects:world.snapshot(p.scene)});return;
         }
         if(path==='/api/inventory'){checkControl(user,input.client);limited('inventory:'+user.id,30,10000);const result=life.inventory(user.id,input,roomFor(user.id));dirty=true;json(res,200,result);return;}

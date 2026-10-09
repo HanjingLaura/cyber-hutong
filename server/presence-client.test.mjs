@@ -117,5 +117,25 @@ test('navigation checkpoint confirms the source while regular presence stays pau
  await f.publish(true);assert.equal(f.requests.length,0);
  const checkpoint={};await f.publish(true,checkpoint);
  assert.equal(f.requests.length,1);assert.equal(f.requests[0].input.checkpoint,true);
- f.bridge.pendingSpawn={};await f.publish(true,{});assert.equal(f.requests.length,1,'pending destination spawn is never published as a source');
+ f.bridge.pendingSpawn={};await assert.rejects(()=>f.publish(true,{}),/位置尚未确认/);assert.equal(f.requests.length,1,'pending destination spawn is never published as a source');
+});
+
+test('transition checkpoint demands a live transport and a readable pose',async()=>{
+ const f=fixture({partyConnected:false});
+ // Simulate EventSource down: fixture wires connected=true; rebuild with connected false.
+ const source=readFileSync(new URL('../src/multiplayer/social.ts',import.meta.url),'utf8');
+ const start=source.indexOf('  async function publishPresence(');
+ const end=source.indexOf('  function livePlayers()',start);
+ const compiled=ts.transpileModule(source.slice(start,end)+'\nreturn publishPresence;',{compilerOptions:{target:ts.ScriptTarget.ES2022}}).outputText;
+ const notices=[];
+ const bridge={controller:true,connected:false,state:()=>null,stand(){},transitioning:false,pendingSpawn:null};
+ const publish=new Function('api','user','connected','party','bridge','performance','applySelf','notice','hardLogout','lastSent','client',compiled)(
+  async()=>({self:{id:'account',role:'laura'}}),{id:'account',role:'laura'},false,{connected:false,publish(){}},bridge,{now:()=>0},()=>{},m=>notices.push(m),()=>{},'','tab',
+ );
+ await assert.rejects(()=>publish(true,{}),/连接恢复后再切换地点/);
+ bridge.state=()=>({role:'laura',scene:'hutong',x:596,y:194,facing:0,moving:false,seat:null,hand:null,revision:0,activity:'walk'});
+ const live=new Function('api','user','connected','party','bridge','performance','applySelf','notice','hardLogout','lastSent','client',compiled)(
+  async()=>({self:{id:'account',role:'laura'},checkpoint:'tok'}),{id:'account',role:'laura'},true,{connected:true,publish(){}},bridge,{now:()=>0},()=>{},m=>notices.push(m),()=>{},'','tab',
+ );
+ const checkpoint={};await live(true,checkpoint);assert.equal(checkpoint.id,'tok');
 });

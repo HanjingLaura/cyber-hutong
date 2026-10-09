@@ -26,10 +26,16 @@ const app = createMvpServer({ dbPath, staticDir: join(process.cwd(), 'dist'),
     if (!replica) return;
     const path=stripBase(req.url||'/').split('?')[0];
     const albumRequest=path==='/api/albums'||path==='/api/album-photo';
+    // Travel markers live in positions; checkpoint presence + transition must see the
+    // latest Turso row even when another warm instance still has dirty local poses.
+    const travelRequest=path==='/api/transition'||path==='/api/presence';
     await replica.pull({maxAgeMs:req.method==='POST'?0:req.url?.includes('/presence')?250:0,reconcilePending:!albumRequest});
     if (albumRequest) {
       await replica.syncAuthoritativeTables(['album_photos'], {pendingTables:['album_photo_chunks']});
       if (replica.hasPending(['album_photos','album_photo_chunks'])) throw Object.assign(new Error('相册正在同步，请稍后重试'),{status:503});
+    }
+    if (travelRequest && req.method==='POST') {
+      await replica.syncAuthoritativeTables(['positions']);
     }
   },
   commitRequest:replica?()=>replica.flush({allowTransaction:true}):undefined });
