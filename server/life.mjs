@@ -46,7 +46,23 @@ export function createLife(store){
  const recent=account=>db.prepare('SELECT seq,kind,body,scene,at FROM experiences WHERE account=? AND routine=0 ORDER BY seq DESC LIMIT 5').all(account);
  // Only an explicit validated presence checkpoint can publish a marker.
  // Old instance teardown/autonomy saves must never revive a revoked token.
- const savePosition=(p,{checkpoint}={})=>db.prepare('INSERT INTO positions VALUES(?,?,?) ON CONFLICT(account) DO UPDATE SET state=excluded.state,at=excluded.at').run(p.id,JSON.stringify({scene:p.scene,x:p.x,y:p.y,facing:p.facing,seat:p.seat,activity:p.activity,travelId:p.travelId,checkpoint}),Date.now());
+ // Omitting checkpoint keeps any durable travel marker. Pass {checkpoint} (including
+ // undefined/null) only when presence/transition intentionally sets or clears it.
+ // Teardown/autonomy/disconnect must never wipe a marker issued on another replica.
+ const savePosition=(p,options)=>{
+  const explicit=!!(options&&Object.prototype.hasOwnProperty.call(options,'checkpoint'));
+  const existing=explicit?null:position(p.id);
+  // A live travel marker pins the verified exit pose. Teardown/autonomy/disconnect
+  // must neither wipe the marker nor replace those coordinates with a stale replica pose.
+  if(!explicit&&existing?.checkpoint){
+   db.prepare('UPDATE positions SET at=? WHERE account=?').run(Date.now(),p.id);
+   return;
+  }
+  const checkpoint=explicit?options.checkpoint:existing?.checkpoint;
+  const state={scene:p.scene,x:p.x,y:p.y,facing:p.facing,seat:p.seat,activity:p.activity,travelId:p.travelId};
+  if(checkpoint)state.checkpoint=checkpoint;
+  db.prepare('INSERT INTO positions VALUES(?,?,?) ON CONFLICT(account) DO UPDATE SET state=excluded.state,at=excluded.at').run(p.id,JSON.stringify(state),Date.now());
+ };
  const position=id=>{const row=db.prepare('SELECT state FROM positions WHERE account=?').get(id);if(!row)return null;try{const p=JSON.parse(row.state);return typeof p.scene==='string'&&Object.hasOwn(rooms,p.scene)&&Number.isFinite(p.x)&&Number.isFinite(p.y)?p:null;}catch{return null;}};
  // The accepted relocation is durable even if the rendezvous later times out.
  // A reconnect must receive it before its old scene can send presence again.
@@ -96,7 +112,7 @@ export function createLife(store){
   if(answer==='accept'&&o.kind==='meet'){
    if(!validMeetPlace(o.item))fail(400,'地点无效');
    const points={rest:[[320,190],[344,190]],arcade:[[320,220],[344,220]],dance:[[320,280],[344,280]],gym:[[320,230],[344,230]],ktv:[[320,310],[344,310]]}[o.item];
-   [o.sender,o.recipient].forEach((account,i)=>{const state={scene:o.item,x:points[i][0],y:points[i][1],facing:0,seat:null,moving:false,activity:'walk',travelId:o.id};savePosition({id:account,...state});db.prepare('INSERT INTO travels VALUES(?,?,?,0) ON CONFLICT(account) DO UPDATE SET offer=excluded.offer,state=excluded.state,ack=0').run(account,o.id,JSON.stringify(state));});
+   [o.sender,o.recipient].forEach((account,i)=>{const state={scene:o.item,x:points[i][0],y:points[i][1],facing:0,seat:null,moving:false,activity:'walk',travelId:o.id};savePosition({id:account,...state},{checkpoint:undefined});db.prepare('INSERT INTO travels VALUES(?,?,?,0) ON CONFLICT(account) DO UPDATE SET offer=excluded.offer,state=excluded.state,ack=0').run(account,o.id,JSON.stringify(state));});
   }
   const status=answer==='accept'?(o.kind==='gift'?'completed':'accepted'):answer==='reject'?'rejected':'cancelled';db.prepare('UPDATE offers SET status=? WHERE id=?').run(status,o.id);
   const a=store.byId(o.sender),b=store.byId(o.recipient),text=o.kind==='gift'?`${b.role} ${status==='completed'?'收下了':'没有收下'} ${a.role} 赠送的${o.item}。`:`${a.role} 与 ${b.role} 的${placeLabel(o.item)}邀请${status==='accepted'?'已接受':status==='rejected'?'被婉拒':'已取消'}。`;

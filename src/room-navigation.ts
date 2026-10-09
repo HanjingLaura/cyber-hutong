@@ -68,8 +68,9 @@ export function setupNavigation(bridge:MultiplayerBridge,request:(path:string,in
   dialog.querySelector('[data-error]')!.textContent='正在载入地点…';
   dialog.querySelectorAll<HTMLButtonElement>('[data-place]').forEach(b=>b.disabled=true);
   try{
-   if(bridge.user?.role&&(!bridge.connected||!bridge.controller))throw new Error('连接恢复后再切换地点');
    // Confirm the source pose while decoding destination textures. Commit travel only after both succeed.
+   // publish() refreshes bridge.connected (events|party) and throws 连接恢复/位置尚未确认 itself.
+   if(bridge.user?.role&&!bridge.controller)throw new Error('连接恢复后再切换地点');
    const [,checkpoint]=await Promise.all([prepareRoom(target,bridge.game,(done,total)=>{dialog.querySelector('[data-error]')!.textContent=`正在载入地点… ${done}/${total}`;},preparation.signal),bridge.user?.role?publish():Promise.resolve(undefined)]);
    const destination=bridge.game.scene.getScene(target);
    if(!destination.sys.isSleeping()&&!destination.sys.isActive()){await new Promise<void>((resolve,reject)=>{const cleanup=()=>{clearTimeout(timer);destination.events.off('create',created);destination.load.off('loaderror',failed);};const failed=()=>{cleanup();bridge.game.scene.stop(target);reject(new Error('素材加载失败，请重试'));};const created=()=>{cleanup();resolve();};const timer=setTimeout(()=>{cleanup();bridge.game.scene.stop(target);reject(new Error('素材加载超时'));},12000);destination.events.once('create',created);destination.load.once('loaderror',failed);bridge.game.scene.run(target);});bridge.game.scene.sleep(target);}
