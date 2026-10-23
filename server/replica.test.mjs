@@ -20,6 +20,9 @@ async function instance(dir, name, client, prefix = 'hutong_online') {
 }
 
 test('Turso replica persists accounts, sessions and messages across serverless instances', async t => {
+  // Drive replication explicitly: world ticks must not write positions on both
+  // instances while this fixture tests sequential flush/pull persistence.
+  t.mock.timers.enable({ apis: ['setInterval'] });
   const dir = mkdtempSync(join(tmpdir(), 'hutong-replica-')), remote = createClient({url:'file::memory:'});
   t.after(() => { remote.close(); rmSync(dir, { recursive: true, force: true }); });
   const a = await instance(dir, 'a', remote);

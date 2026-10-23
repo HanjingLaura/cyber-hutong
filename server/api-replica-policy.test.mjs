@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-const source=readFileSync(new URL('../api/index.mjs',import.meta.url),'utf8');
+const source=readFileSync(new URL('../api/index.mjs',import.meta.url),'utf8').replace(/\r\n/g,'\n');
 const body=source.slice(source.indexOf('  beforeRequest: async req=>{')+'  beforeRequest: async req=>{'.length,source.indexOf('  },\n  commitRequest:'));
 test('ordinary motion avoids an extra authoritative positions scan, while explicit travel still synchronizes it',async()=>{
  const calls=[],replica={async pull(options){calls.push(['pull',options]);},async syncAuthoritativeTables(tables){calls.push(['sync',tables]);},hasPending(){return false;}};
