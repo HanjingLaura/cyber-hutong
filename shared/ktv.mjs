@@ -1,8 +1,9 @@
-// Original short songs. Shared clock and furniture rules are used by client and server.
+// Official MV catalogue. Durations include each video's intro/outro, in milliseconds.
 export const ktvSongs = [
- {id:'night',name:'胡同夜唱',bpm:108,notes:[60,64,67,64,62,65,69,67],lines:['把今天装进一段旋律','让晚灯照亮我们的声音','走过胡同 转角再相遇','这一拍 留给身边的你']},
- {id:'breeze',name:'晚风合拍',bpm:90,notes:[57,60,64,67,65,64,60,62],lines:['晚风轻轻推开门','桌边还有一盏灯','把烦恼唱成回声','下一句 我们一起哼']},
- {id:'friends',name:'朋友的副歌',bpm:120,notes:[60,60,67,69,67,65,64,62],lines:['你一句 我一句','把笑声放进旋律','不赶路 不着急','副歌里还有你']},
+ {id:'power',name:'POWER',artist:'G-DRAGON',bpm:164,duration:167020,videoId:'NMjhjrBIrG8'},
+ {id:'beauty-and-a-beat',name:'Beauty and a Beat',artist:'Justin Bieber feat. Nicki Minaj',bpm:128,duration:292970,videoId:'Ys7-6_t7OEQ'},
+ {id:'lover-boy-88',name:'Lover Boy 88',artist:'Higher Brothers / Phum Viphurit',bpm:110,duration:275040,videoId:'31tpqyCJ0lI'},
+ {id:'eyes-nose-lips',name:'眼鼻嘴 (Eyes, Nose, Lips)',artist:'TAEYANG 太阳',bpm:72,duration:275710,videoId:'UwuAPyOImoI'},
 ];
 export const ktvLights=['暖光','紫光','派对'];
 export const ktvTargets={terminal:[557,226],mic:[417,225],lights:[581,259]};
@@ -14,7 +15,7 @@ export const ktvObstacles=[
  [530,590,138,210], // song terminal
 ];
 export function ktvWalkable(x,y){return x>=30&&x<=606&&y>=185&&y<=345&&!ktvObstacles.some(([l,r,t,b])=>x>l&&x<r&&y>t&&y<b);}
-export const songDuration=song=>32*60000/song.bpm;
+export const songDuration=song=>song.duration;
 export const emptyKtvPlayer=()=>({queue:[],playing:false,started:0,offset:0});
 // Expired songs are derived from a server timestamp; all listeners hear the same bar.
 export function ktvPlayback(state,now=Date.now()){

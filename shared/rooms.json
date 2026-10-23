@@ -118,5 +118,53 @@
    580,
    321
   ]
+ },
+ "yousheng": {
+  "name": "五道口·优盛大厦",
+  "group": "出行",
+  "exit": [
+   580,
+   330
+  ]
+ },
+ "google": {
+  "name": "Google·总结会",
+  "group": "办公",
+  "exit": [
+   580,
+   330
+  ]
+ },
+ "meeting": {
+  "name": "会议室",
+  "group": "办公",
+  "exit": [
+   580,
+   330
+  ]
+ },
+ "street": {
+  "name": "成府路夜街",
+  "group": "出行",
+  "exit": [
+   580,
+   330
+  ]
+ },
+ "campus": {
+  "name": "北科大·校园夜路",
+  "group": "出行",
+  "exit": [
+   580,
+   330
+  ]
+ },
+ "manner": {
+  "name": "MANNER 咖啡",
+  "group": "休闲",
+  "exit": [
+   580,
+   330
+  ]
  }
 }

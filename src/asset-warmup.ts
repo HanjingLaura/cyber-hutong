@@ -3,6 +3,13 @@ import type Phaser from 'phaser';
 import {createTexturePrefetcher,type TexturePrefetcher} from './texture-prefetch.mjs';
 
 const roomTextures:Record<string,{key:string;url:string}[]>={
+ manner:[{key:'place-manner',url:new URL('../assets/drafts/manner-room.png',import.meta.url).href}],
+ yousheng:[{key:'place-yousheng',url:new URL('../assets/maps/places/yousheng.png',import.meta.url).href}],
+ google:[{key:'place-google',url:new URL('../assets/maps/places/google.png',import.meta.url).href},{key:'ticket-counter',url:new URL('../assets/props/ticket-counter.png',import.meta.url).href},{key:'place-chair-v2',url:new URL('../assets/props/meeting-chairs-v2.png',import.meta.url).href}],
+ meeting:[{key:'place-meeting',url:new URL('../assets/maps/places/meeting.png',import.meta.url).href},{key:'place-chair-v2',url:new URL('../assets/props/meeting-chairs-v2.png',import.meta.url).href}],
+ street:[{key:'place-street',url:new URL('../assets/maps/places/street.png',import.meta.url).href},{key:'pink-scooter',url:new URL('../assets/props/pink-scooter.png',import.meta.url).href}],
+ campus:[{key:'place-campus',url:new URL('../assets/maps/places/campus.png',import.meta.url).href},{key:'skateboard',url:new URL('../assets/props/skateboard.png',import.meta.url).href},{key:'traffic-cone',url:new URL('../assets/props/traffic-cone-v2.png',import.meta.url).href}],
+
  ktv:[{key:'ktv-room',url:new URL('../assets/drafts/ktv-room-v1.png',import.meta.url).href}],
  hutong:[
   {key:'wall',url:new URL('../assets/drafts/hutong-wall-view-v5.png',import.meta.url).href},
@@ -17,11 +24,16 @@ const roomTextures:Record<string,{key:string;url:string}[]>={
   {key:'pop-room',url:new URL('../assets/drafts/popmart-store-v3.png',import.meta.url).href},
   {key:'pop-stand',url:new URL('../assets/drafts/popmart-stand-v2.png',import.meta.url).href},
   {key:'pop-props',url:new URL('../assets/drafts/popmart-props-v1.png',import.meta.url).href},
+  {key:'pop-boxes',url:new URL('../assets/props/blind-box-packaging.png',import.meta.url).href},
+  {key:'pop-machine',url:new URL('../assets/props/capsule-machine.png',import.meta.url).href},
+  {key:'guest-source-buzz',url:new URL('../assets/npcs/buzz-lightyear-green.png',import.meta.url).href},
  ],
- bathroom:[{key:'bathroom-room',url:new URL('../assets/drafts/bathroom-room-v4.png',import.meta.url).href}],
+ bathroom:[{key:'bathroom-room',url:new URL('../assets/drafts/bathroom-room-v4.png',import.meta.url).href},{key:'guest-source-ferret',url:new URL('../assets/npcs/fuguidiao-green.png',import.meta.url).href}],
  concert:[
   {key:'concert-room',url:new URL('../assets/drafts/concert-room-v4.png',import.meta.url).href},
   {key:'concert-chair',url:new URL('../assets/drafts/concert-chair-v1.png',import.meta.url).href},
+  {key:'guest-source-zhu',url:new URL('../assets/npcs/zhu-zhixin-green.png',import.meta.url).href},
+  {key:'guest-source-zhu-winter',url:new URL('../assets/npcs/zhu-zhixin-winter-green.png',import.meta.url).href},
  ],
  arcade:[
   {key:'arcade-room',url:new URL('../assets/drafts/arcade-room-v3.png',import.meta.url).href},
@@ -29,19 +41,26 @@ const roomTextures:Record<string,{key:string;url:string}[]>={
  ],
  noodle:[
   {key:'noodle-room-v3',url:new URL('../assets/drafts/noodle-room-v3.png',import.meta.url).href},
-  {key:'noodle-kit',url:new URL('../assets/drafts/noodle-furniture-v1.png',import.meta.url).href},
+  {key:'noodle-wood-table',url:new URL('../assets/props/noodle-wood-table-v1.png',import.meta.url).href},
+  {key:'noodle-wood-stool',url:new URL('../assets/props/noodle-wood-stool-v1.png',import.meta.url).href},
+  {key:'noodle-utensil-tray',url:new URL('../assets/props/noodle-utensil-tray.png',import.meta.url).href},
+  {key:'noodle-condiment-tray',url:new URL('../assets/props/noodle-condiment-tray.png',import.meta.url).href},
+  {key:'noodle-order-pad',url:new URL('../assets/props/noodle-order-pad.png',import.meta.url).href},
  ],
  gym:[
   {key:'gym-room',url:new URL('../assets/drafts/gym-room-v1.png',import.meta.url).href},
+  {key:'guest-source-tutu',url:new URL('../assets/npcs/tutu-green-v1.png',import.meta.url).href},
  ],
  dance:[
   {key:'dance-room',url:new URL('../assets/drafts/dance-room-v1.png',import.meta.url).href},
+  {key:'guest-source-lulu',url:new URL('../assets/npcs/lulu-v1.png',import.meta.url).href},
  ],
  perler:[
   {key:'perler-room-v2',url:new URL('../assets/drafts/perler-shop-v2.png',import.meta.url).href},
   {key:'perler-furniture-v2',url:new URL('../assets/drafts/perler-furniture-v2.png',import.meta.url).href},
  ],
  rehearsal:[
+  {key:'piano-bench',url:new URL('../assets/props/piano-bench.png',import.meta.url).href},
   {key:'rehearsal-room',url:new URL('../assets/drafts/rehearsal-room-v1.png',import.meta.url).href},
   {key:'rehearsal-kit',url:new URL('../assets/drafts/rehearsal-kit-v1.png',import.meta.url).href},
   {key:'concert-chair',url:new URL('../assets/drafts/concert-chair-v1.png',import.meta.url).href},
@@ -51,6 +70,7 @@ const roomTextures:Record<string,{key:string;url:string}[]>={
 };
 
 const sharedActor=[
+ {key:"product-atlas",url:new URL("../assets/props/products.png",import.meta.url).href},
  {key:'held-water',url:new URL('../assets/props/water-bottle-v1.png',import.meta.url).href},
  {key:'furniture',url:new URL('../assets/drafts/hutong-furniture-kit-v5.png',import.meta.url).href},
  {key:'decor',url:new URL('../assets/drafts/desk-decor-v1.png',import.meta.url).href},
@@ -67,7 +87,7 @@ function loader(game:Phaser.Game){
  return current;
 }
 function entries(room:string){
- const extras=['hutong','hawaii'].includes(room)?sharedActor:room==='rest'?sharedActor.filter(e=>['rest-kit','held-water'].includes(e.key)):[];
+ const extras=['hutong','hawaii'].includes(room)?sharedActor:room==='rest'?sharedActor.filter(e=>['product-atlas','rest-kit','held-water'].includes(e.key)):room==='noodle'?sharedActor.filter(e=>e.key==='product-atlas'):[];
  return [...(roomTextures[room]||[]),...extras];
 }
 /** Optional selection loads only this destination, directly into the shared texture cache. */

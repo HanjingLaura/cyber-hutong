@@ -1,9 +1,12 @@
+import {bindSceneEvent} from './scene-dom';
 import {sceneWalkable} from '../shared/walkability.mjs';
 import Phaser from 'phaser';
+import {setGuide} from './hud';
 import { preloadGuest, placeGuest, guestBlocks } from './easter-eggs';
 import geometry from '../shared/interactions.json';
 import { registerRegions } from './frames';
 import { playerInventory } from './player-inventory';
+import './concert.css';
 
 // Three rows, two blocks of three, with a clear central and side aisle.
 const seats=Object.entries(geometry.concert.seats).map(([id,s])=>({id,x:s.at[0],y:s.at[1],approachY:s.approach[1],row:id.charCodeAt(0)-65,column:Number(id[1])-1}));
@@ -17,6 +20,7 @@ export class ConcertScene extends Phaser.Scene {
   private y=340;
   private facing=2;
   private seated:number|null=null;
+  private audio?:HTMLAudioElement;
   constructor(){super('concert');}
   preload(){
     preloadGuest(this,'zhu');
@@ -47,6 +51,21 @@ export class ConcertScene extends Phaser.Scene {
     this.actor=true;
     this.keys=this.input.keyboard!.addKeys('W,A,S,D,UP,DOWN,LEFT,RIGHT') as Record<string,Phaser.Input.Keyboard.Key>;
     const world=document.querySelector<HTMLElement>('.world')!;
+    const controls=document.createElement('section');controls.id='concert-audio';controls.setAttribute('aria-label','演唱会音乐');world.append(controls);
+    const track=document.createElement('p');track.textContent='TOP 登陆少年 · 我 VS Justin Bieber';
+    const audio=document.createElement('audio');this.audio=audio;audio.controls=true;audio.loop=true;audio.preload='none';
+    audio.setAttribute('aria-label','播放《我 VS Justin Bieber》');
+    audio.src=new URL('../assets/audio/concert-me-vs-justin-bieber.m4a',import.meta.url).href;
+    audio.style.cssText='display:block;width:100%;max-width:320px';
+    const status=document.createElement('p');status.setAttribute('role','status');
+    audio.addEventListener('error',()=>{status.textContent='音频暂时无法播放，请重试';});
+    audio.addEventListener('playing',()=>{status.textContent='';});
+    const stopAudio=()=>audio.pause();
+    const visibility=()=>{if(document.hidden)stopAudio();};
+    document.addEventListener('visibilitychange',visibility);controls.append(track,audio,status);
+    this.events.on('sleep',()=>{stopAudio();controls.hidden=true;});
+    this.events.on('wake',()=>{controls.hidden=false;});
+    this.events.once('shutdown',()=>{stopAudio();audio.removeAttribute('src');audio.load();controls.remove();document.removeEventListener('visibilitychange',visibility);});
     const action=(event:KeyboardEvent)=>{
       if(!this.sys.isActive()||event.repeat||![world,this.game.canvas].includes(document.activeElement as HTMLElement))return;
       if(event.code==='KeyE'){event.preventDefault();this.interact();}
@@ -56,8 +75,8 @@ export class ConcertScene extends Phaser.Scene {
     window.addEventListener('keydown',action);window.addEventListener('blur',clear);world.addEventListener('blur',clear);
     this.events.once('shutdown',()=>{window.removeEventListener('keydown',action);window.removeEventListener('blur',clear);world.removeEventListener('blur',clear);});
     this.events.on('sleep',clear);
-    document.querySelector('#interact')!.addEventListener('click',()=>{if(this.sys.isActive())this.interact();});
-    window.__concertPreview={getState:()=>({ready:true,active:this.sys.isActive(),x:this.x,y:this.y,facing:this.facing,seated:this.seated===null?null:seats[this.seated].id,nearest:this.nearest()?.id,seatCount:seats.length,rows:3,seats,hand:playerInventory.hand})};
+    bindSceneEvent(this, document.querySelector('#interact')!, 'click', ()=>{if(this.sys.isActive())this.interact();});
+    window.__concertPreview={getState:()=>({ready:true,active:this.sys.isActive(),x:this.x,y:this.y,facing:this.facing,seated:this.seated===null?null:seats[this.seated].id,nearest:this.nearest()?.id,seatCount:seats.length,rows:3,seats,hand:playerInventory.hand,sound:!this.audio?.paused})};
     world.focus();
   }
   private nearest(){
@@ -97,8 +116,7 @@ export class ConcertScene extends Phaser.Scene {
     button.textContent=this.seated!==null?'离开座位':seat?`坐到 ${seat.id}`:'';
     document.querySelector('#mode')!.textContent='';
     document.querySelector('#hint')!.textContent=this.seated!==null?'Esc 起身':'E 坐下';
-    document.querySelector('#guide-title')!.textContent='WASD / 方向键移动';
-    document.querySelector('#guide-action')!.textContent=this.seated!==null?'E / Esc 起身':seat?`E 坐下`:'E 坐下';
+    setGuide('WASD / 方向键移动',this.seated!==null?'E / Esc 起身':seat?'E 坐下':'');
     document.querySelector('#concert-state')!.textContent=this.seated===null?'A / B / C ':'';
   }
 }

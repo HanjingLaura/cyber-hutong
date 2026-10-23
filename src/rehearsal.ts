@@ -1,5 +1,8 @@
+import {bindSceneEvent} from './scene-dom';
+import {preloadSceneProp} from './scene-props';
 import {sceneWalkable} from '../shared/walkability.mjs';
 import Phaser from 'phaser';
+import {setGuide} from './hud';
 import { registerRegions } from './frames';
 import { playerInventory } from './player-inventory';
 import { Piano } from './piano';
@@ -16,6 +19,7 @@ export class RehearsalScene extends Phaser.Scene{
   private returnPoint={x:320,y:339};private message='E 坐下';
   constructor(){super('rehearsal');}
   preload(){
+    preloadSceneProp(this,'piano-bench');
     const load=(k:string,u:string)=>{if(!this.textures.exists(k))this.load.image(k,u);};
     load('rehearsal-room',new URL('../assets/drafts/rehearsal-room-v1.png',import.meta.url).href);
     load('rehearsal-kit',new URL('../assets/drafts/rehearsal-kit-v1.png',import.meta.url).href);
@@ -27,10 +31,7 @@ export class RehearsalScene extends Phaser.Scene{
     this.add.image(320,190,'rehearsal-kit',kit[2].name).setOrigin(.5,1).setDisplaySize(70,27).setDepth(190);
     this.add.image(536,222,'rehearsal-kit',kit[0].name).setOrigin(.5,1).setDisplaySize(110,90).setDepth(222);
     // The bench front is in front of the seated player's lower body.
-    const bench=this.add.graphics().setDepth(225);
-    bench.fillStyle(0x171b21).fillRect(519,211,34,14).fillRect(522,225,4,7).fillRect(546,225,4,7);
-    bench.fillStyle(0x48505a).fillRect(520,211,32,2);
-    bench.lineStyle(1,0x30363e).lineBetween(521,220,551,220);
+    this.add.image(519,211,'piano-bench').setOrigin(0).setDisplaySize(34,21).setDepth(225);
     const [chair]=registerRegions(this,'concert-chair',[{name:'chair',x0:0,y0:0,x1:1,y1:1}]);
     const backHeight=Math.round(chair.height*.60),texture=this.textures.get('concert-chair');
     if(!texture.has('backrest'))texture.add('backrest',0,chair.x,chair.y,chair.width,backHeight);
@@ -60,8 +61,8 @@ export class RehearsalScene extends Phaser.Scene{
     world.addEventListener('focus',resume);
     this.events.on('sleep',()=>{clear();if(this.mode!=='walk')this.stand();});
     this.events.once('shutdown',()=>{this.piano.dispose();this.saxophone.dispose();window.removeEventListener('keydown',action);window.removeEventListener('keyup',release);window.removeEventListener('blur',clear);window.removeEventListener('focus',resume);world.removeEventListener('blur',clear);world.removeEventListener('focus',resume);});
-    document.querySelector('#interact')!.addEventListener('click',()=>{if(this.sys.isActive()){this.interact();world.focus();}});
-    document.querySelector('#rehearsal-piano-close')!.addEventListener('click',()=>{if(this.sys.isActive()){this.stand();world.focus();}});
+    bindSceneEvent(this, document.querySelector('#interact')!, 'click', ()=>{if(this.sys.isActive()){this.interact();world.focus();}});
+    bindSceneEvent(this, document.querySelector('#rehearsal-piano-close')!, 'click', ()=>{if(this.sys.isActive()){this.stand();world.focus();}});
     window.__rehearsalPreview={getState:()=>({ready:true,active:this.sys.isActive(),x:this.x,y:this.y,facing:this.facing,mode:this.mode,seated:this.seated===null?null:seats[this.seated].id,seats,nearest:this.nearest(),notes:this.piano.active,notesPlayed:this.piano.notesPlayed,saxophonePlaying:this.saxophone.playing,saxophoneNotesPlayed:this.saxophone.notesPlayed,hand:playerInventory.hand,message:this.message})};world.focus();
   }
   private nearest(){
@@ -114,7 +115,6 @@ export class RehearsalScene extends Phaser.Scene{
     document.querySelector('#mode')!.textContent='';
     document.querySelector('#hint')!.textContent=this.message;
     document.querySelector('#rehearsal-state')!.textContent='';
-    document.querySelector('#guide-title')!.textContent='WASD / 方向键移动';
-    document.querySelector('#guide-action')!.textContent=this.mode==='piano'?'Z / Q 两排弹琴 · ↑↓ 切换音区 · Esc 起身':this.mode==='podium'&&this.isLaura()?'吹萨克斯 · E / Esc 下台':this.mode!=='walk'?'E / Esc 起身':t?`E · ${button.textContent}`:'';
+    setGuide('WASD / 方向键移动',this.mode==='piano'?'Z / Q 两排弹琴 · ↑↓ 切换音区 · Esc 起身':this.mode==='podium'&&this.isLaura()?'吹萨克斯 · E / Esc 下台':this.mode!=='walk'?'E / Esc 起身':t?`E · ${button.textContent}`:'');
   }
 }

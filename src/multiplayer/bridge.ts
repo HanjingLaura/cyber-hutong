@@ -10,14 +10,16 @@ import { preloadCharacter } from '../character-assets';
 import type { Player,Role,User } from './types';
 import {onlineWorld} from './world-client';
 import {shouldEnableGameKeyboard} from '../keyboard-gate.mjs';
+import {traceInteraction,interactionDiagnostics} from '../interaction-diagnostics';
 // Existing rooms retain their local object/gameplay controllers. This adapter is
 // the sole boundary between their coordinates and the multiplayer presentation.
 type Room=Phaser.Scene&Record<string,any>;
-const previewKeys:Record<string,string>={hutong:'__hutongPreview',hawaii:'__hawaiiPreview',rest:'__restPreview',pop:'__popPreview',bathroom:'__bathroomPreview',concert:'__concertPreview',arcade:'__arcadePreview',noodle:'__noodlePreview',gym:'__gymPreview',dance:'__dancePreview',perler:'__perlerPreview',rehearsal:'__rehearsalPreview',elevator:'__elevatorPreview',subway:'__subwayPreview',ktv:'__ktvPreview'};
+const previewKeys:Record<string,string>={manner:'__memoryPlacePreviews',hutong:'__hutongPreview',hawaii:'__hawaiiPreview',rest:'__restPreview',pop:'__popPreview',bathroom:'__bathroomPreview',concert:'__concertPreview',arcade:'__arcadePreview',noodle:'__noodlePreview',gym:'__gymPreview',dance:'__dancePreview',perler:'__perlerPreview',rehearsal:'__rehearsalPreview',elevator:'__elevatorPreview',subway:'__subwayPreview',ktv:'__ktvPreview',yousheng:'__memoryPlacePreviews',google:'__memoryPlacePreviews',meeting:'__memoryPlacePreviews',street:'__memoryPlacePreviews',campus:'__memoryPlacePreviews'};
 export class MultiplayerBridge{
   user:User|null=null;players:Player[]=[];onlineRoles:Role[]=[];controller=true;connected=false;
   npcEpoch=0;claimedRoles:Role[]=[];
   transitioning=false;
+  navigationRecovery=false;
   pendingSpawn:Player|null=null;
   travelId:string|undefined;
   private views=new Map<Phaser.Scene,Map<Role,TeamAvatar>>();private previous=new Map<string,{x:number;y:number}>();private mirrors=new Map<Phaser.Scene,Map<Role,TeamAvatar>>();
@@ -31,13 +33,16 @@ export class MultiplayerBridge{
     const sync=()=>this.syncKeyboardGate();
     const gate=(e:KeyboardEvent)=>{
       sync();
-      if(this.user?.role&&(!this.controller||!this.connected)&&[document.querySelector('.world'),game.canvas].includes(document.activeElement)&&['KeyE','KeyF','Space','KeyV'].includes(e.code)){e.preventDefault();e.stopImmediatePropagation();}
+      if(e.code==='KeyE'&&!e.repeat){const scene=this.active,target=document.querySelector<HTMLButtonElement>('#interact');traceInteraction('key',{scene:scene?.sys.settings.key,focus:document.activeElement?.tagName,controller:this.controller,connected:this.connected,transitioning:this.transitioning,recovery:this.navigationRecovery,keyboard:scene?.input.keyboard?.enabled,input:scene?.input.enabled,target:target?.textContent,disabled:target?.disabled});queueMicrotask(()=>traceInteraction('key-result',{prevented:e.defaultPrevented}));}
+      if(this.user?.role&&(!this.controller||!this.connected||this.transitioning||this.navigationRecovery)&&[document.querySelector('.world'),game.canvas].includes(document.activeElement)&&['KeyE','KeyF','Space','KeyV'].includes(e.code)){e.preventDefault();e.stopImmediatePropagation();}
     };
     window.addEventListener('keydown',gate,true);
+    (window as any).__interactionDiagnostics=interactionDiagnostics;
     window.addEventListener('keyup',sync,true);
     document.addEventListener('focusin',sync,true);
     document.addEventListener('focusout',sync,true);
     game.events.once('destroy',()=>{
+      delete (window as any).__interactionDiagnostics;
       window.removeEventListener('keydown',gate,true);
       window.removeEventListener('keyup',sync,true);
       document.removeEventListener('focusin',sync,true);
@@ -47,8 +52,8 @@ export class MultiplayerBridge{
   }
   /** Enable Phaser key capture/movement only with .world (or canvas) focus and no typing UI. */
   private syncKeyboardGate(){
-    const scene=this.active;if(!scene?.input.keyboard)return;
-    const enabled=shouldEnableGameKeyboard({
+    const scene=this.active;
+    const enabled=!!scene&&!this.transitioning&&!this.navigationRecovery&&shouldEnableGameKeyboard({
       activeElement:document.activeElement,
       world:document.querySelector('.world'),
       canvas:this.game.canvas,
@@ -57,17 +62,16 @@ export class MultiplayerBridge{
       userHasRole:!!this.user?.role,
       connected:this.connected,
     });
-    if(!enabled&&scene.input.keyboard.enabled)scene.input.keyboard.resetKeys();
-    scene.input.keyboard.enabled=enabled;
-    // addKeys() registers WASD/arrows for preventDefault on the shared KeyboardManager.
-    // Plugin.enabled=false alone does not stop that; toggle global capture for form typing.
-    if(enabled)scene.input.keyboard.enableGlobalCapture();
-    else scene.input.keyboard.disableGlobalCapture();
+    // The manager belongs to the game, even between scene lifetimes. A scene
+    // lookup cannot guard global WASD capture while loading or paused.
+    if(this.game.input.keyboard)this.game.input.keyboard.preventDefault=enabled;
+    const keyboard=scene?.input.keyboard;
+    if(keyboard){if(!enabled&&keyboard.enabled)keyboard.resetKeys();keyboard.enabled=enabled;}
   }
   get active(){return this.game.scene.getScenes(true).find(s=>s.sys.settings.key in previewKeys) as Room|undefined;}
   state():Player|null{
     const scene=this.active;if(!scene)return null;
-    const key=scene.sys.settings.key,windowState=(window as unknown as Record<string,{getState:()=>any}>)[previewKeys[key]]?.getState();
+    const key=scene.sys.settings.key,previews=window as unknown as Record<string,any>,preview=previewKeys[key]==='__memoryPlacePreviews'?previews.__memoryPlacePreviews?.[key]:previews[previewKeys[key]],windowState=preview?.getState();
     if(!windowState?.ready)return null;
     const seat=windowState.seatedAt??windowState.seated??(windowState.mode==='rest'?`bench-${scene.machine}`:windowState.mode==='sit'?'bench':windowState.mode==='piano'?'piano':null);
     const old=this.previous.get(key),moving=old?Math.hypot(windowState.x-old.x,windowState.y-old.y)>.03:false;
@@ -76,16 +80,16 @@ export class MultiplayerBridge{
     const mode=windowState.mode??scene.mode??'walk',activity=['hutong','hawaii'].includes(key)?(seat?(canWorkAt(role,key,String(seat))?'working':'sit'):'walk'):['standing','walking'].includes(mode)?'walk':mode;
     return {role,name:role,scene:key,x:windowState.x,y:windowState.y,facing:windowState.facing??scene.facing??0,moving:moving||performance.now()-(this.movedAt.get(key)||0)<100||windowState.mode==='run',seat:seat===null?null:String(seat),hand:playerInventory.hand,revision:this.user?.revision||0,activity,travelId:this.travelId};
   }
-  apply(p:Player){const scene=this.active;if(!scene||scene.sys.settings.key!==p.scene)return;if('actorX' in scene){scene.actorX=p.x;scene.actorY=p.y;}else{scene.x=p.x;scene.y=p.y;}scene.facing=p.facing;}
+  apply(p:Player){const scene=this.active;if(!scene||scene.sys.settings.key!==p.scene)return;if('actorX' in scene){scene.actorX=p.x;scene.actorY=p.y;}else{scene.x=p.x;scene.y=p.y;}scene.facing=p.facing;if(['manner','yousheng','google','meeting','street','campus'].includes(p.scene)){scene.seated=p.seat;scene.mode=p.seat?'sit':'walk';}this.previous.set(p.scene,{x:p.x,y:p.y});this.movedAt.set(p.scene,0);}
   stand(){const s=this.active;if(!s)return;if(typeof s.stand==='function')s.stand();else if(typeof s.stop==='function')s.stop();}
-  clearTransition(){this.transitioning=false;this.pendingSpawn=null;if(this.syncTimer){clearTimeout(this.syncTimer);this.syncTimer=null;}}
+  clearTransition(){this.transitioning=false;this.navigationRecovery=false;this.pendingSpawn=null;if(this.syncTimer){clearTimeout(this.syncTimer);this.syncTimer=null;}}
   screen(p:Player){const scene=this.active,office=['hutong','hawaii'].includes(p.scene),reverse=office&&!!scene?.reverse;return {...project(p,reverse),facing:visualFacing(p.facing as Facing,reverse)};}
   private draw(delta:number){
+    this.syncKeyboardGate();
     const scene=this.active;let local=this.state();if(!scene||!local)return;
     if(this.pendingSpawn?.scene===local.scene){this.apply(this.pendingSpawn);local=this.state()!;this.pendingSpawn=null;this.transitioning=false;releaseScene();if(this.syncTimer){clearTimeout(this.syncTimer);this.syncTimer=null;}}
     const self=this.pendingSpawn??this.players.find(p=>p.role===this.user?.role);
-    scene.input.enabled=!this.user?.role||this.controller&&this.connected;
-    this.syncKeyboardGate();
+    scene.input.enabled=!this.transitioning&&!this.navigationRecovery&&(!this.user?.role||this.controller&&this.connected);
     // Only a viewer tab (or the initial spawn) follows the server's scene. The controlling tab is authoritative;
     // a stale/remote copy (other serverless instance, offline double) must never yank it to another room.
     if(this.user?.role&&self&&self.scene!==local.scene&&!this.transitioning&&(!this.controller||this.pendingSpawn)){
@@ -99,7 +103,7 @@ export class MultiplayerBridge{
     const prev=this.previous.get(local.scene);
     const atX=local.x,atY=local.y;
     const belt=local.scene==='gym'&&atY<143&&[225,320,415].some(cx=>Math.abs(atX-cx)<31);
-    const deviceLock=scene.mode==='run'||scene.mode==='curl'||scene.mode==='piano'||belt;
+    const deviceLock=scene.mode==='run'||scene.mode==='curl'||scene.mode==='piano'||scene.mode==='scooter'||scene.mode==='scooter-basket'||scene.mode==='skateboard'||scene.mode==='skate-sit'||belt;
     if(prev&&this.controller&&local.seat===null&&!deviceLock&&this.players.some(p=>p.role!==this.user?.role&&p.scene===local!.scene&&Math.abs(p.x-local!.x)<18&&Math.abs(p.y-local!.y)<10&&Math.hypot(local!.x-p.x,local!.y-p.y)<Math.hypot(prev.x-p.x,prev.y-p.y))){this.apply({...local,...prev});local={...local,...prev,moving:false};}
     this.previous.set(local.scene,{x:local.x,y:local.y});
     if(!this.views.has(scene)){this.views.set(scene,new Map());scene.events.once('shutdown',()=>{this.views.get(scene)?.forEach(v=>v.destroy());this.views.delete(scene);});}
@@ -116,7 +120,8 @@ export class MultiplayerBridge{
       const doorOpen=p.scene==='bathroom'&&p.seat?(onlineWorld()?.objects.get('bathroom:door-'+p.seat)?.open??scene.open?.[Number(p.seat)]??false):true;
       const showName=!(p.scene==='bathroom'&&p.seat&&!doorOpen);
       const height=p.scene==='concert'&&p.seat?({A:54,B:61.44,C:66}[p.seat[0]]??61.44):['perler','noodle','arcade'].includes(p.scene)&&p.seat?54:61.44;
-      view.draw(p,point.x,point.y,point.facing,delta,office,height,p.scene==='bathroom'&&p.seat?196:p.scene==='rehearsal'&&p.activity==='podium'?191:point.y+(p.scene==='arcade'&&p.seat?7:p.scene==='perler'&&p.seat?6:p.scene==='noodle'&&p.seat?4:1),showName,own&&this.controller?scene.mode:p.activity??'',office&&p.seat?point.y-(point.facing===0?17:27):seatSurface(p.scene,p.seat));
+      const chairLayer=office||['google','meeting'].includes(p.scene);
+      view.draw(p,point.x,point.y,point.facing,delta,chairLayer,height,p.scene==='bathroom'&&p.seat?196:p.scene==='rehearsal'&&p.activity==='podium'?191:point.y+(p.scene==='arcade'&&p.seat?7:p.scene==='perler'&&p.seat?6:p.scene==='noodle'&&p.seat?4:1),showName,own&&this.controller?scene.mode:p.activity??'',office&&p.seat?point.y-(point.facing===0?17:27):seatSurface(p.scene,p.seat));
       if(p.scene==='dance'&&view.ready){
         if(!this.mirrors.has(scene)){this.mirrors.set(scene,new Map());scene.events.once('shutdown',()=>{this.mirrors.get(scene)?.forEach(v=>v.destroy());this.mirrors.delete(scene);});}
         const mirrors=this.mirrors.get(scene)!;let mirror=mirrors.get(p.role);

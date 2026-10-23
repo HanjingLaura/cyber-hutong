@@ -112,6 +112,25 @@ test('failed forced confirmations reject the action and release pending state fo
   f.accept(1); await retry;
 });
 
+test('navigation confirms the final pose while ordinary checkpoints stay paused during transition', async () => {
+  const f = fixture({ pending: true });
+  f.bridge.transitioning = true;
+  await f.publish();
+  assert.equal(f.requests.length, 0);
+  f.move(596);
+  const confirmation = f.publish(true, {});
+  assert.equal(f.requests.length, 1, 'navigation must not silently skip its final checkpoint');
+  assert.equal(f.requests[0].input.x, 596);
+  f.accept(0); await confirmation;
+});
+
+test('uncertain server location prevents old poses from overwriting a committed move until recovery', async () => {
+ const f=fixture();f.bridge.navigationRecovery=true;
+ await f.publish();assert.equal(f.requests.length,0);
+ await assert.rejects(f.publish(true),/位置恢复/);
+ f.bridge.navigationRecovery=false;await f.publish(true);assert.equal(f.requests.length,1);
+});
+
 test('navigation checkpoint confirms the source while regular presence stays paused during travel',async()=>{
  const f=fixture();f.bridge.transitioning=true;
  await f.publish(true);assert.equal(f.requests.length,0);

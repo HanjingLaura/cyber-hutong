@@ -52,7 +52,7 @@ test('DM history and SSE are only visible to their two participants; offline rep
   await api('chat',{peer:'amber',text:'你平时喜欢做什么？',requestId:'offline-1'},a.cookie);
   assert.equal((await api('history?peer=amber',undefined,a.cookie)).data.messages.length,1);
   app.store.profile(c.id,{habits:'喜欢演唱会',confirmed:true,autoReply:false});await new Promise(resolve=>setTimeout(resolve,40));await api('chat',{peer:'jilly',text:'你好',requestId:'no-offline-consent'},a.cookie);assert.equal((await api('history?peer=jilly',undefined,a.cookie)).data.messages.length,1);
-  app.store.profile(c.id,{habits:'喜欢演唱会',confirmed:true,autoReply:true});await api('chat',{peer:'jilly',text:'你好',requestId:'offline-consent'},a.cookie);assert.equal((await api('history?peer=jilly',undefined,a.cookie)).data.messages.length,3);
+  app.store.profile(c.id,{habits:'喜欢演唱会',confirmed:true,autoReply:true});await api('chat',{peer:'jilly',text:'你好',requestId:'offline-consent'},a.cookie);assert.equal((await api('history?peer=jilly',undefined,a.cookie)).data.messages.length,2,'legacy profiles cannot implicitly opt other roles into the Laura-only trial');
 });
 test('seat races, gift atomicity, stale hand revisions and duplicate operations',async t=>{
   const {api,account,stream,app}=await setup(t),a=await account('game_a','suki'),b=await account('game_b','sid');await stream(a,'a');await stream(b,'b');

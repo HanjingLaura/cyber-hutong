@@ -3,7 +3,7 @@
 
 独立入口 **`/cyber-hutong/moles`**（本地为 `/moles`）（也可打开 `/moles.html`）。`npm run dev` 后访问终端地址下的 `/moles`；生产环境运行 `npm run build` 和 `npm start`。网页无需账号或 Uno 就能玩，鼠标、触摸及键盘 Q W E / A S D 对应窗口 0–5。选择至少一个角色开始，3 秒倒计时后每局 60 秒。打中 +1，停留从 1200ms 每次减 40ms，最低 350ms；打空、打错或让角色溜走会断连击，不扣分。两次冒头间隔随机 300–900ms。选择和本机最高分保存在此浏览器 localStorage，隐私模式或禁用存储时仍可玩但可能不保存。
 
-八个角色直接复用 `assets/characters/team/v2/` 中的现有图片与 `assets/metadata/team-v2.json`，未生成新人物或改动原资源。游戏 ID 映射为 f01 Suki、f02 Sid、f03 Jilly、f04 Laura、f05 Kay、f06 Franco、f07 Cora、f08 Amber。按最新要求保留原素材姿势，命中时只做人物整体轻微抖动、头顶星星和缩回；星星由 Canvas 绘制。本入口不加载原胡同场景的脚本与样式。
+八个角色读取正式人物库 `assets/characters/<role>/moles.png` 与 `assets/characters/moles.json`。保留原图像素和头像裁切，旧 v2 图片已归档，重复元数据与旧构建器已删除。游戏 ID 映射为 f01 Suki、f02 Sid、f03 Jilly、f04 Laura、f05 Kay、f06 Franco、f07 Cora、f08 Amber。命中时只做人物整体轻微抖动、头顶星星和缩回；星星由 Canvas 绘制。本入口不加载原胡同场景的脚本与样式。
 
 ## Uno 接线
 

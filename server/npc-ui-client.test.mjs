@@ -25,6 +25,7 @@ function fixture(publish = async () => {}) {
       if (name.endsWith('npcs.json')) return { default: rules };
       if (name.endsWith('guests.json')) return { default: positions };
       if (name.endsWith('/hud')) return { dockPrompt() {} };
+      if (name.endsWith('/interaction-diagnostics')) return { traceInteraction() {} };
       if (name.endsWith('/npc-feedback')) return { receiveNpcFeedback(list) { writes.push(...list); }, clearNpcFeedback() {}, npcFeedback: () => null };
       throw Error(name);
     },

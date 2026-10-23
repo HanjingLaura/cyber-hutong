@@ -1,16 +1,18 @@
 import Phaser from 'phaser';
-import celine from '../assets/metadata/celine-v1.json';
+import manifest from '../assets/characters/celine/manifest.json';
 import {characterRegistry,characterSource} from './character-assets';
 import { canWalk, project, visualFacing, type Facing, type Workstation } from './layout';
 import {onlineWorld} from './multiplayer/world-client';
+import {celineQuestion as pickCelineQuestion} from '../shared/celine-speech.mjs';
+export {pickCelineQuestion};
 
 type Identity='celine';
 type Pose={rect:number[];name:string};
 /** World px/s. Keep in sync with server/celine.mjs `celineWalk`. */
 const WALK=108;
-const urls={celine:new URL('../assets/npcs/celine-v1.png',import.meta.url).href};
+const celine=manifest.officeGuest;
+const urls={celine:characterSource('celine-v1')};
 export function pickOfficeGuest(roll:number):Identity|null{return roll<.1?'celine':null;}
-export function pickCelineQuestion(_roll:number){return '';}
 export function preloadOfficeGuests(scene:Phaser.Scene){
  for(const [id,url] of Object.entries(urls))if(!scene.textures.exists(`office-${id}`))scene.load.image(`office-${id}`,url);
  const motion=characterRegistry.members.celine;

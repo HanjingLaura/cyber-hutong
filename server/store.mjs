@@ -36,6 +36,18 @@ export function openStore(path){
     CREATE TRIGGER IF NOT EXISTS role_claims_immutable_delete BEFORE DELETE ON role_claims BEGIN SELECT RAISE(ABORT,'role permanently claimed'); END;`);
   if(!db.prepare('PRAGMA table_info(accounts)').all().some(c=>c.name==='seasoning'))db.exec("ALTER TABLE accounts ADD COLUMN seasoning TEXT NOT NULL DEFAULT '[]'");
   if(!db.prepare('PRAGMA table_info(accounts)').all().some(c=>c.name==='progress_revision'))db.exec("ALTER TABLE accounts ADD COLUMN progress_revision INTEGER NOT NULL DEFAULT 0");
+  const messageColumns=db.prepare('PRAGMA table_info(messages)').all();
+  if(!messageColumns.some(c=>c.name==='channel'))db.exec("ALTER TABLE messages ADD COLUMN channel TEXT NOT NULL DEFAULT 'scene'");
+  if(!messageColumns.some(c=>c.name==='mentions'))db.exec("ALTER TABLE messages ADD COLUMN mentions TEXT NOT NULL DEFAULT '[]'");
+  db.exec("UPDATE messages SET channel='dm' WHERE recipient IS NOT NULL AND channel='scene'; CREATE INDEX IF NOT EXISTS messages_channel ON messages(channel,scene,seq)");
+  // Local arrival order includes replica imports. TEMP data never enters the remote
+  // schema, and the trigger rolls back with failed writes. Message seq identifies
+  // a row across instances; it is not a global commit-order cursor.
+  db.exec(`CREATE TEMP TABLE message_arrivals(arrival INTEGER PRIMARY KEY AUTOINCREMENT,message_seq INTEGER NOT NULL);
+    CREATE TEMP TRIGGER message_arrival AFTER INSERT ON main.messages BEGIN
+      INSERT INTO message_arrivals(message_seq) VALUES(NEW.seq);
+    END;`);
+  const messageView=row=>row?{...row,channel:row.recipient?'dm':row.channel||'scene',mentions:JSON.parse(row.mentions||'[]')}:null;
   const byId=id=>db.prepare('SELECT * FROM accounts WHERE id=?').get(id);
   const byRole=role=>db.prepare('SELECT * FROM accounts WHERE role=?').get(role);
   const claimed=role=>!!db.prepare('SELECT 1 FROM role_claims WHERE role=?').get(role);
@@ -99,8 +111,10 @@ export function openStore(path){
     claim(id,role){return atomic(()=>{if(!roles.includes(role))fail(400,'请选择有效角色');if(!byId(id))fail(404,'账号不存在');if(byId(id).role)fail(409,'你已经领取了角色');if(claimed(role))fail(409,'这个角色已永久领取，请使用已有账号登录');try{db.prepare('INSERT INTO role_claims VALUES(?,?,?)').run(role,id,Date.now());db.prepare('UPDATE accounts SET role=?,profile=? WHERE id=? AND role IS NULL').run(role,JSON.stringify(distillProfile({},role)),id);}catch(e){if(e.code?.includes('SQLITE'))fail(409,'这个角色刚被别人领取了');throw e;}return publicAccount(byId(id));});},
     profile(id,input){const row=byId(id);if(!row.role)fail(409,'请先领取角色');const profile=distillProfile(input,row.role);db.prepare('UPDATE accounts SET profile=? WHERE id=?').run(JSON.stringify(profile),id);return publicAccount(byId(id));},
     hand(id,hand,revision){const row=byId(id);if(row.revision!==revision)return publicAccount(row);if(row.hand!==hand)db.prepare("UPDATE accounts SET hand=?,seasoning='[]',revision=revision+1 WHERE id=? AND revision=?").run(hand,id,revision);return publicAccount(byId(id));},
-    message(sender,recipient,scene,body,id,npc=false){if(typeof id!=='string'||id.length>120)fail(400,'消息编号无效');const existing=db.prepare('SELECT * FROM messages WHERE id=?').get(sender+':'+id);if(existing)return existing;db.prepare('INSERT INTO messages(id,sender,recipient,scene,body,at,npc) VALUES(?,?,?,?,?,?,?)').run(sender+':'+id,sender,recipient,scene,body,Date.now(),Number(npc));return db.prepare('SELECT * FROM messages WHERE id=?').get(sender+':'+id);},
-    history(role,peer,scene){return peer?db.prepare('SELECT * FROM messages WHERE (sender=? AND recipient=?) OR (sender=? AND recipient=?) ORDER BY seq DESC LIMIT 60').all(role,peer,peer,role).reverse():db.prepare('SELECT * FROM messages WHERE scene=? AND recipient IS NULL ORDER BY seq DESC LIMIT 60').all(scene).reverse();},
+    message(sender,recipient,scene,body,id,npc=false,channel=recipient?'dm':'scene',mentions=[]){if(typeof id!=='string'||!id||id.length>120)fail(400,'消息编号无效');const existing=db.prepare('SELECT * FROM messages WHERE id=?').get(sender+':'+id);if(existing)return messageView(existing);db.prepare('INSERT INTO messages(id,sender,recipient,scene,body,at,npc,channel,mentions) VALUES(?,?,?,?,?,?,?,?,?)').run(sender+':'+id,sender,recipient,scene,body,Date.now(),Number(npc),channel,JSON.stringify(mentions));return messageView(db.prepare('SELECT * FROM messages WHERE id=?').get(sender+':'+id));},
+    history(role,peer,scene,channel=peer?'dm':'scene'){const rows=channel==='dm'?db.prepare('SELECT * FROM messages WHERE (sender=? AND recipient=?) OR (sender=? AND recipient=?) ORDER BY at DESC,seq DESC LIMIT 60').all(role,peer,peer,role):channel==='lobby'?db.prepare("SELECT * FROM messages WHERE channel='lobby' AND recipient IS NULL ORDER BY at DESC,seq DESC LIMIT 60").all():db.prepare("SELECT * FROM messages WHERE scene=? AND recipient IS NULL AND channel='scene' ORDER BY at DESC,seq DESC LIMIT 60").all(scene);return rows.reverse().map(messageView);},
+    messageArrival(){return db.prepare('SELECT COALESCE(MAX(arrival),0) arrival FROM temp.message_arrivals').get().arrival;},
+    messagesArrivingAfter(arrival){return db.prepare('SELECT a.arrival,m.* FROM temp.message_arrivals a LEFT JOIN messages m ON m.seq=a.message_seq WHERE a.arrival>? ORDER BY a.arrival LIMIT 100').all(arrival).map(row=>({arrival:row.arrival,message:row.seq==null?null:messageView(row)}));},
     gift(id,toRole,requestId,revision){
       const replay=db.prepare('SELECT result FROM operations WHERE account=? AND id=?').get(id,requestId);if(replay)return JSON.parse(replay.result);
       db.exec('SAVEPOINT gift');try{

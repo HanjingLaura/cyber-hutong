@@ -1,5 +1,7 @@
+import {bindSceneEvent} from './scene-dom';
 import {sceneWalkable} from '../shared/walkability.mjs';
 import Phaser from 'phaser';
+import {setGuide} from './hud';
 import { playerInventory, type ItemName } from './player-inventory';
 import { DanceBeat } from './dance-beat';
 import { preloadGuest, placeGuest, guestBlocks } from './easter-eggs';
@@ -48,7 +50,7 @@ export class DanceStudioScene extends Phaser.Scene {
     window.addEventListener('keydown',action);window.addEventListener('blur',clear);world.addEventListener('blur',clear);
     this.events.on('sleep',()=>{this.stop();this.beat.stop();clear();});
     this.events.once('shutdown',()=>{this.revision++;this.beat.dispose();window.removeEventListener('keydown',action);window.removeEventListener('blur',clear);world.removeEventListener('blur',clear);});
-    const bind=(id:string,fn:()=>void)=>document.querySelector(id)!.addEventListener('click',()=>{if(this.sys.isActive()){fn();world.focus();}});
+    const bind=(id:string,fn:()=>void)=>bindSceneEvent(this, document.querySelector(id)!, 'click', ()=>{if(this.sys.isActive()){fn();world.focus();}});
     bind('#interact',()=>this.interact());
     bind('#dance-start',()=>{if(this.nearFloor())void this.start('dance');});
     bind('#dance-practice',()=>{if(this.nearFloor())void this.start('practice');});
@@ -131,7 +133,6 @@ export class DanceStudioScene extends Phaser.Scene {
     document.querySelector('#dance-score')!.textContent=`本轮 ${this.score} / 8 · 最好 ${this.best} / 8`;
     const current=Math.round(position)-4;
     document.querySelector('#dance-sequence')!.textContent=this.mode==='practice'?position<3.5?`准备 ${Math.max(1,4-Math.floor(position))}`:sequence.map((n,i)=>`${i===current?'[':''}${this.results[i]==='hit'?'✓':this.results[i]==='miss'?'×':arrows[n]}${i===current?']':''}`).join(' '):'← ↑ → ↓';
-    document.querySelector('#guide-title')!.textContent='WASD / 方向键移动';
-    document.querySelector('#guide-action')!.textContent=this.mode==='practice'?`${position<3.5?`准备 ${Math.max(1,4-Math.floor(position))}`:sequence.slice(Math.max(0,current),Math.max(0,current)+4).map(n=>arrows[n]).join(' ')} · ${this.score}/8 · Esc 结束`:this.mode!=='walk'?'E / Esc 结束':target?`E · ${names[target.kind]}`:'镜子前 E 跳舞 · 中央空地 E 跟拍';
+    setGuide('WASD / 方向键移动',this.mode==='practice'?`${position<3.5?`准备 ${Math.max(1,4-Math.floor(position))}`:sequence.slice(Math.max(0,current),Math.max(0,current)+4).map(n=>arrows[n]).join(' ')} · ${this.score}/8 · Esc 结束`:this.mode!=='walk'?'E / Esc 结束':target?`E · ${names[target.kind]}`:'');
   }
 }

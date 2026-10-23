@@ -12,6 +12,10 @@ test('only full scene backgrounds are sampled to the fixed game canvas, never sp
  const encoded=await assets.encodeSceneAsset(source,'/project/assets/drafts/ktv-room-v1.png');
  const {data,info}=await sharp(encoded).ensureAlpha().raw().toBuffer({resolveWithObject:true});
  assert.equal(info.width,640);assert.equal(info.height,360);
+ for(const place of ['street','campus','google','meeting','yousheng']){
+  const placeImage=await sharp(await assets.encodeSceneAsset(source,`/project/assets/maps/places/${place}.png`)).metadata();
+  assert.equal(placeImage.width,640);assert.equal(placeImage.height,360);
+ }
  for(const [x,y] of [[0,0],[127,55],[639,359]])assert.deepEqual(data.subarray((y*640+x)*4,(y*640+x+1)*4),pixels.subarray(((y*2+1)*width+x*2+1)*4,((y*2+1)*width+x*2+2)*4));
  for(const file of ['/project/assets/drafts/arcade-props-v2.png','/project/assets/drafts/popmart-store-v3.png','/project/assets/drafts/concert-room-v4.png','/project/assets/characters/laura.png','/project/other/ktv-room-v1.png']){
   const original=await sharp(await assets.encodeSceneAsset(source,file)).metadata();assert.equal(original.width,width);assert.equal(original.height,height);

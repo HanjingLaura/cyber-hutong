@@ -1,0 +1,21 @@
+{
+  "tool": "built-in image_gen",
+  "source": "D:/CodexHome/generated_images/01a1524b-3261-78b3-a904-9f88025c4830/exec-0dd25b76-5ba8-4384-9bf9-b69c1eb73bc4.png",
+  "target": "assets/props/blind-box-packaging.png",
+  "size": [
+    144,
+    64
+  ],
+  "frameSize": [
+    48,
+    64
+  ],
+  "variants": [
+    "pink-bunny",
+    "blue-bear",
+    "cream-bear"
+  ],
+  "sha256": "67d30dc83e239bc415c380b785c323c6eaa02fdce112c01549c7852a970823ad",
+  "prompt": "Three matching transparent pixel-art blind-box cartons; pink bunny, blue bear, cream bear. Nearly frontal, small top and right side, top-left light, charcoal outline, flat limited palette, native 40x52 style. No text, logos, shelf, backdrop or cast shadow. Equal baseline and proportions.",
+  "processing": "Three equal source cells, alpha trim, nearest-neighbour fit 44x56, aligned to bottom of 48x64 cells. No alternate assets copied into assets."
+}

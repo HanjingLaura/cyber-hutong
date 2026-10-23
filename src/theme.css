@@ -24,8 +24,18 @@
   --hto-button: #303b35;
   --hto-button-hover: #445449;
   --hto-button-border: #697366;
-  --hto-font: "Microsoft YaHei", "PingFang SC", sans-serif;
-  --hto-mono: Consolas, "Microsoft YaHei", monospace;
+  --hto-font: "IBM Plex Sans", "Noto Sans SC", "Microsoft YaHei", "PingFang SC", sans-serif;
+  --hto-mono: "IBM Plex Mono", Consolas, "Noto Sans SC", monospace;
+  --hto-display: "ZCOOL QingKe HuangYou", "Noto Sans SC", sans-serif;
+  --hto-space-1: 4px;
+  --hto-space-2: 8px;
+  --hto-space-3: 12px;
+  --hto-space-4: 16px;
+  --hto-space-5: 24px;
+  --hto-control: 36px;
+  --hto-backdrop: #101713c0;
+  --hto-paper: #f2e9cf;
+  --hto-paper-ink: #2b302d;
   font-family: var(--hto-font);
   background: var(--hto-bg);
   color: var(--hto-ink);
@@ -41,12 +51,14 @@ button {
   cursor: pointer;
   border-radius: 0;
 }
-button:hover, button:focus-visible {
+button:hover:not(:disabled) {
   background: var(--hto-button-hover);
-  outline: 2px solid var(--hto-accent);
+}
+:where(button, input, textarea, select, summary, a):focus-visible {
+  outline: 2px solid var(--hto-focus);
   outline-offset: 2px;
 }
-button:disabled { opacity: .45; cursor: default; }
+button:disabled { opacity: .6; cursor: default; }
 button[aria-pressed="true"], button[aria-current="true"] {
   background: var(--hto-surface-3);
   border-color: var(--hto-accent);
@@ -97,3 +109,13 @@ button[aria-pressed="true"], button[aria-current="true"] {
   box-shadow: 3px 3px 0 var(--hto-shadow);
 }
 .hto-rule { border: 0; border-top: 1px solid var(--hto-line); margin: 24px 0; }
+
+::selection { background: var(--hto-accent); color: var(--hto-bg-deep); }
+:where(input, textarea) { caret-color: var(--hto-accent); }
+:where(input[type="checkbox"], input[type="radio"]) { accent-color: var(--hto-accent); }
+:where(dialog, .social-panel, #chat-history, #people-list) {
+  scrollbar-width: thin;
+  scrollbar-color: var(--hto-line-strong) var(--hto-bg-deep);
+}
+dialog::backdrop { background: var(--hto-backdrop); }
+html.touch-ui { --hto-control: 44px; }

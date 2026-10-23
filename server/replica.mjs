@@ -44,6 +44,25 @@ function upsertRow(db, table, data) {
   db.prepare(`INSERT INTO ${q(table)}(${cols.map(q).join(',')}) VALUES(${cols.map(() => '?').join(',')}) ON CONFLICT(${keys.map(q).join(',')}) ${conflict}`).run(...cols.map(c => decodeValue(data[c])));
 }
 
+// Shared experiences have a logical key in addition to their instance-specific
+// AUTOINCREMENT sequence. Old remote copies can contain several physical rows
+// for one event. Resolve only that documented key; all other constraints still
+// use the ordinary UPSERT and continue to reject inconsistent remote state.
+function upsertRemoteRow(db, remote, versions, {preservePending=false,discardPending=false}={}) {
+  const table=String(remote.tbl),data=JSON.parse(String(remote.data));
+  if(table==='experiences'&&typeof data.event_id==='string'&&data.event_id!==''){
+    const existing=db.prepare('SELECT seq FROM experiences WHERE account=? AND event_id=? AND seq<>?').get(data.account,data.event_id,data.seq);
+    if(existing){
+      const pk=JSON.stringify([existing.seq]);
+      if(preservePending&&db.prepare("SELECT 1 FROM temp._hto_dirty WHERE tbl='experiences' AND pk=?").get(pk))return false;
+      if((versions.get('experiences\u0000'+pk)??0)>Number(remote.ver))return false;
+      db.prepare('DELETE FROM experiences WHERE seq=?').run(existing.seq);
+      if(discardPending)db.prepare("DELETE FROM temp._hto_dirty WHERE tbl='experiences' AND pk=?").run(pk);
+    }
+  }
+  upsertRow(db,table,data);return true;
+}
+
 export function remoteTables(prefix = 'hutong_online') {
   if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(prefix)) throw new Error('invalid replica prefix');
   return { schema: `${prefix}_schema`, rows: `${prefix}_rows` };
@@ -86,7 +105,7 @@ export async function prepareReplica(path, client, { prefix = 'hutong_online', f
     }
     for (const r of rows) {
       if(Number(r.deleted))continue;
-      upsertRow(db, String(r.tbl), JSON.parse(String(r.data))); loaded.add(r.tbl + '\u0000' + r.pk);
+      upsertRemoteRow(db,r,versions); loaded.add(r.tbl + '\u0000' + r.pk);
     }
     if(db.prepare('PRAGMA foreign_key_check').all().length)throw new Error('replica hydration failed foreign key validation');
     for(const s of schema)if(s.type==='trigger')db.exec(String(s.sql));
@@ -210,9 +229,10 @@ export async function prepareReplica(path, client, { prefix = 'hutong_online', f
         // boundary. A newer authoritative row replaces them before gameplay.
         const dirty=db2.prepare('SELECT tbl,pk FROM temp._hto_dirty').all();
         if(dirty.length){
-          const result=await client.execute({sql:`SELECT tbl,pk,data,deleted,ver FROM ${t.rows} WHERE ${dirty.map(()=>'(tbl=? AND pk=?)').join(' OR ')}`,args:dirty.flatMap(r=>[r.tbl,r.pk])});
-          const changed=result.rows.filter(r=>Number(r.ver)!==(versions.get(r.tbl+'\u0000'+r.pk)??0));
-          if(changed.length){db2.exec('UPDATE temp._hto_ctl SET applying=1; BEGIN; PRAGMA defer_foreign_keys=ON;');try{for(const r of changed){if(Number(r.deleted)){const keys=keyColumns(db2,r.tbl);db2.prepare(`DELETE FROM ${q(r.tbl)} WHERE ${keys.map(k=>q(k)+' IS ?').join(' AND ')}`).run(...JSON.parse(r.pk));}else upsertRow(db2,r.tbl,JSON.parse(r.data));db2.prepare('DELETE FROM temp._hto_dirty WHERE tbl=? AND pk=?').run(r.tbl,r.pk);}db2.exec('COMMIT');for(const r of changed)versions.set(r.tbl+'\u0000'+r.pk,Number(r.ver));}catch(e){db2.exec('ROLLBACK');throw e;}finally{db2.exec('UPDATE temp._hto_ctl SET applying=0');}}
+          const logical=dirty.filter(r=>r.tbl==='experiences').map(r=>readRow(r.tbl,r.pk)).filter(r=>typeof r?.event_id==='string'&&r.event_id!=='');
+          const result=await client.execute({sql:`SELECT tbl,pk,data,deleted,ver FROM ${t.rows} WHERE ${dirty.map(()=>'(tbl=? AND pk=?)').concat(logical.map(()=>"(tbl='experiences' AND deleted=0 AND json_extract(data,'$.account')=? AND json_extract(data,'$.event_id')=?)")).join(' OR ')} ORDER BY ver`,args:[...dirty.flatMap(r=>[r.tbl,r.pk]),...logical.flatMap(r=>[r.account,r.event_id])]});
+          const changed=result.rows.filter(r=>Number(r.ver)!==(versions.get(r.tbl+'\u0000'+r.pk)??0)||(r.tbl==='experiences'&&!Number(r.deleted)&&logical.some(local=>{const remote=JSON.parse(r.data);return local.account===remote.account&&local.event_id===remote.event_id;})));
+          if(changed.length){db2.exec('UPDATE temp._hto_ctl SET applying=1; BEGIN; PRAGMA defer_foreign_keys=ON;');try{for(const r of changed){if(Number(r.deleted)){const keys=keyColumns(db2,r.tbl);db2.prepare(`DELETE FROM ${q(r.tbl)} WHERE ${keys.map(k=>q(k)+' IS ?').join(' AND ')}`).run(...JSON.parse(r.pk));}else upsertRemoteRow(db2,r,versions,{discardPending:true});db2.prepare('DELETE FROM temp._hto_dirty WHERE tbl=? AND pk=?').run(r.tbl,r.pk);}db2.exec('COMMIT');for(const r of changed)versions.set(r.tbl+'\u0000'+r.pk,Number(r.ver));}catch(e){db2.exec('ROLLBACK');throw e;}finally{db2.exec('UPDATE temp._hto_ctl SET applying=0');}}
         }
       }
       let applied = 0;
@@ -233,7 +253,7 @@ export async function prepareReplica(path, client, { prefix = 'hutong_online', f
               if (Number(r.deleted)) {
                 const keys = keyColumns(db2, tbl);
                 db2.prepare(`DELETE FROM main.${q(tbl)} WHERE ${keys.map(k => q(k) + ' IS ?').join(' AND ')}`).run(...JSON.parse(pk));
-              } else upsertRow(db2, tbl, JSON.parse(String(r.data)));
+              } else upsertRemoteRow(db2,r,versions,{preservePending:true});
               count++;changes.push([tbl+'\u0000'+pk,Number(r.ver)]);
             candidate = Math.max(candidate, Number(r.ver));
           }
@@ -309,7 +329,7 @@ export async function prepareReplica(path, client, { prefix = 'hutong_online', f
             db2.prepare(`DELETE FROM main.${q(row.tbl)} WHERE ${keys.map(column => q(column) + ' IS ?').join(' AND ')}`).run(...JSON.parse(row.pk));
           }
         }
-        for (const row of result.rows) if (!Number(row.deleted)) upsertRow(db2, String(row.tbl), JSON.parse(String(row.data)));
+        for (const row of result.rows) if (!Number(row.deleted)) upsertRemoteRow(db2,row,versions,{discardPending:true});
         const clear = db2.prepare('DELETE FROM temp._hto_dirty WHERE tbl = ? AND pk = ? AND generation = ?');
         for (const row of captured) clear.run(row.tbl, row.pk, row.generation);
         db2.exec('COMMIT');

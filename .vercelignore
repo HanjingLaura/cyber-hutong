@@ -4,6 +4,7 @@
 .wrangler
 .partykit
 .agents
+.impeccable
 node_modules
 dist
 data

@@ -1,6 +1,7 @@
+import rooms from './rooms.json' with {type:'json'};
 // Pure room state for PartyKit presence + movement. No PartyKit imports — unit-testable.
 export const PARTY_ROOM_ID = 'hutong-main';
-export const SCENES = ['hutong', 'hawaii', 'rest', 'pop', 'bathroom', 'concert', 'arcade', 'noodle', 'gym', 'dance', 'perler', 'rehearsal', 'elevator', 'subway', 'ktv'];
+export const SCENES = Object.keys(rooms);
 
 export function createRoomState() {
   return { byConn: new Map(), byUser: new Map() };

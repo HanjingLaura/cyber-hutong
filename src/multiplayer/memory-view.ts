@@ -1,4 +1,7 @@
+import {noodleSeats,noodleTables,noodleSlotPosition} from '../../shared/noodle.mjs';
 import rooms from '../../shared/rooms.json';
+import {scenePropImage} from '../scene-props';
+import {registerNoodleFurniture} from '../noodle-furniture';
 import {characterRegistry,characterImage,type AvatarRole} from '../character-assets';
 import {seatSurface} from '../seating';
 import {items,type ItemName} from '../player-inventory';
@@ -19,7 +22,7 @@ function background(scene:string){const url=scenery[`../../assets/maps/memories/
 /** A reconstruction from the immutable event snapshot, never the current players. */
 async function paint(canvas:HTMLCanvasElement,e:MemoryEntry,bridge:MultiplayerBridge){
  const context=canvas.getContext('2d')!,actors=[...(e.data?.actors??[]),...(e.data?.npcs??[]).filter(n=>n.id==='celine').map(n=>({role:'celine' as AvatarRole,x:n.x,y:n.y,facing:n.facing??0,seat:n.seat??null,activity:n.mode??'walk',moving:n.mode==='walking',hand:null}))];
- const active=bridge.active;if(active){registerProductTextures(active);await gachaReady();registerGachaTextures(active);}
+ const active=bridge.active;if(active){registerProductTextures(active);await gachaReady().catch(()=>{});registerGachaTextures(active);}
  if(active)await Promise.all([...actors.map(p=>p.hand),...(e.data?.objects??[]).flatMap(o=>(o.slots??[]).map((s:any)=>typeof s==='string'?s:s?.name))].filter(Boolean).map(name=>ensureCollectible(active,name).catch(()=>{})));
  const prepared=await Promise.all(actors.map(async p=>{
   const d=characterRegistry.members[p.role];if(!d)return null;
@@ -43,8 +46,9 @@ async function paint(canvas:HTMLCanvasElement,e:MemoryEntry,bridge:MultiplayerBr
   const [frame]=registerRegions(active,key,[bounds]);return{frame,source:bridge.game.textures.get(key).getSourceImage() as CanvasImageSource};
  };
  if(e.scene==='noodle'&&active){
-  const {frame,source}=await region('noodle-kit',new URL('../../assets/drafts/noodle-furniture-v1.png',import.meta.url).href,{name:'stool',x0:.75,x1:1,y0:.51,y1:1});
-  for(const actor of actors.filter(p=>p.seat))layers.push({depth:291,draw:()=>context.drawImage(source,frame.x,frame.y,frame.width,frame.height,actor.x-12,266,24,23)});
+  registerNoodleFurniture(active);const source=bridge.game.textures.get('noodle-wood-stool').getSourceImage() as CanvasImageSource;
+  for(const seat of noodleSeats)layers.push({depth:seat.y+2,draw:()=>context.drawImage(source,seat.x-12,seat.y-20,24,23)});
+  const tableSource=bridge.game.textures.get('noodle-wood-table').getSourceImage() as CanvasImageSource;for(const table of noodleTables){layers.push({depth:table.y,draw:()=>context.drawImage(tableSource,table.x-68,table.y-50,136,50)});for(const [key,x,y,w,h,depth] of [['noodle-condiment-tray',table.x+51,222,18,14,264.1],['noodle-order-pad',table.x+52,247,11,13,264.4]] as [string,number,number,number,number,number][]){if(bridge.game.textures.exists(key)){const propSource=bridge.game.textures.get(key).getSourceImage() as CanvasImageSource;layers.push({depth,draw:()=>context.drawImage(propSource,x-w/2,y-h,w,h)});}}}
  }
  if(e.scene==='rest'&&active){
   if(!bridge.game.textures.exists('rest-props')){const source=new Image();source.src=new URL('../../assets/drafts/rest-props-v1.png',import.meta.url).href;await source.decode();if(!bridge.game.textures.exists('rest-props'))bridge.game.textures.addImage('rest-props',source);}
@@ -58,7 +62,7 @@ async function paint(canvas:HTMLCanvasElement,e:MemoryEntry,bridge:MultiplayerBr
    layers.push({depth:occupied?y-1:y+10,draw:()=>context.drawImage(source,frame.x,frame.y,frame.width,frame.height,x-w/2,y+10-h,w,h)});
    if(e.scene==='concert'||occupied)layers.push({depth:y+2,draw:()=>context.drawImage(source,frame.x,frame.y,frame.width,backHeight,x-w/2,y+10-h,w,h*backHeight/frame.height)});
   }
-  if(e.scene==='rehearsal')layers.push({depth:225,draw:()=>{context.fillStyle='#171b21';context.fillRect(519,211,34,14);context.fillRect(522,225,4,7);context.fillRect(546,225,4,7);context.fillStyle='#48505a';context.fillRect(520,211,32,2);context.strokeStyle='#30363e';context.lineWidth=1;context.beginPath();context.moveTo(521,220);context.lineTo(551,220);context.stroke();}});
+  if(e.scene==='rehearsal'){const bench=await scenePropImage('piano-bench');layers.push({depth:225,draw:()=>context.drawImage(bench,519,211,34,21)});}
  }
  if(e.scene==='bathroom'){
   for(const [i,portal]of [{x:54,width:63},{x:136,width:70},{x:229,width:67},{x:312,width:66}].entries()){
@@ -66,7 +70,7 @@ async function paint(canvas:HTMLCanvasElement,e:MemoryEntry,bridge:MultiplayerBr
    layers.push({depth:209+dy,draw:()=>{context.save();context.beginPath();context.moveTo(portal.x,77);context.lineTo(farX,77+dy);context.lineTo(farX,206+dy);context.lineTo(portal.x,206);context.closePath();context.fillStyle='#d8c3a2';context.fill();context.strokeStyle='#514b3e';context.lineWidth=1;context.stroke();context.strokeStyle='#f2e2bf';context.lineWidth=2;context.beginPath();context.moveTo(portal.x+2,79);context.lineTo(portal.x+2,204);context.stroke();context.fillStyle='#494d4a';context.fillRect(Math.round(portal.x+(farX-portal.x)*.84),Math.round(147+dy*.84),2,5);context.fillRect(portal.x,102,2,5);context.fillRect(portal.x,177,2,5);context.restore();}});
   }
  }
- for(const o of e.data?.objects??[]){if(!o.slots)continue;if(o.id.startsWith('rest:table-'))layers.push({depth:267.2,draw:()=>o.slots.forEach((s:any,i:number)=>{if(s)prop(typeof s==='string'?s:s.name,o.at[0]+(i-2.5)*11,229);})});if(o.id.startsWith('noodle:table-'))layers.push({depth:264.2,draw:()=>o.slots.forEach((s:any,i:number)=>{if(s)prop(typeof s==='string'?s:s.name,o.at[0]+(i-2.5)*12,260);})});}
+ for(const o of e.data?.objects??[]){if(!o.slots)continue;if(o.id.startsWith('rest:table-'))layers.push({depth:267.2,draw:()=>o.slots.forEach((s:any,i:number)=>{if(s)prop(typeof s==='string'?s:s.name,o.at[0]+(i-2.5)*11,229);})});if(o.id.startsWith('noodle:table-'))layers.push({depth:264.2,draw:()=>o.slots.forEach((s:any,i:number)=>{if(s){const pos=noodleSlotPosition(Number(o.id.at(-1)),i);prop(typeof s==='string'?s:s.name,pos.x,pos.y);}})});}
  for(const npc of e.data?.npcs??[]){
   const text=npc.text??npc.question;if(text)layers.push({depth:945,draw:()=>{context.font='9px "Microsoft YaHei",monospace';const w=context.measureText(text).width+12,x=npc.x-w/2,y=npc.y-npc.height-26;context.fillStyle='#f2e9cf';context.fillRect(x,y,w,19);context.strokeStyle='#353f35';context.strokeRect(x,y,w,19);context.fillStyle='#2b302d';context.fillText(text,x+6,y+13);}});
   if(npc.id==='ani'){

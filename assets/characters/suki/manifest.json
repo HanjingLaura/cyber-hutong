@@ -1,0 +1,3234 @@
+{
+  "schemaVersion": 1,
+  "role": "suki",
+  "worldHeight": 61.44,
+  "seatedHeight": 62.4,
+  "sources": {
+    "suki": {
+      "file": "suki/poses.png",
+      "size": [
+        1536,
+        1024
+      ],
+      "sha256": "f7312431246e9f0c50dc91986d959da31ae745c0cc2465f8c2555610668f61a3",
+      "origin": "team/v3/suki.png"
+    },
+    "suki-walk-a-v8": {
+      "file": "suki/walk-side-a.png",
+      "size": [
+        2172,
+        724
+      ],
+      "sha256": "a5f9a808e6d7b806e342d9d1aaa54d0a365f91f3cf696c1c7a98596067b29dc1",
+      "origin": "team/v8/suki-a.png"
+    },
+    "suki-walk-b-v8": {
+      "file": "suki/walk-side-b.png",
+      "size": [
+        2172,
+        724
+      ],
+      "sha256": "9ea470ad69654afbe6fbd65c06f58d89362096398f00530f3e82c6a88b63801c",
+      "origin": "team/v8/suki-b.png"
+    },
+    "suki-run-v10": {
+      "file": "suki/run.png",
+      "size": [
+        1536,
+        1024
+      ],
+      "sha256": "8122d7105cc31a732aa5e88b2ac059df92416882c8cde70df394819b47b9bec5",
+      "origin": "team/v10/suki-run.png"
+    },
+    "suki-carry": {
+      "file": "suki/carry.png",
+      "size": [
+        1024,
+        1536
+      ],
+      "sha256": "4b154b1fe0484258999f02eed6342a3c1d526326ab7bb4adae56c7716066ea92",
+      "origin": "team/v3/suki-carry.png"
+    },
+    "suki-carry-walk-v12": {
+      "file": "suki/carry-walk.png",
+      "size": [
+        1536,
+        1024
+      ],
+      "sha256": "a66f94f707edf16a1b1a0d0abae6bed79e2cf2a95f3fd3e318a2f88c919161ec",
+      "origin": "team/v12/suki-carry-walk.png"
+    },
+    "suki-mobility": {
+      "file": "suki/mobility.png",
+      "size": [
+        192,
+        72
+      ],
+      "sha256": "0bc6d04abb43b51a6ae03c5d7993d4ba79681448391af7b2fd8b462d3941422b",
+      "origin": "imagegen side riding and skateboard balance 2026-10-15"
+    }
+  },
+  "member": {
+    "seat": "L2",
+    "frames": [
+      {
+        "rect": [
+          49,
+          47,
+          127,
+          223
+        ],
+        "pivotX": 0.49841397739790294,
+        "grip": null,
+        "gripSide": 0,
+        "name": "idle-front",
+        "source": "suki",
+        "referenceHeight": 224,
+        "foot": [
+          63.298575129533674,
+          223
+        ],
+        "seat": [
+          63.298575129533674,
+          160.56
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          236,
+          48,
+          123,
+          222
+        ],
+        "pivotX": 0.5378173724553544,
+        "grip": null,
+        "gripSide": 0,
+        "name": "idle-right",
+        "source": "suki",
+        "referenceHeight": 224,
+        "foot": [
+          66.1515368120086,
+          222
+        ],
+        "seat": [
+          66.1515368120086,
+          159.84
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          422,
+          48,
+          124,
+          222
+        ],
+        "pivotX": 0.5015560165975106,
+        "grip": null,
+        "gripSide": 0,
+        "name": "idle-back",
+        "source": "suki",
+        "referenceHeight": 224,
+        "foot": [
+          62.192946058091316,
+          222
+        ],
+        "seat": [
+          62.192946058091316,
+          159.84
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          611,
+          48,
+          125,
+          222
+        ],
+        "pivotX": 0.4035973931933386,
+        "grip": null,
+        "gripSide": 0,
+        "name": "idle-left",
+        "source": "suki",
+        "referenceHeight": 224,
+        "foot": [
+          50.44967414916732,
+          222
+        ],
+        "seat": [
+          50.44967414916732,
+          159.84
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          793,
+          46,
+          128,
+          224
+        ],
+        "pivotX": 0.494011887947269,
+        "grip": null,
+        "gripSide": 0,
+        "name": "sit-front",
+        "source": "suki",
+        "referenceHeight": 224,
+        "foot": [
+          63.233521657250435,
+          224
+        ],
+        "seat": [
+          63.233521657250435,
+          161.28
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          988,
+          48,
+          121,
+          222
+        ],
+        "pivotX": 0.49305698471670073,
+        "grip": null,
+        "gripSide": 0,
+        "name": "sit-back",
+        "source": "suki",
+        "referenceHeight": 224,
+        "foot": [
+          59.659895150720786,
+          222
+        ],
+        "seat": [
+          59.659895150720786,
+          159.84
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          1167,
+          47,
+          131,
+          223
+        ],
+        "pivotX": 0.4910972987025262,
+        "grip": null,
+        "gripSide": 0,
+        "name": "piano-rest",
+        "source": "suki",
+        "referenceHeight": 224,
+        "foot": [
+          64.33374613003093,
+          223
+        ],
+        "seat": [
+          64.33374613003093,
+          160.56
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          1355,
+          47,
+          132,
+          223
+        ],
+        "pivotX": 0.49281760796727114,
+        "grip": null,
+        "gripSide": 0,
+        "name": "piano-play",
+        "source": "suki",
+        "referenceHeight": 224,
+        "foot": [
+          65.0519242516798,
+          223
+        ],
+        "seat": [
+          65.0519242516798,
+          160.56
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          42,
+          291,
+          134,
+          219
+        ],
+        "pivotX": 0.5286015574302401,
+        "grip": null,
+        "gripSide": 0,
+        "name": "walk-front-0",
+        "source": "suki",
+        "referenceHeight": 224,
+        "foot": [
+          70.83260869565217,
+          219
+        ],
+        "seat": [
+          70.83260869565217,
+          157.68
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          232,
+          291,
+          135,
+          219
+        ],
+        "pivotX": 0.48411645476322074,
+        "grip": null,
+        "gripSide": 0,
+        "name": "walk-front-1",
+        "source": "suki",
+        "referenceHeight": 224,
+        "foot": [
+          65.3557213930348,
+          219
+        ],
+        "seat": [
+          65.3557213930348,
+          157.68
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          409,
+          291,
+          138,
+          219
+        ],
+        "pivotX": 0.5298544347188341,
+        "grip": null,
+        "gripSide": 0,
+        "name": "walk-front-2",
+        "source": "suki",
+        "referenceHeight": 224,
+        "foot": [
+          73.1199119911991,
+          219
+        ],
+        "seat": [
+          73.1199119911991,
+          157.68
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          595,
+          291,
+          136,
+          219
+        ],
+        "pivotX": 0.44513178667032727,
+        "grip": null,
+        "gripSide": 0,
+        "name": "walk-front-3",
+        "source": "suki",
+        "referenceHeight": 224,
+        "foot": [
+          60.53792298716451,
+          219
+        ],
+        "seat": [
+          60.53792298716451,
+          157.68
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          42,
+          291,
+          134,
+          219
+        ],
+        "pivotX": 0.5286015574302401,
+        "grip": null,
+        "gripSide": 0,
+        "name": "walk-front-4",
+        "source": "suki",
+        "referenceHeight": 224,
+        "foot": [
+          70.83260869565217,
+          219
+        ],
+        "seat": [
+          70.83260869565217,
+          157.68
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          232,
+          291,
+          135,
+          219
+        ],
+        "pivotX": 0.48411645476322074,
+        "grip": null,
+        "gripSide": 0,
+        "name": "walk-front-5",
+        "source": "suki",
+        "referenceHeight": 224,
+        "foot": [
+          65.3557213930348,
+          219
+        ],
+        "seat": [
+          65.3557213930348,
+          157.68
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          793,
+          46,
+          128,
+          224
+        ],
+        "pivotX": 0.494011887947269,
+        "grip": null,
+        "gripSide": 0,
+        "name": "sit-down-front",
+        "source": "suki",
+        "referenceHeight": 224,
+        "foot": [
+          63.233521657250435,
+          224
+        ],
+        "seat": [
+          63.233521657250435,
+          161.28
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          49,
+          47,
+          127,
+          223
+        ],
+        "pivotX": 0.49841397739790294,
+        "grip": null,
+        "gripSide": 0,
+        "name": "stand-up-front",
+        "source": "suki",
+        "referenceHeight": 224,
+        "foot": [
+          63.298575129533674,
+          223
+        ],
+        "seat": [
+          63.298575129533674,
+          160.56
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          793,
+          291,
+          139,
+          220
+        ],
+        "pivotX": 0.47437559735939344,
+        "grip": null,
+        "gripSide": 0,
+        "name": "walk-back-0",
+        "source": "suki",
+        "referenceHeight": 224,
+        "foot": [
+          65.93820803295569,
+          220
+        ],
+        "seat": [
+          65.93820803295569,
+          158.4
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          980,
+          291,
+          135,
+          220
+        ],
+        "pivotX": 0.5060837321605656,
+        "grip": null,
+        "gripSide": 0,
+        "name": "walk-back-1",
+        "source": "suki",
+        "referenceHeight": 224,
+        "foot": [
+          68.32130384167635,
+          220
+        ],
+        "seat": [
+          68.32130384167635,
+          158.4
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          1164,
+          291,
+          137,
+          220
+        ],
+        "pivotX": 0.4878182204150947,
+        "grip": null,
+        "gripSide": 0,
+        "name": "walk-back-2",
+        "source": "suki",
+        "referenceHeight": 224,
+        "foot": [
+          66.83109619686797,
+          220
+        ],
+        "seat": [
+          66.83109619686797,
+          158.4
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          1350,
+          291,
+          135,
+          220
+        ],
+        "pivotX": 0.48312258990225154,
+        "grip": null,
+        "gripSide": 0,
+        "name": "walk-back-3",
+        "source": "suki",
+        "referenceHeight": 224,
+        "foot": [
+          65.22154963680396,
+          220
+        ],
+        "seat": [
+          65.22154963680396,
+          158.4
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          793,
+          291,
+          139,
+          220
+        ],
+        "pivotX": 0.47437559735939344,
+        "grip": null,
+        "gripSide": 0,
+        "name": "walk-back-4",
+        "source": "suki",
+        "referenceHeight": 224,
+        "foot": [
+          65.93820803295569,
+          220
+        ],
+        "seat": [
+          65.93820803295569,
+          158.4
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          980,
+          291,
+          135,
+          220
+        ],
+        "pivotX": 0.5060837321605656,
+        "grip": null,
+        "gripSide": 0,
+        "name": "walk-back-5",
+        "source": "suki",
+        "referenceHeight": 224,
+        "foot": [
+          68.32130384167635,
+          220
+        ],
+        "seat": [
+          68.32130384167635,
+          158.4
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          988,
+          48,
+          121,
+          222
+        ],
+        "pivotX": 0.49305698471670073,
+        "grip": null,
+        "gripSide": 0,
+        "name": "sit-down-back",
+        "source": "suki",
+        "referenceHeight": 224,
+        "foot": [
+          59.659895150720786,
+          222
+        ],
+        "seat": [
+          59.659895150720786,
+          159.84
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          422,
+          48,
+          124,
+          222
+        ],
+        "pivotX": 0.5015560165975106,
+        "grip": null,
+        "gripSide": 0,
+        "name": "stand-up-back",
+        "source": "suki",
+        "referenceHeight": 224,
+        "foot": [
+          62.192946058091316,
+          222
+        ],
+        "seat": [
+          62.192946058091316,
+          159.84
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          43,
+          527,
+          137,
+          211
+        ],
+        "pivotX": 0.5580861938995018,
+        "grip": null,
+        "gripSide": 0,
+        "name": "walk-right-0",
+        "source": "suki",
+        "referenceHeight": 224,
+        "foot": [
+          76.45780856423174,
+          211
+        ],
+        "seat": [
+          76.45780856423174,
+          151.92
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          225,
+          527,
+          137,
+          211
+        ],
+        "pivotX": 0.5777714269651341,
+        "grip": null,
+        "gripSide": 0,
+        "name": "walk-right-1",
+        "source": "suki",
+        "referenceHeight": 224,
+        "foot": [
+          79.15468549422337,
+          211
+        ],
+        "seat": [
+          79.15468549422337,
+          151.92
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          414,
+          528,
+          128,
+          210
+        ],
+        "pivotX": 0.5489193925233646,
+        "grip": null,
+        "gripSide": 0,
+        "name": "walk-right-2",
+        "source": "suki",
+        "referenceHeight": 224,
+        "foot": [
+          70.26168224299067,
+          210
+        ],
+        "seat": [
+          70.26168224299067,
+          151.2
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          595,
+          527,
+          137,
+          212
+        ],
+        "pivotX": 0.58688284563874,
+        "grip": null,
+        "gripSide": 0,
+        "name": "walk-right-3",
+        "source": "suki",
+        "referenceHeight": 224,
+        "foot": [
+          80.40294985250739,
+          212
+        ],
+        "seat": [
+          80.40294985250739,
+          152.64
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          785,
+          528,
+          133,
+          210
+        ],
+        "pivotX": 0.5183267904273962,
+        "grip": null,
+        "gripSide": 0,
+        "name": "walk-right-4",
+        "source": "suki",
+        "referenceHeight": 224,
+        "foot": [
+          68.9374631268437,
+          210
+        ],
+        "seat": [
+          68.9374631268437,
+          151.2
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          978,
+          528,
+          135,
+          210
+        ],
+        "pivotX": 0.5258968935340717,
+        "grip": null,
+        "gripSide": 0,
+        "name": "walk-right-5",
+        "source": "suki",
+        "referenceHeight": 224,
+        "foot": [
+          70.99608062709967,
+          210
+        ],
+        "seat": [
+          70.99608062709967,
+          151.2
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          46,
+          761,
+          124,
+          219
+        ],
+        "pivotX": 0.5004528340286964,
+        "grip": null,
+        "gripSide": 0,
+        "name": "curl-rest",
+        "source": "suki",
+        "referenceHeight": 224,
+        "foot": [
+          62.05615141955836,
+          219
+        ],
+        "seat": [
+          62.05615141955836,
+          157.68
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          208,
+          759,
+          144,
+          221
+        ],
+        "pivotX": 0.49448529411764697,
+        "grip": null,
+        "gripSide": 0,
+        "name": "curl-lift",
+        "source": "suki",
+        "referenceHeight": 224,
+        "foot": [
+          71.20588235294116,
+          221
+        ],
+        "seat": [
+          71.20588235294116,
+          159.12
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          49,
+          47,
+          127,
+          223
+        ],
+        "pivotX": 0.49841397739790294,
+        "grip": null,
+        "gripSide": 0,
+        "name": "hold-front",
+        "source": "suki",
+        "referenceHeight": 224,
+        "foot": [
+          63.298575129533674,
+          223
+        ],
+        "seat": [
+          63.298575129533674,
+          160.56
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          236,
+          48,
+          123,
+          222
+        ],
+        "pivotX": 0.5378173724553544,
+        "grip": null,
+        "gripSide": 0,
+        "name": "hold-right",
+        "source": "suki",
+        "referenceHeight": 224,
+        "foot": [
+          66.1515368120086,
+          222
+        ],
+        "seat": [
+          66.1515368120086,
+          159.84
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          422,
+          48,
+          124,
+          222
+        ],
+        "pivotX": 0.5015560165975106,
+        "grip": null,
+        "gripSide": 0,
+        "name": "hold-back",
+        "source": "suki",
+        "referenceHeight": 224,
+        "foot": [
+          62.192946058091316,
+          222
+        ],
+        "seat": [
+          62.192946058091316,
+          159.84
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          611,
+          48,
+          125,
+          222
+        ],
+        "pivotX": 0.4035973931933386,
+        "grip": null,
+        "gripSide": 0,
+        "name": "hold-left",
+        "source": "suki",
+        "referenceHeight": 224,
+        "foot": [
+          50.44967414916732,
+          222
+        ],
+        "seat": [
+          50.44967414916732,
+          159.84
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          793,
+          46,
+          128,
+          224
+        ],
+        "pivotX": 0.494011887947269,
+        "grip": null,
+        "gripSide": 0,
+        "name": "sit-hold-front",
+        "source": "suki",
+        "referenceHeight": 224,
+        "foot": [
+          63.233521657250435,
+          224
+        ],
+        "seat": [
+          63.233521657250435,
+          161.28
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          988,
+          48,
+          121,
+          222
+        ],
+        "pivotX": 0.49305698471670073,
+        "grip": null,
+        "gripSide": 0,
+        "name": "sit-hold-back",
+        "source": "suki",
+        "referenceHeight": 224,
+        "foot": [
+          59.659895150720786,
+          222
+        ],
+        "seat": [
+          59.659895150720786,
+          159.84
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          793,
+          46,
+          128,
+          224
+        ],
+        "pivotX": 0.494011887947269,
+        "grip": null,
+        "gripSide": 0,
+        "name": "sit-hold-right",
+        "source": "suki",
+        "referenceHeight": 224,
+        "foot": [
+          63.233521657250435,
+          224
+        ],
+        "seat": [
+          63.233521657250435,
+          161.28
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          793,
+          46,
+          128,
+          224
+        ],
+        "pivotX": 0.494011887947269,
+        "grip": null,
+        "gripSide": 0,
+        "name": "sit-right",
+        "source": "suki",
+        "referenceHeight": 224,
+        "foot": [
+          63.233521657250435,
+          224
+        ],
+        "seat": [
+          63.233521657250435,
+          161.28
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          42,
+          291,
+          134,
+          219
+        ],
+        "pivotX": 0.5286015574302401,
+        "grip": null,
+        "gripSide": 0,
+        "name": "hold-walk-front-0",
+        "source": "suki",
+        "referenceHeight": 224,
+        "foot": [
+          70.83260869565217,
+          219
+        ],
+        "seat": [
+          70.83260869565217,
+          157.68
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          232,
+          291,
+          135,
+          219
+        ],
+        "pivotX": 0.48411645476322074,
+        "grip": null,
+        "gripSide": 0,
+        "name": "hold-walk-front-1",
+        "source": "suki",
+        "referenceHeight": 224,
+        "foot": [
+          65.3557213930348,
+          219
+        ],
+        "seat": [
+          65.3557213930348,
+          157.68
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          409,
+          291,
+          138,
+          219
+        ],
+        "pivotX": 0.5298544347188341,
+        "grip": null,
+        "gripSide": 0,
+        "name": "hold-walk-front-2",
+        "source": "suki",
+        "referenceHeight": 224,
+        "foot": [
+          73.1199119911991,
+          219
+        ],
+        "seat": [
+          73.1199119911991,
+          157.68
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          595,
+          291,
+          136,
+          219
+        ],
+        "pivotX": 0.44513178667032727,
+        "grip": null,
+        "gripSide": 0,
+        "name": "hold-walk-front-3",
+        "source": "suki",
+        "referenceHeight": 224,
+        "foot": [
+          60.53792298716451,
+          219
+        ],
+        "seat": [
+          60.53792298716451,
+          157.68
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          42,
+          291,
+          134,
+          219
+        ],
+        "pivotX": 0.5286015574302401,
+        "grip": null,
+        "gripSide": 0,
+        "name": "hold-walk-front-4",
+        "source": "suki",
+        "referenceHeight": 224,
+        "foot": [
+          70.83260869565217,
+          219
+        ],
+        "seat": [
+          70.83260869565217,
+          157.68
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          232,
+          291,
+          135,
+          219
+        ],
+        "pivotX": 0.48411645476322074,
+        "grip": null,
+        "gripSide": 0,
+        "name": "hold-walk-front-5",
+        "source": "suki",
+        "referenceHeight": 224,
+        "foot": [
+          65.3557213930348,
+          219
+        ],
+        "seat": [
+          65.3557213930348,
+          157.68
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          390,
+          761,
+          156,
+          219
+        ],
+        "pivotX": 0.5372169026129716,
+        "grip": null,
+        "gripSide": 0,
+        "name": "dance-front-left",
+        "source": "suki",
+        "referenceHeight": 224,
+        "foot": [
+          83.80583680762358,
+          219
+        ],
+        "seat": [
+          83.80583680762358,
+          157.68
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          603,
+          761,
+          150,
+          219
+        ],
+        "pivotX": 0.4826610475617099,
+        "grip": null,
+        "gripSide": 0,
+        "name": "dance-front-right",
+        "source": "suki",
+        "referenceHeight": 224,
+        "foot": [
+          72.39915713425648,
+          219
+        ],
+        "seat": [
+          72.39915713425648,
+          157.68
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          793,
+          291,
+          139,
+          220
+        ],
+        "pivotX": 0.47437559735939344,
+        "grip": null,
+        "gripSide": 0,
+        "name": "hold-walk-back-0",
+        "source": "suki",
+        "referenceHeight": 224,
+        "foot": [
+          65.93820803295569,
+          220
+        ],
+        "seat": [
+          65.93820803295569,
+          158.4
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          980,
+          291,
+          135,
+          220
+        ],
+        "pivotX": 0.5060837321605656,
+        "grip": null,
+        "gripSide": 0,
+        "name": "hold-walk-back-1",
+        "source": "suki",
+        "referenceHeight": 224,
+        "foot": [
+          68.32130384167635,
+          220
+        ],
+        "seat": [
+          68.32130384167635,
+          158.4
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          1164,
+          291,
+          137,
+          220
+        ],
+        "pivotX": 0.4878182204150947,
+        "grip": null,
+        "gripSide": 0,
+        "name": "hold-walk-back-2",
+        "source": "suki",
+        "referenceHeight": 224,
+        "foot": [
+          66.83109619686797,
+          220
+        ],
+        "seat": [
+          66.83109619686797,
+          158.4
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          1350,
+          291,
+          135,
+          220
+        ],
+        "pivotX": 0.48312258990225154,
+        "grip": null,
+        "gripSide": 0,
+        "name": "hold-walk-back-3",
+        "source": "suki",
+        "referenceHeight": 224,
+        "foot": [
+          65.22154963680396,
+          220
+        ],
+        "seat": [
+          65.22154963680396,
+          158.4
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          793,
+          291,
+          139,
+          220
+        ],
+        "pivotX": 0.47437559735939344,
+        "grip": null,
+        "gripSide": 0,
+        "name": "hold-walk-back-4",
+        "source": "suki",
+        "referenceHeight": 224,
+        "foot": [
+          65.93820803295569,
+          220
+        ],
+        "seat": [
+          65.93820803295569,
+          158.4
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          980,
+          291,
+          135,
+          220
+        ],
+        "pivotX": 0.5060837321605656,
+        "grip": null,
+        "gripSide": 0,
+        "name": "hold-walk-back-5",
+        "source": "suki",
+        "referenceHeight": 224,
+        "foot": [
+          68.32130384167635,
+          220
+        ],
+        "seat": [
+          68.32130384167635,
+          158.4
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          782,
+          763,
+          151,
+          217
+        ],
+        "pivotX": 0.5081417997662643,
+        "grip": null,
+        "gripSide": 0,
+        "name": "dance-back-left",
+        "source": "suki",
+        "referenceHeight": 224,
+        "foot": [
+          76.7294117647059,
+          217
+        ],
+        "seat": [
+          76.7294117647059,
+          156.23999999999998
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          977,
+          763,
+          154,
+          217
+        ],
+        "pivotX": 0.4910381112046793,
+        "grip": null,
+        "gripSide": 0,
+        "name": "dance-back-right",
+        "source": "suki",
+        "referenceHeight": 224,
+        "foot": [
+          75.61986912552061,
+          217
+        ],
+        "seat": [
+          75.61986912552061,
+          156.23999999999998
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          43,
+          527,
+          137,
+          211
+        ],
+        "pivotX": 0.5580861938995018,
+        "grip": null,
+        "gripSide": 0,
+        "name": "hold-walk-right-0",
+        "source": "suki",
+        "referenceHeight": 224,
+        "foot": [
+          76.45780856423174,
+          211
+        ],
+        "seat": [
+          76.45780856423174,
+          151.92
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          225,
+          527,
+          137,
+          211
+        ],
+        "pivotX": 0.5777714269651341,
+        "grip": null,
+        "gripSide": 0,
+        "name": "hold-walk-right-1",
+        "source": "suki",
+        "referenceHeight": 224,
+        "foot": [
+          79.15468549422337,
+          211
+        ],
+        "seat": [
+          79.15468549422337,
+          151.92
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          414,
+          528,
+          128,
+          210
+        ],
+        "pivotX": 0.5489193925233646,
+        "grip": null,
+        "gripSide": 0,
+        "name": "hold-walk-right-2",
+        "source": "suki",
+        "referenceHeight": 224,
+        "foot": [
+          70.26168224299067,
+          210
+        ],
+        "seat": [
+          70.26168224299067,
+          151.2
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          595,
+          527,
+          137,
+          212
+        ],
+        "pivotX": 0.58688284563874,
+        "grip": null,
+        "gripSide": 0,
+        "name": "hold-walk-right-3",
+        "source": "suki",
+        "referenceHeight": 224,
+        "foot": [
+          80.40294985250739,
+          212
+        ],
+        "seat": [
+          80.40294985250739,
+          152.64
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          785,
+          528,
+          133,
+          210
+        ],
+        "pivotX": 0.5183267904273962,
+        "grip": null,
+        "gripSide": 0,
+        "name": "hold-walk-right-4",
+        "source": "suki",
+        "referenceHeight": 224,
+        "foot": [
+          68.9374631268437,
+          210
+        ],
+        "seat": [
+          68.9374631268437,
+          151.2
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          978,
+          528,
+          135,
+          210
+        ],
+        "pivotX": 0.5258968935340717,
+        "grip": null,
+        "gripSide": 0,
+        "name": "hold-walk-right-5",
+        "source": "suki",
+        "referenceHeight": 224,
+        "foot": [
+          70.99608062709967,
+          210
+        ],
+        "seat": [
+          70.99608062709967,
+          151.2
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          1168,
+          761,
+          140,
+          219
+        ],
+        "pivotX": 0.6505092468507103,
+        "grip": null,
+        "gripSide": 0,
+        "name": "run-right-0",
+        "source": "suki",
+        "referenceHeight": 224,
+        "foot": [
+          91.07129455909944,
+          219
+        ],
+        "seat": [
+          91.07129455909944,
+          157.68
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          1347,
+          761,
+          138,
+          219
+        ],
+        "pivotX": 0.5755289706276231,
+        "grip": null,
+        "gripSide": 0,
+        "name": "run-right-1",
+        "source": "suki",
+        "referenceHeight": 224,
+        "foot": [
+          79.42299794661199,
+          219
+        ],
+        "seat": [
+          79.42299794661199,
+          157.68
+        ],
+        "slot": null
+      },
+      {
+        "name": "walk-side-v8-0",
+        "source": "suki-walk-a-v8",
+        "rect": [
+          69,
+          53,
+          380,
+          598
+        ],
+        "referenceHeight": 598,
+        "pivotX": 0.5671052631578948,
+        "foot": [
+          215.50000000000003,
+          598
+        ],
+        "seat": [
+          197.057596238613,
+          430.56
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null,
+        "scaleXRatio": 1,
+        "offsetYRatio": 0,
+        "headMetrics": {
+          "headWidth": 328,
+          "landmarkHeight": 217,
+          "centerX": 215.5,
+          "originalReferenceHeight": 598
+        }
+      },
+      {
+        "name": "walk-side-v8-1",
+        "source": "suki-walk-a-v8",
+        "rect": [
+          591,
+          53,
+          382,
+          598
+        ],
+        "referenceHeight": 600.7557603686636,
+        "pivotX": 0.5641361256544503,
+        "foot": [
+          215.5,
+          598
+        ],
+        "seat": [
+          197.68220914440928,
+          430.56
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null,
+        "scaleXRatio": 0.9925045805341179,
+        "offsetYRatio": -0.004587155963302725,
+        "headMetrics": {
+          "headWidth": 332,
+          "landmarkHeight": 218,
+          "centerX": 215.5,
+          "originalReferenceHeight": 598
+        }
+      },
+      {
+        "name": "walk-side-v8-2",
+        "source": "suki-walk-a-v8",
+        "rect": [
+          1134,
+          53,
+          381,
+          598
+        ],
+        "referenceHeight": 598,
+        "pivotX": 0.5643044619422573,
+        "foot": [
+          215,
+          598
+        ],
+        "seat": [
+          197.2344731558837,
+          430.56
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null,
+        "scaleXRatio": 0.9909365558912386,
+        "offsetYRatio": 0,
+        "headMetrics": {
+          "headWidth": 331,
+          "landmarkHeight": 217,
+          "centerX": 215,
+          "originalReferenceHeight": 598
+        }
+      },
+      {
+        "name": "walk-side-v8-3",
+        "source": "suki-walk-a-v8",
+        "rect": [
+          1654,
+          53,
+          407,
+          598
+        ],
+        "referenceHeight": 600.7557603686636,
+        "pivotX": 0.527027027027027,
+        "foot": [
+          214.49999999999997,
+          598
+        ],
+        "seat": [
+          196.70388570684713,
+          430.56
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null,
+        "scaleXRatio": 0.9985197598100822,
+        "offsetYRatio": -0.004587155963302725,
+        "headMetrics": {
+          "headWidth": 330,
+          "landmarkHeight": 218,
+          "centerX": 214.5,
+          "originalReferenceHeight": 598
+        }
+      },
+      {
+        "name": "walk-side-v8-4",
+        "source": "suki-walk-b-v8",
+        "rect": [
+          89,
+          39,
+          359,
+          617
+        ],
+        "referenceHeight": 562.1751152073733,
+        "pivotX": 0.5766016713091922,
+        "foot": [
+          206.99999999999997,
+          617
+        ],
+        "seat": [
+          183.16431972444536,
+          444.24
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null,
+        "scaleXRatio": 1.0176575261212757,
+        "offsetYRatio": 0.09752278837956574,
+        "headMetrics": {
+          "headWidth": 303,
+          "landmarkHeight": 204,
+          "centerX": 207,
+          "originalReferenceHeight": 617
+        }
+      },
+      {
+        "name": "walk-side-v8-5",
+        "source": "suki-walk-b-v8",
+        "rect": [
+          628,
+          39,
+          359,
+          617
+        ],
+        "referenceHeight": 562.1751152073733,
+        "pivotX": 0.5738161559888579,
+        "foot": [
+          206,
+          617
+        ],
+        "seat": [
+          182.12178341371285,
+          444.24
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null,
+        "scaleXRatio": 1.0109843620155623,
+        "offsetYRatio": 0.09752278837956574,
+        "headMetrics": {
+          "headWidth": 305,
+          "landmarkHeight": 204,
+          "centerX": 206,
+          "originalReferenceHeight": 617
+        }
+      },
+      {
+        "name": "walk-side-v8-6",
+        "source": "suki-walk-b-v8",
+        "rect": [
+          1130,
+          39,
+          357,
+          617
+        ],
+        "referenceHeight": 562.1751152073733,
+        "pivotX": 0.5756302521008403,
+        "foot": [
+          205.49999999999997,
+          617
+        ],
+        "seat": [
+          182.2855296278658,
+          444.24
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null,
+        "scaleXRatio": 1.0210272530289621,
+        "offsetYRatio": 0.09752278837956574,
+        "headMetrics": {
+          "headWidth": 302,
+          "landmarkHeight": 204,
+          "centerX": 205.5,
+          "originalReferenceHeight": 617
+        }
+      },
+      {
+        "name": "walk-side-v8-7",
+        "source": "suki-walk-b-v8",
+        "rect": [
+          1668,
+          39,
+          404,
+          617
+        ],
+        "referenceHeight": 562.1751152073733,
+        "pivotX": 0.5086633663366337,
+        "foot": [
+          205.5,
+          617
+        ],
+        "seat": [
+          182.3817013360392,
+          444.24
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null,
+        "scaleXRatio": 1.014309968469561,
+        "offsetYRatio": 0.09752278837956574,
+        "headMetrics": {
+          "headWidth": 304,
+          "landmarkHeight": 204,
+          "centerX": 205.5,
+          "originalReferenceHeight": 617
+        }
+      },
+      {
+        "name": "run-side-v10-0",
+        "source": "suki-run-v10",
+        "rect": [
+          59,
+          41,
+          289,
+          449
+        ],
+        "referenceHeight": 435.41013824884794,
+        "pivotX": 0.5570934256055363,
+        "foot": [
+          161,
+          449
+        ],
+        "seat": [
+          144.5,
+          323.28
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null,
+        "scaleXRatio": 0.9992480188188111,
+        "offsetYRatio": 0.0312116337157613,
+        "headMetrics": {
+          "headWidth": 239,
+          "landmarkHeight": 158,
+          "centerX": 161,
+          "originalReferenceHeight": 449
+        }
+      },
+      {
+        "name": "run-side-v10-1",
+        "source": "suki-run-v10",
+        "rect": [
+          433,
+          41,
+          282,
+          449
+        ],
+        "referenceHeight": 435.41013824884794,
+        "pivotX": 0.5762411347517731,
+        "foot": [
+          162.5,
+          449
+        ],
+        "seat": [
+          141,
+          323.28
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null,
+        "scaleXRatio": 1.003446539906285,
+        "offsetYRatio": 0.0312116337157613,
+        "headMetrics": {
+          "headWidth": 238,
+          "landmarkHeight": 158,
+          "centerX": 162.5,
+          "originalReferenceHeight": 449
+        }
+      },
+      {
+        "name": "run-side-v10-2",
+        "source": "suki-run-v10",
+        "rect": [
+          815,
+          41,
+          277,
+          449
+        ],
+        "referenceHeight": 435.41013824884794,
+        "pivotX": 0.5685920577617328,
+        "foot": [
+          157.5,
+          449
+        ],
+        "seat": [
+          138.5,
+          323.28
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null,
+        "scaleXRatio": 1.003446539906285,
+        "offsetYRatio": 0.0312116337157613,
+        "headMetrics": {
+          "headWidth": 238,
+          "landmarkHeight": 158,
+          "centerX": 157.5,
+          "originalReferenceHeight": 449
+        }
+      },
+      {
+        "name": "run-side-v10-3",
+        "source": "suki-run-v10",
+        "rect": [
+          1201,
+          41,
+          286,
+          449
+        ],
+        "referenceHeight": 435.41013824884794,
+        "pivotX": 0.5681818181818182,
+        "foot": [
+          162.50000000000003,
+          449
+        ],
+        "seat": [
+          143,
+          323.28
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null,
+        "scaleXRatio": 1.003446539906285,
+        "offsetYRatio": 0.0312116337157613,
+        "headMetrics": {
+          "headWidth": 238,
+          "landmarkHeight": 158,
+          "centerX": 162.5,
+          "originalReferenceHeight": 449
+        }
+      },
+      {
+        "name": "run-side-v10-4",
+        "source": "suki-run-v10",
+        "rect": [
+          44,
+          534,
+          289,
+          452
+        ],
+        "referenceHeight": 440.92165898617515,
+        "pivotX": 0.5570934256055363,
+        "foot": [
+          161,
+          452
+        ],
+        "seat": [
+          144.5,
+          325.44
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null,
+        "scaleXRatio": 1.0204359408116044,
+        "offsetYRatio": 0.02512541806020052,
+        "headMetrics": {
+          "headWidth": 237,
+          "landmarkHeight": 160,
+          "centerX": 161,
+          "originalReferenceHeight": 456
+        }
+      },
+      {
+        "name": "run-side-v10-5",
+        "source": "suki-run-v10",
+        "rect": [
+          429,
+          530,
+          279,
+          456
+        ],
+        "referenceHeight": 443.6774193548387,
+        "pivotX": 0.5716845878136201,
+        "foot": [
+          159.5,
+          456
+        ],
+        "seat": [
+          139.5,
+          328.32
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null,
+        "scaleXRatio": 1.0224993223095689,
+        "offsetYRatio": 0.02777373854878573,
+        "headMetrics": {
+          "headWidth": 238,
+          "landmarkHeight": 161,
+          "centerX": 159.5,
+          "originalReferenceHeight": 456
+        }
+      },
+      {
+        "name": "run-side-v10-6",
+        "source": "suki-run-v10",
+        "rect": [
+          810,
+          532,
+          276,
+          454
+        ],
+        "referenceHeight": 438.1658986175116,
+        "pivotX": 0.5688405797101449,
+        "foot": [
+          157,
+          454
+        ],
+        "seat": [
+          138,
+          326.88
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null,
+        "scaleXRatio": 1.014058216181532,
+        "offsetYRatio": 0.03613722891819671,
+        "headMetrics": {
+          "headWidth": 237,
+          "landmarkHeight": 159,
+          "centerX": 157,
+          "originalReferenceHeight": 456
+        }
+      },
+      {
+        "name": "run-side-v10-7",
+        "source": "suki-run-v10",
+        "rect": [
+          1187,
+          532,
+          304,
+          454
+        ],
+        "referenceHeight": 440.92165898617515,
+        "pivotX": 0.5361842105263158,
+        "foot": [
+          163,
+          454
+        ],
+        "seat": [
+          152,
+          326.88
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null,
+        "scaleXRatio": 1.0118967279177835,
+        "offsetYRatio": 0.029661371237458045,
+        "headMetrics": {
+          "headWidth": 239,
+          "landmarkHeight": 160,
+          "centerX": 163,
+          "originalReferenceHeight": 456
+        }
+      }
+    ],
+    "carryFrames": [
+      {
+        "rect": [
+          61,
+          49,
+          148,
+          253
+        ],
+        "pivotX": 0.4854155790262774,
+        "grip": [
+          38.56015037593985,
+          154.83082706766916
+        ],
+        "gripSide": -1,
+        "name": "carry-0",
+        "source": "suki-carry",
+        "referenceHeight": 275,
+        "foot": [
+          71.84150569588905,
+          253
+        ],
+        "seat": [
+          71.84150569588905,
+          182.16
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          61,
+          49,
+          148,
+          253
+        ],
+        "pivotX": 0.4854155790262774,
+        "grip": [
+          38.56015037593985,
+          154.83082706766916
+        ],
+        "gripSide": -1,
+        "name": "carry-1",
+        "source": "suki-carry",
+        "referenceHeight": 275,
+        "foot": [
+          71.84150569588905,
+          253
+        ],
+        "seat": [
+          71.84150569588905,
+          182.16
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          556,
+          48,
+          146,
+          254
+        ],
+        "pivotX": 0.5145917335399732,
+        "grip": [
+          124.85014409221903,
+          161.2593659942363
+        ],
+        "gripSide": 1,
+        "name": "carry-2",
+        "source": "suki-carry",
+        "referenceHeight": 275,
+        "foot": [
+          75.13039309683609,
+          254
+        ],
+        "seat": [
+          75.13039309683609,
+          182.88
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          817,
+          49,
+          149,
+          253
+        ],
+        "pivotX": 0.4323966127031337,
+        "grip": [
+          53.63457556935818,
+          158.53002070393376
+        ],
+        "gripSide": -1,
+        "name": "carry-3",
+        "source": "suki-carry",
+        "referenceHeight": 275,
+        "foot": [
+          64.42709529276692,
+          253
+        ],
+        "seat": [
+          64.42709529276692,
+          182.16
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          53,
+          1198,
+          160,
+          272
+        ],
+        "pivotX": 0.5082719846712385,
+        "grip": [
+          50.18201997780244,
+          162.2475027746948
+        ],
+        "gripSide": -1,
+        "name": "carry-4",
+        "source": "suki-carry",
+        "referenceHeight": 275,
+        "foot": [
+          81.32351754739815,
+          272
+        ],
+        "seat": [
+          81.32351754739815,
+          195.84
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          303,
+          1198,
+          167,
+          272
+        ],
+        "pivotX": 0.49700598802395207,
+        "grip": [
+          128.74918566775244,
+          168.98045602605862
+        ],
+        "gripSide": 1,
+        "name": "carry-5",
+        "source": "suki-carry",
+        "referenceHeight": 275,
+        "foot": [
+          83,
+          272
+        ],
+        "seat": [
+          83,
+          195.84
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          55,
+          328,
+          162,
+          264
+        ],
+        "pivotX": 0.5111696821605396,
+        "grip": [
+          40.55359394703657,
+          154.54476670870113
+        ],
+        "gripSide": -1,
+        "name": "carry-6",
+        "source": "suki-carry",
+        "referenceHeight": 275,
+        "foot": [
+          82.80948851000741,
+          264
+        ],
+        "seat": [
+          82.80948851000741,
+          190.07999999999998
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          311,
+          328,
+          159,
+          264
+        ],
+        "pivotX": 0.4661002300317791,
+        "grip": [
+          38.5419734904271,
+          157.55522827687776
+        ],
+        "gripSide": -1,
+        "name": "carry-7",
+        "source": "suki-carry",
+        "referenceHeight": 275,
+        "foot": [
+          74.10993657505287,
+          264
+        ],
+        "seat": [
+          74.10993657505287,
+          190.07999999999998
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          552,
+          328,
+          157,
+          261
+        ],
+        "pivotX": 0.5305263997288754,
+        "grip": [
+          47.52794117647059,
+          157.18088235294118
+        ],
+        "gripSide": -1,
+        "name": "carry-8",
+        "source": "suki-carry",
+        "referenceHeight": 275,
+        "foot": [
+          83.29264475743344,
+          261
+        ],
+        "seat": [
+          83.29264475743344,
+          187.92
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          806,
+          328,
+          157,
+          261
+        ],
+        "pivotX": 0.5112148949548574,
+        "grip": [
+          43.294117647058826,
+          156.79117647058823
+        ],
+        "gripSide": -1,
+        "name": "carry-9",
+        "source": "suki-carry",
+        "referenceHeight": 275,
+        "foot": [
+          80.2607385079126,
+          261
+        ],
+        "seat": [
+          80.2607385079126,
+          187.92
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          552,
+          328,
+          157,
+          261
+        ],
+        "pivotX": 0.5305263997288754,
+        "grip": [
+          47.52794117647059,
+          157.18088235294118
+        ],
+        "gripSide": -1,
+        "name": "carry-10",
+        "source": "suki-carry",
+        "referenceHeight": 275,
+        "foot": [
+          83.29264475743344,
+          261
+        ],
+        "seat": [
+          83.29264475743344,
+          187.92
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          311,
+          328,
+          159,
+          264
+        ],
+        "pivotX": 0.4661002300317791,
+        "grip": [
+          38.5419734904271,
+          157.55522827687776
+        ],
+        "gripSide": -1,
+        "name": "carry-11",
+        "source": "suki-carry",
+        "referenceHeight": 275,
+        "foot": [
+          74.10993657505287,
+          264
+        ],
+        "seat": [
+          74.10993657505287,
+          190.07999999999998
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          52,
+          898,
+          160,
+          273
+        ],
+        "pivotX": 0.5064931254191818,
+        "grip": [
+          128.41504178272982,
+          169.033426183844
+        ],
+        "gripSide": 1,
+        "name": "carry-12",
+        "source": "suki-carry",
+        "referenceHeight": 275,
+        "foot": [
+          81.03890006706908,
+          273
+        ],
+        "seat": [
+          81.03890006706908,
+          196.56
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          307,
+          898,
+          163,
+          267
+        ],
+        "pivotX": 0.4800559301090419,
+        "grip": [
+          134.3344262295082,
+          156.40655737704918
+        ],
+        "gripSide": 1,
+        "name": "carry-13",
+        "source": "suki-carry",
+        "referenceHeight": 275,
+        "foot": [
+          78.24911660777383,
+          267
+        ],
+        "seat": [
+          78.24911660777383,
+          192.23999999999998
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          561,
+          898,
+          157,
+          273
+        ],
+        "pivotX": 0.49790854643977545,
+        "grip": [
+          128.23821989528795,
+          160.2565445026178
+        ],
+        "gripSide": 1,
+        "name": "carry-14",
+        "source": "suki-carry",
+        "referenceHeight": 275,
+        "foot": [
+          78.17164179104475,
+          273
+        ],
+        "seat": [
+          78.17164179104475,
+          196.56
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          808,
+          898,
+          166,
+          270
+        ],
+        "pivotX": 0.4743112802085534,
+        "grip": [
+          128.37867647058823,
+          168.45955882352942
+        ],
+        "gripSide": 1,
+        "name": "carry-15",
+        "source": "suki-carry",
+        "referenceHeight": 275,
+        "foot": [
+          78.73567251461986,
+          270
+        ],
+        "seat": [
+          78.73567251461986,
+          194.4
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          561,
+          898,
+          157,
+          273
+        ],
+        "pivotX": 0.49790854643977545,
+        "grip": [
+          128.23821989528795,
+          160.2565445026178
+        ],
+        "gripSide": 1,
+        "name": "carry-16",
+        "source": "suki-carry",
+        "referenceHeight": 275,
+        "foot": [
+          78.17164179104475,
+          273
+        ],
+        "seat": [
+          78.17164179104475,
+          196.56
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          307,
+          898,
+          163,
+          267
+        ],
+        "pivotX": 0.4800559301090419,
+        "grip": [
+          134.3344262295082,
+          156.40655737704918
+        ],
+        "gripSide": 1,
+        "name": "carry-17",
+        "source": "suki-carry",
+        "referenceHeight": 275,
+        "foot": [
+          78.24911660777383,
+          267
+        ],
+        "seat": [
+          78.24911660777383,
+          192.23999999999998
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          41,
+          615,
+          163,
+          256
+        ],
+        "pivotX": 0.6176746684537059,
+        "grip": [
+          127.99506172839506,
+          162.10617283950617
+        ],
+        "gripSide": 1,
+        "name": "carry-18",
+        "source": "suki-carry",
+        "referenceHeight": 275,
+        "foot": [
+          100.68097095795406,
+          256
+        ],
+        "seat": [
+          100.68097095795406,
+          184.32
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          300,
+          614,
+          161,
+          258
+        ],
+        "pivotX": 0.5763514505408838,
+        "grip": [
+          115.30583501006036,
+          165.26961770623743
+        ],
+        "gripSide": 1,
+        "name": "carry-19",
+        "source": "suki-carry",
+        "referenceHeight": 275,
+        "foot": [
+          92.7925835370823,
+          258
+        ],
+        "seat": [
+          92.7925835370823,
+          185.76
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          550,
+          613,
+          160,
+          260
+        ],
+        "pivotX": 0.5767864561695056,
+        "grip": [
+          127.640625,
+          161.12723214285714
+        ],
+        "gripSide": 1,
+        "name": "carry-20",
+        "source": "suki-carry",
+        "referenceHeight": 275,
+        "foot": [
+          92.2858329871209,
+          260
+        ],
+        "seat": [
+          92.2858329871209,
+          187.2
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          805,
+          614,
+          162,
+          257
+        ],
+        "pivotX": 0.5829279528284504,
+        "grip": [
+          122.57906458797328,
+          162.96436525612472
+        ],
+        "gripSide": 1,
+        "name": "carry-21",
+        "source": "suki-carry",
+        "referenceHeight": 275,
+        "foot": [
+          94.43432835820897,
+          257
+        ],
+        "seat": [
+          94.43432835820897,
+          185.04
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          550,
+          613,
+          160,
+          260
+        ],
+        "pivotX": 0.5767864561695056,
+        "grip": [
+          127.640625,
+          161.12723214285714
+        ],
+        "gripSide": 1,
+        "name": "carry-22",
+        "source": "suki-carry",
+        "referenceHeight": 275,
+        "foot": [
+          92.2858329871209,
+          260
+        ],
+        "seat": [
+          92.2858329871209,
+          187.2
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          300,
+          614,
+          161,
+          258
+        ],
+        "pivotX": 0.5763514505408838,
+        "grip": [
+          115.30583501006036,
+          165.26961770623743
+        ],
+        "gripSide": 1,
+        "name": "carry-23",
+        "source": "suki-carry",
+        "referenceHeight": 275,
+        "foot": [
+          92.7925835370823,
+          258
+        ],
+        "seat": [
+          92.7925835370823,
+          185.76
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          306,
+          49,
+          153,
+          253
+        ],
+        "pivotX": 0.5562226338237067,
+        "grip": [
+          95.3006329113924,
+          160.064082278481
+        ],
+        "gripSide": 1,
+        "name": "carry-24",
+        "source": "suki-carry",
+        "referenceHeight": 275,
+        "foot": [
+          85.10206297502712,
+          253
+        ],
+        "seat": [
+          85.10206297502712,
+          182.16
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          540,
+          1198,
+          183,
+          274
+        ],
+        "pivotX": 0.8030215052908156,
+        "grip": [
+          113.01154107264087,
+          168.84453496266124
+        ],
+        "gripSide": 1,
+        "name": "carry-25",
+        "source": "suki-carry",
+        "referenceHeight": 275,
+        "foot": [
+          146.95293546821927,
+          274
+        ],
+        "seat": [
+          146.95293546821927,
+          197.28
+        ],
+        "slot": null
+      },
+      {
+        "name": "carry-walk-side-v12-0",
+        "source": "suki-carry-walk-v12",
+        "rect": [
+          36,
+          51,
+          277,
+          442
+        ],
+        "referenceHeight": 432.65437788018437,
+        "pivotX": 0.5523465703971119,
+        "foot": [
+          153,
+          442
+        ],
+        "seat": [
+          138.5,
+          318.24
+        ],
+        "grip": [
+          212,
+          246.5
+        ],
+        "gripSide": 1,
+        "slot": null,
+        "scaleXRatio": 1.0098244925973134,
+        "offsetYRatio": 0.021600664635834876,
+        "headMetrics": {
+          "headWidth": 235,
+          "landmarkHeight": 157,
+          "centerX": 153,
+          "originalReferenceHeight": 442
+        }
+      },
+      {
+        "name": "carry-walk-side-v12-1",
+        "source": "suki-carry-walk-v12",
+        "rect": [
+          419,
+          51,
+          271,
+          442
+        ],
+        "referenceHeight": 432.65437788018437,
+        "pivotX": 0.5645756457564576,
+        "foot": [
+          153,
+          442
+        ],
+        "seat": [
+          135.5,
+          318.24
+        ],
+        "grip": [
+          210.5,
+          243
+        ],
+        "gripSide": 1,
+        "slot": null,
+        "scaleXRatio": 1.0098244925973134,
+        "offsetYRatio": 0.021600664635834876,
+        "headMetrics": {
+          "headWidth": 235,
+          "landmarkHeight": 157,
+          "centerX": 153,
+          "originalReferenceHeight": 442
+        }
+      },
+      {
+        "name": "carry-walk-side-v12-2",
+        "source": "suki-carry-walk-v12",
+        "rect": [
+          801,
+          51,
+          271,
+          442
+        ],
+        "referenceHeight": 432.65437788018437,
+        "pivotX": 0.566420664206642,
+        "foot": [
+          153.5,
+          442
+        ],
+        "seat": [
+          135.5,
+          318.24
+        ],
+        "grip": [
+          210,
+          244.5
+        ],
+        "gripSide": 1,
+        "slot": null,
+        "scaleXRatio": 1.0141399818819175,
+        "offsetYRatio": 0.021600664635834876,
+        "headMetrics": {
+          "headWidth": 234,
+          "landmarkHeight": 157,
+          "centerX": 153.5,
+          "originalReferenceHeight": 442
+        }
+      },
+      {
+        "name": "carry-walk-side-v12-3",
+        "source": "suki-carry-walk-v12",
+        "rect": [
+          1185,
+          51,
+          309,
+          442
+        ],
+        "referenceHeight": 432.65437788018437,
+        "pivotX": 0.4967637540453074,
+        "foot": [
+          153.5,
+          442
+        ],
+        "seat": [
+          154.5,
+          318.24
+        ],
+        "grip": [
+          223.5,
+          249.5
+        ],
+        "gripSide": 1,
+        "slot": null,
+        "scaleXRatio": 1.0055455752557996,
+        "offsetYRatio": 0.021600664635834876,
+        "headMetrics": {
+          "headWidth": 236,
+          "landmarkHeight": 157,
+          "centerX": 153.5,
+          "originalReferenceHeight": 442
+        }
+      },
+      {
+        "name": "carry-walk-side-v12-4",
+        "source": "suki-carry-walk-v12",
+        "rect": [
+          38,
+          544,
+          275,
+          439
+        ],
+        "referenceHeight": 435.41013824884794,
+        "pivotX": 0.5709090909090909,
+        "foot": [
+          157,
+          439
+        ],
+        "seat": [
+          137.5,
+          316.08
+        ],
+        "grip": [
+          214.5,
+          230.5
+        ],
+        "gripSide": 1,
+        "slot": null,
+        "scaleXRatio": 1.016256495734876,
+        "offsetYRatio": 0.008244782185343524,
+        "headMetrics": {
+          "headWidth": 235,
+          "landmarkHeight": 158,
+          "centerX": 157,
+          "originalReferenceHeight": 439
+        }
+      },
+      {
+        "name": "carry-walk-side-v12-5",
+        "source": "suki-carry-walk-v12",
+        "rect": [
+          421,
+          544,
+          275,
+          439
+        ],
+        "referenceHeight": 435.41013824884794,
+        "pivotX": 0.5709090909090909,
+        "foot": [
+          157,
+          439
+        ],
+        "seat": [
+          137.5,
+          316.08
+        ],
+        "grip": [
+          214,
+          230.5
+        ],
+        "gripSide": 1,
+        "slot": null,
+        "scaleXRatio": 1.016256495734876,
+        "offsetYRatio": 0.008244782185343524,
+        "headMetrics": {
+          "headWidth": 235,
+          "landmarkHeight": 158,
+          "centerX": 157,
+          "originalReferenceHeight": 439
+        }
+      },
+      {
+        "name": "carry-walk-side-v12-6",
+        "source": "suki-carry-walk-v12",
+        "rect": [
+          804,
+          544,
+          274,
+          439
+        ],
+        "referenceHeight": 438.1658986175116,
+        "pivotX": 0.5711678832116789,
+        "foot": [
+          156.5,
+          439
+        ],
+        "seat": [
+          137,
+          316.08
+        ],
+        "grip": [
+          210.5,
+          230.5
+        ],
+        "gripSide": 1,
+        "slot": null,
+        "scaleXRatio": 1.0270589625428337,
+        "offsetYRatio": 0.001903620033234299,
+        "headMetrics": {
+          "headWidth": 234,
+          "landmarkHeight": 159,
+          "centerX": 156.5,
+          "originalReferenceHeight": 439
+        }
+      },
+      {
+        "name": "carry-walk-side-v12-7",
+        "source": "suki-carry-walk-v12",
+        "rect": [
+          1190,
+          544,
+          298,
+          439
+        ],
+        "referenceHeight": 438.1658986175116,
+        "pivotX": 0.5218120805369127,
+        "foot": [
+          155.5,
+          439
+        ],
+        "seat": [
+          149,
+          316.08
+        ],
+        "grip": [
+          220.5,
+          229
+        ],
+        "gripSide": 1,
+        "slot": null,
+        "scaleXRatio": 1.0270589625428337,
+        "offsetYRatio": 0.001903620033234299,
+        "headMetrics": {
+          "headWidth": 234,
+          "landmarkHeight": 159,
+          "centerX": 155.5,
+          "originalReferenceHeight": 439
+        }
+      }
+    ],
+    "officeFrames": [
+      {
+        "rect": [
+          1167,
+          47,
+          131,
+          223
+        ],
+        "pivotX": 0.4910972987025262,
+        "grip": null,
+        "gripSide": 0,
+        "name": "type-front-left",
+        "source": "suki",
+        "referenceHeight": 224,
+        "foot": [
+          64.33374613003093,
+          223
+        ],
+        "seat": [
+          64.33374613003093,
+          160.56
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          1355,
+          47,
+          132,
+          223
+        ],
+        "pivotX": 0.49281760796727114,
+        "grip": null,
+        "gripSide": 0,
+        "name": "type-front-right",
+        "source": "suki",
+        "referenceHeight": 224,
+        "foot": [
+          65.0519242516798,
+          223
+        ],
+        "seat": [
+          65.0519242516798,
+          160.56
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          1171,
+          528,
+          121,
+          211
+        ],
+        "pivotX": 0.4926472174869999,
+        "grip": null,
+        "gripSide": 0,
+        "name": "type-back-left",
+        "source": "suki",
+        "referenceHeight": 224,
+        "foot": [
+          59.61031331592699,
+          211
+        ],
+        "seat": [
+          59.61031331592699,
+          151.92
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          1360,
+          528,
+          123,
+          211
+        ],
+        "pivotX": 0.4986467588678499,
+        "grip": null,
+        "gripSide": 0,
+        "name": "type-back-right",
+        "source": "suki",
+        "referenceHeight": 224,
+        "foot": [
+          61.333551340745544,
+          211
+        ],
+        "seat": [
+          61.333551340745544,
+          151.92
+        ],
+        "slot": null
+      }
+    ],
+    "carryFrontLoop": [
+      6,
+      7,
+      8,
+      9
+    ],
+    "carryBackLoop": [
+      12,
+      13,
+      14,
+      15
+    ],
+    "carryRightLoop": [
+      26,
+      27,
+      28,
+      29,
+      30,
+      31,
+      32,
+      33
+    ],
+    "walkLoopLength": 4,
+    "approvedLegacy": false,
+    "sideWalkLoop": [
+      64,
+      65,
+      66,
+      67,
+      68,
+      69,
+      70,
+      71
+    ],
+    "runLoop": [
+      72,
+      73,
+      74,
+      75,
+      76,
+      77,
+      78,
+      79
+    ],
+    "sideWalkFrameMs": 100,
+    "runFrameMs": 75,
+    "carrySideFrameMs": 100,
+    "mobilityFrames": [
+      {
+        "name": "scooter-riding-right",
+        "source": "suki-mobility",
+        "rect": [
+          0,
+          0,
+          47,
+          72
+        ],
+        "pivotX": 0.35,
+        "referenceHeight": 72,
+        "foot": [
+          23.5,
+          72
+        ],
+        "seat": [
+          16.45,
+          48.96
+        ],
+        "grip": null,
+        "gripSide": 1,
+        "slot": null
+      },
+      {
+        "name": "skateboard-balance-right",
+        "source": "suki-mobility",
+        "rect": [
+          96,
+          0,
+          61,
+          72
+        ],
+        "pivotX": 0.5,
+        "referenceHeight": 72,
+        "foot": [
+          30.5,
+          72
+        ],
+        "seat": [
+          21.349999999999998,
+          48.96
+        ],
+        "grip": null,
+        "gripSide": 1,
+        "slot": null
+      }
+    ]
+  },
+  "rendering": {
+    "mirrorDirection": 3,
+    "standingScale": "worldHeight / referenceHeight",
+    "carryStandingScale": "worldHeight / rect[3]",
+    "seatScale": "seatedHeight / referenceHeight",
+    "seatSurface": "seat[1]",
+    "grip": "frame-local pixels",
+    "frameDurationDefaultMs": 125
+  },
+  "provenance": {
+    "date": "2026-10-12",
+    "codeBase": "d57d36d + pre-existing working tree",
+    "acceptance": "local-equivalence; online baseline and human acceptance pending",
+    "migrationFixture": "scripts/fixtures/character-library-before.json"
+  },
+  "moles": {
+    "file": "suki/moles.png",
+    "origin": "team/v2/suki.png",
+    "size": [
+      1254,
+      1254
+    ],
+    "sha256": "6bfa4f5a50a8994da1334fcdd9b4bfd86fa754d2d28bb31c703281362e537c3c",
+    "frames": [
+      {
+        "name": "idle-front",
+        "rect": [
+          66,
+          25,
+          110,
+          159
+        ],
+        "floor": [
+          55,
+          159
+        ],
+        "seat": [
+          55,
+          127.2
+        ],
+        "direction": "front",
+        "grip": null,
+        "gripSide": -1,
+        "index": 0,
+        "foot": [
+          55,
+          159
+        ]
+      }
+    ]
+  }
+}

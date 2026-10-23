@@ -1,5 +1,7 @@
+import {bindSceneEvent} from './scene-dom';
 import {sceneWalkable} from '../shared/walkability.mjs';
 import Phaser from 'phaser';
+import {setGuide} from './hud';
 import {sharedAction} from './multiplayer/world-client';
 import { playerInventory } from './player-inventory';
 
@@ -35,7 +37,7 @@ export class SubwayScene extends Phaser.Scene {
     window.addEventListener('keydown',action);window.addEventListener('blur',clear);world.addEventListener('blur',clear);
     this.events.on('sleep',clear);
     this.events.once('shutdown',()=>{window.removeEventListener('keydown',action);window.removeEventListener('blur',clear);world.removeEventListener('blur',clear);});
-    document.querySelector('#interact')!.addEventListener('click',()=>{if(this.sys.isActive()){this.interact();world.focus();}});
+    bindSceneEvent(this, document.querySelector('#interact')!, 'click', ()=>{if(this.sys.isActive()){this.interact();world.focus();}});
     window.__subwayPreview={getState:()=>({ready:true,active:this.sys.isActive(),x:this.x,y:this.y,nearest:this.nearest(),open:this.open,progress:this.progress,state:this.state(),doors:entrances,hand:playerInventory.hand})};
     world.focus();
   }
@@ -75,7 +77,6 @@ export class SubwayScene extends Phaser.Scene {
     document.querySelector('#mode')!.textContent='';
     document.querySelector('#hint')!.textContent='E 开关车门';
     document.querySelector('#subway-state')!.textContent=this.state();
-    document.querySelector('#guide-title')!.textContent='WASD / 方向键移动';
-    document.querySelector('#guide-action')!.textContent=near?`E · ${button.textContent}`:'E 开关车门';
+    setGuide('WASD / 方向键移动',near?`E · ${button.textContent}`:'');
   }
 }

@@ -1,10 +1,13 @@
+import {bindSceneEvent} from './scene-dom';
+import {restoreWorldFocus} from './world-focus';
 import {sceneWalkable} from '../shared/walkability.mjs';
 import Phaser from 'phaser';
+import {setGuide} from './hud';
 import { registerRegions, type SpriteFrame } from './frames';
 import { CONTENT_SCALE, METRICS, PIXEL_RATIO } from './layout';
 
 import { playerInventory, items, vendingProducts, fridgeDefaults, type ItemName } from './player-inventory';
-import { registerProductTextures } from './product-textures';
+import { registerProductTextures,preloadProductTextures } from './product-textures';
 import {sharedAction,onlineWorld} from './multiplayer/world-client';
 
 const restPoint = (x: number, y: number, equipment = false) => {
@@ -50,6 +53,7 @@ export class RestRoomScene extends Phaser.Scene {
   ];
   constructor() { super('rest'); }
   preload() {
+    preloadProductTextures(this);
     const load = (key: string, url: string) => { if (!this.textures.exists(key)) this.load.image(key, url); };
     load('rest-shell', new URL('../assets/drafts/rest-room-shell-v2.png', import.meta.url).href);
     load('rest-props', new URL('../assets/drafts/rest-props-v1.png', import.meta.url).href);
@@ -138,21 +142,21 @@ export class RestRoomScene extends Phaser.Scene {
       const canvas = document.createElement('canvas'); canvas.width = frame.cutWidth; canvas.height = frame.cutHeight;
       canvas.getContext('2d')!.drawImage(source, frame.cutX, frame.cutY, frame.cutWidth, frame.cutHeight, 0, 0, canvas.width, canvas.height);
       for (const image of button.querySelectorAll('img')) image.src = canvas.toDataURL();
-      button.addEventListener('click', () => this.takeProduct(name));
+      bindSceneEvent(this, button, 'click', () => this.takeProduct(name));
     }
-    document.querySelector('#vending-close')!.addEventListener('click', () => this.vendingMenu.close());
-    this.vendingMenu.addEventListener('close', () => { this.input.keyboard?.resetKeys(); world.focus(); });
-    document.querySelector('#table-close')!.addEventListener('click', () => this.tableMenu.close());
-    this.tableMenu.addEventListener('close', () => { this.input.keyboard?.resetKeys(); world.focus(); });
-    document.querySelector('#fridge-close')!.addEventListener('click', () => this.fridgeMenu.close());
-    document.querySelector('#fridge-store')!.addEventListener('click', () => this.storeFridgeItem());
-    this.fridgeMenu.addEventListener('close', () => { if(onlineWorld()?.objects.get('rest:fridge-door')?.open)sharedAction('rest:fridge-door','toggle');this.fridgeDoor.setVisible(false); this.input.keyboard?.resetKeys(); world.focus(); });
+    bindSceneEvent(this, document.querySelector('#vending-close')!, 'click', () => this.vendingMenu.close());
+    bindSceneEvent(this, this.vendingMenu, 'close', () => { this.input.keyboard?.resetKeys(); restoreWorldFocus(this.vendingMenu); });
+    bindSceneEvent(this, document.querySelector('#table-close')!, 'click', () => this.tableMenu.close());
+    bindSceneEvent(this, this.tableMenu, 'close', () => { this.input.keyboard?.resetKeys(); restoreWorldFocus(this.tableMenu); });
+    bindSceneEvent(this, document.querySelector('#fridge-close')!, 'click', () => this.fridgeMenu.close());
+    bindSceneEvent(this, document.querySelector('#fridge-store')!, 'click', () => this.storeFridgeItem());
+    bindSceneEvent(this, this.fridgeMenu, 'close', () => { if(onlineWorld()?.objects.get('rest:fridge-door')?.open)sharedAction('rest:fridge-door','toggle');this.fridgeDoor.setVisible(false); this.input.keyboard?.resetKeys(); restoreWorldFocus(this.fridgeMenu); });
     window.addEventListener('keydown', action);
     const clear = () => this.input.keyboard?.resetKeys();
     world.addEventListener('blur', clear); window.addEventListener('blur', clear);
-    document.querySelector('#table-action')!.addEventListener('click', () => { if (this.sys.isActive() && this.seated !== null) { this.useTable(Math.floor(this.seated / 2)); world.focus(); } });
-    document.querySelector('#interact')!.addEventListener('click', () => { if (this.sys.isActive()) { this.interact(); world.focus(); } });
-    document.querySelector('#rest-reset')!.addEventListener('click', () => {
+    bindSceneEvent(this, document.querySelector('#table-action')!, 'click', () => { if (this.sys.isActive() && this.seated !== null) { this.useTable(Math.floor(this.seated / 2)); world.focus(); } });
+    bindSceneEvent(this, document.querySelector('#interact')!, 'click', () => { if (this.sys.isActive()) { this.interact(); world.focus(); } });
+    bindSceneEvent(this, document.querySelector('#rest-reset')!, 'click', () => {
       if (!this.sys.isActive()) return;
       this.brewTimer?.remove(); this.brewing = false; this.coffeeReady = false;
       this.stand(); this.x = 554; this.y = 184; this.hand = null; this.tableItems.forEach(table => table.fill(null)); this.fridgeItems = [...fridgeDefaults, ...Array(6).fill(null)];
@@ -332,8 +336,7 @@ export class RestRoomScene extends Phaser.Scene {
     button.disabled = this.brewing || (this.seated === null && !target);
     button.textContent = this.seated !== null ? '起身' : target?.kind === 'fridge' ? '打开冰箱上门' : target?.kind === 'vending' ? '挑选产品' : target?.kind === 'coffee' ? this.coffeeReady ? '拿起咖啡' : '冲一杯咖啡' : target?.kind === 'chair' ? '坐下休息' : target?.kind === 'table' ? this.hand ? `放下${this.hand}` : this.tableCount(target.index!) ? `选择桌上物品（${this.tableCount(target.index!)} 件）` : '查看餐桌' : '';
     document.querySelector('#rest-inventory')!.textContent = `手中：${this.hand ?? '空'}`;
-    document.querySelector('#guide-title')!.textContent = 'WASD / 方向键移动';
-    document.querySelector('#guide-action')!.textContent = this.seated !== null ? tableButton.disabled ? '桌面空 · E / Esc 起身' : `F · ${tableButton.textContent} · E / Esc 起身` : this.brewing ? '' : target ? `E · ${button.textContent}` : 'E 互动';
+    setGuide('WASD / 方向键移动',this.seated !== null ? tableButton.disabled ? '桌面空 · E / Esc 起身' : `F · ${tableButton.textContent} · E / Esc 起身` : this.brewing ? '' : target ? `E · ${button.textContent}` : '');
   }
 }
 

@@ -3,7 +3,7 @@ import geometry from '../shared/interactions.json' with {type:'json'};
 import desks from '../shared/workstations.json' with {type:'json'};
 import {habits} from './personas.mjs';
 import {validMeetPlace} from './life.mjs';
-export const activityPause=(kind='rest')=>(kind==='work'?30*60000:10*60000)+Math.random()*(kind==='work'?60*60000:15*60000);
+export const activityPause=(kind='rest')=>(kind==='work'?3*60000:60000)+Math.random()*(kind==='work'?3*60000:2*60000);
 
 export {sceneWalkable as walkable} from '../shared/walkability.mjs';
 import {sceneWalkable as walkable} from '../shared/walkability.mjs';
@@ -15,12 +15,12 @@ export function route(scene,from,to,occupied=[]){
  for(let i=0;i<queue.length&&i<7000;i++){const p=queue[i];if(p[0]===b[0]&&p[1]===b[1]){target=p;break;}for(const [dx,dy]of [[6,0],[-6,0],[0,6],[0,-6]]){const n=[p[0]+dx,p[1]+dy],k=key(...n);if(!seen.has(k)&&walkable(scene,...n)&&!occupied.some(o=>Math.hypot(o.x-n[0],o.y-n[1])<19&&Math.hypot(o.x-n[0],o.y-n[1])<=Math.hypot(o.x-p[0],o.y-p[1]))){seen.set(k,p);queue.push(n);}}}
  if(!target)return[];const path=[];for(let p=target;p;p=seen.get(key(...p)))path.unshift(p);path.shift();if(walkable(scene,...to))path.push(to);return path;
 }
-export function createAutonomy(store,life,players,leases=new Map(),seenLive=()=>false){
+export function createAutonomy(store,life,players,leases=new Map(),seenLive=()=>false,{canDrive=()=>true,takeoverAt=()=>0,humanLive=id=>players.has(id),retireHuman=()=>{}}={}){
  const doubles=new Map();let nextRefresh=0,coffeeOwner=null,director=null;
  const save=p=>life.savePosition(p);
  const releaseSeat=p=>{if(p.seat){const seat=geometry[p.scene].seats[p.seat];if(seat)[p.x,p.y]=seat.approach;p.seat=null;}const old=geometry[p.scene].activities[p.activity]?.find(a=>Math.hypot(p.x-a.at[0],p.y-a.at[1])<8);if(old)[p.x,p.y]=old.approach;for(const [id,l]of leases)if(l.account===p.id)leases.delete(id);p.activity='walk';};
  const place=(account)=>{const old=life.position(account.id),role=account.role,seat=geometry.hutong.seats[desks.hutong[role]];
-  const p={id:account.id,role,scene:'hutong',x:seat.approach[0],y:seat.approach[1],facing:0,moving:false,seat:null,activity:'walk',...old};releaseSeat(p);return{...p,next:Date.now()+10000+Math.random()*20000,path:[],task:null};};
+  const p={id:account.id,role,scene:'hutong',x:seat.approach[0],y:seat.approach[1],facing:0,moving:false,seat:null,activity:'walk',...old};return{...p,next:Math.max(Date.now(),takeoverAt(account.id)),path:[],task:null};};
  const get=id=>doubles.get(id);
  const reclaim=id=>{director?.cancelFor(id);const p=doubles.get(id);if(p){releaseSeat(p);save(p);doubles.delete(id);if(coffeeOwner===id)coffeeOwner=null;}return p;};
  const all=()=>[...players.values(),...doubles.values()];
@@ -55,12 +55,16 @@ export function createAutonomy(store,life,players,leases=new Map(),seenLive=()=>
   p.task=null;p.next=now+activityPause(task.kind);save(p);
  }
  function tick(now=Date.now(),delta=100){let changed=false;
+  // Keep the short-disconnect pose/seat until the existing 45s reconnect grace
+  // ends. This does not count as browser liveness or permit agent takeover.
+  for(const [id,p] of players)if(!humanLive(id)&&!(p.disconnectedAt&&now-p.disconnectedAt<45000)){retireHuman(p);players.delete(id);changed=true;}
   // Hard rule: a user who is online (any tab, even mid-reconnect) is never driven by autonomy/LLM.
   for(const id of [...doubles.keys()])if(players.has(id)||seenLive(id)){/* drop without saving: the human's pose is newer */director?.cancelFor(id);doubles.delete(id);if(coffeeOwner===id)coffeeOwner=null;for(const [lid,l]of leases)if(l.account===id)leases.delete(lid);changed=true;}
   if(now>=nextRefresh){nextRefresh=now+5000;for(const a of store.db.prepare('SELECT * FROM accounts WHERE role IS NOT NULL').all()){if(players.has(a.id)||seenLive(a.id)){if(doubles.has(a.id))doubles.delete(a.id);}else if(!doubles.has(a.id)){doubles.set(a.id,place(a));changed=true;}}}
   if(director?.tick(now))changed=true;
   life.expire(now);
   for(const p of doubles.values()){
+   if(!canDrive(p.id,now)){p.moving=false;continue;}
    if(!Object.hasOwn(rooms,p.scene)||p.task?.scene!==undefined&&!Object.hasOwn(rooms,p.task.scene)){p.scene='hutong';[p.x,p.y]=rooms.hutong.exit;p.task=null;p.path=[];p.seat=null;p.activity='walk';}
    const command=life.travel(p.id);if(command&&p.travelId!==command.offer){releaseSeat(p);Object.assign(p,command.ack?(life.position(p.id)??command.state):command.state,{task:null,path:[],next:now+30000});save(p);changed=true;}if(command&&!command.ack){life.ackTravel(p.id,command.offer);changed=true;}
    const offer=life.offers(p.id).find(o=>o.recipient===p.id&&o.status==='pending');if(offer){try{life.respond(p.id,offer.id,offer.kind==='gift'&&store.byId(p.id).hand?'reject':'accept');if(!p.task?.storyId){p.task=null;p.path=[];p.next=now;}changed=true;}catch{}}
@@ -81,5 +85,5 @@ export function createAutonomy(store,life,players,leases=new Map(),seenLive=()=>
   const people=all();
   life.finishMeetings(people);return changed;
  }
- return{isDriven:id=>doubles.has(id)&&!players.has(id)&&!seenLive(id),tick,get,reclaim,doubles,all,onlineCount,onlineScenes,setDirector(value){director=value;},travel(p,scene,point,storyId,now){releaseSeat(p);p.task={kind:'story',storyId,scene,point,phase:p.scene===scene?'arrive':'exit'};p.path=route(p.scene,[p.x,p.y],p.task.phase==='exit'?rooms[p.scene].exit:point);p.next=now+180000;},holdStory(p,storyId){releaseSeat(p);p.path=[];p.task={kind:'story',storyId,phase:'hold'};p.moving=false;},releaseStory(p,now){p.task=null;p.path=[];p.moving=false;p.next=now+activityPause(p.activity==='working'?'work':'rest');save(p);},saveAll(){for(const p of all())save(p);}};
+ return{isDriven:id=>doubles.has(id)&&!players.has(id)&&!seenLive(id)&&canDrive(id),tick,get,reclaim,doubles,all,onlineCount,onlineScenes,setDirector(value){director=value;},travel(p,scene,point,storyId,now){releaseSeat(p);p.task={kind:'story',storyId,scene,point,phase:p.scene===scene?'arrive':'exit'};p.path=route(p.scene,[p.x,p.y],p.task.phase==='exit'?rooms[p.scene].exit:point);p.next=now+180000;},holdStory(p,storyId){releaseSeat(p);p.path=[];p.task={kind:'story',storyId,phase:'hold'};p.moving=false;},releaseStory(p,now){p.task=null;p.path=[];p.moving=false;p.next=now+activityPause(p.activity==='working'?'work':'rest');save(p);},saveAll(){for(const p of all())save(p);}};
 }

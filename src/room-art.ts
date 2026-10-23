@@ -1,4 +1,11 @@
 const art:Record<string,string>={
+ manner:new URL('../assets/maps/memories/manner.png',import.meta.url).href,
+ yousheng:new URL('../assets/maps/places/yousheng.png',import.meta.url).href,
+ google:new URL('../assets/maps/places/google.png',import.meta.url).href,
+ meeting:new URL('../assets/maps/places/meeting.png',import.meta.url).href,
+ street:new URL('../assets/maps/places/street.png',import.meta.url).href,
+ campus:new URL('../assets/maps/places/campus.png',import.meta.url).href,
+
  ktv:new URL('../assets/maps/memories/ktv.png',import.meta.url).href,
  // Map cards use the compact 640×360 previews — not full room drafts.
  hutong:new URL('../assets/maps/memories/hutong.png',import.meta.url).href,

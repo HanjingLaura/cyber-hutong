@@ -18,10 +18,11 @@ export class TeamAvatar{
   this.body=scene.add.image(0,0,'__WHITE').setVisible(false);this.upper=scene.add.image(0,0,'__WHITE').setVisible(false);this.prop=scene.add.image(0,0,'__WHITE').setVisible(false);this.arm=scene.add.image(0,0,'__WHITE').setVisible(false);
   this.legs=new SideWalkLegs(scene);this.held=new HeldItemView(scene);
   this.label=scene.add.text(0,0,role[0].toUpperCase()+role.slice(1),{fontSize:'9px',fontFamily:'Consolas',color:'#f2ecd8',stroke:'#202723',strokeThickness:2}).setOrigin(.5,1).setVisible(false);
-  const poses=[this.data.frames,this.data.carryFrames,this.data.officeFrames,this.data.podiumFrames??[]];
+  const poses=[this.data.frames,this.data.carryFrames,this.data.officeFrames,this.data.podiumFrames??[],this.data.mobilityFrames??[]];
   const sources=[...new Set(poses.flat().map(f=>f.source))];
-  Promise.all([gachaReady(),Promise.all(sources.map(async id=>[id,await characterImage(id)] as const))]).then(([,images])=>{
-   if(this.dead||!scene.sys.game)return;registerGachaTextures(scene);
+  void gachaReady().then(()=>{if(!this.dead&&scene.sys.game)registerGachaTextures(scene);}).catch(()=>{});
+  Promise.all(sources.map(async id=>[id,await characterImage(id)] as const)).then(images=>{
+   if(this.dead||!scene.sys.game)return;
    for(const [id,image]of images){const key='team-v3-'+id;if(!scene.textures.exists(key))scene.textures.addImage(key,image);}
    poses.forEach((frames,part)=>frames.forEach((frame,index)=>{
     const texture=scene.textures.get('team-v3-'+frame.source),[x,y,w,h]=frame.rect,name='pose-'+part+'-'+index;
@@ -37,16 +38,22 @@ export class TeamAvatar{
  get pose(){return this.frameName;}
  draw(player:Omit<Player,'role'>&{role:AvatarRole},x:number,y:number,direction:number,delta:number,office=false,height=61.44,depth=y+1,label=true,mode='',seatSurface?:number,previewPhase?:number){
   if(!this.ready)return;
-  const moving=player.moving||mode==='run';
+  const basket=mode==='scooter-basket',scooter=mode==='scooter'||basket;
+  const riding=scooter||mode==='skateboard'||mode==='skate-sit';
+  const moving=!riding&&(player.moving||mode==='run');
   this.time=moving&&this.direction===direction?this.time+Math.min(delta,100):0;this.direction=direction;
   if(previewPhase!==undefined)this.time=previewPhase*125;
-  const data=this.data,seated=!!player.seat,holding=!!player.hand,front=direction===0,back=direction===2,phase=previewPhase??Math.floor(this.time/125)%4;
+  const data=this.data,seated=!!player.seat||scooter||mode==='skate-sit',holding=!!player.hand,front=direction===0,back=direction===2,phase=previewPhase??Math.floor(this.time/125)%4;
+  // Scooters use their saddle anchor. Both skateboard poses keep their soles
+  // on the deck; a chair-style pelvis anchor puts seated legs through it.
+  if(scooter&&seated)seatSurface=y-(basket?30:28);
   const working=office&&seated&&(player.scene==='review'||canWorkAt(player.role,player.scene,player.seat));
   // A call uses its own complete phone pose; inventory stays in the player's hand state.
   const calling=working&&data.officeAction==='call';
   const saxophone=player.scene==='rehearsal'&&mode==='podium'&&!!data.podiumFrames?.length;
   let part=0,index=front?0:back?2:1;
   if(saxophone){part=3;index=(previewPhase??Math.floor(performance.now()/(data.podiumFrameMs??320)))%data.podiumFrames!.length;}
+  else if((scooter||mode==='skateboard')&&data.mobilityFrames?.length){part=4;index=scooter?0:1;}
   else if(holding&&!calling){part=1;index=seated?(back?5:front?4:25):moving?(front?data.carryFrontLoop[phase%4]:back?data.carryBackLoop[phase%4]:data.carryRightLoop[(previewPhase??Math.floor(performance.now()/(data.carrySideFrameMs??125)))%data.carryRightLoop.length]):(front?0:back?2:24);}
   else if(working){part=2;index=(back?2:0)+(previewPhase===undefined?Math.floor(performance.now()/(data.officeFrameMs??250)):previewPhase)%2;}
   else if(mode==='piano'){part=0;index=6+(previewPhase===undefined?Math.floor(performance.now()/250):previewPhase)%2;}
@@ -62,11 +69,13 @@ export class TeamAvatar{
   else if(mode==='dance'||mode==='practice')index=(back?54:46)+(previewPhase===undefined?Math.floor(performance.now()/400):previewPhase)%2;
   else if(mode==='curl')index=30+(previewPhase===undefined?Math.floor(performance.now()/650):previewPhase)%2;
   else if(moving)index=front?8+phase%4:back?16+phase%4:data.sideWalkLoop?data.sideWalkLoop[(previewPhase??Math.floor(this.time/(data.sideWalkFrameMs??250)))%data.sideWalkLoop.length]:24+(data.approvedLegacy?sideUpperFrame(this.time):Math.floor(this.time/125)%6);
-  const frame=(part===3?data.podiumFrames!:part===2?data.officeFrames:part?data.carryFrames:data.frames)[index],key='team-v3-'+frame.source,[sx,sy,w,h]=frame.rect;
+  const frame=(part===4?data.mobilityFrames!:part===3?data.podiumFrames!:part===2?data.officeFrames:part?data.carryFrames:data.frames)[index],key='team-v3-'+frame.source,[sx,sy,w,h]=frame.rect;
   // Standing hold must share one on-screen height. Side-carry v12 is head-normalized
   // (taller crop than referenceHeight); front/back carry uses the atlas max. Fill the
   // crop to the standing height so left/right hold matches hold-walk and idle hold.
   if(seated&&height===61.44)height=characterRegistry.seatedHeight;
+  // Complete bent-knee poses are shorter than standing poses; preserve head size.
+  if(part===4)height=52;
   const fillCarry=part===1&&!seated;
   const scale=height/(fillCarry?h:frame.referenceHeight),flip=direction===3,pivot=flip?1-frame.pivotX:frame.pivotX;
   if(seated&&seatSurface!==undefined)y=seatSurface+(h-frame.seat[1])*scale;
@@ -74,7 +83,7 @@ export class TeamAvatar{
   if(seated&&office&&(!holding||calling)&&front)y-=height*.03+1;
   if(!fillCarry)y+=height*(frame.offsetYRatio??0);
   this.hide();this.frameName=frame.name;
-  this.body.setTexture(key,'pose-'+part+'-'+index).setOrigin(pivot,1).setScale(scale*(frame.scaleXRatio??1),scale).setFlipX(flip).setPosition(Math.round(x),Math.round(y)).setDepth(depth).setVisible(true);
+  this.body.setTexture(key,'pose-'+part+'-'+index).setOrigin(pivot,1).setScale(scale*(frame.scaleXRatio??1),scale).setFlipX(flip).setRotation(0).setPosition(Math.round(x),Math.round(y)).setDepth(depth).setVisible(true);
   if(seated&&office){
    // Far row, back to the camera: the chair back is footY+2 and the body is
    // footY+1, so the whole mesh stays in front of the jacket. The head rises
@@ -86,9 +95,9 @@ export class TeamAvatar{
   const nativeFrame:SpriteFrame={name:'pose-'+part+'-'+index,x:sx,y:sy,width:w,height:h,referenceHeight:fillCarry?h:frame.referenceHeight,pivotX:frame.pivotX};
   if(data.approvedLegacy&&!holding&&moving&&!front&&!back&&!this.masked)this.legs.draw(this.body,nativeFrame,height,direction,this.time);
   if(player.hand?.startsWith('拼豆·')&&!this.scene.textures.exists('bead-item-'+player.hand.slice(3)))void ensureCollectible(this.scene,player.hand).catch(()=>{});
-  const item=items[player.hand as ItemName];
+  const item=riding?undefined:items[player.hand as ItemName];
   if(item&&frame.grip&&sceneTexture(this.scene,item.texture)){
-   if(frame.slot&&!this.masked)this.held.draw(this.body,key,nativeFrame,frame.slot,height,item,depth,direction);
+   if(frame.slot&&!this.masked)this.held.draw(mode==='scooter'||mode==='skate-sit'?this.upper:this.body,key,nativeFrame,frame.slot,height,item,depth,direction);
    else{
     const [gx,gy]=frame.grip,sign=flip?-1:1,out=frame.gripSide*sign;
     const px=x+(gx-w*frame.pivotX)*scale*(frame.scaleXRatio??1)*sign,py=y+(gy-h)*scale;

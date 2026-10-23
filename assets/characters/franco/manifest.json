@@ -1,0 +1,3245 @@
+{
+  "schemaVersion": 1,
+  "role": "franco",
+  "worldHeight": 61.44,
+  "seatedHeight": 62.4,
+  "sources": {
+    "franco": {
+      "file": "franco/poses.png",
+      "size": [
+        1536,
+        1024
+      ],
+      "sha256": "e838f51fe181d06c1d908aa52f6d1370e587a01b322a5449b404b7ae634fc391",
+      "origin": "team/v3/franco.png"
+    },
+    "franco-walk-a-v8": {
+      "file": "franco/walk-side-a.png",
+      "size": [
+        2172,
+        724
+      ],
+      "sha256": "31e344cd8a8d19f775d890e5a4f6c6ac5c97dac562de781c49b7ebdb814a0dd9",
+      "origin": "team/v8/franco-a.png"
+    },
+    "franco-walk-b-v8": {
+      "file": "franco/walk-side-b.png",
+      "size": [
+        2172,
+        724
+      ],
+      "sha256": "5fb5d56cf73539a2c5d5ee7a17b3a287ff2cdf108e1ea557349773b9ecf32926",
+      "origin": "team/v8/franco-b.png"
+    },
+    "franco-run-v10": {
+      "file": "franco/run.png",
+      "size": [
+        1536,
+        1024
+      ],
+      "sha256": "14a6c291f383d134ca4b6c1563f0851973d3c7a0f6112c695845c5fc6d81445b",
+      "origin": "team/v10/franco-run.png"
+    },
+    "franco-carry": {
+      "file": "franco/carry.png",
+      "size": [
+        1024,
+        1536
+      ],
+      "sha256": "c2c3ddcadff5544be6fc073b21c201fd49babbcc4be071195f809d37c68eb3f2",
+      "origin": "team/v3/franco-carry.png"
+    },
+    "franco-carry-walk-v12": {
+      "file": "franco/carry-walk.png",
+      "size": [
+        1536,
+        1024
+      ],
+      "sha256": "b7ea38449fdc3fdee36619d90d7adabe0aa54bb6f545d00cc06a153129bd4aad",
+      "origin": "team/v12/franco-carry-walk.png"
+    },
+    "franco-office-call-v1": {
+      "file": "franco/office-call.png",
+      "size": [
+        1254,
+        1254
+      ],
+      "sha256": "1e2a8f5118aec16186cbcbbedd891763e49632de82e84a7431ef258c93885164",
+      "origin": "team/v12/franco-office-call.png"
+    },
+    "franco-mobility": {
+      "file": "franco/mobility.png",
+      "size": [
+        192,
+        72
+      ],
+      "sha256": "9283155960e90e9c1c94d5607f1368fe03fef7ca97a3524d8303c367fb3befc8",
+      "origin": "imagegen side riding and skateboard balance 2026-10-15"
+    }
+  },
+  "member": {
+    "seat": "R4",
+    "frames": [
+      {
+        "rect": [
+          52,
+          44,
+          112,
+          228
+        ],
+        "pivotX": 0.5002142458545918,
+        "grip": null,
+        "gripSide": 0,
+        "name": "idle-front",
+        "source": "franco",
+        "referenceHeight": 228,
+        "foot": [
+          56.023995535714285,
+          228
+        ],
+        "seat": [
+          56.023995535714285,
+          164.16
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          236,
+          44,
+          110,
+          228
+        ],
+        "pivotX": 0.5005328971666756,
+        "grip": null,
+        "gripSide": 0,
+        "name": "idle-right",
+        "source": "franco",
+        "referenceHeight": 228,
+        "foot": [
+          55.05861868833431,
+          228
+        ],
+        "seat": [
+          55.05861868833431,
+          164.16
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          421,
+          44,
+          116,
+          228
+        ],
+        "pivotX": 0.4990491529699415,
+        "grip": null,
+        "gripSide": 0,
+        "name": "idle-back",
+        "source": "franco",
+        "referenceHeight": 228,
+        "foot": [
+          57.88970174451322,
+          228
+        ],
+        "seat": [
+          57.88970174451322,
+          164.16
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          614,
+          44,
+          107,
+          228
+        ],
+        "pivotX": 0.4765814295604012,
+        "grip": null,
+        "gripSide": 0,
+        "name": "idle-left",
+        "source": "franco",
+        "referenceHeight": 228,
+        "foot": [
+          50.99421296296293,
+          228
+        ],
+        "seat": [
+          50.99421296296293,
+          164.16
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          808,
+          55,
+          113,
+          217
+        ],
+        "pivotX": 0.49409029548522576,
+        "grip": null,
+        "gripSide": 0,
+        "name": "sit-front",
+        "source": "franco",
+        "referenceHeight": 228,
+        "foot": [
+          55.83220338983051,
+          217
+        ],
+        "seat": [
+          55.83220338983051,
+          156.23999999999998
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          999,
+          55,
+          113,
+          217
+        ],
+        "pivotX": 0.4919802480735739,
+        "grip": null,
+        "gripSide": 0,
+        "name": "sit-back",
+        "source": "franco",
+        "referenceHeight": 228,
+        "foot": [
+          55.59376803231385,
+          217
+        ],
+        "seat": [
+          55.59376803231385,
+          156.23999999999998
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          1189,
+          51,
+          115,
+          221
+        ],
+        "pivotX": 0.4915123083619481,
+        "grip": null,
+        "gripSide": 0,
+        "name": "piano-rest",
+        "source": "franco",
+        "referenceHeight": 228,
+        "foot": [
+          56.52391546162403,
+          221
+        ],
+        "seat": [
+          56.52391546162403,
+          159.12
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          1381,
+          51,
+          114,
+          221
+        ],
+        "pivotX": 0.4828776293475349,
+        "grip": null,
+        "gripSide": 0,
+        "name": "piano-play",
+        "source": "franco",
+        "referenceHeight": 228,
+        "foot": [
+          55.04804974561898,
+          221
+        ],
+        "seat": [
+          55.04804974561898,
+          159.12
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          52,
+          294,
+          113,
+          219
+        ],
+        "pivotX": 0.5423585562294919,
+        "grip": null,
+        "gripSide": 0,
+        "name": "walk-front-0",
+        "source": "franco",
+        "referenceHeight": 228,
+        "foot": [
+          61.28651685393259,
+          219
+        ],
+        "seat": [
+          61.28651685393259,
+          157.68
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          238,
+          294,
+          112,
+          219
+        ],
+        "pivotX": 0.46187283111625227,
+        "grip": null,
+        "gripSide": 0,
+        "name": "walk-front-1",
+        "source": "franco",
+        "referenceHeight": 228,
+        "foot": [
+          51.72975708502025,
+          219
+        ],
+        "seat": [
+          51.72975708502025,
+          157.68
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          423,
+          293,
+          113,
+          220
+        ],
+        "pivotX": 0.4733014843281738,
+        "grip": null,
+        "gripSide": 0,
+        "name": "walk-front-2",
+        "source": "franco",
+        "referenceHeight": 228,
+        "foot": [
+          53.48306772908364,
+          220
+        ],
+        "seat": [
+          53.48306772908364,
+          158.4
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          612,
+          294,
+          112,
+          219
+        ],
+        "pivotX": 0.5037622962854209,
+        "grip": null,
+        "gripSide": 0,
+        "name": "walk-front-3",
+        "source": "franco",
+        "referenceHeight": 228,
+        "foot": [
+          56.42137718396714,
+          219
+        ],
+        "seat": [
+          56.42137718396714,
+          157.68
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          52,
+          294,
+          113,
+          219
+        ],
+        "pivotX": 0.5423585562294919,
+        "grip": null,
+        "gripSide": 0,
+        "name": "walk-front-4",
+        "source": "franco",
+        "referenceHeight": 228,
+        "foot": [
+          61.28651685393259,
+          219
+        ],
+        "seat": [
+          61.28651685393259,
+          157.68
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          238,
+          294,
+          112,
+          219
+        ],
+        "pivotX": 0.46187283111625227,
+        "grip": null,
+        "gripSide": 0,
+        "name": "walk-front-5",
+        "source": "franco",
+        "referenceHeight": 228,
+        "foot": [
+          51.72975708502025,
+          219
+        ],
+        "seat": [
+          51.72975708502025,
+          157.68
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          808,
+          55,
+          113,
+          217
+        ],
+        "pivotX": 0.49409029548522576,
+        "grip": null,
+        "gripSide": 0,
+        "name": "sit-down-front",
+        "source": "franco",
+        "referenceHeight": 228,
+        "foot": [
+          55.83220338983051,
+          217
+        ],
+        "seat": [
+          55.83220338983051,
+          156.23999999999998
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          52,
+          44,
+          112,
+          228
+        ],
+        "pivotX": 0.5002142458545918,
+        "grip": null,
+        "gripSide": 0,
+        "name": "stand-up-front",
+        "source": "franco",
+        "referenceHeight": 228,
+        "foot": [
+          56.023995535714285,
+          228
+        ],
+        "seat": [
+          56.023995535714285,
+          164.16
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          808,
+          293,
+          113,
+          220
+        ],
+        "pivotX": 0.5370429120053427,
+        "grip": null,
+        "gripSide": 0,
+        "name": "walk-back-0",
+        "source": "franco",
+        "referenceHeight": 228,
+        "foot": [
+          60.68584905660373,
+          220
+        ],
+        "seat": [
+          60.68584905660373,
+          158.4
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          998,
+          294,
+          113,
+          219
+        ],
+        "pivotX": 0.43035635574543185,
+        "grip": null,
+        "gripSide": 0,
+        "name": "walk-back-1",
+        "source": "franco",
+        "referenceHeight": 228,
+        "foot": [
+          48.6302681992338,
+          219
+        ],
+        "seat": [
+          48.6302681992338,
+          157.68
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          1189,
+          293,
+          113,
+          220
+        ],
+        "pivotX": 0.5474864564756561,
+        "grip": null,
+        "gripSide": 0,
+        "name": "walk-back-2",
+        "source": "franco",
+        "referenceHeight": 228,
+        "foot": [
+          61.865969581749134,
+          220
+        ],
+        "seat": [
+          61.865969581749134,
+          158.4
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          1380,
+          294,
+          113,
+          219
+        ],
+        "pivotX": 0.47302413444429603,
+        "grip": null,
+        "gripSide": 0,
+        "name": "walk-back-3",
+        "source": "franco",
+        "referenceHeight": 228,
+        "foot": [
+          53.45172719220545,
+          219
+        ],
+        "seat": [
+          53.45172719220545,
+          157.68
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          808,
+          293,
+          113,
+          220
+        ],
+        "pivotX": 0.5370429120053427,
+        "grip": null,
+        "gripSide": 0,
+        "name": "walk-back-4",
+        "source": "franco",
+        "referenceHeight": 228,
+        "foot": [
+          60.68584905660373,
+          220
+        ],
+        "seat": [
+          60.68584905660373,
+          158.4
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          998,
+          294,
+          113,
+          219
+        ],
+        "pivotX": 0.43035635574543185,
+        "grip": null,
+        "gripSide": 0,
+        "name": "walk-back-5",
+        "source": "franco",
+        "referenceHeight": 228,
+        "foot": [
+          48.6302681992338,
+          219
+        ],
+        "seat": [
+          48.6302681992338,
+          157.68
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          999,
+          55,
+          113,
+          217
+        ],
+        "pivotX": 0.4919802480735739,
+        "grip": null,
+        "gripSide": 0,
+        "name": "sit-down-back",
+        "source": "franco",
+        "referenceHeight": 228,
+        "foot": [
+          55.59376803231385,
+          217
+        ],
+        "seat": [
+          55.59376803231385,
+          156.23999999999998
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          421,
+          44,
+          116,
+          228
+        ],
+        "pivotX": 0.4990491529699415,
+        "grip": null,
+        "gripSide": 0,
+        "name": "stand-up-back",
+        "source": "franco",
+        "referenceHeight": 228,
+        "foot": [
+          57.88970174451322,
+          228
+        ],
+        "seat": [
+          57.88970174451322,
+          164.16
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          53,
+          531,
+          109,
+          219
+        ],
+        "pivotX": 0.44930744890445573,
+        "grip": null,
+        "gripSide": 0,
+        "name": "walk-right-0",
+        "source": "franco",
+        "referenceHeight": 228,
+        "foot": [
+          48.97451193058568,
+          219
+        ],
+        "seat": [
+          48.97451193058568,
+          157.68
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          238,
+          531,
+          109,
+          219
+        ],
+        "pivotX": 0.487916152214957,
+        "grip": null,
+        "gripSide": 0,
+        "name": "walk-right-1",
+        "source": "franco",
+        "referenceHeight": 228,
+        "foot": [
+          53.18286059143031,
+          219
+        ],
+        "seat": [
+          53.18286059143031,
+          157.68
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          427,
+          530,
+          109,
+          220
+        ],
+        "pivotX": 0.42794393859471835,
+        "grip": null,
+        "gripSide": 0,
+        "name": "walk-right-2",
+        "source": "franco",
+        "referenceHeight": 228,
+        "foot": [
+          46.6458893068243,
+          220
+        ],
+        "seat": [
+          46.6458893068243,
+          158.4
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          614,
+          530,
+          114,
+          220
+        ],
+        "pivotX": 0.4961052833116684,
+        "grip": null,
+        "gripSide": 0,
+        "name": "walk-right-3",
+        "source": "franco",
+        "referenceHeight": 228,
+        "foot": [
+          56.5560022975302,
+          220
+        ],
+        "seat": [
+          56.5560022975302,
+          158.4
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          806,
+          530,
+          116,
+          220
+        ],
+        "pivotX": 0.45431724137931,
+        "grip": null,
+        "gripSide": 0,
+        "name": "walk-right-4",
+        "source": "franco",
+        "referenceHeight": 228,
+        "foot": [
+          52.70079999999996,
+          220
+        ],
+        "seat": [
+          52.70079999999996,
+          158.4
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          1002,
+          531,
+          110,
+          219
+        ],
+        "pivotX": 0.4511904219966317,
+        "grip": null,
+        "gripSide": 0,
+        "name": "walk-right-5",
+        "source": "franco",
+        "referenceHeight": 228,
+        "foot": [
+          49.63094641962948,
+          219
+        ],
+        "seat": [
+          49.63094641962948,
+          157.68
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          41,
+          768,
+          133,
+          217
+        ],
+        "pivotX": 0.5004389145452464,
+        "grip": null,
+        "gripSide": 0,
+        "name": "curl-rest",
+        "source": "franco",
+        "referenceHeight": 228,
+        "foot": [
+          66.55837563451776,
+          217
+        ],
+        "seat": [
+          66.55837563451776,
+          156.23999999999998
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          226,
+          769,
+          136,
+          216
+        ],
+        "pivotX": 0.4909584833371868,
+        "grip": null,
+        "gripSide": 0,
+        "name": "curl-lift",
+        "source": "franco",
+        "referenceHeight": 228,
+        "foot": [
+          66.7703537338574,
+          216
+        ],
+        "seat": [
+          66.7703537338574,
+          155.51999999999998
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          52,
+          44,
+          112,
+          228
+        ],
+        "pivotX": 0.5002142458545918,
+        "grip": null,
+        "gripSide": 0,
+        "name": "hold-front",
+        "source": "franco",
+        "referenceHeight": 228,
+        "foot": [
+          56.023995535714285,
+          228
+        ],
+        "seat": [
+          56.023995535714285,
+          164.16
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          236,
+          44,
+          110,
+          228
+        ],
+        "pivotX": 0.5005328971666756,
+        "grip": null,
+        "gripSide": 0,
+        "name": "hold-right",
+        "source": "franco",
+        "referenceHeight": 228,
+        "foot": [
+          55.05861868833431,
+          228
+        ],
+        "seat": [
+          55.05861868833431,
+          164.16
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          421,
+          44,
+          116,
+          228
+        ],
+        "pivotX": 0.4990491529699415,
+        "grip": null,
+        "gripSide": 0,
+        "name": "hold-back",
+        "source": "franco",
+        "referenceHeight": 228,
+        "foot": [
+          57.88970174451322,
+          228
+        ],
+        "seat": [
+          57.88970174451322,
+          164.16
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          614,
+          44,
+          107,
+          228
+        ],
+        "pivotX": 0.4765814295604012,
+        "grip": null,
+        "gripSide": 0,
+        "name": "hold-left",
+        "source": "franco",
+        "referenceHeight": 228,
+        "foot": [
+          50.99421296296293,
+          228
+        ],
+        "seat": [
+          50.99421296296293,
+          164.16
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          808,
+          55,
+          113,
+          217
+        ],
+        "pivotX": 0.49409029548522576,
+        "grip": null,
+        "gripSide": 0,
+        "name": "sit-hold-front",
+        "source": "franco",
+        "referenceHeight": 228,
+        "foot": [
+          55.83220338983051,
+          217
+        ],
+        "seat": [
+          55.83220338983051,
+          156.23999999999998
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          999,
+          55,
+          113,
+          217
+        ],
+        "pivotX": 0.4919802480735739,
+        "grip": null,
+        "gripSide": 0,
+        "name": "sit-hold-back",
+        "source": "franco",
+        "referenceHeight": 228,
+        "foot": [
+          55.59376803231385,
+          217
+        ],
+        "seat": [
+          55.59376803231385,
+          156.23999999999998
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          808,
+          55,
+          113,
+          217
+        ],
+        "pivotX": 0.49409029548522576,
+        "grip": null,
+        "gripSide": 0,
+        "name": "sit-hold-right",
+        "source": "franco",
+        "referenceHeight": 228,
+        "foot": [
+          55.83220338983051,
+          217
+        ],
+        "seat": [
+          55.83220338983051,
+          156.23999999999998
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          808,
+          55,
+          113,
+          217
+        ],
+        "pivotX": 0.49409029548522576,
+        "grip": null,
+        "gripSide": 0,
+        "name": "sit-right",
+        "source": "franco",
+        "referenceHeight": 228,
+        "foot": [
+          55.83220338983051,
+          217
+        ],
+        "seat": [
+          55.83220338983051,
+          156.23999999999998
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          52,
+          294,
+          113,
+          219
+        ],
+        "pivotX": 0.5423585562294919,
+        "grip": null,
+        "gripSide": 0,
+        "name": "hold-walk-front-0",
+        "source": "franco",
+        "referenceHeight": 228,
+        "foot": [
+          61.28651685393259,
+          219
+        ],
+        "seat": [
+          61.28651685393259,
+          157.68
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          238,
+          294,
+          112,
+          219
+        ],
+        "pivotX": 0.46187283111625227,
+        "grip": null,
+        "gripSide": 0,
+        "name": "hold-walk-front-1",
+        "source": "franco",
+        "referenceHeight": 228,
+        "foot": [
+          51.72975708502025,
+          219
+        ],
+        "seat": [
+          51.72975708502025,
+          157.68
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          423,
+          293,
+          113,
+          220
+        ],
+        "pivotX": 0.4733014843281738,
+        "grip": null,
+        "gripSide": 0,
+        "name": "hold-walk-front-2",
+        "source": "franco",
+        "referenceHeight": 228,
+        "foot": [
+          53.48306772908364,
+          220
+        ],
+        "seat": [
+          53.48306772908364,
+          158.4
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          612,
+          294,
+          112,
+          219
+        ],
+        "pivotX": 0.5037622962854209,
+        "grip": null,
+        "gripSide": 0,
+        "name": "hold-walk-front-3",
+        "source": "franco",
+        "referenceHeight": 228,
+        "foot": [
+          56.42137718396714,
+          219
+        ],
+        "seat": [
+          56.42137718396714,
+          157.68
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          52,
+          294,
+          113,
+          219
+        ],
+        "pivotX": 0.5423585562294919,
+        "grip": null,
+        "gripSide": 0,
+        "name": "hold-walk-front-4",
+        "source": "franco",
+        "referenceHeight": 228,
+        "foot": [
+          61.28651685393259,
+          219
+        ],
+        "seat": [
+          61.28651685393259,
+          157.68
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          238,
+          294,
+          112,
+          219
+        ],
+        "pivotX": 0.46187283111625227,
+        "grip": null,
+        "gripSide": 0,
+        "name": "hold-walk-front-5",
+        "source": "franco",
+        "referenceHeight": 228,
+        "foot": [
+          51.72975708502025,
+          219
+        ],
+        "seat": [
+          51.72975708502025,
+          157.68
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          399,
+          769,
+          142,
+          216
+        ],
+        "pivotX": 0.552980812525179,
+        "grip": null,
+        "gripSide": 0,
+        "name": "dance-front-left",
+        "source": "franco",
+        "referenceHeight": 228,
+        "foot": [
+          78.52327537857542,
+          216
+        ],
+        "seat": [
+          78.52327537857542,
+          155.51999999999998
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          607,
+          769,
+          144,
+          216
+        ],
+        "pivotX": 0.424239954040122,
+        "grip": null,
+        "gripSide": 0,
+        "name": "dance-front-right",
+        "source": "franco",
+        "referenceHeight": 228,
+        "foot": [
+          61.09055338177757,
+          216
+        ],
+        "seat": [
+          61.09055338177757,
+          155.51999999999998
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          808,
+          293,
+          113,
+          220
+        ],
+        "pivotX": 0.5370429120053427,
+        "grip": null,
+        "gripSide": 0,
+        "name": "hold-walk-back-0",
+        "source": "franco",
+        "referenceHeight": 228,
+        "foot": [
+          60.68584905660373,
+          220
+        ],
+        "seat": [
+          60.68584905660373,
+          158.4
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          998,
+          294,
+          113,
+          219
+        ],
+        "pivotX": 0.43035635574543185,
+        "grip": null,
+        "gripSide": 0,
+        "name": "hold-walk-back-1",
+        "source": "franco",
+        "referenceHeight": 228,
+        "foot": [
+          48.6302681992338,
+          219
+        ],
+        "seat": [
+          48.6302681992338,
+          157.68
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          1189,
+          293,
+          113,
+          220
+        ],
+        "pivotX": 0.5474864564756561,
+        "grip": null,
+        "gripSide": 0,
+        "name": "hold-walk-back-2",
+        "source": "franco",
+        "referenceHeight": 228,
+        "foot": [
+          61.865969581749134,
+          220
+        ],
+        "seat": [
+          61.865969581749134,
+          158.4
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          1380,
+          294,
+          113,
+          219
+        ],
+        "pivotX": 0.47302413444429603,
+        "grip": null,
+        "gripSide": 0,
+        "name": "hold-walk-back-3",
+        "source": "franco",
+        "referenceHeight": 228,
+        "foot": [
+          53.45172719220545,
+          219
+        ],
+        "seat": [
+          53.45172719220545,
+          157.68
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          808,
+          293,
+          113,
+          220
+        ],
+        "pivotX": 0.5370429120053427,
+        "grip": null,
+        "gripSide": 0,
+        "name": "hold-walk-back-4",
+        "source": "franco",
+        "referenceHeight": 228,
+        "foot": [
+          60.68584905660373,
+          220
+        ],
+        "seat": [
+          60.68584905660373,
+          158.4
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          998,
+          294,
+          113,
+          219
+        ],
+        "pivotX": 0.43035635574543185,
+        "grip": null,
+        "gripSide": 0,
+        "name": "hold-walk-back-5",
+        "source": "franco",
+        "referenceHeight": 228,
+        "foot": [
+          48.6302681992338,
+          219
+        ],
+        "seat": [
+          48.6302681992338,
+          157.68
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          782,
+          771,
+          137,
+          214
+        ],
+        "pivotX": 0.5715752456644996,
+        "grip": null,
+        "gripSide": 0,
+        "name": "dance-back-left",
+        "source": "franco",
+        "referenceHeight": 228,
+        "foot": [
+          78.30580865603645,
+          214
+        ],
+        "seat": [
+          78.30580865603645,
+          154.07999999999998
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          985,
+          771,
+          140,
+          214
+        ],
+        "pivotX": 0.4270090560496036,
+        "grip": null,
+        "gripSide": 0,
+        "name": "dance-back-right",
+        "source": "franco",
+        "referenceHeight": 228,
+        "foot": [
+          59.7812678469445,
+          214
+        ],
+        "seat": [
+          59.7812678469445,
+          154.07999999999998
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          53,
+          531,
+          109,
+          219
+        ],
+        "pivotX": 0.44930744890445573,
+        "grip": null,
+        "gripSide": 0,
+        "name": "hold-walk-right-0",
+        "source": "franco",
+        "referenceHeight": 228,
+        "foot": [
+          48.97451193058568,
+          219
+        ],
+        "seat": [
+          48.97451193058568,
+          157.68
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          238,
+          531,
+          109,
+          219
+        ],
+        "pivotX": 0.487916152214957,
+        "grip": null,
+        "gripSide": 0,
+        "name": "hold-walk-right-1",
+        "source": "franco",
+        "referenceHeight": 228,
+        "foot": [
+          53.18286059143031,
+          219
+        ],
+        "seat": [
+          53.18286059143031,
+          157.68
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          427,
+          530,
+          109,
+          220
+        ],
+        "pivotX": 0.42794393859471835,
+        "grip": null,
+        "gripSide": 0,
+        "name": "hold-walk-right-2",
+        "source": "franco",
+        "referenceHeight": 228,
+        "foot": [
+          46.6458893068243,
+          220
+        ],
+        "seat": [
+          46.6458893068243,
+          158.4
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          614,
+          530,
+          114,
+          220
+        ],
+        "pivotX": 0.4961052833116684,
+        "grip": null,
+        "gripSide": 0,
+        "name": "hold-walk-right-3",
+        "source": "franco",
+        "referenceHeight": 228,
+        "foot": [
+          56.5560022975302,
+          220
+        ],
+        "seat": [
+          56.5560022975302,
+          158.4
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          806,
+          530,
+          116,
+          220
+        ],
+        "pivotX": 0.45431724137931,
+        "grip": null,
+        "gripSide": 0,
+        "name": "hold-walk-right-4",
+        "source": "franco",
+        "referenceHeight": 228,
+        "foot": [
+          52.70079999999996,
+          220
+        ],
+        "seat": [
+          52.70079999999996,
+          158.4
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          1002,
+          531,
+          110,
+          219
+        ],
+        "pivotX": 0.4511904219966317,
+        "grip": null,
+        "gripSide": 0,
+        "name": "hold-walk-right-5",
+        "source": "franco",
+        "referenceHeight": 228,
+        "foot": [
+          49.63094641962948,
+          219
+        ],
+        "seat": [
+          49.63094641962948,
+          157.68
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          1173,
+          771,
+          135,
+          212
+        ],
+        "pivotX": 0.5567763471626138,
+        "grip": null,
+        "gripSide": 0,
+        "name": "run-right-0",
+        "source": "franco",
+        "referenceHeight": 228,
+        "foot": [
+          75.16480686695286,
+          212
+        ],
+        "seat": [
+          75.16480686695286,
+          152.64
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          1368,
+          770,
+          127,
+          213
+        ],
+        "pivotX": 0.5330655258145489,
+        "grip": null,
+        "gripSide": 0,
+        "name": "run-right-1",
+        "source": "franco",
+        "referenceHeight": 228,
+        "foot": [
+          67.69932177844771,
+          213
+        ],
+        "seat": [
+          67.69932177844771,
+          153.35999999999999
+        ],
+        "slot": null
+      },
+      {
+        "name": "walk-side-v8-0",
+        "source": "franco-walk-a-v8",
+        "rect": [
+          98,
+          55,
+          350,
+          594
+        ],
+        "referenceHeight": 598,
+        "pivotX": 0.5728571428571428,
+        "foot": [
+          200.5,
+          594
+        ],
+        "seat": [
+          196.68634628252056,
+          427.68
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null,
+        "scaleXRatio": 1,
+        "offsetYRatio": 0,
+        "headMetrics": {
+          "headWidth": 298,
+          "landmarkHeight": 220,
+          "centerX": 200.5,
+          "originalReferenceHeight": 598
+        }
+      },
+      {
+        "name": "walk-side-v8-1",
+        "source": "franco-walk-a-v8",
+        "rect": [
+          659,
+          51,
+          327,
+          598
+        ],
+        "referenceHeight": 608.8727272727273,
+        "pivotX": 0.5290519877675841,
+        "foot": [
+          173,
+          598
+        ],
+        "seat": [
+          168.286602104621,
+          430.56
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null,
+        "scaleXRatio": 0.988332839798638,
+        "offsetYRatio": -0.011168179646440568,
+        "headMetrics": {
+          "headWidth": 307,
+          "landmarkHeight": 224,
+          "centerX": 173,
+          "originalReferenceHeight": 598
+        }
+      },
+      {
+        "name": "walk-side-v8-2",
+        "source": "franco-walk-a-v8",
+        "rect": [
+          1191,
+          55,
+          299,
+          594
+        ],
+        "referenceHeight": 598,
+        "pivotX": 0.4983277591973244,
+        "foot": [
+          149,
+          594
+        ],
+        "seat": [
+          145.52064336868466,
+          427.68
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null,
+        "scaleXRatio": 0.9966555183946488,
+        "offsetYRatio": 0,
+        "headMetrics": {
+          "headWidth": 299,
+          "landmarkHeight": 220,
+          "centerX": 149,
+          "originalReferenceHeight": 598
+        }
+      },
+      {
+        "name": "walk-side-v8-3",
+        "source": "franco-walk-a-v8",
+        "rect": [
+          1687,
+          51,
+          370,
+          598
+        ],
+        "referenceHeight": 608.8727272727273,
+        "pivotX": 0.5013513513513513,
+        "foot": [
+          185.5,
+          598
+        ],
+        "seat": [
+          180.8919630590749,
+          430.56
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null,
+        "scaleXRatio": 0.9915626856803328,
+        "offsetYRatio": -0.011168179646440568,
+        "headMetrics": {
+          "headWidth": 306,
+          "landmarkHeight": 224,
+          "centerX": 185.5,
+          "originalReferenceHeight": 598
+        }
+      },
+      {
+        "name": "walk-side-v8-4",
+        "source": "franco-walk-b-v8",
+        "rect": [
+          92,
+          33,
+          358,
+          635
+        ],
+        "referenceHeight": 600.7181818181818,
+        "pivotX": 0.5628491620111732,
+        "foot": [
+          201.5,
+          635
+        ],
+        "seat": [
+          199.97210122754598,
+          457.2
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null,
+        "scaleXRatio": 0.9847188995215311,
+        "offsetYRatio": 0.06375701811468093,
+        "headMetrics": {
+          "headWidth": 304,
+          "landmarkHeight": 221,
+          "centerX": 201.5,
+          "originalReferenceHeight": 635
+        }
+      },
+      {
+        "name": "walk-side-v8-5",
+        "source": "franco-walk-b-v8",
+        "rect": [
+          657,
+          34,
+          328,
+          634
+        ],
+        "referenceHeight": 603.4363636363637,
+        "pivotX": 0.5320121951219512,
+        "foot": [
+          174.5,
+          634
+        ],
+        "seat": [
+          172.72475177304966,
+          456.47999999999996
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null,
+        "scaleXRatio": 0.9827094474153298,
+        "offsetYRatio": 0.057338274729578975,
+        "headMetrics": {
+          "headWidth": 306,
+          "landmarkHeight": 222,
+          "centerX": 174.5,
+          "originalReferenceHeight": 635
+        }
+      },
+      {
+        "name": "walk-side-v8-6",
+        "source": "franco-walk-b-v8",
+        "rect": [
+          1203,
+          33,
+          301,
+          635
+        ],
+        "referenceHeight": 603.4363636363637,
+        "pivotX": 0.4983388704318937,
+        "foot": [
+          150,
+          635
+        ],
+        "seat": [
+          147.919668797211,
+          457.2
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null,
+        "scaleXRatio": 0.9990335246149201,
+        "offsetYRatio": 0.058995450299798025,
+        "headMetrics": {
+          "headWidth": 301,
+          "landmarkHeight": 222,
+          "centerX": 150,
+          "originalReferenceHeight": 635
+        }
+      },
+      {
+        "name": "walk-side-v8-7",
+        "source": "franco-walk-b-v8",
+        "rect": [
+          1709,
+          34,
+          383,
+          634
+        ],
+        "referenceHeight": 600.7181818181818,
+        "pivotX": 0.4869451697127937,
+        "foot": [
+          186.5,
+          634
+        ],
+        "seat": [
+          184.55987896048418,
+          456.47999999999996
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null,
+        "scaleXRatio": 0.9847188995215311,
+        "offsetYRatio": 0.06209234401246988,
+        "headMetrics": {
+          "headWidth": 304,
+          "landmarkHeight": 221,
+          "centerX": 186.5,
+          "originalReferenceHeight": 635
+        }
+      },
+      {
+        "name": "run-side-v10-0",
+        "source": "franco-run-v10",
+        "rect": [
+          31,
+          39,
+          298,
+          458
+        ],
+        "referenceHeight": 462.0909090909091,
+        "pivotX": 0.552013422818792,
+        "foot": [
+          164.5,
+          458
+        ],
+        "seat": [
+          149,
+          329.76
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null,
+        "scaleXRatio": 0.9925548589341693,
+        "offsetYRatio": -0.0021640763328744095,
+        "headMetrics": {
+          "headWidth": 232,
+          "landmarkHeight": 170,
+          "centerX": 164.5,
+          "originalReferenceHeight": 458
+        }
+      },
+      {
+        "name": "run-side-v10-1",
+        "source": "franco-run-v10",
+        "rect": [
+          443,
+          39,
+          253,
+          458
+        ],
+        "referenceHeight": 464.8090909090909,
+        "pivotX": 0.5375494071146245,
+        "foot": [
+          136,
+          458
+        ],
+        "seat": [
+          126.5,
+          329.76
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null,
+        "scaleXRatio": 0.9941084666406554,
+        "offsetYRatio": -0.007960257388175074,
+        "headMetrics": {
+          "headWidth": 233,
+          "landmarkHeight": 171,
+          "centerX": 136,
+          "originalReferenceHeight": 458
+        }
+      },
+      {
+        "name": "run-side-v10-2",
+        "source": "franco-run-v10",
+        "rect": [
+          841,
+          39,
+          232,
+          458
+        ],
+        "referenceHeight": 462.0909090909091,
+        "pivotX": 0.4978448275862069,
+        "foot": [
+          115.5,
+          458
+        ],
+        "seat": [
+          116,
+          329.76
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null,
+        "scaleXRatio": 0.9925548589341693,
+        "offsetYRatio": -0.0021640763328744095,
+        "headMetrics": {
+          "headWidth": 232,
+          "landmarkHeight": 170,
+          "centerX": 115.5,
+          "originalReferenceHeight": 458
+        }
+      },
+      {
+        "name": "run-side-v10-3",
+        "source": "franco-run-v10",
+        "rect": [
+          1176,
+          39,
+          322,
+          458
+        ],
+        "referenceHeight": 462.0909090909091,
+        "pivotX": 0.5496894409937888,
+        "foot": [
+          177,
+          458
+        ],
+        "seat": [
+          161,
+          329.76
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null,
+        "scaleXRatio": 0.9798839458413927,
+        "offsetYRatio": -0.0021640763328744095,
+        "headMetrics": {
+          "headWidth": 235,
+          "landmarkHeight": 170,
+          "centerX": 177,
+          "originalReferenceHeight": 458
+        }
+      },
+      {
+        "name": "run-side-v10-4",
+        "source": "franco-run-v10",
+        "rect": [
+          30,
+          544,
+          299,
+          450
+        ],
+        "referenceHeight": 459.3727272727273,
+        "pivotX": 0.5535117056856187,
+        "foot": [
+          165.5,
+          450
+        ],
+        "seat": [
+          149.5,
+          324
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null,
+        "scaleXRatio": 0.9867163009404388,
+        "offsetYRatio": -0.013714353565138282,
+        "headMetrics": {
+          "headWidth": 232,
+          "landmarkHeight": 169,
+          "centerX": 165.5,
+          "originalReferenceHeight": 450
+        }
+      },
+      {
+        "name": "run-side-v10-5",
+        "source": "franco-run-v10",
+        "rect": [
+          442,
+          544,
+          254,
+          450
+        ],
+        "referenceHeight": 459.3727272727273,
+        "pivotX": 0.5393700787401575,
+        "foot": [
+          137,
+          450
+        ],
+        "seat": [
+          127,
+          324
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null,
+        "scaleXRatio": 0.9824814670308232,
+        "offsetYRatio": -0.013714353565138282,
+        "headMetrics": {
+          "headWidth": 233,
+          "landmarkHeight": 169,
+          "centerX": 137,
+          "originalReferenceHeight": 450
+        }
+      },
+      {
+        "name": "run-side-v10-6",
+        "source": "franco-run-v10",
+        "rect": [
+          843,
+          544,
+          235,
+          450
+        ],
+        "referenceHeight": 459.3727272727273,
+        "pivotX": 0.4978723404255319,
+        "foot": [
+          117,
+          450
+        ],
+        "seat": [
+          117.5,
+          324
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null,
+        "scaleXRatio": 0.9741199226305609,
+        "offsetYRatio": -0.013714353565138282,
+        "headMetrics": {
+          "headWidth": 235,
+          "landmarkHeight": 169,
+          "centerX": 117,
+          "originalReferenceHeight": 450
+        }
+      },
+      {
+        "name": "run-side-v10-7",
+        "source": "franco-run-v10",
+        "rect": [
+          1193,
+          544,
+          311,
+          450
+        ],
+        "referenceHeight": 462.0909090909091,
+        "pivotX": 0.5241157556270096,
+        "foot": [
+          163,
+          450
+        ],
+        "seat": [
+          155.5,
+          324
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null,
+        "scaleXRatio": 0.9882949668357394,
+        "offsetYRatio": -0.019476686995868686,
+        "headMetrics": {
+          "headWidth": 233,
+          "landmarkHeight": 170,
+          "centerX": 163,
+          "originalReferenceHeight": 450
+        }
+      }
+    ],
+    "carryFrames": [
+      {
+        "rect": [
+          88,
+          47,
+          132,
+          259
+        ],
+        "pivotX": 0.4850487820637075,
+        "grip": [
+          38.20926966292135,
+          166.00983146067415
+        ],
+        "gripSide": -1,
+        "name": "carry-0",
+        "source": "franco-carry",
+        "referenceHeight": 295,
+        "foot": [
+          64.02643923240939,
+          259
+        ],
+        "seat": [
+          64.02643923240939,
+          186.48
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          88,
+          47,
+          132,
+          259
+        ],
+        "pivotX": 0.4850487820637075,
+        "grip": [
+          38.20926966292135,
+          166.00983146067415
+        ],
+        "gripSide": -1,
+        "name": "carry-1",
+        "source": "franco-carry",
+        "referenceHeight": 295,
+        "foot": [
+          64.02643923240939,
+          259
+        ],
+        "seat": [
+          64.02643923240939,
+          186.48
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          560,
+          47,
+          132,
+          259
+        ],
+        "pivotX": 0.4965567599551815,
+        "grip": [
+          112,
+          195.59134615384616
+        ],
+        "gripSide": 1,
+        "name": "carry-2",
+        "source": "franco-carry",
+        "referenceHeight": 295,
+        "foot": [
+          65.54549231408396,
+          259
+        ],
+        "seat": [
+          65.54549231408396,
+          186.48
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          807,
+          48,
+          125,
+          259
+        ],
+        "pivotX": 0.4641104536489156,
+        "grip": [
+          39.71826625386997,
+          169.88699690402476
+        ],
+        "gripSide": -1,
+        "name": "carry-3",
+        "source": "franco-carry",
+        "referenceHeight": 295,
+        "foot": [
+          58.01380670611445,
+          259
+        ],
+        "seat": [
+          58.01380670611445,
+          186.48
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          82,
+          1175,
+          139,
+          290
+        ],
+        "pivotX": 0.501834156999697,
+        "grip": [
+          35.102866779089375,
+          170.77740303541316
+        ],
+        "gripSide": -1,
+        "name": "carry-4",
+        "source": "franco-carry",
+        "referenceHeight": 295,
+        "foot": [
+          69.75494782295789,
+          290
+        ],
+        "seat": [
+          69.75494782295789,
+          208.79999999999998
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          326,
+          1175,
+          141,
+          288
+        ],
+        "pivotX": 0.4730136704697297,
+        "grip": [
+          129.69230769230768,
+          159.90769230769232
+        ],
+        "gripSide": 1,
+        "name": "carry-5",
+        "source": "franco-carry",
+        "referenceHeight": 295,
+        "foot": [
+          66.69492753623189,
+          288
+        ],
+        "seat": [
+          66.69492753623189,
+          207.35999999999999
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          88,
+          320,
+          132,
+          262
+        ],
+        "pivotX": 0.4349205829018375,
+        "grip": [
+          34.029126213592235,
+          162.15533980582524
+        ],
+        "gripSide": -1,
+        "name": "carry-6",
+        "source": "franco-carry",
+        "referenceHeight": 295,
+        "foot": [
+          57.40951694304255,
+          262
+        ],
+        "seat": [
+          57.40951694304255,
+          188.64
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          330,
+          320,
+          132,
+          262
+        ],
+        "pivotX": 0.4345877637365697,
+        "grip": [
+          37.529411764705884,
+          164.54689984101748
+        ],
+        "gripSide": -1,
+        "name": "carry-7",
+        "source": "franco-carry",
+        "referenceHeight": 295,
+        "foot": [
+          57.3655848132272,
+          262
+        ],
+        "seat": [
+          57.3655848132272,
+          188.64
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          561,
+          320,
+          132,
+          262
+        ],
+        "pivotX": 0.4993012112338609,
+        "grip": [
+          35.87418300653595,
+          162.5049019607843
+        ],
+        "gripSide": -1,
+        "name": "carry-8",
+        "source": "franco-carry",
+        "referenceHeight": 295,
+        "foot": [
+          65.90775988286964,
+          262
+        ],
+        "seat": [
+          65.90775988286964,
+          188.64
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          803,
+          320,
+          133,
+          262
+        ],
+        "pivotX": 0.5414091241282777,
+        "grip": [
+          41.517719568567024,
+          164.73805855161788
+        ],
+        "gripSide": -1,
+        "name": "carry-9",
+        "source": "franco-carry",
+        "referenceHeight": 295,
+        "foot": [
+          72.00741350906094,
+          262
+        ],
+        "seat": [
+          72.00741350906094,
+          188.64
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          561,
+          320,
+          132,
+          262
+        ],
+        "pivotX": 0.4993012112338609,
+        "grip": [
+          35.87418300653595,
+          162.5049019607843
+        ],
+        "gripSide": -1,
+        "name": "carry-10",
+        "source": "franco-carry",
+        "referenceHeight": 295,
+        "foot": [
+          65.90775988286964,
+          262
+        ],
+        "seat": [
+          65.90775988286964,
+          188.64
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          330,
+          320,
+          132,
+          262
+        ],
+        "pivotX": 0.4345877637365697,
+        "grip": [
+          37.529411764705884,
+          164.54689984101748
+        ],
+        "gripSide": -1,
+        "name": "carry-11",
+        "source": "franco-carry",
+        "referenceHeight": 295,
+        "foot": [
+          57.3655848132272,
+          262
+        ],
+        "seat": [
+          57.3655848132272,
+          188.64
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          81,
+          875,
+          141,
+          275
+        ],
+        "pivotX": 0.5122045879825351,
+        "grip": [
+          128.57075471698113,
+          159.58962264150944
+        ],
+        "gripSide": 1,
+        "name": "carry-12",
+        "source": "franco-carry",
+        "referenceHeight": 295,
+        "foot": [
+          72.22084690553744,
+          275
+        ],
+        "seat": [
+          72.22084690553744,
+          198
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          324,
+          874,
+          139,
+          276
+        ],
+        "pivotX": 0.49918677498192826,
+        "grip": [
+          128.26771653543307,
+          158.21259842519686
+        ],
+        "gripSide": 1,
+        "name": "carry-13",
+        "source": "franco-carry",
+        "referenceHeight": 295,
+        "foot": [
+          69.38696172248802,
+          276
+        ],
+        "seat": [
+          69.38696172248802,
+          198.72
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          558,
+          874,
+          146,
+          276
+        ],
+        "pivotX": 0.4933716305788774,
+        "grip": [
+          134.66842105263157,
+          159.58947368421053
+        ],
+        "gripSide": 1,
+        "name": "carry-14",
+        "source": "franco-carry",
+        "referenceHeight": 295,
+        "foot": [
+          72.0322580645161,
+          276
+        ],
+        "seat": [
+          72.0322580645161,
+          198.72
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          802,
+          873,
+          141,
+          277
+        ],
+        "pivotX": 0.439666653123321,
+        "grip": [
+          128.65196078431373,
+          160.09313725490196
+        ],
+        "gripSide": 1,
+        "name": "carry-15",
+        "source": "franco-carry",
+        "referenceHeight": 295,
+        "foot": [
+          61.992998090388255,
+          277
+        ],
+        "seat": [
+          61.992998090388255,
+          199.44
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          558,
+          874,
+          146,
+          276
+        ],
+        "pivotX": 0.4933716305788774,
+        "grip": [
+          134.66842105263157,
+          159.58947368421053
+        ],
+        "gripSide": 1,
+        "name": "carry-16",
+        "source": "franco-carry",
+        "referenceHeight": 295,
+        "foot": [
+          72.0322580645161,
+          276
+        ],
+        "seat": [
+          72.0322580645161,
+          198.72
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          324,
+          874,
+          139,
+          276
+        ],
+        "pivotX": 0.49918677498192826,
+        "grip": [
+          128.26771653543307,
+          158.21259842519686
+        ],
+        "gripSide": 1,
+        "name": "carry-17",
+        "source": "franco-carry",
+        "referenceHeight": 295,
+        "foot": [
+          69.38696172248802,
+          276
+        ],
+        "seat": [
+          69.38696172248802,
+          198.72
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          90,
+          600,
+          127,
+          258
+        ],
+        "pivotX": 0.5071624717430553,
+        "grip": [
+          95.4744094488189,
+          159.64370078740157
+        ],
+        "gripSide": 1,
+        "name": "carry-18",
+        "source": "franco-carry",
+        "referenceHeight": 295,
+        "foot": [
+          64.40963391136802,
+          258
+        ],
+        "seat": [
+          64.40963391136802,
+          185.76
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          329,
+          599,
+          128,
+          259
+        ],
+        "pivotX": 0.48471636323268186,
+        "grip": [
+          97.50416666666666,
+          162.16666666666666
+        ],
+        "gripSide": 1,
+        "name": "carry-19",
+        "source": "franco-carry",
+        "referenceHeight": 295,
+        "foot": [
+          62.04369449378328,
+          259
+        ],
+        "seat": [
+          62.04369449378328,
+          186.48
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          568,
+          599,
+          129,
+          259
+        ],
+        "pivotX": 0.5050521048726045,
+        "grip": [
+          97.5530612244898,
+          160.4816326530612
+        ],
+        "gripSide": 1,
+        "name": "carry-20",
+        "source": "franco-carry",
+        "referenceHeight": 295,
+        "foot": [
+          65.15172152856599,
+          259
+        ],
+        "seat": [
+          65.15172152856599,
+          186.48
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          807,
+          599,
+          128,
+          258
+        ],
+        "pivotX": 0.46973462115528886,
+        "grip": [
+          95.41520467836257,
+          161.6101364522417
+        ],
+        "gripSide": 1,
+        "name": "carry-21",
+        "source": "franco-carry",
+        "referenceHeight": 295,
+        "foot": [
+          60.126031507876974,
+          258
+        ],
+        "seat": [
+          60.126031507876974,
+          185.76
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          568,
+          599,
+          129,
+          259
+        ],
+        "pivotX": 0.5050521048726045,
+        "grip": [
+          97.5530612244898,
+          160.4816326530612
+        ],
+        "gripSide": 1,
+        "name": "carry-22",
+        "source": "franco-carry",
+        "referenceHeight": 295,
+        "foot": [
+          65.15172152856599,
+          259
+        ],
+        "seat": [
+          65.15172152856599,
+          186.48
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          329,
+          599,
+          128,
+          259
+        ],
+        "pivotX": 0.48471636323268186,
+        "grip": [
+          97.50416666666666,
+          162.16666666666666
+        ],
+        "gripSide": 1,
+        "name": "carry-23",
+        "source": "franco-carry",
+        "referenceHeight": 295,
+        "foot": [
+          62.04369449378328,
+          259
+        ],
+        "seat": [
+          62.04369449378328,
+          186.48
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          331,
+          48,
+          125,
+          259
+        ],
+        "pivotX": 0.49096850393700786,
+        "grip": [
+          77.06003159557662,
+          170.64139020537124
+        ],
+        "gripSide": 1,
+        "name": "carry-24",
+        "source": "franco-carry",
+        "referenceHeight": 295,
+        "foot": [
+          61.371062992125985,
+          259
+        ],
+        "seat": [
+          61.371062992125985,
+          186.48
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          548,
+          1176,
+          156,
+          295
+        ],
+        "pivotX": 0.7512387752894085,
+        "grip": [
+          98.4460966542751,
+          175.48946716232962
+        ],
+        "gripSide": 1,
+        "name": "carry-25",
+        "source": "franco-carry",
+        "referenceHeight": 295,
+        "foot": [
+          117.19324894514773,
+          295
+        ],
+        "seat": [
+          117.19324894514773,
+          212.4
+        ],
+        "slot": null
+      },
+      {
+        "name": "carry-walk-side-v12-0",
+        "source": "franco-carry-walk-v12",
+        "rect": [
+          46,
+          30,
+          265,
+          471
+        ],
+        "referenceHeight": 459.3727272727273,
+        "pivotX": 0.5641509433962264,
+        "foot": [
+          149.5,
+          471
+        ],
+        "seat": [
+          132.5,
+          339.12
+        ],
+        "grip": [
+          195,
+          270.5
+        ],
+        "gripSide": 1,
+        "slot": null,
+        "scaleXRatio": 1.0040271132376395,
+        "offsetYRatio": 0.03200015831865577,
+        "headMetrics": {
+          "headWidth": 228,
+          "landmarkHeight": 169,
+          "centerX": 149.5,
+          "originalReferenceHeight": 471
+        }
+      },
+      {
+        "name": "carry-walk-side-v12-1",
+        "source": "franco-carry-walk-v12",
+        "rect": [
+          450,
+          30,
+          244,
+          471
+        ],
+        "referenceHeight": 459.3727272727273,
+        "pivotX": 0.5307377049180327,
+        "foot": [
+          129.5,
+          471
+        ],
+        "seat": [
+          122,
+          339.12
+        ],
+        "grip": [
+          178,
+          271
+        ],
+        "gripSide": 1,
+        "slot": null,
+        "scaleXRatio": 1.0040271132376395,
+        "offsetYRatio": 0.03200015831865577,
+        "headMetrics": {
+          "headWidth": 228,
+          "landmarkHeight": 169,
+          "centerX": 129.5,
+          "originalReferenceHeight": 471
+        }
+      },
+      {
+        "name": "carry-walk-side-v12-2",
+        "source": "franco-carry-walk-v12",
+        "rect": [
+          851,
+          30,
+          227,
+          471
+        ],
+        "referenceHeight": 459.3727272727273,
+        "pivotX": 0.4977973568281938,
+        "foot": [
+          113,
+          471
+        ],
+        "seat": [
+          113.5,
+          339.12
+        ],
+        "grip": [
+          164.5,
+          270.5
+        ],
+        "gripSide": 1,
+        "slot": null,
+        "scaleXRatio": 1.0084501401682018,
+        "offsetYRatio": 0.03200015831865577,
+        "headMetrics": {
+          "headWidth": 227,
+          "landmarkHeight": 169,
+          "centerX": 113,
+          "originalReferenceHeight": 471
+        }
+      },
+      {
+        "name": "carry-walk-side-v12-3",
+        "source": "franco-carry-walk-v12",
+        "rect": [
+          1196,
+          30,
+          290,
+          471
+        ],
+        "referenceHeight": 459.3727272727273,
+        "pivotX": 0.5224137931034483,
+        "foot": [
+          151.5,
+          471
+        ],
+        "seat": [
+          145,
+          339.12
+        ],
+        "grip": [
+          204.5,
+          271
+        ],
+        "gripSide": 1,
+        "slot": null,
+        "scaleXRatio": 1.0040271132376395,
+        "offsetYRatio": 0.03200015831865577,
+        "headMetrics": {
+          "headWidth": 228,
+          "landmarkHeight": 169,
+          "centerX": 151.5,
+          "originalReferenceHeight": 471
+        }
+      },
+      {
+        "name": "carry-walk-side-v12-4",
+        "source": "franco-carry-walk-v12",
+        "rect": [
+          46,
+          528,
+          268,
+          467
+        ],
+        "referenceHeight": 459.3727272727273,
+        "pivotX": 0.5578358208955224,
+        "foot": [
+          149.5,
+          467
+        ],
+        "seat": [
+          134,
+          336.24
+        ],
+        "grip": [
+          203,
+          243.5
+        ],
+        "gripSide": 1,
+        "slot": null,
+        "scaleXRatio": 1.0040271132376395,
+        "offsetYRatio": 0.023292632245552225,
+        "headMetrics": {
+          "headWidth": 228,
+          "landmarkHeight": 169,
+          "centerX": 149.5,
+          "originalReferenceHeight": 467
+        }
+      },
+      {
+        "name": "carry-walk-side-v12-5",
+        "source": "franco-carry-walk-v12",
+        "rect": [
+          449,
+          529,
+          245,
+          466
+        ],
+        "referenceHeight": 456.6545454545455,
+        "pivotX": 0.5326530612244897,
+        "foot": [
+          130.5,
+          466
+        ],
+        "seat": [
+          122.5,
+          335.52
+        ],
+        "grip": [
+          187.5,
+          267.5
+        ],
+        "gripSide": 1,
+        "slot": null,
+        "scaleXRatio": 0.998086124401914,
+        "offsetYRatio": 0.027154005414874893,
+        "headMetrics": {
+          "headWidth": 228,
+          "landmarkHeight": 168,
+          "centerX": 130.5,
+          "originalReferenceHeight": 467
+        }
+      },
+      {
+        "name": "carry-walk-side-v12-6",
+        "source": "franco-carry-walk-v12",
+        "rect": [
+          851,
+          528,
+          227,
+          467
+        ],
+        "referenceHeight": 462.0909090909091,
+        "pivotX": 0.4977973568281938,
+        "foot": [
+          113,
+          467
+        ],
+        "seat": [
+          113.5,
+          336.24
+        ],
+        "grip": [
+          170,
+          243.5
+        ],
+        "gripSide": 1,
+        "slot": null,
+        "scaleXRatio": 1.0144173007609132,
+        "offsetYRatio": 0.017312610662994166,
+        "headMetrics": {
+          "headWidth": 227,
+          "landmarkHeight": 170,
+          "centerX": 113,
+          "originalReferenceHeight": 467
+        }
+      },
+      {
+        "name": "carry-walk-side-v12-7",
+        "source": "franco-carry-walk-v12",
+        "rect": [
+          1199,
+          528,
+          291,
+          467
+        ],
+        "referenceHeight": 462.0909090909091,
+        "pivotX": 0.5103092783505154,
+        "foot": [
+          148.5,
+          467
+        ],
+        "seat": [
+          145.5,
+          336.24
+        ],
+        "grip": [
+          210,
+          243.5
+        ],
+        "gripSide": 1,
+        "slot": null,
+        "scaleXRatio": 1.0099681020733653,
+        "offsetYRatio": 0.017312610662994166,
+        "headMetrics": {
+          "headWidth": 228,
+          "landmarkHeight": 170,
+          "centerX": 148.5,
+          "originalReferenceHeight": 467
+        }
+      }
+    ],
+    "officeFrames": [
+      {
+        "name": "call-front-0",
+        "source": "franco-office-call-v1",
+        "rect": [
+          253,
+          86,
+          265,
+          503
+        ],
+        "referenceHeight": 503,
+        "pivotX": 0.5,
+        "foot": [
+          132.5,
+          503
+        ],
+        "seat": [
+          132.5,
+          362.15999999999997
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null
+      },
+      {
+        "name": "call-front-1",
+        "source": "franco-office-call-v1",
+        "rect": [
+          715,
+          86,
+          265,
+          503
+        ],
+        "referenceHeight": 503,
+        "pivotX": 0.5,
+        "foot": [
+          132.5,
+          503
+        ],
+        "seat": [
+          132.5,
+          362.15999999999997
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null
+      },
+      {
+        "name": "call-back-0",
+        "source": "franco-office-call-v1",
+        "rect": [
+          268,
+          666,
+          281,
+          483
+        ],
+        "referenceHeight": 503,
+        "pivotX": 0.5,
+        "foot": [
+          140.5,
+          483
+        ],
+        "seat": [
+          140.5,
+          347.76
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null
+      },
+      {
+        "name": "call-back-1",
+        "source": "franco-office-call-v1",
+        "rect": [
+          727,
+          666,
+          283,
+          483
+        ],
+        "referenceHeight": 503,
+        "pivotX": 0.5,
+        "foot": [
+          141.5,
+          483
+        ],
+        "seat": [
+          141.5,
+          347.76
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null
+      }
+    ],
+    "carryFrontLoop": [
+      6,
+      7,
+      8,
+      9
+    ],
+    "carryBackLoop": [
+      12,
+      13,
+      14,
+      15
+    ],
+    "carryRightLoop": [
+      26,
+      27,
+      28,
+      29,
+      30,
+      31,
+      32,
+      33
+    ],
+    "walkLoopLength": 4,
+    "approvedLegacy": false,
+    "sideWalkLoop": [
+      64,
+      65,
+      66,
+      67,
+      68,
+      69,
+      70,
+      71
+    ],
+    "runLoop": [
+      72,
+      73,
+      74,
+      75,
+      76,
+      77,
+      78,
+      79
+    ],
+    "sideWalkFrameMs": 100,
+    "runFrameMs": 75,
+    "carrySideFrameMs": 100,
+    "officeAction": "call",
+    "officeFrameMs": 600,
+    "mobilityFrames": [
+      {
+        "name": "scooter-riding-right",
+        "source": "franco-mobility",
+        "rect": [
+          0,
+          0,
+          41,
+          72
+        ],
+        "pivotX": 0.35,
+        "referenceHeight": 72,
+        "foot": [
+          20.5,
+          72
+        ],
+        "seat": [
+          14.35,
+          48.96
+        ],
+        "grip": null,
+        "gripSide": 1,
+        "slot": null
+      },
+      {
+        "name": "skateboard-balance-right",
+        "source": "franco-mobility",
+        "rect": [
+          96,
+          0,
+          60,
+          72
+        ],
+        "pivotX": 0.5,
+        "referenceHeight": 72,
+        "foot": [
+          30,
+          72
+        ],
+        "seat": [
+          21,
+          48.96
+        ],
+        "grip": null,
+        "gripSide": 1,
+        "slot": null
+      }
+    ]
+  },
+  "rendering": {
+    "mirrorDirection": 3,
+    "standingScale": "worldHeight / referenceHeight",
+    "carryStandingScale": "worldHeight / rect[3]",
+    "seatScale": "seatedHeight / referenceHeight",
+    "seatSurface": "seat[1]",
+    "grip": "frame-local pixels",
+    "frameDurationDefaultMs": 125
+  },
+  "provenance": {
+    "date": "2026-10-12",
+    "codeBase": "d57d36d + pre-existing working tree",
+    "acceptance": "local-equivalence; online baseline and human acceptance pending",
+    "migrationFixture": "scripts/fixtures/character-library-before.json"
+  },
+  "moles": {
+    "file": "franco/moles.png",
+    "origin": "team/v2/franco.png",
+    "size": [
+      1254,
+      1254
+    ],
+    "sha256": "d6b7da93efde08c7a096b265a43361af605bdf0e09283ce509f8513201153e12",
+    "frames": [
+      {
+        "name": "idle-front",
+        "rect": [
+          71,
+          28,
+          100,
+          156
+        ],
+        "floor": [
+          50,
+          156
+        ],
+        "seat": [
+          50,
+          124.80000000000001
+        ],
+        "direction": "front",
+        "grip": null,
+        "gripSide": -1,
+        "index": 0,
+        "foot": [
+          50,
+          156
+        ]
+      }
+    ]
+  }
+}

@@ -1,5 +1,5 @@
-#ktv-menu { width:min(520px,94vw);max-height:85dvh;overflow:auto;padding:20px;background:var(--hto-surface);color:var(--hto-panel-ink);border:2px solid var(--hto-panel-border);font-family:var(--hto-font); }
-#ktv-menu::backdrop { background:#101713c0; }
+#ktv-menu { width:min(520px,94vw);max-height:85dvh;overflow:auto;padding:20px;background:var(--hto-surface);color:var(--hto-panel-ink);border:1px solid var(--hto-line-strong);font-family:var(--hto-font); }
+#ktv-menu::backdrop { background:var(--hto-backdrop); }
 #ktv-menu .ktv-heading { display:flex;align-items:center;justify-content:space-between;gap:16px; }
 #ktv-menu h2 { margin:0;font-size:20px; }
 #ktv-menu h3 { margin:22px 0 8px;font-size:14px; }
@@ -10,16 +10,27 @@
 #ktv-menu .ktv-actions { display:flex;flex-wrap:wrap;gap:8px; }
 #ktv-menu ol { padding-left:22px;line-height:1.8;max-height:140px;overflow:auto; }
 #ktv-menu [data-ktv-message] { min-height:24px;color:var(--hto-ink-bright); }
-#ktv-dock { position:absolute;right:14px;top:58px;z-index:30;width:min(230px,45%);padding:10px 12px;background:var(--hto-panel);border:1px solid var(--hto-panel-border);color:var(--hto-panel-ink);font-size:12px;line-height:1.5; }
+#ktv-dock { position:absolute;right:14px;top:60px;z-index:30;width:min(230px,45%);padding:10px 12px;background:var(--hto-panel);border:1px solid var(--hto-line);color:var(--hto-panel-ink);font-size:13px;line-height:1.6; }
 #ktv-dock p { margin:0 0 8px; }
-#ktv-dock button { padding:6px 9px;font-size:12px; }
+#ktv-dock button { padding:6px 9px;font-size:12px;min-height:var(--hto-control); }
 #ktv-sing-actions { display:flex;flex-wrap:wrap;gap:6px;margin-top:8px; }
 #ktv-score { display:block;margin-top:6px;font-variant-numeric:tabular-nums; }
 #ktv-beat { display:flex;gap:3px;margin-top:10px; }
 #ktv-beat span { flex:1;text-align:center;padding:3px 0;border:1px solid var(--hto-line-strong);color:var(--hto-ink-soft);font-variant-numeric:tabular-nums; }
 #ktv-beat .is-current { border-color:var(--hto-focus);color:var(--hto-ink-bright); }
 #ktv-beat .is-pulse { background:var(--hto-focus);color:var(--hto-bg-deep); }
-html.touch-ui #ktv-dock { width:250px;max-width:66%; }
-html.touch-ui #ktv-dock button { min-height:40px; }
+html.touch-ui #ktv-dock { width:250px;max-width:66%;z-index:41; }
+html.touch-ui #ktv-dock button { min-height:44px; }
 @media(max-width:650px) { #ktv-dock { top:92px;right:8px;padding:8px;width:190px;max-width:49%;font-size:11px; } #ktv-menu { padding:14px; } #ktv-menu button { min-height:40px; } }
 @media(max-height:480px) { #ktv-dock { top:54px; } #ktv-menu { max-height:95dvh; } }
+/* Keep the MV inside the room's existing karaoke screen. */
+#ktv-mv { position:absolute;left:58.59375%;top:15.833333%;z-index:20;width:21.71875%;height:18.333333%;background:#000; }
+#ktv-mv[hidden] { display:none; }
+.ktv-screen-copy{position:absolute;z-index:19;box-sizing:border-box;padding:8px 10px;display:flex;flex-direction:column;justify-content:space-between;gap:3px;overflow:hidden;pointer-events:none;background:#102c36;color:#f6eed8;font:13px/1.3 var(--hto-font);text-align:center}
+.ktv-screen-copy strong{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ktv-screen-copy[hidden]{display:none}
+.ktv-screen-copy small{font:12px/1.3 var(--hto-mono);color:#b9d0ce}
+.ktv-screen-copy [data-line]{font-size:14px}.ktv-screen-copy [data-next]{color:#cfceaf}
+@media(max-width:650px){.ktv-screen-copy{padding:3px;gap:1px;justify-content:center;font-size:10px}.ktv-screen-copy strong{font-size:11px;line-height:1.1}.ktv-screen-copy small{font-size:9px;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.ktv-screen-copy [data-next],.ktv-screen-copy [data-line]{display:none}}
+#ktv-mv video { display:block;width:100%;height:100%;object-fit:contain; }
+#ktv-mv video:focus-visible { outline:2px solid var(--hto-focus); }

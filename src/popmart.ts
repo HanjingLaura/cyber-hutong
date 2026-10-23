@@ -1,7 +1,10 @@
+import {bindSceneEvent} from './scene-dom';
+import {restoreWorldFocus} from './world-focus';
 import {sceneWalkable} from '../shared/walkability.mjs';
 import {gachaImages,gachaNames,gachaItems,registerGachaTextures} from './gacha-assets';
 import {playerInventory,type ItemName} from './player-inventory';
 import Phaser from 'phaser';
+import {setGuide} from './hud';
 import { preloadGuest, placeGuest, guestBlocks } from './easter-eggs';
 import { gacha } from './gacha';
 import {onlineWorld} from './multiplayer/world-client';
@@ -19,6 +22,8 @@ export class PopMartScene extends Phaser.Scene {
   private theme: Theme = 'all';
   private selected: number | null = null;
   private busy = false;
+  private menuRevision=0;
+  private requestCurrent?:()=>boolean;
   private boxImages: string[] = [];
   private machineArt!:HTMLImageElement;
   private gachaImages:string[]=[];
@@ -34,6 +39,8 @@ export class PopMartScene extends Phaser.Scene {
     load('pop-room', new URL('../assets/drafts/popmart-store-v3.png', import.meta.url).href);
     load('pop-stand', new URL('../assets/drafts/popmart-stand-v2.png', import.meta.url).href);
     load('pop-props', new URL('../assets/drafts/popmart-props-v1.png', import.meta.url).href);
+    load('pop-boxes', new URL('../assets/props/blind-box-packaging.png', import.meta.url).href);
+    load('pop-machine', new URL('../assets/props/capsule-machine.png', import.meta.url).href);
   }
   private get menu() { return document.querySelector<HTMLDialogElement>('#blind-menu')!; }
   // The shelf is a 160px island, so measure to its edge rather than its centre; matches server/world.mjs checkNear.
@@ -62,14 +69,9 @@ export class PopMartScene extends Phaser.Scene {
       return canvas.toDataURL();
     });
     this.machineArt=new Image();
-    this.machineArt.src=thumbs('pop-room',[{x:838,y:150,width:82,height:142}])[0];
-    void gachaImages().then(images=>{this.gachaImages=images;registerGachaTextures(this);this.renderCollection();});
-    this.boxImages=thumbs('pop-props', registerRegions(this,'pop-props',[
-      {name:'box-pink',x0:.094,y0:.478,x1:.139,y1:.598},
-      {name:'box-blue',x0:.140,y0:.478,x1:.183,y1:.598},
-      {name:'box-yellow',x0:.185,y0:.478,x1:.227,y1:.598},
-    ]));
-    this.boxImages=[...this.boxImages,...this.boxImages,...this.boxImages];
+    this.machineArt.src=thumbs('pop-machine',[{x:0,y:0,width:82,height:190}])[0];
+    void this.loadGacha();
+    this.boxImages=thumbs('pop-boxes',[0,1,2].map(index=>({x:index*48,y:0,width:48,height:64})));
     this.actor=true;
     this.keys = this.input.keyboard!.addKeys('W,A,S,D,UP,DOWN,LEFT,RIGHT') as Record<string, Phaser.Input.Keyboard.Key>;
     const world = document.querySelector<HTMLElement>('.world')!;
@@ -85,22 +87,33 @@ export class PopMartScene extends Phaser.Scene {
     window.addEventListener('keydown', action);
     const clear = () => this.input.keyboard?.resetKeys();
     world.addEventListener('blur', clear); window.addEventListener('blur', clear);
-    this.events.once('shutdown', () => { window.removeEventListener('keydown',action); world.removeEventListener('blur',clear); window.removeEventListener('blur',clear); });
-    document.querySelector('#interact')!.addEventListener('click', () => { if (!this.sys.isActive()) return; const target = this.nearest(); if (target) this.open(target.id); });
-    document.querySelector('#blind-close')!.addEventListener('click', () => this.menu.close());
-    document.querySelector('#blind-extract')!.addEventListener('click', () => this.extract());
-    document.querySelector('#blind-refill')!.addEventListener('click', () => { if (this.busy) return;const service=onlineWorld();if(service?.bridge.user?.role){void service.action('pop:'+this.theme,'refill').then(()=>this.render()).catch(e=>service.notice(e.message));return;}blindBoxes.refill(this.source,this.theme); this.selected=null; this.render(); });
+    this.events.once('shutdown', () => { this.invalidateMenu();window.removeEventListener('keydown',action); world.removeEventListener('blur',clear); window.removeEventListener('blur',clear); });
+    bindSceneEvent(this, document.querySelector('#interact')!, 'click', () => { if (!this.sys.isActive()) return; const target = this.nearest(); if (target) this.open(target.id); });
+    bindSceneEvent(this, document.querySelector('#blind-close')!, 'click', () => this.menu.close());
+    bindSceneEvent(this, document.querySelector('#blind-extract')!, 'click', () => this.extract());
+    bindSceneEvent(this, document.querySelector('#blind-refill')!, 'click', () => { if (this.busy) return;const service=onlineWorld(),current=this.menuContext();if(service?.bridge.user?.role){void service.action('pop:'+this.theme,'refill').then(()=>{if(current())this.render();}).catch(e=>{if(current())service.notice(e.message);});return;}blindBoxes.refill(this.source,this.theme); this.selected=null; this.render(); });
     this.menu.addEventListener('cancel', event => { if(this.busy) event.preventDefault(); });
-    this.menu.addEventListener('close', () => { clear(); world.focus(); });
-    this.events.on('sleep', () => { clear(); if(this.source==='machine'&&this.busy){if(this.revealTimer)clearTimeout(this.revealTimer);this.busy=false;this.capsule='idle';}if(this.menu.open) this.menu.close(); });
+    bindSceneEvent(this, this.menu, 'close', () => { this.invalidateMenu();clear(); restoreWorldFocus(this.menu); });
+    this.events.on('sleep', () => { clear();this.invalidateMenu();if(this.menu.open) this.menu.close(); });
     window.__popPreview = { getState: () => ({ ready:true, active:this.sys.isActive(),x:this.x,y:this.y,nearest:this.nearest()?.id,selected:this.selected,busy:this.busy,open:this.menu.open,source:this.source,theme:this.theme,remaining:blindBoxes.stock(this.source,this.theme).filter(t=>t!==null).length,capsule:this.capsule,gachaCounts:[...gacha.counts],collection:blindBoxes.data.collection.map(r=>({...r,name:toyNames[r.toy]})) }) };
     this.renderCollection(); world.focus();
   }
+  private async loadGacha(){
+    try{const images=await gachaImages();if(!this.sys.game)return;this.gachaImages=images;registerGachaTextures(this);this.renderCollection();if(this.menu?.open)this.render();}
+    catch{onlineWorld()?.notice('玩具图片未载入，重新打开面板可重试');}
+  }
   private open(source: Source) {
+    this.invalidateMenu();
+    if(!this.gachaImages.length)void this.loadGacha();
     this.source=source; this.selected=null; this.input.keyboard?.resetKeys();
     document.querySelector('#blind-result')!.replaceChildren();
     if(source==='machine'&&this.capsule==='opened')this.capsule='idle';
     this.render(); this.menu.showModal();
+  }
+  private invalidateMenu(){this.menuRevision++;if(this.revealTimer)clearTimeout(this.revealTimer);this.revealTimer=undefined;this.requestCurrent=undefined;this.busy=false;this.capsule='idle';}
+  private menuContext(){
+    const revision=this.menuRevision,service=onlineWorld(),account=service?.bridge.user?.id,scene=service?.bridge.active,epoch=service?.epoch,authenticated=!!service?.bridge.user?.role;
+    return ()=>revision===this.menuRevision&&this.menu.open&&this.sys.isActive()&&onlineWorld()===service&&service?.bridge.user?.id===account&&service?.bridge.active===scene&&service?.epoch===epoch&&(!authenticated||!!(service?.bridge.connected&&service.bridge.controller));
   }
   private render() {
     document.querySelector('#blind-title')!.textContent=this.source==='machine' ? '扭蛋机' : '挑一盒';
@@ -128,11 +141,14 @@ export class PopMartScene extends Phaser.Scene {
     if(this.source==='machine'){this.extractCapsule();return;}
     if(this.selected===null)return;
     const service=onlineWorld();
-    if(service?.bridge.user?.role){this.busy=true;this.render();void service.action('pop:'+this.theme,'draw',{slot:this.selected}).then(data=>{this.busy=false;this.selected=null;this.render();const record=data.progress.filter((p:any)=>p.kind==='toy').at(-1)?.data;if(record)this.result(record);this.renderCollection();}).catch(e=>{this.busy=false;this.render();service.notice(e.message);});return;}
+    const current=this.menuContext();
+    this.requestCurrent=current;
+    if(service?.bridge.user?.role){this.busy=true;this.render();void service.action('pop:'+this.theme,'draw',{slot:this.selected}).then(data=>{if(!current())return;this.busy=false;this.selected=null;this.render();const record=data.progress.filter((p:any)=>p.kind==='toy').at(-1)?.data;if(record)this.result(record);this.renderCollection();}).catch(e=>{if(!current())return;this.busy=false;this.render();service.notice(e.message);});return;}
     const record=blindBoxes.take(this.source,this.theme,this.selected); if(!record) return;
     this.busy=true; this.render();
     document.querySelector('#blind-result')!.innerHTML='<p class="opening-box">…</p>';
     this.revealTimer=setTimeout(()=>{
+      if(!current())return;
       this.busy=false; this.selected=null;
       this.render(); this.result(record); this.renderCollection();
     },750);
@@ -152,10 +168,13 @@ export class PopMartScene extends Phaser.Scene {
     }
     const service=onlineWorld();
     if(playerInventory.hand){if(service)service.notice('手上有东西');else result.textContent='手上有东西';return;}
-    if(service?.bridge.user?.role){this.busy=true;this.capsule='spinning';this.spinStarted=Date.now();this.render();void service.action('pop:classic','gacha').then(data=>{this.capsuleToy=data.progress.filter((p:any)=>p.kind==='gacha').at(-1)?.data.toy??0;this.busy=false;this.capsule='ready';this.render();this.renderCollection();}).catch(e=>{this.busy=false;this.capsule='idle';this.render();service.notice(e.message);});return;}
+    const current=this.menuContext();
+    this.requestCurrent=current;
+    if(service?.bridge.user?.role){this.busy=true;this.capsule='spinning';this.spinStarted=Date.now();this.render();void service.action('pop:classic','gacha').then(data=>{if(!current())return;this.capsuleToy=data.progress.filter((p:any)=>p.kind==='gacha').at(-1)?.data.toy??0;this.busy=false;this.capsule='ready';this.render();this.renderCollection();}).catch(e=>{if(!current())return;this.busy=false;this.capsule='idle';this.render();service.notice(e.message);});return;}
     this.busy=true;this.capsule='spinning';this.spinStarted=Date.now();
     result.replaceChildren();this.render();
     this.revealTimer=setTimeout(()=>{
+      if(!current())return;
       this.capsuleToy=gacha.draw();gacha.collect(this.capsuleToy);
       this.busy=false;this.capsule='ready';this.render();this.renderCollection();
     },950);
@@ -164,26 +183,25 @@ export class PopMartScene extends Phaser.Scene {
     const canvas=document.querySelector<HTMLCanvasElement>('#gacha-art')!,ctx=canvas.getContext('2d')!;
     ctx.imageSmoothingEnabled=false;ctx.clearRect(0,0,82,190);
     if(this.machineArt.complete&&this.machineArt.naturalWidth)ctx.drawImage(this.machineArt,0,0);
-    // Pixel crank, attached to the original cabinet rather than a separate panel.
+    // Animation anchors belong to the standalone 82x190 machine sprite.
     const rect=(color:string,x:number,y:number,w:number,h:number)=>{ctx.fillStyle=color;ctx.fillRect(x,y,w,h);};
-    rect('#3c3345',13,109,19,20);rect('#efc1d8',15,111,15,16);rect('#8c687f',17,112,11,14);
     const phase=this.capsule==='spinning'?Math.floor((Date.now()-this.spinStarted)/90)%4:0;
-    if(phase%2===0)rect('#dce2dc',21,113,3,11);else rect('#dce2dc',17,117,11,3);
-    rect('#26303a',22,117,2,3);
-    if(this.capsule==='spinning'||this.capsule==='ready'||this.capsule==='opened'){
+    if(this.capsule==='spinning'){
+      rect('#f1ddbd',14,116,20,23);rect('#53515b',17,119,14,17);
+      if(phase%2===0)rect('#dce2dc',23,119,3,17);else rect('#dce2dc',17,126,14,3);
+      rect('#9695a1',23,126,3,3);
+    }
+    if(this.capsule==='spinning'||this.capsule==='ready'){
       const elapsed=Date.now()-this.spinStarted;
       if(this.capsule==='spinning'&&elapsed<450)return;
       const fall=this.capsule==='spinning'?Math.min(1,(elapsed-450)/500):1;
       const y=Math.round(119+fall*fall*39),x=47;
+      ctx.save();ctx.beginPath();ctx.rect(44,142,25,34);ctx.clip();
       rect('#34323e',x-1,y+3,20,12);rect('#34323e',x+2,y,14,18);
       rect('#e99bb7',x+2,y+2,14,7);rect('#f3c6d6',x+4,y+2,6,3);
       rect('#b6d0d4',x+2,y+10,14,6);rect('#e5eeee',x+4,y+10,5,3);
       rect('#6a687d',x+1,y+8,16,2);
-      if(this.capsule==='opened'){
-        ctx.clearRect(x-1,y-1,21,20);
-        rect('#e99bb7',x-8,y+7,14,7);rect('#f3c6d6',x-6,y+5,10,3);
-        rect('#b6d0d4',x+13,y+9,14,7);rect('#e5eeee',x+15,y+9,6,2);
-      }
+      ctx.restore();
     }
   }
   private renderCollection() {
@@ -196,6 +214,7 @@ export class PopMartScene extends Phaser.Scene {
   private canWalk(x:number,y:number){return !guestBlocks('buzz',x,y)&&sceneWalkable('pop',x,y);}
   update(_time:number,delta:number) {
     if(!this.actor)return;
+    if(this.menu.open&&this.busy&&this.requestCurrent&&!this.requestCurrent()){this.invalidateMenu();this.menu.close();}
     if(this.menu.open&&this.source==='machine')this.drawGacha();
     const focused=document.activeElement===document.querySelector('.world')||document.activeElement===this.game.canvas;
     let moving=false;
@@ -214,7 +233,6 @@ export class PopMartScene extends Phaser.Scene {
     button.disabled=!target; button.textContent=target?target.id==='machine'?'转动扭蛋机':'挑选陈列台盲盒':'';
     document.querySelector('#mode')!.textContent='';
     document.querySelector('#hint')!.textContent=target?.id==='machine'?'E 扭蛋':target?'E 挑一盒':'';
-    document.querySelector('#guide-title')!.textContent='WASD / 方向键移动';
-    document.querySelector('#guide-action')!.textContent=target?`E · ${target.id==='machine'?'扭蛋机':'挑一盒'}`:'E 互动';
+    setGuide('WASD / 方向键移动',target?`E · ${target.id==='machine'?'扭蛋机':'挑一盒'}`:'');
   }
 }

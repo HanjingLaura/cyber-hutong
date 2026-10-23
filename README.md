@@ -6,9 +6,10 @@
 
 - 线上：<https://hanjing-laura.vercel.app/cyber-hutong/>（地鼠：`/cyber-hutong/moles`）
 - 场景与玩法：[多人 MVP 与边界](docs/playable-mvp.md)、[场景衔接设计](docs/scene-navigation-design.md)
-- KTV 包厢：沙发落座、原创短曲点歌、灯光与麦克风节拍互动，操作和验证见 [docs/ktv-scene.md](docs/ktv-scene.md)
+- KTV 包厢：沙发落座、MV 点歌、灯光与麦克风节拍互动，操作和验证见 [docs/ktv-scene.md](docs/ktv-scene.md)
 - Vercel 部署、Turso 持久化与限制：[docs/vercel-deploy.md](docs/vercel-deploy.md)
 - PartyKit 联机：[docs/partykit.md](docs/partykit.md)
+- 八位聊天 Agent 人设：[server/agent-personas/](server/agent-personas/README.md)，仅后台维护；`npm run agents:check` 校验，修改后重启或重新部署生效。
 - 忘记密码与组织者生成一次性重置码：[docs/password-recovery.md](docs/password-recovery.md)
 - 胡同地鼠与 Arduino Uno 接线：[docs/hutong-moles.md](docs/hutong-moles.md)
 

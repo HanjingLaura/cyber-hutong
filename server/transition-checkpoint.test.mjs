@@ -1,6 +1,28 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createMvpServer} from './app.mjs';
+import {openStore} from './store.mjs';
+import {createLife} from './life.mjs';
+
+test('an abandoned checkpoint expires after 120 seconds and autonomy can persist its new scene',async t=>{
+ let now=Date.now();t.mock.method(Date,'now',()=>now);
+ const store=openStore(':memory:');t.after(()=>store.close());
+ const {user}=await store.register('checkpoint_expiry','checkpoint-password','sid'),life=createLife(store);
+ const exit={id:user.id,scene:'hutong',x:596,y:194,facing:0,seat:null,activity:'walk'};
+ const checkpoint={id:'abandoned',client:'closed-tab',at:now};life.savePosition(exit,{checkpoint});
+ const stale={...exit,x:400};
+ now+=120000;life.savePosition(stale);
+ assert.equal(life.position(user.id).x,596,'a checkpoint accepted by transition still protects the exit');
+ assert.equal(life.position(user.id).checkpoint.id,checkpoint.id);
+ now+=1;
+ const moved={...exit,scene:'rest',x:320,y:190,checkpoint};
+ life.savePosition(moved);
+ assert.equal(life.position(user.id).scene,'rest','expired checkpoint must not pin the source scene');
+ assert.equal(life.position(user.id).x,320);assert.equal(life.position(user.id).checkpoint,undefined);
+ life.savePosition({...moved,x:330});
+ assert.equal(life.position(user.id).x,330);assert.equal(life.position(user.id).checkpoint,undefined,'stale in-memory markers cannot be resurrected');
+});
+
 test('validated travel checkpoint persists the exit even inside the normal save interval',async t=>{
  const app=createMvpServer({dbPath:':memory:',llmOptions:{key:''}});t.after(()=>app.close());
  await new Promise(r=>app.server.listen(0,'127.0.0.1',r));

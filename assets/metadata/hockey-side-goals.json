@@ -1,0 +1,31 @@
+{
+  "tool": "built-in image_gen edit",
+  "source": "D:/CodexHome/generated_images/01a1524b-3261-78b3-a904-9f88025c4830/exec-a26f49f5-bc48-4808-a72b-dfa09cf887c4.png",
+  "target": "assets/props/arcade-hockey-table.png",
+  "size": [
+    640,
+    420
+  ],
+  "sha256": "08982537f07807a5fc0196b1a14a685b9ff7cfe2175c9327daeb10e0f24fe92d",
+  "goalMouths": {
+    "left": [
+      48,
+      173,
+      62,
+      247
+    ],
+    "right": [
+      578,
+      173,
+      590,
+      247
+    ]
+  },
+  "puckRadius": 8,
+  "scoreCenterY": [
+    181,
+    239
+  ],
+  "prompt": "Preserve the wide horizontal top-down cyan pixel air-hockey table and navy background. Close the top and bottom center rail gaps; place matching dark goal openings at left and right rail centers. Use a vertical center divider and retain the center circle. No puck, paddles, labels or UI.",
+  "processing": "Nearest-neighbour full canvas normalization to640x420; no crop, no generated candidate copies under assets."
+}

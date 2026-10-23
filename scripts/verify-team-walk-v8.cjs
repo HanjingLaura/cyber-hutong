@@ -1,3 +1,4 @@
+const reviewOrigin=process.env.HUTONG_REVIEW_ORIGIN||'http://127.0.0.1:5173';
 const fs=require('node:fs'),assert=require('node:assert/strict');
 const {chromium}=require('./playwright.cjs').loadPlaywright();
 const roles=['suki','sid','jilly','laura','kay','franco','cora','amber','celine'];
@@ -5,7 +6,7 @@ const roles=['suki','sid','jilly','laura','kay','franco','cora','amber','celine'
  const browser=await chromium.launch({channel:'chrome',headless:true,args:['--disable-webgl']});
  try{
   const page=await browser.newPage({viewport:{width:1280,height:1100}}),errors=[];page.on('pageerror',e=>errors.push(e.message));
-  await page.goto('http://127.0.0.1:5173/members.html?action=1&direction=1');await page.waitForFunction(()=>window.__memberPreview?.getState().ready);
+  await page.goto(reviewOrigin+'/members.html?action=1&direction=1');await page.waitForFunction(()=>window.__memberPreview?.getState().ready);
   for(const direction of ['1','3']){
    await page.locator('#team-direction').selectOption(direction);
    for(let phase=0;phase<8;phase++){
@@ -26,7 +27,7 @@ const roles=['suki','sid','jilly','laura','kay','franco','cora','amber','celine'
    new Phaser.Game({type:Phaser.CANVAS,width:1280,height:1008,parent:'cycles',backgroundColor:'#343b3c',pixelArt:true,antialias:false,roundPixels:true,scene:Cycles,audio:{noAudio:true}});
   },roles);
   await page.waitForFunction(()=>window.__teamCycles?.ready());await page.waitForTimeout(200);fs.mkdirSync('output/playwright',{recursive:true});await page.locator('#cycles canvas').screenshot({path:'output/playwright/team-walk-v8-cycles.png'});
-  await page.goto('http://127.0.0.1:5173/members.html');
+  await page.goto(reviewOrigin+'/members.html');
   await page.waitForFunction(()=>window.__memberPreview?.getState().ready);
   await page.evaluate(async()=>{
    const {default:Phaser}=await import('/node_modules/.vite/deps/phaser.js'),{OfficeGuest,preloadOfficeGuests}=await import('/src/office-guests.ts'),{WORKSTATIONS}=await import('/src/layout.ts');

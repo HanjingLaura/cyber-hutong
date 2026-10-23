@@ -11,14 +11,16 @@ export const encodePixelAsset = source => sharp(source).webp({ lossless: true, e
 const sceneBackgrounds = new Set([
   'hutong-wall-view-v5.png', 'hutong-reverse-view-v5.png', 'hawaii-wall-v2.png',
   'rest-room-shell-v2.png', 'bathroom-room-v4.png',
-  'arcade-room-v3.png', 'noodle-room-v3.png', 'gym-room-v1.png',
+  'arcade-room-v3.png', 'noodle-room-v3.png', 'manner-room.png', 'gym-room-v1.png',
   'dance-room-v1.png', 'perler-shop-v2.png', 'rehearsal-room-v1.png',
   'elevator-lobby-v1.png', 'wudaokou-station-v1.png', 'ktv-room-v1.png',
 ]);
 
 export async function encodeSceneAsset(source, file) {
   const path = file.replaceAll('\\', '/');
-  if (!path.endsWith('/assets/drafts/' + basename(path)) || !sceneBackgrounds.has(basename(path))) return encodePixelAsset(source);
+  const fullScene = path.endsWith('/assets/drafts/' + basename(path)) && sceneBackgrounds.has(basename(path));
+  const placeScene = /\/assets\/maps\/places\/(?:street|campus|google|meeting|yousheng)\.png$/.test(path);
+  if (!fullScene && !placeScene) return encodePixelAsset(source);
   const { data, info } = await sharp(source).toColourspace('srgb').ensureAlpha().raw().toBuffer({ resolveWithObject: true });
   const width = 640, height = 360;
   if (info.width <= width || info.height <= height) return encodePixelAsset(source);

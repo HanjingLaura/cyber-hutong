@@ -11,7 +11,7 @@ function fixture(connection = {}) {
   class Image { constructor() { images.push(this); } removeAttribute(name){if(name==='src')this.src='';} }
   runInNewContext(ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText,
     { exports, Image, URL, navigator: { connection }, window: {}, requestAnimationFrame:callback=>callback(),setTimeout: callback => {timers.set(++timerId,callback);return timerId;}, clearTimeout: id => timers.delete(id), require: () => ({createTexturePrefetcher}) });
-  return { images, timers, cache, warm:room=>exports.warmRoom(room,game) };
+  return { images, timers, cache, warm:room=>exports.warmRoom(room,game),prepare:room=>exports.prepareRoom(room,game) };
 }
 test('selected-room prefetch bounds concurrent downloads and deduplicates repeats', () => {
   const f = fixture(); f.warm('pop'); f.warm('pop');
@@ -32,4 +32,13 @@ test('prefetch timeout cancels stalled sources before advancing the queue',()=>{
 });
 test('destination warmup does not queue unrelated office textures',()=>{
  const f=fixture();f.warm('ktv');assert.equal(f.images.length,1);assert.match(f.images[0].src,/ktv-room/);
+});
+
+test('cold entry prepares the secondary props required to create each destination',async()=>{
+ const required={pop:['pop-boxes','pop-machine','guest-source-buzz'],noodle:['product-atlas','noodle-wood-table','noodle-wood-stool','noodle-utensil-tray','noodle-condiment-tray','noodle-order-pad'],campus:['traffic-cone'],bathroom:['guest-source-ferret'],concert:['guest-source-zhu','guest-source-zhu-winter'],gym:['guest-source-tutu'],dance:['guest-source-lulu'],google:['place-chair-v2'],meeting:['place-chair-v2'],rest:['product-atlas']};
+ for(const [room,keys]of Object.entries(required)){
+  const f=fixture(),pending=f.prepare(room);
+  for(let n=0;n<25;n++){for(const image of [...f.images])if(image.onload)await image.onload();await Promise.resolve();}
+  await pending;for(const key of keys)assert.ok(f.cache.has(key),`${room} must prepare ${key} before Phaser scene creation`);
+ }
 });

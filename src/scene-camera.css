@@ -1,0 +1,17 @@
+#scene-camera{width:min(880px,calc(100vw - 24px));max-width:880px;padding:24px;border-radius:0;scrollbar-color:var(--hto-line-strong) var(--hto-bg);scrollbar-width:thin}
+#scene-camera [hidden]{display:none!important}
+#scene-camera .panel-heading{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:12px}
+#scene-camera h2{margin:0;font-size:20px}
+#scene-camera button{min-height:44px;padding:8px 14px;touch-action:manipulation}
+#camera-instructions,#camera-status{font-size:13px;line-height:1.7;color:var(--hto-ink-soft);margin:12px 0}
+#camera-stage{position:relative;overflow:hidden;cursor:crosshair;touch-action:none;user-select:none;background:var(--hto-bg-deep);min-height:32px}
+#camera-frame{display:block;width:100%;height:auto;image-rendering:pixelated;pointer-events:none}
+#camera-selection{position:absolute;box-sizing:border-box;border:2px solid var(--hto-focus);box-shadow:0 0 0 2000px #0008;pointer-events:none}
+#scene-camera :focus-visible{outline:2px solid var(--hto-focus);outline-offset:3px}
+#scene-camera .camera-actions{display:flex;justify-content:flex-end;gap:12px;flex-wrap:wrap}
+#scene-camera button:disabled{opacity:.6;cursor:wait}
+#album-dialog[data-capture=true] .album-file-label,#album-dialog[data-capture=true] #album-format-help{display:none}
+#album-dialog[data-capture=true] .album-previews{display:block}
+#album-dialog[data-capture=true] .album-previews img{height:auto;max-height:38dvh;width:auto;max-width:100%;margin:0 auto;image-rendering:pixelated}
+#album-dialog[data-capture=true] .album-previews button{display:none}
+@media(max-width:600px){#scene-camera{padding:16px}#scene-camera .camera-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}#camera-instructions{margin-top:0}}

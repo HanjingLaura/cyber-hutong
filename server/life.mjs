@@ -5,6 +5,7 @@ import rooms from '../shared/rooms.json' with {type:'json'};
 export const drinks=['咖啡','可乐','气泡水','冰红茶','水'];
 export const consumables=['咖啡','可乐','气泡水','薯片','面包','火腿肠','辣条','马卡龙','蛋糕','冰红茶','米线','鸡柳','炸鸡','水'];
 export const memoryPolicy={routineCooldown:30*60000,encounterCooldown:60*60000};
+export const TRAVEL_CHECKPOINT_MS=120_000;
 export const meetPlaces={rest:'休息室',arcade:'娱乐室',dance:'舞室',gym:'健身房',ktv:'KTV'};
 export const validMeetPlace=place=>typeof place==='string'&&Object.hasOwn(meetPlaces,place);
 const placeLabel=place=>validMeetPlace(place)?meetPlaces[place]:meetPlaces.rest;
@@ -46,19 +47,20 @@ export function createLife(store){
  const recent=account=>db.prepare('SELECT seq,kind,body,scene,at FROM experiences WHERE account=? AND routine=0 ORDER BY seq DESC LIMIT 5').all(account);
  // Only an explicit validated presence checkpoint can publish a marker.
  // Old instance teardown/autonomy saves must never revive a revoked token.
- // Omitting checkpoint keeps any durable travel marker. Pass {checkpoint} (including
+ // Omitting checkpoint keeps an unexpired durable marker. Pass {checkpoint} (including
  // undefined/null) only when presence/transition intentionally sets or clears it.
  // Teardown/autonomy/disconnect must never wipe a marker issued on another replica.
  const savePosition=(p,options)=>{
   const explicit=!!(options&&Object.prototype.hasOwnProperty.call(options,'checkpoint'));
   const existing=explicit?null:position(p.id);
+  const checkpoint=explicit?options.checkpoint:
+   existing?.checkpoint&&Date.now()-existing.checkpoint.at<=TRAVEL_CHECKPOINT_MS?existing.checkpoint:undefined;
   // A live travel marker pins the verified exit pose. Teardown/autonomy/disconnect
   // must neither wipe the marker nor replace those coordinates with a stale replica pose.
-  if(!explicit&&existing?.checkpoint){
+  if(!explicit&&checkpoint){
    db.prepare('UPDATE positions SET at=? WHERE account=?').run(Date.now(),p.id);
    return;
   }
-  const checkpoint=explicit?options.checkpoint:existing?.checkpoint;
   const state={scene:p.scene,x:p.x,y:p.y,facing:p.facing,seat:p.seat,activity:p.activity,travelId:p.travelId};
   if(checkpoint)state.checkpoint=checkpoint;
   db.prepare('INSERT INTO positions VALUES(?,?,?) ON CONFLICT(account) DO UPDATE SET state=excluded.state,at=excluded.at').run(p.id,JSON.stringify(state),Date.now());
