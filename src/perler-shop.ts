@@ -1,5 +1,7 @@
+import {bindSceneEvent} from './scene-dom';
 import {sceneWalkable} from '../shared/walkability.mjs';
 import Phaser from 'phaser';
+import {setGuide} from './hud';
 import { playerInventory, type ItemName } from './player-inventory';
 import { PerlerBoard, BEAD_COLORS } from './perler-board';
 import { registerFrames } from './frames';
@@ -50,9 +52,9 @@ export class PerlerShopScene extends Phaser.Scene{
     window.addEventListener('keydown',action);window.addEventListener('blur',clear);world.addEventListener('blur',clear);
     this.events.once('shutdown',()=>{this.workshop.dispose();window.removeEventListener('keydown',action);window.removeEventListener('blur',clear);world.removeEventListener('blur',clear);});
     this.events.on('sleep',()=>{clear();this.workshop.close();if(this.seated!==null)this.stand();});
-    this.workshop.dialog.addEventListener('close',()=>{clear();if(this.seated!==null)this.stand();});
-    document.querySelector('#interact')!.addEventListener('click',()=>{if(this.sys.isActive()&&!this.workshop.dialog.open)this.interact();});
-    document.querySelector('#perler-continue')!.addEventListener('click',()=>{if(this.sys.isActive()&&this.seated!==null)this.workshop.open(this.seated);});
+    bindSceneEvent(this, this.workshop.dialog, 'close', ()=>{clear();if(this.seated!==null)this.stand();});
+    bindSceneEvent(this, document.querySelector('#interact')!, 'click', ()=>{if(this.sys.isActive()&&!this.workshop.dialog.open)this.interact();});
+    bindSceneEvent(this, document.querySelector('#perler-continue')!, 'click', ()=>{if(this.sys.isActive()&&this.seated!==null)this.workshop.open(this.seated);});
     window.__perlerPreview={getState:()=>({ready:true,active:this.sys.isActive(),x:this.x,y:this.y,facing:this.facing,seated:this.seated,seats:seats.map((s,index)=>({...s,index,interactive:!!this.chairs[index].input})),nearest:this.nearest(),hand:playerInventory.hand,stored:this.stored,workshop:this.workshop.getState(),message:this.message})};world.focus();
   }
   private nearest(){return targets.filter(t=>Math.hypot(this.x-t.x,this.y-t.y)<27).sort((a,b)=>Math.hypot(this.x-a.x,this.y-a.y)-Math.hypot(this.x-b.x,this.y-b.y))[0];}
@@ -106,7 +108,6 @@ export class PerlerShopScene extends Phaser.Scene{
     document.querySelector('#perler-hand')!.textContent=`手中：${playerInventory.hand??'空'} · 储物格：${this.stored?.name??'空'}`;
     document.querySelector('#perler-count')!.textContent='';
     (document.querySelector('#perler-continue') as HTMLButtonElement).hidden=this.seated===null;
-    document.querySelector('#guide-title')!.textContent='WASD / 方向键移动';
-    document.querySelector('#guide-action')!.textContent=this.seated!==null?'E / Esc 结束拼豆':t?`E · ${button.textContent}`:'E 拼豆';
+    setGuide('WASD / 方向键移动',this.seated!==null?'E / Esc 结束拼豆':t?`E · ${button.textContent}`:'');
   }
 }

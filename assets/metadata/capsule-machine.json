@@ -1,0 +1,12 @@
+{
+  "tool": "built-in image_gen",
+  "source": "D:/CodexHome/generated_images/01a1524b-3261-78b3-a904-9f88025c4830/exec-9377e9e2-d541-480b-bc38-044fd62cd7eb.png",
+  "target": "assets/props/capsule-machine.png",
+  "size": [
+    82,
+    190
+  ],
+  "sha256": "284d637954b44c0b5b33cda3f1b3434b36db667f94b57594e2de89a6f9db9c7b",
+  "prompt": "Standalone complete pink capsule toy machine, near-front orthographic with tiny right side, pastel pink and cream cabinet, glass filled with colorful capsule bunny/bear toys, silver rotary crank on lower left, empty dark pickup recess on lower right, small feet. Consistent hard pixel outlines, square color clusters, top-left light, transparent alpha, no environment, no screenshot, no logo or text.",
+  "processing": "Alpha trim; nearest-neighbour fit 74x182; centered in an 82x190 transparent production canvas with bottom at186."
+}

@@ -1,32 +1,48 @@
 /* Existing olive pixel chrome: clearer hierarchy and reachable controls. */
 #more-tools,#near-more{position:relative;pointer-events:auto}
-#more-tools summary,#near-more summary{cursor:pointer;list-style:none;color:#eee8d8;background:#17231ccc;border-bottom:2px solid #c2c5a3;padding:7px 12px;font-size:12px}
+#more-tools summary,#near-more summary{cursor:pointer;list-style:none;color:var(--hto-ink-bright);background:var(--hto-button);border:1px solid var(--hto-button-border);padding:6px 12px;font-size:13px;min-height:var(--hto-control);display:flex;align-items:center;justify-content:center}
+#more-tools summary:hover,#near-more summary:hover{background:var(--hto-button-hover)}
 #more-tools summary::marker,#near-more summary::marker{content:''}
 #more-tools summary::-webkit-details-marker,#near-more summary::-webkit-details-marker{display:none}
-#more-tools summary:focus-visible,#near-more summary:focus-visible{outline:2px solid #f2c94c;outline-offset:2px}
-#more-actions,#near-more>div{position:absolute;top:calc(100% + 4px);right:0;min-width:130px;display:grid;gap:4px;padding:6px;background:#17231c;border:1px solid #889c6f;z-index:10}
+#more-tools summary:focus-visible,#near-more summary:focus-visible{outline:2px solid var(--hto-focus);outline-offset:2px}
+#more-actions,#near-more>div{position:absolute;top:calc(100% + 4px);right:0;min-width:130px;display:grid;gap:4px;padding:6px;background:var(--hto-surface);border:1px solid var(--hto-line-strong);z-index:10}
 #more-actions button,#near-more>div button{text-align:left;white-space:nowrap}
-#near-more summary{font-size:11px;padding:3px 7px;border:0}
-#connection-panel{position:absolute;top:54px;right:14px;width:auto;justify-self:auto;box-sizing:border-box;max-width:calc(100vw - 28px);display:flex;gap:8px;align-items:center;background:#17231c;padding:8px 10px;border:1px solid #d3bb71;pointer-events:auto}
+#near-more summary{font-size:12px;padding:6px 8px}
+#connection-panel{position:absolute;top:60px;right:14px;width:auto;justify-self:auto;box-sizing:border-box;max-width:calc(100vw - 28px);display:flex;gap:8px;align-items:center;background:var(--hto-surface);padding:8px 10px;border:1px solid var(--hto-accent);pointer-events:auto}
 #connection-panel[hidden]{display:none}
-#connection-panel #connection-state{display:block;font-size:12px;line-height:1.5;color:#fff6da}
+#connection-panel #connection-state{display:block;font-size:12px;line-height:1.5;color:var(--hto-ink-bright)}
 #connection-panel button{font:inherit;font-size:12px}
-.account-guidance{font:12px/1.7 var(--hto-mono);margin:0 0 16px;color:inherit;overflow-wrap:anywhere}
+.account-guidance{font:13px/1.7 var(--hto-font);margin:0 0 16px;color:inherit;overflow-wrap:anywhere}
 .account-guidance[hidden]{display:none}
-#orientation-hint{position:fixed;z-index:45;top:calc(env(safe-area-inset-top) + 58px);right:8px;width:max-content;max-width:calc(100vw - 90px);justify-self:auto;box-sizing:border-box;display:flex;align-items:center;gap:6px;color:#e8dfbf;font:12px var(--hto-mono)}
+/* Compact single-line roster: keep names and action labels intact. */
+#people-panel:not([hidden]){display:flex;flex-direction:column;box-sizing:border-box;width:min(440px,calc(100vw - 28px));max-height:min(70dvh,calc(100dvh - 96px));padding:12px;overflow:hidden}
+#people-panel .panel-heading{flex:none;margin-bottom:4px}
+#people-panel #people-list{min-height:0;overflow:auto;touch-action:pan-x pan-y pinch-zoom;scrollbar-width:thin;scrollbar-color:#889c6f #17231c}
+#people-panel .person-row{flex-wrap:nowrap;gap:6px;padding:10px 0;align-items:center;font-size:12px;min-width:max-content}
+#people-panel .person-row>span{flex:1 0 88px;line-height:1.5;white-space:nowrap}
+#people-panel .person-row button{flex:0 0 auto;white-space:nowrap;font-size:11px;min-height:32px;padding:5px 6px;line-height:1.4}
+#people-panel #take-control{flex:none;margin-top:12px}
+html.touch-ui #people-panel .person-row button{min-height:44px;min-width:44px}
+html.touch-ui #people-panel{padding-bottom:calc(env(safe-area-inset-bottom) + 12px)}
+html:has(#people-panel:not([hidden])) #near-social{display:none}
+@media(max-width:440px){
+ #people-panel .person-row{font-size:11px;gap:4px}
+ #people-panel .person-row>span{flex-basis:78px}
+ #people-panel .person-row button{font-size:10px;padding:5px 4px}
+}
+#orientation-hint{position:fixed;z-index:45;top:calc(env(safe-area-inset-top) + 58px);right:8px;width:max-content;max-width:calc(100vw - 90px);justify-self:auto;box-sizing:border-box;display:flex;align-items:center;gap:6px;color:var(--hto-ink-soft);font:12px var(--hto-font)}
 #orientation-hint[hidden],html:has(dialog[open]) #orientation-hint{display:none}
+html:has(#more-tools[open],#near-more[open]) #orientation-hint{display:none}
 html:has(#connection-panel:not([hidden])) #orientation-hint{display:none}
-#orientation-hint button{min-height:44px;min-width:44px;padding:6px;font:inherit;background:#17231c;border:1px solid #889c6f}
+#orientation-hint button{min-height:44px;min-width:44px;padding:6px;font:inherit;background:var(--hto-surface);border:1px solid var(--hto-line-strong)}
 html.touch-ui #game-tools{overflow:visible;gap:4px}
-html.touch-ui #game-tools button,html.touch-ui #game-tools summary,html.touch-ui #near-social button,html.touch-ui #near-social summary{min-width:44px;min-height:44px;box-sizing:border-box;font-size:13px;padding:10px 9px}
+html.touch-ui #game-tools button,html.touch-ui #game-tools summary,html.touch-ui #near-social button,html.touch-ui #near-social summary{min-width:44px;min-height:44px;box-sizing:border-box;font-size:13px;padding:8px}
 html.touch-ui .social-panel button,html.touch-ui .social-dialog button,html.touch-ui #connection-panel button,html.touch-ui #hand-actions button,html.touch-ui #npc-interact{min-height:44px;min-width:44px}
 html.touch-ui #account-dialog input,html.touch-ui #chat-input,html.touch-ui .social-dialog textarea{font-size:16px}
 html.touch-ui #account-dialog[data-entry="true"]{height:var(--vvh,100dvh);box-sizing:border-box;padding:16px 12px;border-radius:0}
 html.touch-ui #account-dialog[data-entry="true"] .account-wall{padding:22px 20px;max-height:100%;box-sizing:border-box}
 html.touch-ui #near-social{gap:4px;padding:6px 8px}
-html.touch-ui .person-row{flex-wrap:wrap;gap:6px}
-html.touch-ui .person-row>span{flex-basis:100%}
-html.touch-ui #connection-panel{top:calc(env(safe-area-inset-top) + 58px);right:8px;left:8px;max-width:none;z-index:12}
+html.touch-ui #connection-panel{top:calc(env(safe-area-inset-top) + 58px);right:8px;left:72px;max-width:none;z-index:12}
 html.touch-ui #connection-panel #connection-state{flex:1}
 html.touch-ui .npc-speech{max-width:min(170px,calc(100vw - 24px));padding:6px 8px;line-height:1.45}
 @media(orientation:portrait){
@@ -35,5 +51,40 @@ html.touch-ui .npc-speech{max-width:min(170px,calc(100vw - 24px));padding:6px 8p
  html.touch-ui #stick-zone{height:42%}
  html.touch-ui #scene-mark{position:fixed;top:calc(env(safe-area-inset-top) + 68px);left:8px}
 }
-@media(orientation:landscape){#orientation-hint{display:none}}
+@media(orientation:landscape){#orientation-hint{display:none}html.touch-ui #stick-zone{height:calc(100% - env(safe-area-inset-top) - 56px)}}
 @media(prefers-reduced-motion:reduce){.location-map [data-place] img{transition:none}}
+
+/* Shared chrome is quiet so scene artwork remains the visual focus. */
+#game-tools button,#more-tools summary{box-shadow:none;border-radius:0;letter-spacing:normal}
+#game-tools button:hover:not(:disabled){background:var(--hto-button-hover)}
+#game-tools button:focus-visible{outline:2px solid var(--hto-focus);outline-offset:2px}
+#hud-rail{gap:8px;max-width:min(320px,46vw)}
+#hud-rail>:is(#scene-mark,#play-guide,#near-social,#hand-actions,#npc-interact,#game-notice){background:var(--hto-panel);border:1px solid var(--hto-line);color:var(--hto-ink);border-radius:0;box-shadow:none;text-shadow:none;font-family:var(--hto-font)}
+#scene-mark{border-color:var(--hto-line-strong)!important;color:var(--hto-ink-bright)!important;font-weight:600}
+#hand-actions{flex-wrap:wrap;gap:8px}
+#near-more>div{gap:8px;min-width:140px}
+#more-actions{min-width:160px;gap:8px;padding:8px}
+#more-actions button{min-height:var(--hto-control)}
+#settings-dialog .settings-actions{display:grid;grid-template-columns:1fr;width:100%}
+#settings-dialog .settings-actions button{text-align:left}
+.travel-setting{display:flex;align-items:center;gap:var(--hto-space-2);margin-top:var(--hto-space-4);min-height:44px}
+.travel-setting input{width:20px;height:20px;accent-color:var(--hto-accent)}
+.travel-help{color:var(--hto-ink-soft);font-size:13px;line-height:1.6}
+#life-offers{padding:16px;font-family:var(--hto-font);font-size:13px;max-height:40dvh;overflow:auto}
+.life-offer+.life-offer{margin-top:16px;padding-top:12px;border-top:1px solid var(--hto-line)}
+.life-offer button{min-height:var(--hto-control)}
+#ktv-menu .ktv-heading{padding-bottom:12px;border-bottom:1px solid var(--hto-line);margin-bottom:16px}
+.world :where(.machine-header,.fridge-heading,.blind-heading,.noodle-heading,.gym-storage-heading,.perler-heading) :where(h2){font:600 20px/1.4 var(--hto-font);letter-spacing:normal}
+.world :where(.machine-header,.fridge-heading,.blind-heading,.noodle-heading,.gym-storage-heading,.perler-heading) button{min-height:var(--hto-control);border-radius:0}
+@media(max-width:650px){.social-dialog{padding:16px}.panel-heading{gap:8px}.panel-heading h2{font-size:18px}}
+html.touch-ui #touch-primary{background:var(--hto-accent);color:var(--hto-bg-deep)}
+html.touch-ui #touch-secondary{background:var(--hto-surface-2);border-color:var(--hto-line-strong);color:var(--hto-ink-bright)}
+html.touch-ui #touch-actions button{border-radius:0;box-shadow:none}
+html.touch-ui #touch-actions button.pressed{transform:translateY(2px);border-color:var(--hto-focus)}
+html.touch-ui #touch-primary.idle{opacity:.7}
+html.touch-ui #stick-base{background:#242c2770;border-color:var(--hto-line-soft);opacity:.8}
+html.touch-ui #stick-knob{background:var(--hto-ink-bright);box-shadow:none}
+html.touch-ui #ktv-dock button{min-height:44px}
+html.touch-ui #orientation-hint{padding:0;line-height:1.5}
+@media(orientation:portrait){html.touch-ui #ktv-dock{top:auto;bottom:calc(env(safe-area-inset-bottom) + 136px);width:260px;max-width:calc(100vw - 16px)}}
+@media(prefers-reduced-motion:reduce){#account-dialog[data-entry="true"] input,#account-dialog[data-entry="true"] button,#stick-base{transition:none}}

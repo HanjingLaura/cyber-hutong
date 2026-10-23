@@ -3,6 +3,10 @@ import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { resolve,extname,sep } from 'node:path';
 import { openStore,fail } from './store.mjs';
+import {normalizeChannel,messageVisible} from './chat-channel.mjs';
+import {createAgentProfiles} from './agent-profile.mjs';
+import {createAgentReplies} from './agent-replies.mjs';
+import {explicitMentions} from '../shared/chat-mentions.mjs';
 import {createAlbum} from './album.mjs';
 import { roles,replyFor } from './personas.mjs';
 import rooms from '../shared/rooms.json' with {type:'json'};
@@ -11,8 +15,9 @@ import npcRules from '../shared/npcs.json' with {type:'json'};
 import {npcVisible,visibleNpcs} from './npc-visibility.mjs';
 import guestPositions from '../shared/guests.json' with {type:'json'};
 import {createWorld} from './world.mjs';
-import {createLife,memoryPolicy} from './life.mjs';
+import {createLife,memoryPolicy,TRAVEL_CHECKPOINT_MS} from './life.mjs';
 import {createAutonomy,walkable} from './autonomy.mjs';
+import {createAgentPresence} from './agent-presence.mjs';
 import {createBailian} from './llm.mjs';
 import {createDirector} from './director.mjs';
 import {createRewards,plushNames} from './rewards.mjs';
@@ -23,7 +28,11 @@ import {randomUUID} from 'node:crypto';
 import {issueTicket} from '../shared/party-ticket.mjs';
 import {PARTY_ROOM_ID} from '../shared/party-room.mjs';
 import {durableRequests} from './durable-request.mjs';
-export const scenes=['hutong','hawaii','rest','pop','bathroom','concert','arcade','noodle','gym','dance','perler','rehearsal','elevator','subway','ktv'];
+import {createRides,createTickets} from './rides.mjs';
+import {createCoffeeOrders} from './coffee-orders.mjs';
+import {createNoodleOrders} from './noodle-orders.mjs';
+import {walkerScooterPathClear} from '../shared/outdoor-collision.mjs';
+export const scenes=Object.keys(rooms);
 const partySecret=()=>process.env.PARTY_AUTH_SECRET||'';
 const items=['咖啡','可乐','气泡水','薯片','面包','火腿肠','辣条','马卡龙','蛋糕','冰红茶','碗筷','米线','鸡柳','炸鸡','水','扭蛋·粉色小熊','扭蛋·薄荷兔子','扭蛋·蓝色机器人','扭蛋·橘猫','扭蛋·紫色小巫师','扭蛋·皇冠小熊'];
 const json=(res,status,value)=>{res.writeHead(status,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'});res.end(JSON.stringify(value));};
@@ -35,7 +44,7 @@ export const basePath=(process.env.HUTONG_BASE_PATH??'/cyber-hutong').replace(/\
 export const stripBase=url=>{const i=url.indexOf('?'),path=i===-1?url:url.slice(0,i),query=i===-1?'':url.slice(i);let next=path===basePath||path.startsWith(basePath+'/')?(path.slice(basePath.length)||'/'):path;if(next.startsWith('/api/')&&next.length>5)next=next.replace(/\/+$/,'');return next+query;};
 const allowedHosts=()=>String(process.env.HUTONG_ALLOWED_HOSTS||'').split(',').map(v=>v.trim().toLowerCase()).filter(Boolean);
 const clientAddress=req=>process.env.VERCEL?String(req.headers['x-forwarded-for']||'').split(',')[0].trim()||req.socket.remoteAddress:req.socket.remoteAddress;
-export function createMvpServer({dbPath='data/mvp.sqlite',staticDir=resolve('dist'),llmOptions={},albumCommit=async()=>{},beforeRequest,commitRequest,albumSeedImage}={}){
+export function createMvpServer({dbPath='data/mvp.sqlite',staticDir=resolve('dist'),llmOptions={},agentPersonaDirectory,albumCommit=async()=>{},beforeRequest,commitRequest,albumSeedImage,backgroundTask=()=>{}}={}){
   const store=openStore(dbPath),players=new Map(),streams=new Set(),rates=new Map();
   const album=createAlbum(store,{seedImage:albumSeedImage});
   const controlStmt={get:store.db.prepare('SELECT client,at FROM controllers WHERE account=?'),set:store.db.prepare('INSERT INTO controllers(account,client,at) VALUES(?,?,?) ON CONFLICT(account) DO UPDATE SET client=excluded.client,at=excluded.at'),del:store.db.prepare('DELETE FROM controllers WHERE account=?')};
@@ -48,32 +57,57 @@ export function createMvpServer({dbPath='data/mvp.sqlite',staticDir=resolve('dis
   // Cross-instance liveness: a human heartbeat in SQLite. Autonomy/LLM never drives an account seen live recently.
   store.db.exec('CREATE TABLE IF NOT EXISTS live_presence(account TEXT PRIMARY KEY,at INTEGER NOT NULL)');
   const liveStmt={set:store.db.prepare('INSERT INTO live_presence VALUES(?,?) ON CONFLICT(account) DO UPDATE SET at=excluded.at'),get:store.db.prepare('SELECT at FROM live_presence WHERE account=?')};
-  const liveMarks=new Map();
-  const markLive=id=>{const now=Date.now();if(now-(liveMarks.get(id)||0)<5000)return;liveMarks.set(id,now);liveStmt.set.run(id,now);};
-  const seenLive=(id,ms=60000)=>Date.now()-(liveStmt.get.get(id)?.at||0)<ms;
-  const leases=new Map();const life=createLife(store),autonomy=createAutonomy(store,life,players,leases,id=>seenLive(id));
+  const liveMarks=new Map();let cancelAgentReplies=()=>{};
+  const markLive=id=>{cancelAgentReplies(id);const now=Date.now();if(now-(liveMarks.get(id)||0)<5000)return;liveMarks.set(id,now);liveStmt.set.run(id,now);};
+  const presence=createAgentPresence(store.db,{onLive:id=>cancelAgentReplies(id)});
+  const seenLive=(id,ms=60000)=>presence.known(id)?presence.online(id):Date.now()-(liveStmt.get.get(id)?.at||0)<ms;
+  const humanLive=id=>seenLive(id)||(!presence.known(id)&&players.has(id)&&players.get(id).at===undefined&&!players.get(id).disconnectedAt);
+  const leases=new Map();const life=createLife(store),autonomy=createAutonomy(store,life,players,leases,id=>seenLive(id),{
+    canDrive:id=>presence.canDrive(id),takeoverAt:id=>presence.takeoverAt(id),humanLive,
+    retireHuman(p){if(!seenLive(p.id)){p.moving=false;life.savePosition(p);}for(const [key,l] of leases)if(l.account===p.id)leases.delete(key);}
+  });
   const world=createWorld(store,life),replyCooldown=new Map(),llm=createBailian(store,life,llmOptions);
+  const ridePositionAt=store.db.prepare('SELECT at FROM positions WHERE account=?');
+  const ridePosition=id=>{
+    const local=players.get(id),durable=life.position(id);
+    // Scene changes commit immediately, whereas warm replicas retain player
+    // objects until their next local pulse. The committed scene must win even
+    // if the stale object's timestamp was refreshed by startPlayer/autonomy.
+    if(durable&&(!local||durable.scene!==local.scene||(ridePositionAt.get(id)?.at??0)>(local.at??0)))return durable;
+    return local??durable;
+  };
+  const rides=createRides(store,{position:ridePosition,controller:id=>controls.get(id),live:humanLive,move:(id,pose)=>{const p=players.get(id);if(p){delete p.checkpoint;Object.assign(p,pose);}life.savePosition({id,...pose},{checkpoint:undefined});}});
+  const coffeeOrders=createCoffeeOrders(store,life),noodleOrders=createNoodleOrders(store,life,world);
+  const tickets=createTickets(store,life,world);
   const rewards=createRewards(store,life,world,leases);
   const npcReactions=createNpcReactions(store.db);
   const celine=createCeline(store);
   let dirty=true,poseDirty=false,lastFull=0,closed=false,visitorSignature='',paused=false,pendingEvents=[],transportJobs=[];
-  const live=role=>[...players.values()].find(p=>p.role===role&&!p.disconnectedAt);
+  const live=role=>{const a=store.byRole(role);return a&&humanLive(a.id);};
   const cleanPlayer=p=>{const a=store.byId(p.id);return {role:p.role,name:name(p.role),scene:p.scene,x:p.x,y:p.y,facing:p.facing,moving:p.moving,seat:p.seat,hand:a.hand,revision:a.revision,activity:p.activity,travelId:p.travelId};};
   // Remote humans are visible poses, never local NPC doubles. This also makes
   // an accepted pair visible together when their HTTP/SSE connections differ.
   const visibleActors=()=>{const actors=autonomy.all(),ids=new Set(actors.map(p=>p.id));for(const a of store.db.prepare('SELECT a.id,a.role FROM accounts a JOIN live_presence l ON l.account=a.id WHERE l.at>? AND a.role IS NOT NULL').all(Date.now()-60000)){if(ids.has(a.id))continue;const p=life.position(a.id);if(p)actors.push({id:a.id,role:a.role,moving:false,...p});}return actors;};
   life.setSceneProvider(scene=>({version:1,actors:visibleActors().filter(p=>p.scene===scene).map(cleanPlayer),objects:world.snapshot(scene),npcs:visibleNpcs(npcRules.filter(rule=>rule.room===scene),visibleActors(),workstations).map(rule=>({id:rule.id,...guestPositions[rule.id],text:npcReactions.get(rule.id)?.expires>Date.now()?npcReactions.get(rule.id).text:undefined})).concat((()=>{const v=celine.snapshot(visibleActors());return v.scene===scene?[{...v,height:61.44}]:[];})())}),id=>{const p=visibleActors().find(p=>p.id===id);return p?cleanPlayer(p):null;});
-  const emit=(stream,type,data)=>{if(paused&&commitRequest){pendingEvents.push(()=>emit(stream,type,data));return;}if(stream.res.writableEnded||stream.res.destroyed)return;const payload=`event: ${type}\ndata: ${JSON.stringify(data)}\n\n`;if(stream.res.writableLength>256000){stream.res.destroy();return;}stream.res.write(payload);};
+  const emit=(stream,type,data)=>{if(paused){pendingEvents.push(()=>emit(stream,type,data));return;}if(stream.res.writableEnded||stream.res.destroyed)return;const payload=`event: ${type}\ndata: ${JSON.stringify(data)}\n\n`;if(stream.res.writableLength>256000){stream.res.destroy();return;}stream.res.write(payload);};
   const transport=fn=>{if(paused)transportJobs.push(fn);else fn();};
   const roomFor=id=>players.get(id)?.scene||'hutong';
-  const snapshot=stream=>{if(!controls.has(stream.user))controls.set(stream.user,stream.client);else adoptStale(stream.user,stream.client);const user=store.publicAccount(store.byId(stream.user));return {self:user,travel:life.travel(stream.user),controller:controls.get(stream.user)===stream.client,players:visibleActors().filter(p=>p.scene===roomFor(stream.user)).map(p=>({...cleanPlayer(p),offline:autonomy.doubles.has(p.id)})),online:visibleActors().filter(p=>!p.disconnectedAt&&!autonomy.doubles.has(p.id)).map(p=>({role:p.role,scene:p.scene})),roster:store.roster(),objects:world.snapshot(roomFor(stream.user)),progress:world.progress(stream.user),progressVersion:user.progressVersion,bag:life.bag(stream.user),collection:life.collection(stream.user),offers:life.offers(stream.user),recent:life.recent(stream.user),clock:Date.now(),leases:[...leases].map(([id,l])=>({id,role:l.role})),celine:celine.snapshot(visibleActors()),npcEpoch:Math.floor(Date.now()/20000),npcReactions:[...npcReactions.values()].filter(r=>r.scene===roomFor(stream.user)&&r.expires>Date.now()),npcs:visibleNpcs(npcRules,visibleActors(),workstations).map(rule=>rule.id)};};
-  const release=id=>{for(const [key,l]of leases)if(l.account===id)leases.delete(key);};
-  const publishMessage=message=>{for(const s of streams){const own=store.byId(s.user)?.role;if(message.recipient?own===message.sender||own===message.recipient:roomFor(s.user)===message.scene)emit(s,'message',message);}};
+  const snapshot=stream=>{if(!controls.has(stream.user))controls.set(stream.user,stream.client);else adoptStale(stream.user,stream.client);const user=store.publicAccount(store.byId(stream.user));return {self:user,travel:life.travel(stream.user),controller:controls.get(stream.user)===stream.client,players:visibleActors().filter(p=>p.scene===roomFor(stream.user)).map(p=>({...cleanPlayer(p),offline:!humanLive(p.id),agentReady:autonomy.isDriven(p.id),agentTakeoverAt:presence.takeoverAt(p.id)})),online:visibleActors().filter(p=>humanLive(p.id)).map(p=>({role:p.role,scene:p.scene})),roster:store.roster(),objects:world.snapshot(roomFor(stream.user)),noodleOrders:roomFor(stream.user)==='noodle'?noodleOrders.list('noodle'):[],noodleOrdersRevision:roomFor(stream.user)==='noodle'?noodleOrders.revision:0,progress:world.progress(stream.user),progressVersion:user.progressVersion,bag:life.bag(stream.user),collection:life.collection(stream.user),offers:life.offers(stream.user),recent:life.recent(stream.user),clock:Date.now(),leases:[...leases].map(([id,l])=>({id,role:l.role})),celine:celine.snapshot(visibleActors()),npcEpoch:Math.floor(Date.now()/20000),npcReactions:[...npcReactions.values()].filter(r=>r.scene===roomFor(stream.user)&&r.expires>Date.now()),npcs:visibleNpcs(npcRules,visibleActors(),workstations).map(rule=>rule.id)};};
+  const release=id=>{rides.release(id);for(const [key,l]of leases)if(l.account===id)leases.delete(key);};
+  const deliverMessage=(stream,message)=>{
+    const deliver=()=>{if(stream.delivered?.has(message.seq))return;stream.delivered??=new Set();stream.delivered.add(message.seq);while(stream.delivered.size>1000)stream.delivered.delete(stream.delivered.values().next().value);if(messageVisible(message,store.byId(stream.user)?.role,roomFor(stream.user)))emit(stream,'message',message);};
+    if(paused)pendingEvents.push(deliver);else deliver();
+  };
+  const publishMessage=message=>{for(const stream of streams)deliverMessage(stream,message);};
+  const relayMessages=()=>{for(const stream of streams){const arrivals=store.messagesArrivingAfter(stream.messageArrival);for(const {message} of arrivals)if(message)deliverMessage(stream,message);if(arrivals.length)stream.messageArrival=arrivals.at(-1).arrival;}};
+  const agentProfiles=createAgentProfiles(store,{directory:agentPersonaDirectory});
+  const replies=createAgentReplies(store,{profiles:agentProfiles,llm,canDrive:id=>presence.canDrive(id),humanLive,mutate:operation=>request.mutate(operation),publish:publishMessage,publishStatus:status=>{for(const stream of streams)if(messageVisible(status,store.byId(stream.user)?.role,roomFor(stream.user)))emit(stream,'agent-status',status);},backgroundTask});
+  cancelAgentReplies=id=>replies.cancel(id);
   const director=createDirector(store,life,autonomy,world,llm,{publish:publishMessage});autonomy.setDirector(director);
   const poseSnapshot=()=>{
     const actors=visibleActors(),clock=Date.now();
-    return {players:actors.map(p=>({...cleanPlayer(p),offline:autonomy.doubles.has(p.id)})),
-      online:visibleActors().filter(p=>!p.disconnectedAt&&!autonomy.doubles.has(p.id)).map(p=>({role:p.role,scene:p.scene})),
+    return {players:actors.map(p=>({...cleanPlayer(p),offline:!humanLive(p.id),agentReady:autonomy.isDriven(p.id),agentTakeoverAt:presence.takeoverAt(p.id)})),
+      online:visibleActors().filter(p=>humanLive(p.id)).map(p=>({role:p.role,scene:p.scene})),
       clock,leases:[...leases].map(([id,l])=>({id,role:l.role})),celine:celine.snapshot(actors),
       npcEpoch:Math.floor(clock/20000),npcReactions:[...npcReactions.values()].filter(r=>r.expires>clock),
       npcs:visibleNpcs(npcRules,actors,workstations).map(rule=>rule.id)};
@@ -97,11 +131,38 @@ export function createMvpServer({dbPath='data/mvp.sqlite',staticDir=resolve('dis
   const limited=(key,max,ms=60000)=>{const now=Date.now(),entry=rates.get(key);if(!entry||entry.until<now){rates.set(key,{n:1,until:now+ms});return;}if(++entry.n>max)fail(429,'操作太快，请稍后重试');};
   const cookieFlags=()=>`HttpOnly; SameSite=Strict; Path=/${process.env.COOKIE_SECURE==='1'||process.env.VERCEL==='1'?'; Secure':''}`;
   const setSession=(res,token)=>res.setHeader('Set-Cookie',`hutong_session=${token}; ${cookieFlags()}; Max-Age=604800`);
-  const checkControl=(user,client)=>{checkControlOnly(user,client);startPlayer(user);};
+  const checkControl=(user,client)=>checkControlOnly(user,client);
   // A controller that has no stream here and has been quiet for 25s (a closed/refreshed tab) yields to a tab that is streaming.
   const adoptStale=(id,client)=>{const current=controls.get(id);if(current&&current!==client&&controls.stale(id,25000)&&![...streams].some(s=>s.user===id&&s.client===current)&&[...streams].some(s=>s.user===id&&s.client===client)){controls.set(id,client);dirty=true;}};
   const checkControlOnly=(user,client)=>{if(typeof client!=='string'||client.length>80)fail(409,'角色在另一个窗口操作，请点击接管');adoptStale(user.id,client);const current=controls.get(user.id);markLive(user.id);if(!current){controls.set(user.id,client);return;}if(current!==client)fail(409,'角色在另一个窗口操作，请点击接管');controls.touch(user.id,client);};
-  const startPlayer=user=>{if(!user.role)return;markLive(user.id);if(players.has(user.id))return;const homes={suki:[288,207],sid:[192,207],jilly:[192,182],laura:[384,207],kay:[480,207],franco:[480,182],cora:[288,182],amber:[384,182]};const [x,y]=homes[user.role];const previous=autonomy.reclaim(user.id)||life.position(user.id);const p={id:user.id,role:user.role,scene:'hutong',x,y,facing:0,moving:false,seat:null,activity:'walk',...previous,at:Date.now()};if(p.seat){const seat=interactions[p.scene].seats[p.seat];if(seat)[p.x,p.y]=seat.approach;p.seat=null;}const oldActivity=interactions[p.scene].activities[p.activity]?.find(a=>Math.hypot(p.x-a.at[0],p.y-a.at[1])<8);if(oldActivity)[p.x,p.y]=oldActivity.approach;p.activity='walk';p.moving=false;p.fresh=true;players.set(user.id,p);dirty=true;};
+  const recoverWalkingPosition=p=>{
+    if(!p||!['walk',undefined].includes(p.activity)||interactions[p.scene]?.seats[p.seat])return false;
+    const options=p.scene==='bathroom'?{doors:world.snapshot('bathroom').filter(o=>o.id.startsWith('bathroom:door-')).map(o=>!!o.open)}:undefined;
+    if(walkable(p.scene,p.x,p.y,options))return false;
+    const exit=rooms[p.scene]?.exit;
+    if(!exit||!walkable(p.scene,exit[0],exit[1],options))return false;
+    Object.assign(p,{x:exit[0],y:exit[1],seat:null,activity:'walk',moving:false,at:Date.now()});delete p.checkpoint;
+    life.savePosition(p,{checkpoint:undefined});dirty=true;return true;
+  };
+  const startPlayer=user=>{if(!user.role)return;markLive(user.id);
+    const durable=life.position(user.id);
+    if(players.has(user.id)){
+      const p=players.get(user.id);
+      // Warm replicas keep in-memory poses across SSE lifetimes. After a tab refresh the
+      // prior stream is disconnected: adopt any durable transition committed elsewhere.
+      // Never clobber a live controller pose with an older hutong row from a lagged save.
+      if(durable){
+        const recovered=p.disconnectedAt&&recoverWalkingPosition(Object.assign(durable,{id:user.id}));
+        if(durable.checkpoint)p.checkpoint=durable.checkpoint;else delete p.checkpoint;
+        if(p.disconnectedAt&&(recovered||durable.scene!==p.scene||(durable.travelId&&durable.travelId!==p.travelId))){
+          Object.assign(p,{scene:durable.scene,x:durable.x,y:durable.y,facing:Number.isInteger(durable.facing)?durable.facing:0,seat:null,activity:'walk',moving:false,travelId:durable.travelId,fresh:true,at:Date.now()});
+          dirty=true;
+        }
+      }
+      delete p.disconnectedAt;autonomy.reclaim(user.id);
+      return;
+    }
+    const homes={suki:[288,207],sid:[192,207],jilly:[192,182],laura:[384,207],kay:[480,207],franco:[480,182],cora:[288,182],amber:[384,182]};const [x,y]=homes[user.role];const previous=autonomy.reclaim(user.id)||durable;const p={id:user.id,role:user.role,scene:'hutong',x,y,facing:0,moving:false,seat:null,activity:'walk',...previous,at:Date.now()};recoverWalkingPosition(p);if(p.seat){const seat=interactions[p.scene].seats[p.seat];if(seat)[p.x,p.y]=seat.approach;p.seat=null;}const oldActivity=interactions[p.scene].activities[p.activity]?.find(a=>Math.hypot(p.x-a.at[0],p.y-a.at[1])<8);if(oldActivity)[p.x,p.y]=oldActivity.approach;p.activity='walk';p.moving=false;p.fresh=true;players.set(user.id,p);dirty=true;};
   const reconcileTravel=()=>{for(const p of autonomy.all()){const t=life.travel(p.id);if(t&&p.travelId!==t.offer){release(p.id);director.cancelFor(p.id);Object.assign(p,t.ack?(life.position(p.id)??t.state):t.state,{task:null,path:[],next:Date.now()+30000,at:Date.now(),fresh:false});dirty=true;}}};
   const handle=async(req,res)=>{
     try{
@@ -110,7 +171,7 @@ export function createMvpServer({dbPath='data/mvp.sqlite',staticDir=resolve('dis
       if(path.startsWith('/api/')){
         // Vite proxy and production must preserve the browser-facing Host header.
         const origin=req.headers.origin;if(req.method!=='GET'&&origin){let host='';try{host=new URL(origin).host.toLowerCase();}catch{fail(403,'请求来源不正确');}if(host!==String(req.headers.host||'').toLowerCase()&&!allowedHosts().includes(host))fail(403,'请求来源不正确');}
-        if(path==='/api/health'){json(res,200,{ok:true,version:2,online:players.size,llm:llm.status(),party:!!partySecret()});return;}
+        if(path==='/api/health'){json(res,200,{ok:true,version:2,release:'2026-10-21-all-scene-switches',online:players.size,llm:llm.status(),party:!!partySecret()});return;}
         const token=cookie(req),user=store.session(token);
         if(path==='/api/me'){json(res,200,{user,roster:store.roster()});return;}
         if(path==='/api/party-ticket'){
@@ -134,7 +195,44 @@ export function createMvpServer({dbPath='data/mvp.sqlite',staticDir=resolve('dis
           const result=path==='/api/register'?await store.register(input.username,input.password,input.role??null):await store.login(input.username,input.password);
           setSession(res,result.token);json(res,200,{user:result.user,roster:store.roster()});return;
         }
+        if(path==='/api/reset-password'){
+          if(req.method!=='POST')fail(405,'请使用 POST');
+          limited('reset:'+clientAddress(req),6);
+          const input=await body(req),account=await store.resetPassword(input.username,input.code,input.password);
+          const disconnect=()=>{rides.release(account.id);for(const stream of [...streams])if(stream.user===account.id){emit(stream,'logout',{});stream.res.end();streams.delete(stream);}dirty=true;};
+          if(paused&&commitRequest)pendingEvents.push(disconnect);else disconnect();
+          res.setHeader('Set-Cookie',`hutong_session=; ${cookieFlags()}; Max-Age=0`);
+          json(res,200,{ok:true});return;
+        }
         if(!user)fail(401,'请先登录');
+        if(path==='/api/ride'||path==='/api/ticket'){
+          if(!user.role)fail(409,'请先领取角色');
+          startPlayer(user);
+          if(req.method==='GET'){
+            if(path==='/api/ride')json(res,200,{ride:rides.snapshot(user.id,url.searchParams.get('client'))});
+            else json(res,200,{ticket:tickets.get(user.id),collection:life.collection(user.id),progress:world.progress(user.id),self:store.publicAccount(store.byId(user.id))});
+            return;
+          }
+          if(req.method!=='POST')fail(405,'请使用 GET 或 POST');
+          const input=await body(req);checkControl(user,input.client);limited(path+':'+user.id,30,1000);
+          if(path==='/api/ride')json(res,200,{ride:rides.act(user,input)});
+          else {if(input.action!=='claim')fail(400,'车票操作无效');json(res,200,{ticket:tickets.claim(user,players.get(user.id)),collection:life.collection(user.id),progress:world.progress(user.id),self:store.publicAccount(store.byId(user.id))});}
+          dirty=true;return;
+        }
+        if(path==='/api/agent-profile'){
+          fail(404,'没有这个接口');
+        }
+        if(path==='/api/agent-replies'&&req.method==='GET'){
+          if(!user.role)fail(409,'请先领取角色');const peer=url.searchParams.get('peer');if(peer&&(!roles.includes(peer)||peer===user.role))fail(400,'私聊对象无效');const channel=normalizeChannel(url.searchParams.get('channel')??undefined,peer);json(res,200,{jobs:replies.history(user.role,peer,roomFor(user.id),channel)});return;
+        }
+        if(path==='/api/heartbeat'){
+          if(req.method!=='POST')fail(405,'请使用 POST');
+          const input=await body(req);if(typeof input.client!=='string'||!input.client||input.client.length>80)fail(400,'连接编号无效');
+          // This authenticated browser acknowledgment is independent of SSE and
+          // can restore a tab whose previous stream was closed on another replica.
+          if(!presence.heartbeat(user.id,input.client))presence.connect(user.id,input.client,randomUUID());
+          controls.touch(user.id,input.client);markLive(user.id);startPlayer(user);dirty=true;json(res,200,{ok:true});return;
+        }
         if(path==='/api/albums'||path==='/api/album-photo'){
           if(!user.role)fail(409,'请先领取角色');
           if(req.method==='GET'){
@@ -154,35 +252,75 @@ export function createMvpServer({dbPath='data/mvp.sqlite',staticDir=resolve('dis
           const client=url.searchParams.get('client');if(!client||client.length>80)fail(400,'连接编号无效');
           if(streams.size>=128||[...streams].filter(s=>s.user===user.id).length>=4)fail(429,'连接数已满');
           res.writeHead(200,{'Content-Type':'text/event-stream','Cache-Control':'no-cache, no-transform','Connection':'keep-alive','X-Accel-Buffering':'no'});res.write('retry: 1500\n\n');
-          const stream={user:user.id,client,res,token};streams.add(stream);startPlayer(user);const player=players.get(user.id);if(player)delete player.disconnectedAt;
+          const stream={user:user.id,client,res,token,generation:randomUUID(),messageArrival:store.messageArrival()};streams.add(stream);presence.connect(user.id,client,stream.generation);startPlayer(user);const player=players.get(user.id);if(player)delete player.disconnectedAt;
           // A refreshed tab gets a new client id; take over from a controller that has no stream here and has gone quiet (touch() refreshes every 10s while active).
           if(!controls.has(user.id)||(!([...streams].some(s=>s.user===user.id&&s.client===controls.get(user.id)))&&controls.stale(user.id,25000)))controls.set(user.id,client);
           emit(stream,'world',snapshot(stream));dirty=true;
-          req.on('close',()=>transport(()=>{if(closed)return;streams.delete(stream);if(![...streams].some(s=>s.user===user.id)){const p=players.get(user.id);if(p){p.disconnectedAt=Date.now();life.savePosition(p);}controls.release(user.id,client);}else if(controls.get(user.id)===client&&!([...streams].some(s=>s.user===user.id&&s.client===client))){/* Another tab of the same user is still open: hand control to it so the user stays the driver (never "other window", never autonomy). */controls.set(user.id,[...streams].find(s=>s.user===user.id).client);}dirty=true;}));return;
+          // A stream closing says nothing about the browser's other transports.
+          // Browser heartbeats expire liveness; quiet controllers yield via adoptStale.
+          req.on('close',()=>transport(()=>{if(closed)return;streams.delete(stream);if(![...streams].some(s=>s.user===user.id)){const p=players.get(user.id);if(p){p.disconnectedAt=Date.now();p.moving=false;if(!seenLive(p.id))life.savePosition(p);}}dirty=true;}));return;
+        }
+        if(path==='/api/location'&&req.method==='GET'){
+          if(!user.role)fail(409,'请先领取角色');startPlayer(user);
+          const player=players.get(user.id),durable=life.position(user.id);
+          // Explicit recovery may land on the live SSE instance while another
+          // instance committed travel. Prefer its pulled durable destination;
+          // ordinary same-room movement still uses this instance's newer pose.
+          if(durable&&durable.scene!==player.scene){release(user.id);if(!durable.checkpoint)delete player.checkpoint;Object.assign(player,durable,{fresh:false,moving:false,at:Date.now()});dirty=true;}
+          recoverWalkingPosition(player);
+          json(res,200,{player:cleanPlayer(player)});return;
         }
         if(path==='/api/journal'&&req.method==='GET'){const before=Number(url.searchParams.get('before')||Number.MAX_SAFE_INTEGER);if(!Number.isSafeInteger(before)||before<1)fail(400,'经历页码无效');json(res,200,{entries:life.journal(user.id,before)});return;}
+        if(path==='/api/coffee-orders'&&req.method==='GET'){json(res,200,coffeeOrders.self(user.id));return;}
+        if(path==='/api/noodle-orders'&&req.method==='GET'){if(roomFor(user.id)!=='noodle')fail(409,'请先走进米线店');json(res,200,{self:store.publicAccount(store.byId(user.id)),objects:world.snapshot('noodle'),noodleOrders:noodleOrders.list('noodle'),noodleOrdersRevision:noodleOrders.revision});return;}
         if(path==='/api/life'&&req.method==='GET'){json(res,200,{bag:life.bag(user.id),collection:life.collection(user.id),offers:life.offers(user.id)});return;}
         if(path==='/api/item-art'&&req.method==='GET'){const art=rewards.art(url.searchParams.get('name'));if(!art)fail(404,'物品不存在');json(res,200,art);return;}
         if(path==='/api/history'&&req.method==='GET'){
-          if(!user.role)fail(409,'请先领取角色');const peer=url.searchParams.get('peer');if(peer&&(!roles.includes(peer)||peer===user.role))fail(400,'私聊对象无效');json(res,200,{messages:store.history(user.role,peer,roomFor(user.id))});return;
+          if(!user.role)fail(409,'请先领取角色');const peer=url.searchParams.get('peer');if(peer&&(!roles.includes(peer)||peer===user.role))fail(400,'私聊对象无效');const channel=normalizeChannel(url.searchParams.get('channel')??undefined,peer);json(res,200,{messages:store.history(user.role,peer,roomFor(user.id),channel)});return;
         }
         if(req.method!=='POST')fail(405,'请使用 POST');
         const input=await body(req);
         if(path==='/api/logout'){
+          rides.release(user.id);
           store.logout(token);for(const s of [...streams])if(s.token===token){emit(s,'logout',{});s.res.end();streams.delete(s);}if(![...streams].some(s=>s.user===user.id)){const p=players.get(user.id);if(p)life.savePosition(p);release(user.id);players.delete(user.id);controls.delete(user.id);}dirty=true;
           res.setHeader('Set-Cookie',`hutong_session=; ${cookieFlags()}; Max-Age=0`);json(res,200,{ok:true});return;
         }
         if(path==='/api/claim'){limited('claim:'+user.id,15);const next=store.claim(user.id,input.role);startPlayer(next);dirty=true;json(res,200,{user:next});return;}
         if(!user.role)fail(409,'请先领取角色');
         startPlayer(user);
-        if(path==='/api/control'){if(typeof input.client!=='string'||input.client.length>80)fail(400,'连接编号无效');startPlayer(user);if(controls.get(user.id)!==input.client){const p=players.get(user.id),geometry=interactions[p.scene],seat=geometry.seats[p.seat],activity=geometry.activities[p.activity]?.find(a=>Math.hypot(p.x-a.at[0],p.y-a.at[1])<8),point=seat?.approach??activity?.approach;if(point){p.x=point[0];p.y=point[1];}p.seat=null;p.activity='walk';release(user.id);}controls.set(user.id,input.client);dirty=true;json(res,200,{ok:true,player:cleanPlayer(players.get(user.id))});return;}
-        if(path==='/api/transition'){
-          checkControl(user,input.client);const p=players.get(user.id),from=rooms[p.scene],to=rooms[input.target];
-          if(typeof input.target!=='string'||!Object.hasOwn(rooms,input.target)||input.target===p.scene)fail(400,'地点无效');
-          if(p.seat||[...leases.values()].some(l=>l.account===user.id)||!['walk',undefined].includes(p.activity)||Math.hypot(p.x-from.exit[0],p.y-from.exit[1])>30)fail(409,'先结束互动，走到出口');
-          release(user.id);Object.assign(p,{scene:input.target,x:to.exit[0],y:to.exit[1],seat:null,moving:false,facing:0,at:Date.now()});life.savePosition(p);dirty=true;
-          json(res,200,{player:cleanPlayer(p),self:store.publicAccount(store.byId(user.id)),objects:world.snapshot(p.scene)});return;
+        if(path==='/api/control'){
+          if(typeof input.client!=='string'||input.client.length>80)fail(400,'连接编号无效');startPlayer(user);
+          if(controls.get(user.id)!==input.client){
+            const p=players.get(user.id),saved=life.position(user.id);
+            if(saved&&saved.scene!==p.scene){Object.assign(p,saved,{fresh:false,moving:false,at:Date.now()});if(!saved.checkpoint)delete p.checkpoint;}
+            const geometry=interactions[p.scene],seat=geometry.seats[p.seat],activity=geometry.activities[p.activity]?.find(a=>Math.hypot(p.x-a.at[0],p.y-a.at[1])<8),point=seat?.approach??activity?.approach;
+            if(point){p.x=point[0];p.y=point[1];}p.seat=null;p.activity='walk';release(user.id);recoverWalkingPosition(p);
+          }
+          controls.set(user.id,input.client);dirty=true;json(res,200,{ok:true,player:cleanPlayer(players.get(user.id))});return;
         }
+        if(path==='/api/transition'){
+          checkControl(user,input.client);const p=players.get(user.id);
+          if(input.checkpoint!==undefined){
+            const saved=life.position(user.id),checkpoint=saved?.checkpoint;
+            // Reject only when this warm replica's live pose moved away from the durable
+            // exit after the marker was issued. Same-exit pulses with a newer local `at`
+            // (common across Vercel instances) must still consume a valid marker.
+            const diverged=!!saved&&(saved.scene!==p.scene||Math.hypot(p.x-saved.x,p.y-saved.y)>14);
+            if(typeof input.checkpoint!=='string'||!checkpoint||checkpoint.id!==input.checkpoint||checkpoint.client!==input.client||Date.now()-checkpoint.at>TRAVEL_CHECKPOINT_MS||saved.scene!==p.scene||(!p.fresh&&checkpoint.at<p.at&&diverged))fail(409,'位置确认已过期，请重试');
+            // This pose was validated by /presence and committed before acknowledgment.
+            // Warm serverless replicas may still hold an older local pose.
+            Object.assign(p,saved,{at:checkpoint.at,fresh:false});
+          }
+          const from=rooms[p.scene],to=rooms[input.target];
+          if(typeof input.target!=='string'||!Object.hasOwn(rooms,input.target)||input.target===p.scene)fail(400,'地点无效');
+          if(input.quick!==undefined&&typeof input.quick!=='boolean')fail(400,'切换模式无效');
+          if(p.seat||[...leases.values()].some(l=>l.account===user.id)||!['walk',undefined].includes(p.activity))fail(409,'先结束互动再切换地点');
+          if(input.quick!==true&&Math.hypot(p.x-from.exit[0],p.y-from.exit[1])>30)fail(409,'先结束互动，走到出口');
+          release(user.id);delete p.checkpoint;Object.assign(p,{scene:input.target,x:to.exit[0],y:to.exit[1],seat:null,moving:false,facing:0,activity:'walk',at:Date.now()});life.savePosition(p,{checkpoint:undefined});dirty=true;
+          json(res,200,{player:cleanPlayer(p),self:store.publicAccount(store.byId(user.id)),objects:world.snapshot(p.scene),...(p.scene==='noodle'?{noodleOrders:noodleOrders.list('noodle'),noodleOrdersRevision:noodleOrders.revision}:{})});return;
+        }
+        if(path==='/api/coffee-orders'){checkControl(user,input.client);limited('coffee:'+user.id,30,10000);const result=coffeeOrders.interact(user,players.get(user.id),input);dirty=true;json(res,200,result);return;}
+        if(path==='/api/noodle-orders'){checkControl(user,input.client);limited('noodle-orders:'+user.id,40,10000);const result=noodleOrders.interact(user,players.get(user.id),input);dirty=true;json(res,200,result);return;}
         if(path==='/api/inventory'){checkControl(user,input.client);limited('inventory:'+user.id,30,10000);const result=life.inventory(user.id,input,roomFor(user.id));dirty=true;json(res,200,result);return;}
         if(path==='/api/reward'){checkControl(user,input.client);limited('reward:'+user.id,30,10000);const result=rewards.interact(user,players.get(user.id),input);dirty=true;json(res,200,result);return;}
         if(path==='/api/npc'){
@@ -218,6 +356,10 @@ export function createMvpServer({dbPath='data/mvp.sqlite',staticDir=resolve('dis
         }
         if(path==='/api/presence'){
           limited('move:'+user.id,30,1000);checkControl(user,input.client);
+          // The regular client heartbeat continues during a ride. A rider's
+          // coordinates come solely from /ride; a late walking pulse cannot
+          // move a passenger or reverse the driver's accepted scooter pose.
+          if(rides.seat(user.id)){json(res,200,{self:store.publicAccount(store.byId(user.id)),player:cleanPlayer(players.get(user.id)),ride:rides.snapshot(user.id,input.client)});return;}
           if(!scenes.includes(input.scene)||!Number.isFinite(input.x)||!Number.isFinite(input.y)||input.x<20||input.x>620||input.y<90||input.y>355||!Number.isInteger(input.facing)||input.facing<0||input.facing>3)fail(400,'位置无效');
           if(input.seat!==null&&(typeof input.seat!=='string'||input.seat.length>50))fail(400,'座位无效');
           const p=players.get(user.id),now=Date.now();
@@ -225,37 +367,41 @@ export function createMvpServer({dbPath='data/mvp.sqlite',staticDir=resolve('dis
           // A player record created on this (serverless) instance from a stale DB pose must adopt the client's live pose.
           const fresh=!!p.fresh&&!travel&&input.seat===null&&walkable(input.scene,input.x,input.y);if(fresh){p.scene=input.scene;p.x=input.x;p.y=input.y;p.at=now;}
           if(input.scene!==p.scene)fail(409,'请从出口切换场景');
-          const distance=Math.hypot(p.x-input.x,p.y-input.y),elapsed=Math.min(3000,now-p.at);
+          const distance=Math.hypot(p.x-input.x,p.y-input.y),elapsed=Math.max(0,Math.min(3000,now-p.at));
           const geometry=interactions[p.scene],near=(point,x,y,r)=>Math.hypot(x-point[0],y-point[1])<=r;
           let anchored=false;
-          if(input.seat!==null){const anchor=Object.hasOwn(geometry.seats,input.seat)?geometry.seats[input.seat]:null;if(!anchor||!near(anchor.at,input.x,input.y,6))fail(409,'请使用实际座位');if(input.seat!==p.seat&&!near(anchor.approach,p.x,p.y,38))fail(409,'请走到椅子附近');if(p.scene==='bathroom'&&!world.snapshot('bathroom').find(o=>o.id==='bathroom:door-'+input.seat)?.open)fail(409,'先打开隔间门');anchored=true;}
+          if(input.seat!==null){const anchor=Object.hasOwn(geometry.seats,input.seat)?geometry.seats[input.seat]:null;if(!anchor||!near(anchor.at,input.x,input.y,6))fail(409,'请使用实际座位');if(input.seat!==p.seat&&!near(anchor.approach,p.x,p.y,Math.max(38,180*elapsed/1000+14)))fail(409,'请走到椅子附近');if(p.scene==='bathroom'&&!world.snapshot('bathroom').find(o=>o.id==='bathroom:door-'+input.seat)?.open)fail(409,'先打开隔间门');anchored=true;}
           else if(p.seat){const anchor=geometry.seats[p.seat];anchored=!!anchor&&near(anchor.approach,input.x,input.y,40);}
           const activity=['hutong','hawaii'].includes(p.scene)?(input.seat?(workstations[p.scene]?.[p.role]===input.seat?'working':'sit'):'walk'):typeof input.activity==='string'?input.activity:'walk';
           if(p.activity!==activity&&geometry.activities[p.activity])anchored||=geometry.activities[p.activity].some(a=>near(a.at,p.x,p.y,6)&&near(a.approach,input.x,input.y,40));
           if(geometry.activities[activity]){const anchor=geometry.activities[activity].find(a=>near(a.at,input.x,input.y,6)&&((p.activity===activity&&near(a.at,p.x,p.y,6))||near(a.approach,p.x,p.y,40)));if(!anchor||anchor.device&&leases.get(p.scene+':'+anchor.device)?.account!==user.id)fail(409,'请先使用附近的设备');anchored=true;}
           if(!anchored&&distance>180*elapsed/1000+14)fail(409,'移动过快，请重试');
           if(!anchored&&!walkable(p.scene,input.x,input.y,p.scene==='bathroom'?{doors:world.snapshot('bathroom').filter(o=>o.id.startsWith('bathroom:door-')).map(o=>!!o.open)}:undefined))fail(409,'请走在可通行区域');
+          if(p.scene==='street'&&!walkerScooterPathClear(p.x,p.y,input.x,input.y,rides.snapshot()))fail(409,'请绕过电动车');
           if(input.scene==='hawaii'&&input.seat==='HL3'){const visitor=celine.snapshot(visibleActors());if(visitor.scene==='hawaii'&&visitor.seat==='HL3')fail(409,'Celine 正坐在这张椅子上');}
           if(input.seat&&[...players.values()].some(other=>other.id!==user.id&&other.scene===input.scene&&other.seat===input.seat))fail(409,'这个座位已经有人了');
           if(input.hand!==null&&!items.includes(input.hand)&&!(typeof input.hand==='string'&&(plushNames.some(n=>input.hand==='娃娃·'+n)||rewards.art(input.hand))))fail(400,'物品无效');
           const next=store.publicAccount(store.byId(user.id));
           for(const l of leases.values())if(l.account===user.id)l.at=now;
           const previousActivity=p.activity;
-          delete p.fresh;Object.assign(p,{scene:input.scene,x:input.x,y:input.y,facing:input.facing,moving:input.moving===true,seat:input.seat,activity:activity.slice(0,20),at:now});if(now-(p.savedAt||0)>5000){life.savePosition(p);p.savedAt=now;}
+          // A checkpoint from any replica expires on the next valid ordinary pose.
+          const revokeCheckpoint=input.checkpoint!==true&&!!(p.checkpoint||life.position(user.id)?.checkpoint);
+          delete p.fresh;delete p.checkpoint;Object.assign(p,{scene:input.scene,x:input.x,y:input.y,facing:input.facing,moving:input.moving===true,seat:input.seat,activity:activity.slice(0,20),at:now});
+          if(input.checkpoint===true)p.checkpoint={id:randomUUID(),client:input.client,at:now};
+          if(input.checkpoint===true||revokeCheckpoint||now-(p.savedAt||0)>5000){life.savePosition(p,{checkpoint:p.checkpoint});p.savedAt=now;}
           if(previousActivity!==activity){
             if(activity==='working')life.record(user.id,'work','开始在自己的工位办公。',p.scene,Date.now(),{routine:true,key:`work:start:${p.scene}`});
             else if(activity==='sit')life.record(user.id,'rest','坐在椅子上休息。',p.scene,Date.now(),{routine:true,key:`rest:sit:${p.scene}`});
             else if(previousActivity==='working')life.record(user.id,'work','离开工位，结束了这段办公。',p.scene,Date.now(),{routine:true,key:`work:end:${p.scene}`});
           }
-          if(travel){if(!travel.ack)life.savePosition(p);life.ackTravel(user.id,travel.offer);life.finishMeetings(autonomy.all());}poseDirty=true;json(res,200,{self:next,player:cleanPlayer(p)});return;
+          if(travel){if(!travel.ack)life.savePosition(p,{checkpoint:p.checkpoint});life.ackTravel(user.id,travel.offer);life.finishMeetings(autonomy.all());}poseDirty=true;json(res,200,{self:next,player:cleanPlayer(p),...(p.checkpoint?{checkpoint:p.checkpoint.id}:{})});return;
         }
         if(path==='/api/chat'){
           limited('chat:'+user.id,12,10000);const text=typeof input.text==='string'?input.text.trim():'';if(!text||text.length>200)fail(400,'消息需为 1–200 个字');
           const peer=input.peer||null;if(peer&&(!roles.includes(peer)||peer===user.role))fail(400,'私聊对象无效');
-          const existed=store.db.prepare('SELECT seq FROM messages WHERE id=?').get(user.role+':'+input.requestId);const scene=roomFor(user.id),message=store.message(user.role,peer,scene,text,input.requestId);publishMessage(message);
-          if(peer&&!live(peer)&&!existed){const owner=store.byRole(peer),profile=owner?JSON.parse(owner.profile):{},thread=user.role+':'+peer;if(owner&&(llm.configured?(!profile.confirmed||profile.autoReply):(profile.confirmed&&profile.autoReply))&&Date.now()-(replyCooldown.get(thread)||0)>20000){replyCooldown.set(thread,Date.now());
-            void llm.reply(peer,text,user.role,scene).then(reply=>{if(closed||paused||live(peer)||!reply)return;publishMessage(store.message(peer,user.role,scene,reply,'reply:'+user.role+':'+input.requestId,true));}).catch(()=>{});
-          }}json(res,200,{message});return;
+          const channel=normalizeChannel(input.channel,peer),mentions=input.mentions??[];if(!Array.isArray(mentions)||mentions.length>8||mentions.some(role=>!roles.includes(role)||role===user.role)||channel==='dm'&&mentions.length)fail(400,'提及对象无效');
+          const existed=store.db.prepare('SELECT seq FROM messages WHERE id=?').get(user.role+':'+input.requestId);const scene=roomFor(user.id),message=store.message(user.role,peer,scene,text,input.requestId,false,channel,[...new Set([...mentions,...(channel==='dm'?[]:explicitMentions(text,roles,user.role))])]);if(!existed)publishMessage(message);
+          const agents=replies.enqueue(message);if(agents.some(agent=>agent.status==='queued'))pendingEvents.push(()=>replies.pump());json(res,200,{message,agents});return;
         }
         if(path==='/api/interact'){
           limited('interact:'+user.id,10,10000);checkControl(user,input.client);
@@ -266,7 +412,7 @@ export function createMvpServer({dbPath='data/mvp.sqlite',staticDir=resolve('dis
             if(typeof input.requestId!=='string'||input.requestId.length>120)fail(400,'操作编号无效');
             const message=store.message(user.role,null,a.scene,body,input.requestId);publishMessage(message);json(res,200,{ok:true});return;
           }
-          const b=live(input.peer)||autonomy.all().find(p=>p.role===input.peer);if(!b||b.id===a.id||a.scene!==b.scene||Math.hypot(a.x-b.x,a.y-b.y)>55)fail(409,'请走到对方附近');
+          const b=autonomy.all().find(p=>p.role===input.peer);if(!b||b.id===a.id||a.scene!==b.scene||Math.hypot(a.x-b.x,a.y-b.y)>55)fail(409,'请走到对方附近');
           if(input.action==='greet'){const duplicate=store.db.prepare('SELECT seq FROM messages WHERE id=?').get(user.role+':'+input.requestId);const message=store.message(user.role,null,a.scene,`嗨，${name(b.role)}！`,input.requestId);publishMessage(message);if(!duplicate){const pair=[user.role,b.role].sort().join(':');life.record(user.id,'greet',`向 ${name(b.role)} 打了招呼。`,a.scene,Date.now(),{key:`greet:${pair}`,cooldown:memoryPolicy.encounterCooldown});life.record(b.id,'greet',`${name(user.role)} 向你打了招呼。`,a.scene,Date.now(),{key:`greet:${pair}:peer`,cooldown:memoryPolicy.encounterCooldown});}json(res,200,{ok:true});return;}
           if(input.action==='gift'){if(typeof input.requestId!=='string'||input.requestId.length>120)fail(400,'操作编号无效');const result=life.send(user.id,b.role,'gift',input.requestId,a.scene,input.revision);dirty=true;flush();json(res,200,result);return;}
           fail(400,'互动无效');
@@ -277,13 +423,27 @@ export function createMvpServer({dbPath='data/mvp.sqlite',staticDir=resolve('dis
       try{filePath=decodeURIComponent(path);}catch{fail(400,'路径无效');}
       let file=resolve(staticDir,'.'+filePath);if(path==='/')file=resolve(staticDir,'index.html');if(path==='/moles'||path==='/moles/')file=resolve(staticDir,'moles.html');if(!file.startsWith(resolve(staticDir)+sep))fail(403,'访问无效');
       const content=await readFile(file).catch(()=>null);if(!content){json(res,404,{error:'文件不存在，请先构建'});return;}
-      const mime={'.html':'text/html; charset=utf-8','.js':'text/javascript','.css':'text/css','.png':'image/png','.jpg':'image/jpeg','.json':'application/json'};
+      const mime={'.html':'text/html; charset=utf-8','.js':'text/javascript','.css':'text/css','.png':'image/png','.jpg':'image/jpeg','.json':'application/json','.mp4':'video/mp4','.m4a':'audio/mp4','.webm':'audio/webm'};
+      if(['.mp4','.m4a','.webm'].includes(extname(file))){
+        const headers={'Content-Type':mime[extname(file)],'Accept-Ranges':'bytes','X-Content-Type-Options':'nosniff'};
+        const range=req.headers.range;
+        if(range){
+          const match=/^bytes=(\d*)-(\d*)$/.exec(range),size=content.length;
+          const start=match?.[1]?Number(match[1]):match?.[2]?Math.max(0,size-Number(match[2])):NaN;
+          const end=match?.[1]&&match?.[2]?Math.min(size-1,Number(match[2])):size-1;
+          if(!Number.isSafeInteger(start)||!Number.isSafeInteger(end)||start<0||start>=size||end<start){res.writeHead(416,{...headers,'Content-Range':`bytes */${size}`});res.end();return;}
+          res.writeHead(206,{...headers,'Content-Range':`bytes ${start}-${end}/${size}`,'Content-Length':end-start+1});res.end(content.subarray(start,end+1));return;
+        }
+        res.writeHead(200,{...headers,'Content-Length':content.length});res.end(content);return;
+      }
       res.writeHead(200,{'Content-Type':mime[extname(file)]||'application/octet-stream','X-Content-Type-Options':'nosniff'});res.end(content);
     }catch(e){if(!res.headersSent)json(res,e.status||500,{error:e.status?e.message:'服务暂时不可用'});else res.end();if(!e.status)console.error(e.message);}
   };
   const maps=[players,autonomy.doubles,leases,liveMarks,replyCooldown];
-  const request=durableRequests({db:store.db,handle,before:beforeRequest,commit:commitRequest,suspend:value=>{paused=value;if(!value)for(const job of transportJobs.splice(0)){try{job();}catch(e){console.error('stream cleanup failed: '+e.message);}}},capture:()=>maps.map(m=>structuredClone([...m])),restore:saved=>{maps.forEach((m,i)=>{m.clear();for(const [k,v]of saved[i])m.set(k,v);});for(const a of store.db.prepare('SELECT id FROM accounts').all())world.invalidate(a.id);pendingEvents=[];dirty=true;},publish:()=>{paused=false;const events=pendingEvents;pendingEvents=[];for(const event of events)event();}});
+  const request=durableRequests({db:store.db,handle,before:beforeRequest,commit:commitRequest,suspend:value=>{paused=value;if(!value)for(const job of transportJobs.splice(0)){try{job();}catch(e){console.error('stream cleanup failed: '+e.message);}}},capture:()=>maps.map(m=>structuredClone([...m])),restore:saved=>{maps.forEach((m,i)=>{m.clear();for(const [k,v]of saved[i])m.set(k,v);});for(const a of store.db.prepare('SELECT id FROM accounts').all())world.invalidate(a.id);pendingEvents=[];dirty=true;},publish:()=>{paused=false;const events=pendingEvents;pendingEvents=[];for(const event of events)event();if(!closed)replies.pump();}});
+  llm.setPersistence(request.mutate);
   const server=createServer(request);
-  const timer=setInterval(()=>{if(paused)return;try{reconcileTravel();if(autonomy.tick())poseDirty=true;const v=celine.snapshot(visibleActors()),signature=JSON.stringify([v.scene,v.mode,v.seat,Math.round(v.x),Math.round(v.y),v.question]);if(signature!==visitorSignature){visitorSignature=signature;poseDirty=true;}if(Date.now()-lastFull>=1000)dirty=true;flush();}catch(e){console.error('world tick failed: '+e.message);}},100),heartbeat=setInterval(()=>{if(paused)return;try{for(const s of streams)markLive(s.user);for(const [key,value] of rates)if(value.until<Date.now())rates.delete(key);for(const s of [...streams]){if(!store.session(s.token)){emit(s,'logout',{});s.res.end();streams.delete(s);if(![...streams].some(x=>x.user===s.user)){const p=players.get(s.user);if(p){p.disconnectedAt=Date.now();life.savePosition(p);}controls.delete(s.user);}dirty=true;}else s.res.write(': heartbeat\n\n');}for(const [id,p]of players){if(p.disconnectedAt&&Date.now()-p.disconnectedAt>45000){/* The user may be live on another instance: never clobber their newer pose/control. */if(!seenLive(id,45000))life.savePosition(p);players.delete(id);release(id);if(controls.stale(id))controls.delete(id);dirty=true;}else if(!p.disconnectedAt&&Date.now()-p.at>45000){p.seat=null;release(id);dirty=true;}}}catch(e){console.error('heartbeat failed: '+e.message);}},15000);timer.unref();heartbeat.unref();
-  return {server,store,life,autonomy,director,llm,players,streams,close(){if(closed)return;closed=true;director.close();llm.close();autonomy.saveAll();clearInterval(timer);clearInterval(heartbeat);for(const s of streams)s.res.end();streams.clear();server.close();store.close();}};
+  let lastMessageRelay=0;
+  const timer=setInterval(()=>{if(paused)return;try{if(Date.now()-lastMessageRelay>=500){lastMessageRelay=Date.now();relayMessages();}reconcileTravel();if(autonomy.tick())poseDirty=true;const v=celine.snapshot(visibleActors()),signature=JSON.stringify([v.scene,v.mode,v.seat,Math.round(v.x),Math.round(v.y),v.question]);if(signature!==visitorSignature){visitorSignature=signature;poseDirty=true;}if(Date.now()-lastFull>=1000)dirty=true;flush();}catch(e){console.error('world tick failed: '+e.message);}},100),heartbeat=setInterval(()=>{if(paused)return;try{/* Only browser acknowledgments refresh liveness. */for(const [key,value] of rates)if(value.until<Date.now())rates.delete(key);for(const s of [...streams]){if(!store.session(s.token)){emit(s,'logout',{});s.res.end();streams.delete(s);if(![...streams].some(x=>x.user===s.user)){const p=players.get(s.user);if(p){p.disconnectedAt=Date.now();p.moving=false;if(!seenLive(p.id))life.savePosition(p);}controls.delete(s.user);}dirty=true;}else s.res.write(': heartbeat\n\n');}for(const [id,p]of players){if(p.disconnectedAt&&Date.now()-p.disconnectedAt>45000){/* The user may be live on another instance: never clobber their newer pose/control. */if(!seenLive(id,45000)){life.savePosition(p);release(id);if(controls.stale(id))controls.delete(id);}players.delete(id);dirty=true;}else if(!p.disconnectedAt&&!humanLive(id)&&Date.now()-p.at>45000){p.seat=null;release(id);dirty=true;}}}catch(e){console.error('heartbeat failed: '+e.message);}},15000);timer.unref();heartbeat.unref();
+  return {server,store,life,autonomy,director,llm,presence,players,streams,agentProfiles,replies,close(){if(closed)return;closed=true;replies.close();director.close();llm.close();autonomy.saveAll();clearInterval(timer);clearInterval(heartbeat);for(const s of streams)s.res.end();streams.clear();server.close();store.close();}};
 }

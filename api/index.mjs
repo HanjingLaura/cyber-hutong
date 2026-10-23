@@ -21,15 +21,23 @@ if (url) {
   console.warn('TURSO_DATABASE_URL missing: using ephemeral local SQLite (data is lost when the instance stops).');
 }
 
-const app = createMvpServer({ dbPath, staticDir: join(process.cwd(), 'dist'),
+const app = createMvpServer({ dbPath, staticDir: join(process.cwd(), 'dist'),backgroundTask:task=>waitUntil(task),
   beforeRequest: async req=>{
     if (!replica) return;
     const path=stripBase(req.url||'/').split('?')[0];
     const albumRequest=path==='/api/albums'||path==='/api/album-photo';
+    // Only explicit travel needs the second authoritative positions scan. Normal
+    // motion still pulls committed rows, without scanning every user's pose again.
+    let checkpoint=false;
+    if(path==='/api/presence'&&req.hutongBody){try{checkpoint=JSON.parse(req.hutongBody.toString()).checkpoint===true;}catch{/* The normal request parser reports malformed JSON. */}}
+    const travelRequest=path==='/api/transition'||checkpoint;
     await replica.pull({maxAgeMs:req.method==='POST'?0:req.url?.includes('/presence')?250:0,reconcilePending:!albumRequest});
     if (albumRequest) {
       await replica.syncAuthoritativeTables(['album_photos'], {pendingTables:['album_photo_chunks']});
       if (replica.hasPending(['album_photos','album_photo_chunks'])) throw Object.assign(new Error('相册正在同步，请稍后重试'),{status:503});
+    }
+    if (travelRequest && req.method==='POST') {
+      await replica.syncAuthoritativeTables(['positions']);
     }
   },
   commitRequest:replica?()=>replica.flush({allowTransaction:true}):undefined });

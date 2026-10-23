@@ -48,7 +48,7 @@ try{
  await pages[0].waitForTimeout(500);
  assert.equal(backend.players.size,8);assert.ok(backend.streams.size>=8);assert.deepEqual([...backend.players.values()].map(p=>p.role).sort(),[...roles].sort());
  const login=await (await browser.newContext({viewport:{width:1100,height:850}})).newPage();
- await login.route('**/assets/characters/team/v3/laura.png*',async route=>{await new Promise(resolve=>setTimeout(resolve,1600));await route.continue();});
+ await login.route('**/assets/characters/laura/poses.png*',async route=>{await new Promise(resolve=>setTimeout(resolve,1600));await route.continue();});
  await login.addInitScript(()=>{window.__oldOutfitFrames=[];const attach=()=>{const bridge=window.__socialPreview?.bridge;if(!bridge){requestAnimationFrame(attach);return;}bridge.game.events.on('postrender',()=>{if(bridge.user?.role==='laura')window.__oldOutfitFrames.push(!!bridge.active?.actor?.visible);});};requestAnimationFrame(attach);});
  await login.goto('http://127.0.0.1:5186/',{waitUntil:'domcontentloaded'});await login.locator('#account-dialog[open]').waitFor();
  await login.locator('#account-name').fill('laura');await login.locator('#account-password').fill('browser-test-password');await login.locator('#account-submit').click();

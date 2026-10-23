@@ -1,8 +1,9 @@
 import { spawn } from 'node:child_process';
 import { existsSync, writeFileSync, readFileSync } from 'node:fs';
 import { randomBytes } from 'node:crypto';
+import {loadLocalEnvironment} from '../server/local-env.mjs';
 
-if (existsSync('.env.local')) process.loadEnvFile('.env.local');
+loadLocalEnvironment();
 
 function ensureLocalEnv() {
   const lines = [];

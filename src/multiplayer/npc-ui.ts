@@ -2,6 +2,7 @@ import rules from '../../shared/npcs.json';
 import positions from '../../shared/guests.json';
 import type {MultiplayerBridge} from './bridge';
 import {dockPrompt} from '../hud';
+import {traceInteraction} from '../interaction-diagnostics';
 import {receiveNpcFeedback, clearNpcFeedback, npcFeedback, paintNpcFeedback, type NpcReaction} from '../npc-feedback';
 const names:Record<string,string>={ani:'Ani',lulu:'噜噜',tutu:'图图',buzz:'巴斯光年',zhu:'朱志鑫',ferret:'富贵貂'};
 export function setupNPCUI(bridge:MultiplayerBridge,request:(path:string,input?:any)=>Promise<any>,publish:()=>Promise<void>,client:string,notice:(s:string)=>void){
@@ -20,7 +21,7 @@ export function setupNPCUI(bridge:MultiplayerBridge,request:(path:string,input?:
  }catch(e){if(current())notice((e as Error).message);}finally{if(generation===attempt)busy=false;}}
  button.onclick=()=>{const n=nearest();if(n)void interact(n.id);};
  const click=(e:Event)=>{const id=(e as CustomEvent).detail,rule=rules.find(r=>r.id===id);if(rule?.owner===bridge.user?.role)void interact(id);};window.addEventListener('hutong:npc-interact',click);
- const key=(e:KeyboardEvent)=>{if(e.code!=='KeyE'||e.repeat||document.querySelector('dialog[open]')||![document.querySelector('.world'),bridge.game.canvas].includes(document.activeElement)||bridge.state()?.seat)return;const n=nearest();if(!n)return;e.preventDefault();e.stopImmediatePropagation();void interact(n.id);};window.addEventListener('keydown',key,true);
+ const key=(e:KeyboardEvent)=>{if(e.code!=='KeyE'||e.repeat||document.querySelector('dialog[open]')||![document.querySelector('.world'),bridge.game.canvas].includes(document.activeElement)||bridge.state()?.seat)return;const n=nearest();if(!n)return;const primary=document.querySelector<HTMLButtonElement>('#interact');if(primary&&!primary.disabled&&primary.textContent?.trim()){traceInteraction('target',{target:'scene',reason:'scene_before_npc'});return;}traceInteraction('target',{target:n.id,busy});e.preventDefault();e.stopImmediatePropagation();void interact(n.id);};window.addEventListener('keydown',key,true);
  const draw=()=>{
   const n=nearest();button.hidden=!n||!bridge.controller||!bridge.connected||!!document.querySelector('dialog[open]');button.disabled=busy;button.textContent=n?'与'+names[n.id]+'互动':'';
   const rect=bridge.game.canvas.getBoundingClientRect(),world=document.querySelector('.world')!.getBoundingClientRect(),scene=bridge.active?.sys.settings.key;

@@ -3,6 +3,8 @@ import aniIcon from '../assets/ui/ani-app-icon.png';
 import grokIcon from '../assets/ui/grokbot-app-icon.png';
 import codexIcon from '../assets/ui/codex-app-icon.png';
 import feishuIcon from '../assets/ui/feishu-app-icon.png';
+import zhipinIcon from '../assets/ui/zhipin-app-icon.png';
+import maimaiIcon from '../assets/ui/maimai-app-icon.png';
 import { launchApp } from './app-launch.mjs';
 import { isTouchDevice } from './mobile/input.mjs';
 
@@ -18,6 +20,8 @@ const apps: DeskApp[] = [
     mobileHref: 'https://applink.feishu.cn/client/op/open?lk_unique=true',
     icon: feishuIcon,
   },
+  { id: 'zhipin', name: 'Boss直聘', href: 'https://www.zhipin.com/', icon: zhipinIcon },
+  { id: 'maimai', name: '脉脉', href: 'https://maimai.cn/', icon: maimaiIcon },
 ];
 
 // Apps whose scheme did nothing this session: later clicks go straight to the website.
@@ -48,11 +52,12 @@ function ensure() {
   root = document.createElement('dialog');
   root.id = 'desk-computer';
   root.className = 'desk-computer';
+  root.setAttribute('aria-labelledby', 'desk-computer-title');
   root.innerHTML = `
     <div class="desk-bezel" role="document">
       <header class="desk-titlebar">
-        <span class="desk-title"></span>
-        <button type="button" class="desk-close" aria-label="关闭电脑屏幕">×</button>
+        <span class="desk-title" id="desk-computer-title">工位电脑</span>
+        <button type="button" class="desk-close" aria-label="关闭电脑屏幕">关闭 ×</button>
       </header>
       <div class="desk-screen">
         <div class="desk-wallpaper" aria-hidden="true"></div>
@@ -72,7 +77,7 @@ function ensure() {
     link.rel = 'noopener noreferrer';
     link.dataset.app = app.id;
     link.addEventListener('click', event => onAppClick(event, app, link));
-    link.innerHTML = `<img src="${app.icon}" alt="" width="64" height="64" draggable="false"/><span>${app.name}</span>`;
+    link.innerHTML = `<span class="desk-icon-plate"><img src="${app.icon}" alt="" width="48" height="48" draggable="false"/></span><span class="desk-app-name">${app.name}</span>`;
     icons.append(link);
   }
   root.querySelector('.desk-close')!.addEventListener('click', () => closeDeskComputer());

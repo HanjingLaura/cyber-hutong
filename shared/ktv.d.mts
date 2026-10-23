@@ -1,4 +1,4 @@
-export type KtvSong={id:string;name:string;bpm:number;notes:number[];lines:string[]};
+export type KtvSong={id:string;name:string;artist:string;bpm:number;duration:number;videoId:string};
 export type KtvPlayer={queue:string[];playing:boolean;started:number;offset:number};
 export const ktvSongs:KtvSong[];
 export const ktvLights:string[];

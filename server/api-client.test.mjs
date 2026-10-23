@@ -9,7 +9,7 @@ const compiled=ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.
 function fixture(fetch){
   const module={exports:{}},events=[],deadlines=[];
   runInNewContext(compiled,{module,exports:module.exports,fetch,Event,
-    require:()=>({apiUrl:path=>'/api/'+path}),window:{dispatchEvent:event=>events.push(event.type)},
+    require:()=>({apiUrl:path=>'/api/'+path,traceInteraction(){}}),window:{dispatchEvent:event=>events.push(event.type)},
     AbortSignal:{timeout:ms=>{deadlines.push(ms);return AbortSignal.timeout(10);}},
   });
   return{api:module.exports.api,events,deadlines};
@@ -34,4 +34,10 @@ test('the timeout also aborts a response body that never finishes',async()=>{
   const keepAlive=setInterval(()=>{},100);
   try{await assert.rejects(f.api('presence',{}),/联机服务响应异常/);}finally{clearInterval(keepAlive);}
   assert.deepEqual(f.events,['hutong:connection-lost']);
+});
+
+test('a platform 500 error page reports a server outage instead of a vague login failure',async()=>{
+ const f=fixture(async()=>({ok:false,status:500,json:async()=>{throw new SyntaxError('HTML error page');}}));
+ await assert.rejects(f.api('login',{username:'synthetic-user',password:'synthetic-password'}),e=>e.status===500&&e.message==='服务器暂时不可用，请稍后重试');
+ assert.deepEqual(f.events,['hutong:connection-lost']);
 });

@@ -1,5 +1,7 @@
+import {bindSceneEvent} from './scene-dom';
 import {sceneWalkable} from '../shared/walkability.mjs';
 import Phaser from 'phaser';
+import {setGuide} from './hud';
 import {sharedAction} from './multiplayer/world-client';
 import { playerInventory } from './player-inventory';
 
@@ -29,7 +31,7 @@ export class ElevatorLobbyScene extends Phaser.Scene{
     window.addEventListener('keydown',action);window.addEventListener('blur',clear);world.addEventListener('blur',clear);
     this.events.on('sleep',clear);
     this.events.once('shutdown',()=>{window.removeEventListener('keydown',action);window.removeEventListener('blur',clear);world.removeEventListener('blur',clear);});
-    document.querySelector('#interact')!.addEventListener('click',()=>{if(this.sys.isActive()){this.interact();world.focus();}});
+    bindSceneEvent(this, document.querySelector('#interact')!, 'click', ()=>{if(this.sys.isActive()){this.interact();world.focus();}});
     window.__elevatorPreview={getState:()=>({ready:true,active:this.sys.isActive(),x:this.x,y:this.y,nearest:this.nearest(),doors:this.doors.map((d,i)=>({...d,state:this.state(i)})),hand:playerInventory.hand})};
     world.focus();
   }
@@ -68,7 +70,6 @@ export class ElevatorLobbyScene extends Phaser.Scene{
     document.querySelector('#mode')!.textContent=moving?'在电梯间走动':'站在电梯间';
     document.querySelector('#hint')!.textContent='E 开关门';
     document.querySelector('#elevator-state')!.textContent=`1 号 · ${this.state(0)}　2 号 · ${this.state(1)}`;
-    document.querySelector('#guide-title')!.textContent='WASD / 方向键移动';
-    document.querySelector('#guide-action')!.textContent=index===undefined?'E 开关门':`E · ${button.textContent}`;
+    setGuide('WASD / 方向键移动',index===undefined?'':`E · ${button.textContent}`);
   }
 }

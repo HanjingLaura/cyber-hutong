@@ -35,6 +35,7 @@ test('play invites finish in arcade dance or gym instead of only the rest room',
  life.finishMeetings([{id:a.id,role:'laura',scene:'dance',x:400,y:250},{id:b.id,role:'sid',scene:'dance',x:405,y:252}]);assert.ok(life.journal(a.id).some(e=>e.body.includes('舞室')));
 });
 test('offline rules use furniture routes and surrender to the human without two copies',async t=>{
+ t.mock.method(Math,'random',()=>0);
  const {store,life,a}=await fixture(t),players=new Map(),npc=createAutonomy(store,life,players);npc.tick();const p=npc.get(a.id);assert.ok(p);p.next=0;const random=Math.random;Math.random=()=>0;try{for(let i=0;i<150;i++)npc.tick(Date.now()+i*100,100);}finally{Math.random=random;}
  assert.equal(p.activity,'working');assert.equal(p.seat,'L3');assert.equal(life.journal(a.id).length,0,'routine office activity does not create a story');const remembered=npc.reclaim(a.id);assert.equal(npc.doubles.size,1); // Sid still offline.
  players.set(a.id,remembered);npc.tick(Date.now()+10000);assert.equal(npc.all().filter(p=>p.role==='laura').length,1);
@@ -56,6 +57,7 @@ test('backup and reopen preserve history, backpack, location and pending gift re
  }finally{store.close();assert.ok(dir.startsWith(join(tmpdir(),'hutong-life-')));rmSync(dir,{recursive:true});}
 });
 test('offline exercise reserves a real treadmill and relinquishes it on login',async t=>{
+ t.mock.method(Math,'random',()=>.9);
  const {store,life,a,b}=await fixture(t);const kay=(await store.register('life_kay','test-password-123','kay')).user,players=new Map([[a.id,{id:a.id,role:'laura',scene:'hutong',x:384,y:194}],[b.id,{id:b.id,role:'sid',scene:'hutong',x:192,y:194}]]),leases=new Map(),npc=createAutonomy(store,life,players,leases);npc.tick();const p=npc.get(kay.id);p.next=0;
  const original=Math.random;Math.random=()=>.9;try{for(let i=0;i<600;i++)npc.tick(Date.now()+i*100,100);}finally{Math.random=original;}
  assert.equal(p.activity,'run');assert.equal(p.scene,'gym');assert.equal(leases.get('gym:run-0').account,kay.id);npc.reclaim(kay.id);assert.equal(leases.size,0);assert.equal(life.position(kay.id).y,155);

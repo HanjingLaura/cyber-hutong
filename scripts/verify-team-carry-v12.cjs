@@ -1,3 +1,4 @@
+const reviewOrigin=process.env.HUTONG_REVIEW_ORIGIN||'http://127.0.0.1:5173';
 const fs=require('node:fs'),assert=require('node:assert/strict');
 const {chromium}=require('./playwright.cjs').loadPlaywright();
 const roles=['suki','sid','jilly','laura','kay','franco','cora','amber'];
@@ -6,7 +7,7 @@ const roles=['suki','sid','jilly','laura','kay','franco','cora','amber'];
  try{
   const page=await browser.newPage({viewport:{width:1280,height:1100}}),errors=[];page.on('pageerror',e=>errors.push(e.message));
   for(const [action,mode,version]of [['3','carry-walk','v12']]){
-   await page.goto(`http://127.0.0.1:5173/members.html?action=${action}&direction=1`);await page.waitForFunction(()=>window.__memberPreview?.getState().ready);
+   await page.goto(`${reviewOrigin}/members.html?action=${action}&direction=1`);await page.waitForFunction(()=>window.__memberPreview?.getState().ready);
    for(const direction of ['1','3']){
     await page.locator('#team-direction').selectOption(direction);
     for(let phase=0;phase<8;phase++){

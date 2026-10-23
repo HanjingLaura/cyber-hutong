@@ -1,0 +1,52 @@
+{
+  "added": "2026-10-16",
+  "purpose": "User-requested KTV MVs and concert audio; local playback follows player opt-in.",
+  "tracks": [
+    {
+      "id": "power",
+      "artist": "G-DRAGON",
+      "source": "https://www.youtube.com/watch?v=NMjhjrBIrG8",
+      "file": "assets/video/ktv-power.mp4",
+      "durationMs": 167020,
+      "encoding": "360p H.264 video / AAC audio",
+      "bytes": 12308688
+    },
+    {
+      "id": "beauty-and-a-beat",
+      "artist": "Justin Bieber feat. Nicki Minaj",
+      "source": "https://www.youtube.com/watch?v=Ys7-6_t7OEQ",
+      "file": "assets/video/ktv-beauty-and-a-beat.mp4",
+      "durationMs": 292970,
+      "encoding": "360p H.264 video / AAC audio",
+      "bytes": 25662705
+    },
+    {
+      "id": "lover-boy-88",
+      "artist": "Higher Brothers / Phum Viphurit",
+      "source": "https://www.youtube.com/watch?v=31tpqyCJ0lI",
+      "file": "assets/video/ktv-lover-boy-88.mp4",
+      "durationMs": 275040,
+      "encoding": "360p H.264 video / AAC audio",
+      "bytes": 18700772
+    },
+    {
+      "id": "eyes-nose-lips",
+      "artist": "TAEYANG",
+      "source": "https://www.youtube.com/watch?v=UwuAPyOImoI",
+      "file": "assets/video/ktv-eyes-nose-lips.mp4",
+      "durationMs": 275710,
+      "encoding": "360p H.264 video / AAC audio",
+      "bytes": 9939635
+    },
+    {
+      "id": "concert",
+      "name": "我 VS Justin Bieber",
+      "artist": "TOP 登陆少年组合",
+      "source": "https://www.youtube.com/watch?v=-FbpxxLleLU",
+      "sourceChannel": "TOP登陸少年組合 - Topic; Provided to YouTube by Universal Music Group",
+      "file": "assets/audio/concert-me-vs-justin-bieber.m4a",
+      "encoding": "AAC 128 kbps, M4A, audio only",
+      "bytes": 3097722
+    }
+  ]
+}

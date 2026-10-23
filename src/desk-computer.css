@@ -1,177 +1,69 @@
+/* Existing pixel monitor; its screen stays aligned at every size. */
 #desk-computer {
-  width: min(420px, calc(100vw - 28px));
-  max-width: 420px;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  color: #e8f0d8;
-  font-family: Consolas, "IBM Plex Mono", "Microsoft YaHei", monospace;
+  width: min(624px, calc(100vw - 24px), calc((100dvh - 112px) * 1.1818));
+  max-width: none; max-height: none; padding: 48px 0 0; overflow: visible;
+  border: 0; background: transparent; color: #f4efdc;
+  font-family: "IBM Plex Sans", "Noto Sans SC", "Microsoft YaHei", sans-serif;
 }
-#desk-computer::backdrop {
-  background: #0a121099;
-  image-rendering: pixelated;
-}
+#desk-computer::backdrop { background: #0a1210b8; }
 .desk-bezel {
-  border: 4px solid #2a3430;
-  background:
-    linear-gradient(180deg, #3a4540 0%, #2a332f 18%, #1d2622 100%);
-  box-shadow:
-    inset 0 0 0 2px #6d7a6a,
-    6px 6px 0 #0c1210;
-  padding: 10px 10px 12px;
+  position: relative; width: 100%; aspect-ratio: 208 / 176; container-type: inline-size;
+  background: url('../assets/ui/desk-monitor.png') 0 0 / 100% 100% no-repeat;
+  image-rendering: pixelated; filter: drop-shadow(4px 6px 0 #0a121088);
 }
 .desk-titlebar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  margin-bottom: 8px;
-  padding: 4px 2px 6px;
-  border-bottom: 2px solid #101714;
+  position: absolute; inset: -48px 0 auto; display: flex; align-items: center;
+  justify-content: space-between; height: 40px;
 }
-.desk-title {
-  font-size: 12px;
-  letter-spacing: .08em;
-  color: #d7e2c4;
-  text-shadow: 1px 1px #0d1411;
-}
+.desk-title { font-size: 14px; font-weight: 600; }
 .desk-close {
-  width: 28px;
-  height: 24px;
-  padding: 0;
-  border: 2px solid #8a3f35;
-  background: #c45a3a;
-  color: #fff6da;
-  font-size: 16px;
-  line-height: 18px;
-  box-shadow: inset -1px -1px 0 #7a2f28, inset 1px 1px 0 #e08a6a;
+  min-width: 72px; min-height: 40px; padding: 6px 12px; border: 2px solid;
+  border-color: #ece8d6 #777b6e #777b6e #ece8d6; border-radius: 0;
+  background: #c4c8ba; color: #20261f; font: inherit; font-size: 13px; cursor: pointer;
 }
-.desk-close:hover,
-.desk-close:focus-visible {
-  background: #d46848;
-  outline: 2px solid #f1d36e;
-  outline-offset: 1px;
-}
+.desk-close:hover { background: #e0e2d5; }
+.desk-close:active { border-color: #777b6e #ece8d6 #ece8d6 #777b6e; }
+.desk-close:focus-visible { outline: 3px solid #f1d36e; outline-offset: 3px; }
 .desk-screen {
-  position: relative;
-  height: min(280px, 56dvh);
-  border: 3px solid #111814;
-  background: #1a2740;
-  box-shadow: inset 0 0 0 2px #4a6a8a;
-  overflow: hidden;
-  image-rendering: pixelated;
+  position: absolute; left: 10.4%; top: 9.4%; width: 79.2%; height: 62.9%;
+  overflow: hidden; background: #29344c;
 }
 .desk-wallpaper {
-  position: absolute;
-  inset: 0;
-  background:
-    linear-gradient(180deg, #24385c 0%, #1a2740 48%, #142033 100%),
-    repeating-linear-gradient(
-      0deg,
-      transparent 0 3px,
-      #00000014 3px 4px
-    );
+  position: absolute; inset: 0;
+  background: url('../assets/ui/desk-wallpaper.png') 0 0 / 100% 100% no-repeat;
   pointer-events: none;
 }
-.desk-wallpaper::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(circle at 18% 22%, #6ec8ff33 0 10px, transparent 11px),
-    radial-gradient(circle at 78% 30%, #ffd27a22 0 14px, transparent 15px),
-    linear-gradient(90deg, transparent 0 12px, #ffffff08 12px 13px, transparent 13px);
-  opacity: .85;
-}
 .desk-icons {
-  position: relative;
-  z-index: 1;
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 10px 8px;
-  padding: 18px 14px 42px;
+  position: relative; display: grid; grid-template-columns: repeat(3, minmax(0, 96px));
+  gap: 8px 10px; padding: 14px 14px 10px;box-sizing:border-box;height:calc(100% - 40px);overflow:auto;align-content:start;
 }
 .desk-app {
-  display: grid;
-  justify-items: center;
-  gap: 6px;
-  text-decoration: none;
-  color: #f4f0de;
-  font-size: 11px;
-  text-shadow: 1px 1px #0c1418;
-  padding: 4px 2px;
-  border: 2px solid transparent;
+  display: grid; justify-items: center; align-content: start; gap: 6px; min-width: 0;
+  padding: 6px 2px; border: 2px solid transparent; color: #fff9e9; text-decoration: none;
+  font-size: 13px; line-height: 18px; cursor: pointer;
 }
-.desk-app img {
-  width: 48px;
-  height: 48px;
-  image-rendering: pixelated;
-  image-rendering: crisp-edges;
-  background: #10182088;
-  border: 2px solid #2c3a48;
-  box-shadow: 2px 2px 0 #0a1016;
-}
-.desk-app:hover,
-.desk-app:focus-visible {
-  border-color: #f1d36e;
-  background: #ffffff18;
-  outline: none;
-}
+.desk-icon-plate{display:grid;place-items:center;box-sizing:border-box;width:60px;height:60px;background:#d1d0b8;border:2px solid;border-color:#f1ecd2 #697364 #697364 #f1ecd2}
+.desk-app img {width:44px;height:44px;object-fit:contain;image-rendering:pixelated}
+.desk-app-name{padding:1px 4px;background:#172238ed;white-space:nowrap;color:#fff9e9}
+.desk-app:hover { background: #d7e2e62b; border-color: #d8e3ec; }
+.desk-app:focus-visible { background: #243452c9; border-color: #f1d36e; outline: none; }
+.desk-app:active { background: #172238b8; }
+.desk-app[data-launching] { opacity: .6; cursor: progress; }
 .desk-taskbar {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 2;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  min-height: 28px;
-  padding: 0 8px;
-  background: linear-gradient(180deg, #3d4a40, #252e29);
-  border-top: 2px solid #6d7a66;
-  font-size: 11px;
-  color: #e8efd8;
+  position: absolute; inset: auto 0 0; display: flex; align-items: center;
+  justify-content: space-between; gap: 8px; min-height: 32px; padding: 3px 8px;
+  border-top: 2px solid #e8eadf; background: #c4c8ba; color: #20261f; font-size: 12px;
 }
-.desk-start {
-  padding: 2px 8px;
-  border: 2px solid #889c6f;
-  background: #303b35;
-  box-shadow: inset 1px 1px 0 #5a6a55;
-}
+.desk-start { font-weight: 600; padding: 2px 5px; }
 .desk-clock {
-  padding: 2px 6px;
-  border: 1px solid #4a5548;
-  background: #17231c;
+  padding: 2px 8px; border: 1px solid; border-color: #7d8174 #f0f1ea #f0f1ea #7d8174;
+  background: #b6baac; font-family: Consolas, monospace; font-variant-numeric: tabular-nums;
 }
-
-
-/* Pixel monitor: 208×176 sprite drawn at 2×, screen well at (12,12)-(195,131). */
-#desk-computer { width:416px;max-width:calc(100vw - 16px); }
-.desk-bezel { position:relative;width:416px;height:352px;padding:0;border:0;box-shadow:none;background:url('../assets/ui/desk-monitor.png') 0 0/416px 352px no-repeat;image-rendering:pixelated;filter:drop-shadow(4px 6px 0 #0a1210aa); }
-.desk-titlebar { position:absolute;right:-6px;top:-10px;margin:0;padding:0;border:0;z-index:3; }
-.desk-title { display:none; }
-.desk-screen { position:absolute;left:24px;top:24px;width:368px;height:240px;border:0;box-shadow:inset 0 0 0 2px #0006;background:#1a2740; }
-.desk-wallpaper { background:url('../assets/ui/desk-wallpaper.png') 0 0/368px 240px no-repeat;image-rendering:pixelated; }
-.desk-wallpaper::after { background:repeating-linear-gradient(0deg,transparent 0 3px,#0000000f 3px 4px);opacity:1; }
-.desk-icons { grid-template-columns:repeat(4,64px);justify-content:start;gap:8px 14px;padding:14px 16px 40px; }
-.desk-app { gap:3px;padding:3px 0; }
-.desk-app img { width:64px;height:64px;background:none;border:0;box-shadow:none;filter:drop-shadow(2px 2px 0 #0008); }
-.desk-taskbar { min-height:24px;background:#c4c8ba;border-top:2px solid #e8eadf;color:#20261f;box-shadow:inset 0 -2px 0 #8a8e80; }
-.desk-start { background:#d8dccd;border:2px solid;border-color:#f4f5ee #6f7366 #6f7366 #f4f5ee;box-shadow:none;color:#20261f;font-weight:600; }
-.desk-clock { background:#b6baac;border:1px solid;border-color:#7d8174 #f0f1ea #f0f1ea #7d8174;color:#20261f; }
-@media (max-width: 440px) {
-  #desk-computer { width:312px; }
-  .desk-bezel { width:312px;height:264px;background-size:312px 264px; }
-  .desk-screen { left:18px;top:18px;width:276px;height:180px; }
-  .desk-wallpaper { background-size:276px 180px; }
-  .desk-icons { grid-template-columns:repeat(4,48px);gap:6px 14px;padding:10px 12px 30px; }
-  .desk-app img { width:48px;height:48px; }
-  .desk-screen { height:180px; }
+@media (max-width: 540px), (max-height: 580px) {
+  .desk-icons { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px 6px; padding: 8px; height:calc(100% - 32px); }
+  .desk-app { gap: 2px; padding: 3px 0; font-size: 12px; line-height: 16px; }
+  .desk-app img { width: clamp(32px, 11cqw, 48px); height: clamp(32px, 11cqw, 48px); }
+  .desk-icon-plate{width:46px;height:46px}.desk-app img{width:34px;height:34px}
+  .desk-taskbar { min-height: 26px; padding: 1px 5px; font-size: 11px; }
 }
-#desk-computer { padding-top:34px;overflow:visible; }
-#desk-computer .desk-titlebar { top:-34px;right:0; }
-#desk-computer .desk-close { width:32px;height:28px; }
-
-.desk-app[data-launching] { opacity:.6; }
+@media (pointer: coarse) { .desk-close { min-height: 44px; } }

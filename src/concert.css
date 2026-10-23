@@ -1,0 +1,6 @@
+#concert-audio { position:absolute;right:14px;top:60px;z-index:30;width:min(270px,calc(100% - 28px));padding:10px 12px;box-sizing:border-box;background:var(--hto-panel);border:1px solid var(--hto-line);color:var(--hto-panel-ink);font:13px/1.6 var(--hto-font); }
+#concert-audio[hidden] { display:none; }
+#concert-audio p { margin:0 0 8px; }
+#concert-audio p:empty { display:none; }
+html.touch-ui #concert-audio { top:auto;bottom:136px;right:12px;z-index:41; }
+@media(max-height:480px) { html.touch-ui #concert-audio { top:60px;bottom:auto; } }

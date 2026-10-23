@@ -15,13 +15,13 @@ export function setupAlbumUI(bridge:MultiplayerBridge,request:(path:string,input
   dialog.innerHTML=`<div class="panel-heading"><h2 id="album-title">相册</h2><button id="album-close" type="button">关闭</button></div>
     <p id="album-status" role="status" aria-live="polite"></p>
     <section id="album-browse"><div class="album-bar"><p id="album-count"></p><button id="album-refresh" type="button">刷新</button><button id="album-add" type="button">上传照片</button></div><div id="album-grid" class="album-grid"></div></section>
-    <section id="album-compose" hidden><form id="album-form"><p class="album-help">把以前在这里留下的照片放进相册。</p><label class="album-file-label">选择照片<input id="album-files" type="file" accept="image/jpeg,image/png,image/webp" multiple></label><p class="album-help">JPG / PNG / WebP，每次最多 10 张。</p><div id="album-previews" class="album-previews"></div><label>照片说明（选填）<input id="album-caption" maxlength="120" placeholder="想记住的那一刻"></label><div id="album-upload-sharing"></div><div class="album-actions"><button id="album-submit" type="submit" disabled>保存照片</button><button id="album-cancel-upload" type="button">返回相册</button></div></form></section>
+    <section id="album-compose" hidden><form id="album-form"><p id="album-compose-help" class="album-help">把以前在这里留下的照片放进相册。</p><label class="album-file-label">选择照片<input id="album-files" type="file" accept="image/jpeg,image/png,image/webp" multiple></label><p id="album-format-help" class="album-help">JPG / PNG / WebP，每次最多 10 张。</p><div id="album-previews" class="album-previews"></div><label>照片说明（选填）<input id="album-caption" maxlength="120" placeholder="想记住的那一刻"></label><div id="album-upload-sharing"></div><div class="album-actions"><button id="album-submit" type="submit" disabled>保存照片</button><button id="album-cancel-upload" type="button">返回相册</button></div></form></section>
     <section id="album-detail" hidden><button id="album-back" type="button">返回相册</button><div id="album-full"></div><p id="album-detail-caption"></p><p id="album-detail-meta" class="album-help"></p><form id="album-share-form" hidden><div id="album-edit-sharing"></div><div class="album-actions"><button id="album-save-sharing" type="submit">保存可见范围</button><button id="album-delete" class="album-danger" type="button">删除照片</button></div></form><div id="album-delete-confirm" hidden><p>删除这张照片？相册里的其他成员也将无法查看。</p><div class="album-actions"><button id="album-confirm-delete" class="album-danger" type="button">确认删除</button><button id="album-keep" type="button">保留照片</button></div></div></section>`;
   document.querySelector('.world')!.append(dialog);
   const $=<T extends HTMLElement=HTMLElement>(id:string)=>dialog.querySelector<T>('#'+id)!;
   const button=document.createElement('button');button.id='album-open';button.textContent='相册';
   const tools=document.getElementById('game-tools')!;tools.insertBefore(button,document.getElementById('collection-open')?.nextSibling??tools.querySelector('#settings-open'));
-  let scene='',owner='',epoch=0,busy=false,loading=false,preparing=false,album:Album|null=null,selected:Photo|null=null,prepared:PreparedPhoto[]=[],signature='',poll:ReturnType<typeof setInterval>|undefined;
+  let scene='',owner='',epoch=0,busy=false,loading=false,preparing=false,captureDraft=false,album:Album|null=null,selected:Photo|null=null,prepared:PreparedPhoto[]=[],signature='',poll:ReturnType<typeof setInterval>|undefined;
   const current=(version:number)=>version===epoch&&owner===bridge.user?.id&&dialog.open;
   function status(text:string,error=false){$('album-status').textContent=text;$('album-status').classList.toggle('album-error',error);}
   function pane(which:'browse'|'compose'|'detail'){
@@ -34,7 +34,10 @@ export function setupAlbumUI(bridge:MultiplayerBridge,request:(path:string,input
     $('album-submit').toggleAttribute('disabled',busy||preparing||!prepared.length);
     $('album-confirm-delete').toggleAttribute('disabled',busy);$('album-keep').toggleAttribute('disabled',busy);
     $('album-close').toggleAttribute('disabled',busy||preparing);
-    $('album-submit').textContent=busy?'正在保存…':preparing?'正在处理照片…':prepared.length?`保存 ${prepared.length} 张照片`:'保存照片';
+    $('album-submit').textContent=busy?'正在保存…':preparing?'正在处理照片…':captureDraft?'存入相册':prepared.length?`保存 ${prepared.length} 张照片`:'保存照片';
+    dialog.dataset.capture=String(captureDraft);
+    $('album-compose-help').textContent=captureDraft?'这是刚才框选的场景照片。确认后存入当前场景相册，取消则不保存。':'把以前在这里留下的照片放进相册。';
+    $('album-cancel-upload').textContent=captureDraft?'取消':'返回相册';
   }
   function sharing(container:HTMLElement,prefix:string,visibility='selected',recipients:string[]=[]){
     container.replaceChildren();
@@ -78,7 +81,8 @@ export function setupAlbumUI(bridge:MultiplayerBridge,request:(path:string,input
     if(!quiet)status('正在读取相册…');
     try{
       const next:Album=await request('albums?scene='+encodeURIComponent(scene));if(!current(version))return;
-      const nextSignature=JSON.stringify(next);album=next;
+      const nextSignature=JSON.stringify(next),firstLoad=!album;album=next;
+      if(firstLoad&&captureDraft){const chosen=permissions('upload');sharing($('album-upload-sharing'),'upload',chosen.visibility,chosen.recipients);}
       if(nextSignature!==signature){signature=nextSignature;draw();
         if(selected){const photo=next.photos.find(p=>p.id===selected!.id);if(!photo){selected=null;$('album-full').replaceChildren();pane('browse');status('这张照片已删除或不再对你可见。');}else if(photo.updated!==selected.updated)detail(photo);}
       }
@@ -86,15 +90,16 @@ export function setupAlbumUI(bridge:MultiplayerBridge,request:(path:string,input
     }catch(e){if(current(version)){status((e as Error).message,true);if(quiet){$('album-grid').replaceChildren();$('album-full').replaceChildren();signature='';selected=null;pane('browse');}}}
     finally{if(version===epoch)loading=false;}
   }
-  function clean(){epoch++;clearInterval(poll);poll=undefined;loading=false;busy=false;preparing=false;clearPrepared();album=null;selected=null;signature='';owner='';$('album-grid').replaceChildren();$('album-full').replaceChildren();status('');pane('browse');controls();}
-  button.onclick=()=>{
-    if(!bridge.user?.role){notice('请先登录并领取角色');return;}if(bridge.transitioning){notice('场景正在切换，请稍后打开相册');return;}
-    clean();owner=bridge.user.id;scene=bridge.active?.sys.settings.key??'hutong';const room=(rooms as Record<string,{name:string}>)[scene];$('album-title').textContent=(room?.name??scene)+' 相册';dialog.showModal();void refresh();poll=setInterval(()=>void refresh(true),10_000);
-  };
+  function clean(){epoch++;clearInterval(poll);poll=undefined;loading=false;busy=false;preparing=false;captureDraft=false;clearPrepared();album=null;selected=null;signature='';owner='';$('album-grid').replaceChildren();$('album-full').replaceChildren();status('');pane('browse');controls();}
+  function open(){
+    if(!bridge.user?.role){notice('请先登录并领取角色');return false;}if(bridge.transitioning){notice('场景正在切换，请稍后打开相册');return false;}
+    clean();owner=bridge.user.id;scene=bridge.active?.sys.settings.key??'hutong';const room=(rooms as Record<string,{name:string}>)[scene];$('album-title').textContent=(room?.name??scene)+' 相册';dialog.showModal();void refresh();poll=setInterval(()=>void refresh(true),10_000);return true;
+  }
+  button.onclick=()=>{open();};
   $('album-close').onclick=()=>dialog.close();dialog.addEventListener('cancel',event=>{if(busy||preparing)event.preventDefault();});dialog.addEventListener('close',()=>{clean();document.querySelector<HTMLElement>('.world')?.focus();});
   $('album-refresh').onclick=()=>void refresh();
-  $('album-add').onclick=()=>{if(!album)return;pane('compose');clearPrepared();sharing($('album-upload-sharing'),'upload');status('');controls();};
-  $('album-cancel-upload').onclick=()=>{clearPrepared();pane('browse');status('');};
+  $('album-add').onclick=()=>{if(!album)return;captureDraft=false;pane('compose');clearPrepared();sharing($('album-upload-sharing'),'upload');status('');controls();};
+  $('album-cancel-upload').onclick=()=>{if(captureDraft){dialog.close();return;}clearPrepared();pane('browse');status('');};
   $('album-files').onchange=async()=>{
     const input=$<HTMLInputElement>('album-files'),files=[...input.files??[]];input.value='';if(!files.length)return;
     if(files.length+prepared.length>10){status('一次最多选择 10 张照片，请减少数量后重试。',true);return;}
@@ -108,7 +113,7 @@ export function setupAlbumUI(bridge:MultiplayerBridge,request:(path:string,input
     busy=true;controls();const version=epoch;let saved=0;const caption=$<HTMLInputElement>('album-caption').value,sharing=permissions('upload');
     try{
       while(prepared.length){const photo=prepared[0];await request('albums',{scene,image:photo.image,caption,...sharing,requestId:photo.requestId});if(!current(version))return;prepared.shift();URL.revokeObjectURL(photo.preview);saved++;status(`已保存 ${saved} 张照片…`);}
-      pane('browse');status(`已保存 ${saved} 张照片。`);signature='';
+      captureDraft=false;pane('browse');status(`已保存 ${saved} 张照片。`);signature='';
     }catch(e){if(current(version))status(`${saved?`已保存 ${saved} 张。`:''}${(e as Error).message}，剩余照片可重试。`,true);}
     finally{if(current(version)){busy=false;previews();controls();if(!prepared.length)await refresh(true);}}
   };
@@ -128,5 +133,11 @@ export function setupAlbumUI(bridge:MultiplayerBridge,request:(path:string,input
     finally{if(current(version)){busy=false;controls();await refresh(true);}}
   };
   bridge.game.events.once('destroy',()=>{clean();dialog.remove();button.remove();});
-  return {reset(){dialog.close();clean();}};
+  return {
+    composeCapture(photo:PreparedPhoto,capturedScene:string){
+      if(bridge.active?.sys.settings.key!==capturedScene||!open()){URL.revokeObjectURL(photo.preview);notice('场景已变化，请重新拍照');return;}
+      captureDraft=true;prepared=[photo];pane('compose');previews();sharing($('album-upload-sharing'),'upload');status('尚未保存。确认可见范围后，选择存入相册或取消。');controls();
+    },
+    reset(){dialog.close();clean();}
+  };
 }

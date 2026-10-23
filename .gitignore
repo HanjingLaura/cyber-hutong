@@ -16,3 +16,6 @@ skills-lock.json
 .partykit/
 .wrangler/
 server/album-seeds/*.jpg
+.impeccable/
+frontend-audit-desktop.png
+/void

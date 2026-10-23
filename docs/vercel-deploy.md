@@ -36,10 +36,14 @@ Vercel 项目 `cyber-hutong`，作品集 `hanjing-laura.vercel.app` 把 `/cyber-
 | `TURSO_DATABASE_URL`、`TURSO_AUTH_TOKEN` | 账号与存档持久化（仅 Production） |
 | `HUTONG_INVITE` | 内测邀请码；未设置时注册不需要邀请码 |
 | `HUTONG_ALLOWED_HOSTS` | 允许的跨站 Origin（作品集域名），用于 POST 来源检查 |
-| `DASHSCOPE_API_KEY`（可选 `LLM_MODEL`/`BAILIAN_MODEL`、`LLM_DAILY_LIMIT`） | 百炼大模型；未设置时使用内置回复 |
+| `DASHSCOPE_API_KEY`（可选 `LLM_MODEL`/`BAILIAN_MODEL`、`LLM_DAILY_LIMIT`） | 百炼大模型；2026-10-19 实测 `qwen-flash` 可用。已确认并启用的离线聊天分身只使用真实模型；缺少密钥或失败时展示失败状态，不伪造回复 |
 | `PARTY_AUTH_SECRET` | 与 PartyKit 共享的 join ticket HMAC 密钥 |
 | `VITE_PARTYKIT_HOST` | 前端连接的 PartyKit 主机（构建时嵌入），如 `cyber-hutong.xxx.partykit.dev` |
 | `PARTYKIT_HOST` / `PARTY_ROOM` | 可选；ticket 响应与房间名（默认 `hutong-main`） |
+
+聊天 Agent 的八位人设统一由 `server/agent-personas/*.json` 维护，游戏前端没有查看、编辑或确认入口。`confirmed` 与 `enabled` 由后台配置决定，本次八位全部启用。该目录通过函数 `includeFiles` 打包，修改后重新部署生效；旧账号里曾保存的前端人设不会覆盖后台文件。部署前运行 `npm run agents:check`，并保留服务端百炼密钥与模型配置。
+
+生产使用 `LLM_MODEL=qwen-flash`、`LLM_DAILY_LIMIT=200`、`LLM_DAILY_TOKEN_LIMIT=50000`。后台活动/角色自聊不调用模型，只在真人私聊或公共明确 @ 时触发。每日预算跨实例保存在已有 `llm_usage` 行内，请求前预留、成功按提供商用量结算，失败或缺少用量则保留保守额度。单次最多180输出token和16,000输入字节；历史最多6条、可见样例最多4条。健康接口的 `llm.budget` 可观察当天用量与限制，不返回聊天或人设原文。
 
 PartyKit 部署步骤与双窗口验收见 [partykit.md](partykit.md)。
 

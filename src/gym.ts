@@ -1,5 +1,8 @@
+import {bindSceneEvent} from './scene-dom';
+import {restoreWorldFocus} from './world-focus';
 import {sceneWalkable} from '../shared/walkability.mjs';
 import Phaser from 'phaser';
+import {setGuide} from './hud';
 import { playerInventory, type ItemName } from './player-inventory';
 import { preloadGuest, placeGuest, guestBlocks } from './easter-eggs';
 import {sharedAction,useDevice,releaseDevice,onlineWorld} from './multiplayer/world-client';
@@ -51,11 +54,11 @@ export class GymScene extends Phaser.Scene {
     window.addEventListener('keydown',action);window.addEventListener('blur',clear);world.addEventListener('blur',clear);
     this.events.once('shutdown',()=>{window.removeEventListener('keydown',action);window.removeEventListener('blur',clear);world.removeEventListener('blur',clear);});
     this.events.on('sleep',()=>{clear();if(this.mode!=='walk')this.stop();if(this.dialog.open)this.dialog.close();});
-    document.querySelector('#gym-storage-close')!.addEventListener('click',()=>this.dialog.close());
-    this.dialog.addEventListener('close',()=>{clear();world.focus();});
-    document.querySelector('#interact')!.addEventListener('click',()=>{if(this.sys.isActive()&&!this.dialog.open)this.interact();});
-    document.querySelector('#gym-rep')!.addEventListener('click',()=>{if(this.sys.isActive())this.lift();});
-    document.querySelector('#gym-speed')!.addEventListener('click',()=>{if(this.sys.isActive())this.changeSpeed();});
+    bindSceneEvent(this, document.querySelector('#gym-storage-close')!, 'click', ()=>this.dialog.close());
+    bindSceneEvent(this, this.dialog, 'close', ()=>{clear();restoreWorldFocus(this.dialog);});
+    bindSceneEvent(this, document.querySelector('#interact')!, 'click', ()=>{if(this.sys.isActive()&&!this.dialog.open)this.interact();});
+    bindSceneEvent(this, document.querySelector('#gym-rep')!, 'click', ()=>{if(this.sys.isActive())this.lift();});
+    bindSceneEvent(this, document.querySelector('#gym-speed')!, 'click', ()=>{if(this.sys.isActive())this.changeSpeed();});
     window.__gymPreview={getState:()=>({ready:true,active:this.sys.isActive(),x:this.x,y:this.y,mode:this.mode,nearest:this.nearest(),machine:this.machine,speed:this.speeds[this.speedIndex],distance:this.distance,elapsed:this.elapsed,reps:this.reps,lifting:this.liftStart!==null,breaths:this.breaths,hand:playerInventory.hand,stored:this.stored,message:this.message})};
     world.focus();
   }
@@ -130,7 +133,6 @@ export class GymScene extends Phaser.Scene {
     document.querySelector<HTMLButtonElement>('#gym-rep')!.hidden=this.mode!=='curl';document.querySelector<HTMLButtonElement>('#gym-rep')!.disabled=this.liftStart!==null;
     document.querySelector<HTMLButtonElement>('#gym-speed')!.hidden=this.mode!=='run';document.querySelector('#gym-speed')!.textContent=`速度 ${this.speeds[this.speedIndex]} km/h · F`;
     document.querySelector('#gym-breath')!.textContent=this.mode==='breathe'?this.breathTime<4000?'吸气…':'呼气…':'';
-    document.querySelector('#guide-title')!.textContent='WASD / 方向键移动';
-    document.querySelector('#guide-action')!.textContent=this.mode==='run'?'F 调速 · E / Esc 下机':this.mode==='curl'?'Space 举起 / 放下 · E / Esc 结束':this.mode!=='walk'?'E / Esc 结束':target?`E · ${names[target.kind]}`:'E 使用';
+    setGuide('WASD / 方向键移动',this.mode==='run'?'F 调速 · E / Esc 下机':this.mode==='curl'?'Space 举起 / 放下 · E / Esc 结束':this.mode!=='walk'?'E / Esc 结束':target?`E · ${names[target.kind]}`:'');
   }
 }

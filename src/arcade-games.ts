@@ -1,7 +1,9 @@
 import { Mines, Spider } from './arcade-rules';
+import {restoreWorldFocus} from './world-focus';
 import { ArcadeSports } from './arcade-sports';
 import {useDevice,releaseDevice,saveProgress,personalProgress,onlineWorld} from './multiplayer/world-client';
 import {toyCanvas} from './gacha-assets';
+import clawCabinetUrl from '../assets/props/arcade-claw-cabinet-v1.png';
 export type ArcadeKind='mines'|'spider'|'claw'|'basketball'|'hockey';
 const names={mines:'扫雷',spider:'蜘蛛纸牌',claw:'抓娃娃',basketball:'投篮',hockey:'空气曲棍球'};
 const ranks=['','A','2','3','4','5','6','7','8','9','10','J','Q','K'];
@@ -25,13 +27,17 @@ export class ArcadeGames {
   private wins=0;
   private round:string|null=null;
   private waiting=false;
+  private revision=0;
   private frame=0;
   private held=new Set<string>();
   private previous=0;
   private sports=new ArcadeSports();
   private listeners=new AbortController();
+  private clawCabinet=new Image();
   constructor(){
     this.ctx.imageSmoothingEnabled=false;
+    this.clawCabinet.onload=()=>{if(this.dialog.open&&this.kind==='claw')this.draw();};
+    this.clawCabinet.src=clawCabinetUrl;
     try{this.wins=Number(localStorage.getItem('hutong-claw-wins')??0)||0;}catch{/* optional */}
     this.listen(this.canvas,'contextmenu',e=>e.preventDefault());
     this.listen(this.canvas,'pointerdown',event=>{
@@ -58,11 +64,11 @@ export class ArcadeGames {
     this.listen(window,'keydown',key);
     this.listen(window,'keyup',e=>this.held.delete(e.code));
     this.listen(window,'blur',()=>this.held.clear());
-    this.listen(this.dialog,'close',()=>{if(this.kind==='claw'&&this.round&&!this.waiting){void onlineWorld()?.reward('claw-cancel',{round:this.round}).catch(()=>{});this.round=null;this.captured=null;this.phase='ready';}releaseDevice(this.kind);cancelAnimationFrame(this.frame);this.held.clear();document.querySelector<HTMLElement>('.world')!.focus();});
+    this.listen(this.dialog,'close',()=>{if(this.kind==='claw'&&this.round&&!this.waiting)void onlineWorld()?.reward('claw-cancel',{round:this.round}).catch(()=>{});this.revision++;this.waiting=false;this.round=null;this.captured=null;this.phase='ready';releaseDevice(this.kind);cancelAnimationFrame(this.frame);this.held.clear();restoreWorldFocus(this.dialog);});
     window.__arcadeGamePreview={getState:()=>({kind:this.kind,open:this.dialog.open,sports:this.sports.state(),mines:{bombs:[...this.mines.bombs],open:[...this.mines.open],flags:[...this.mines.flags],outcome:this.mines.outcome},spider:{columns:this.spider.columns,stock:this.spider.stock.length,completed:this.spider.completed,moves:this.spider.moves},claw:{x:this.clawX,phase:this.phase,wins:this.wins,prizes:this.prizes}})};
   }
   private listen<K extends keyof HTMLElementEventMap>(target:EventTarget,type:K,listener:(event:HTMLElementEventMap[K])=>void){target.addEventListener(type,listener as EventListener,{signal:this.listeners.signal});}
-  dispose(){if(this.dialog.open)this.dialog.close();cancelAnimationFrame(this.frame);this.held.clear();this.listeners.abort();}
+  dispose(){if(this.dialog.open)this.dialog.close();this.revision++;cancelAnimationFrame(this.frame);this.held.clear();this.listeners.abort();}
   open(kind:ArcadeKind){
     if(useDevice(kind,()=>this.open(kind)))return;
     if(onlineWorld()?.bridge.user?.role)this.wins=personalProgress().find(p=>p.kind==='score'&&p.key==='claw')?.data.value??0;
@@ -89,8 +95,24 @@ export class ArcadeGames {
     if(this.kind==='claw'&&this.phase==='ready'&&!this.waiting&&this.prizes.length)void this.startClaw();
   }
   private loadPrizes(){const remaining=personalProgress().find(p=>p.kind==='claw'&&p.key==='machine')?.data.remaining??[0,1,2,3,4,5];this.prizes=(remaining.length?remaining:[0,1,2,3,4,5]).map((i:number)=>({x:[140,220,300,380,460,530][i],color:i%5}));}
-  private async startClaw(){this.waiting=true;const aim=this.clawX;try{const service=onlineWorld();if(!service?.bridge.user?.role)throw Error('请先登录');const result=await service.reward('claw-start',{aim});if(!this.dialog.open){await service.reward('claw-cancel',{round:result.round});return;}this.round=result.round;this.phase='down';this.phaseTime=performance.now();this.clawStartX=this.clawX=aim;this.captured=null;this.message='';}catch(e){this.message=(e as Error).message;}finally{this.waiting=false;this.draw();}}
-  private async finishClaw(){this.waiting=true;try{const result=await onlineWorld()!.reward('claw-finish',{round:this.round});this.wins=result.wins;if(Array.isArray(result.remaining))this.prizes=(result.remaining.length?result.remaining:[0,1,2,3,4,5]).map((i:number)=>({x:[140,220,300,380,460,530][i],color:i%5}));else if(result.won&&this.captured!==null)this.prizes.splice(this.captured,1);this.message='';}catch(e){this.message=(e as Error).message;}finally{this.waiting=false;this.round=null;this.captured=null;this.phase='ready';this.clawX=110;this.draw();}}
+  private clawContext(){
+    const revision=this.revision,service=onlineWorld(),account=service?.bridge.user?.id,scene=service?.bridge.active,epoch=service?.epoch;
+    const sameWorld=()=>onlineWorld()===service&&service?.bridge.user?.id===account&&service?.bridge.active===scene&&service?.epoch===epoch;
+    return {service,sameWorld,current:()=>revision===this.revision&&this.dialog.open&&this.kind==='claw'&&sameWorld()};
+  }
+  private async startClaw(){
+    this.waiting=true;const aim=this.clawX,{service,sameWorld,current}=this.clawContext();
+    try{if(!service?.bridge.user?.role)throw Error('请先登录');const result=await service.reward('claw-start',{aim});
+      if(!current()){if(sameWorld())await service.reward('claw-cancel',{round:result.round});return;}
+      this.round=result.round;this.phase='down';this.phaseTime=performance.now();this.clawStartX=this.clawX=aim;this.captured=null;this.message='';
+    }catch(e){if(current())this.message=(e as Error).message;}finally{if(current()){this.waiting=false;this.draw();}}
+  }
+  private async finishClaw(){
+    this.waiting=true;const {service,current}=this.clawContext();
+    try{const result=await service!.reward('claw-finish',{round:this.round});if(!current())return;
+      this.wins=result.wins;if(Array.isArray(result.remaining))this.prizes=(result.remaining.length?result.remaining:[0,1,2,3,4,5]).map((i:number)=>({x:[140,220,300,380,460,530][i],color:i%5}));else if(result.won&&this.captured!==null)this.prizes.splice(this.captured,1);this.message='';
+    }catch(e){if(current())this.message=(e as Error).message;}finally{if(current()){this.waiting=false;this.round=null;this.captured=null;this.phase='ready';this.clawX=110;this.draw();}}
+  }
   private step(column:number){return Math.min(17,265/Math.max(1,this.spider.columns[column].length));}
   private cardClick(x:number,y:number){
     const column=Math.floor((x-20)/60);if(column<0||column>9||y<70)return;
@@ -159,8 +181,13 @@ export class ArcadeGames {
         });
       });this.text(this.message,20,406,'#edcf82',12);
     }else {
-      this.rect(70,30,500,340,'#db8fa7');this.rect(82,43,476,265,'#83bbc2');this.rect(91,53,458,247,'#24434f');
-      this.rect(93,65,454,7,'#a9c6cb');this.rect(86,313,116,45,'#272b36');this.rect(94,320,100,29,'#111b26');
+      if(this.clawCabinet.complete&&this.clawCabinet.naturalWidth){
+        // Three vertical slices keep the generated frame while fitting the
+        // existing claw rail, prize floor and collection fascia coordinates.
+        this.ctx.drawImage(this.clawCabinet,0,0,500,69,70,30,500,69);
+        this.ctx.drawImage(this.clawCabinet,0,69,500,177,70,99,500,212);
+        this.ctx.drawImage(this.clawCabinet,0,246,500,94,70,311,500,59);
+      }
       this.prizes.forEach((p,i)=>{if(i!==this.captured)this.plush(p.x,285,p.color);});
       const progress=Math.min(1,(now-this.phaseTime)/800);
       let y=95;

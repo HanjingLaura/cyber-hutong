@@ -1,0 +1,10 @@
+{
+  "suki": {"passenger":"Suki Xu","flight":"TT710","gate":"B12","seat":"16A","ink":"#103d95","paper":"#fffaf0","accent":"#b5dcf5","atlas":0,"tile":0},
+  "sid": {"passenger":"Sid Qin","flight":"TT628","gate":"B16","seat":"12A","ink":"#242424","paper":"#f4f3ed","accent":"#cccfc9","atlas":0,"tile":1},
+  "jilly": {"passenger":"Jilly Han","flight":"TT639","gate":"B12","seat":"18F","ink":"#62440c","paper":"#fbf7ed","accent":"#f6da69","atlas":0,"tile":2},
+  "laura": {"passenger":"Laura Han","flight":"TT628","gate":"B16","seat":"12A","ink":"#4e3c30","paper":"#e4f1e9","accent":"#e6ddc4","atlas":0,"tile":3},
+  "kay": {"passenger":"Kay Qiang","flight":"TT631","gate":"B06","seat":"01A","ink":"#292a29","paper":"#fff8e9","accent":"#d4d5d1","atlas":1,"tile":0},
+  "franco": {"passenger":"Franco Wen","flight":"TT007","gate":"A07","seat":"07F","ink":"#303a27","paper":"#f8f2e4","accent":"#a8ad95","atlas":1,"tile":1},
+  "cora": {"passenger":"Cora Kong","flight":"TT523","gate":"B08","seat":"14A","ink":"#413d34","paper":"#f1f3e9","accent":"#e4dbc9","atlas":1,"tile":2},
+  "amber": {"passenger":"Amber Guo","flight":"TT684","gate":"A09","seat":"07A","ink":"#523c30","paper":"#e2f0eb","accent":"#ccb9a6","atlas":1,"tile":3}
+}

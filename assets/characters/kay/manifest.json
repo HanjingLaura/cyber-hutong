@@ -1,0 +1,3234 @@
+{
+  "schemaVersion": 1,
+  "role": "kay",
+  "worldHeight": 61.44,
+  "seatedHeight": 62.4,
+  "sources": {
+    "kay": {
+      "file": "kay/poses.png",
+      "size": [
+        1536,
+        1024
+      ],
+      "sha256": "5ef500893cfedcb8bf9e8ae2c8c9599e620ec36facd3d379fb3f8b887705aa49",
+      "origin": "team/v3/kay.png"
+    },
+    "kay-walk-a-v8": {
+      "file": "kay/walk-side-a.png",
+      "size": [
+        2172,
+        724
+      ],
+      "sha256": "f54ff3518fd3eee476e3ad5b63a481c5bd208b7fe46c0b4339d864d99a62c7d8",
+      "origin": "team/v8/kay-a.png"
+    },
+    "kay-walk-b-v8": {
+      "file": "kay/walk-side-b.png",
+      "size": [
+        2172,
+        724
+      ],
+      "sha256": "66d088c09fb806e7df08f248de32380becefae701cc5ff70a11a70c36fd26d98",
+      "origin": "team/v8/kay-b.png"
+    },
+    "kay-run-v10": {
+      "file": "kay/run.png",
+      "size": [
+        1536,
+        1024
+      ],
+      "sha256": "b83d0aee9d66c13e559906b2778e80a5ee889c8909cf9f09551fb38dffc3739c",
+      "origin": "team/v10/kay-run.png"
+    },
+    "kay-carry": {
+      "file": "kay/carry.png",
+      "size": [
+        1024,
+        1536
+      ],
+      "sha256": "c4f2fc3c6d67a3212b2257f22698a1d0acc3edc72cbc17bfa57a709c8770396a",
+      "origin": "team/v3/kay-carry.png"
+    },
+    "kay-carry-walk-v12": {
+      "file": "kay/carry-walk.png",
+      "size": [
+        1536,
+        1024
+      ],
+      "sha256": "afbd955ee7ad83f3d3faea3a9fd746f5eae5e49f9b393ed498ed3d72f79f80a1",
+      "origin": "team/v12/kay-carry-walk.png"
+    },
+    "kay-mobility": {
+      "file": "kay/mobility.png",
+      "size": [
+        192,
+        72
+      ],
+      "sha256": "7059cb0fe226475b0b00e4fda59fb0dd242a59637cdbe6c095135dd7984c5625",
+      "origin": "imagegen side riding and skateboard balance 2026-10-15"
+    }
+  },
+  "member": {
+    "seat": "L4",
+    "frames": [
+      {
+        "rect": [
+          42,
+          39,
+          138,
+          228
+        ],
+        "pivotX": 0.500388198757764,
+        "grip": null,
+        "gripSide": 0,
+        "name": "idle-front",
+        "source": "kay",
+        "referenceHeight": 228,
+        "foot": [
+          69.05357142857143,
+          228
+        ],
+        "seat": [
+          69.05357142857143,
+          164.16
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          228,
+          43,
+          128,
+          224
+        ],
+        "pivotX": 0.5432768485915491,
+        "grip": null,
+        "gripSide": 0,
+        "name": "idle-right",
+        "source": "kay",
+        "referenceHeight": 228,
+        "foot": [
+          69.53943661971829,
+          224
+        ],
+        "seat": [
+          69.53943661971829,
+          161.28
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          417,
+          43,
+          128,
+          224
+        ],
+        "pivotX": 0.4936909007962842,
+        "grip": null,
+        "gripSide": 0,
+        "name": "idle-back",
+        "source": "kay",
+        "referenceHeight": 228,
+        "foot": [
+          63.19243530192438,
+          224
+        ],
+        "seat": [
+          63.19243530192438,
+          161.28
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          605,
+          43,
+          130,
+          224
+        ],
+        "pivotX": 0.440736728060672,
+        "grip": null,
+        "gripSide": 0,
+        "name": "idle-left",
+        "source": "kay",
+        "referenceHeight": 228,
+        "foot": [
+          57.295774647887356,
+          224
+        ],
+        "seat": [
+          57.295774647887356,
+          161.28
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          786,
+          44,
+          140,
+          223
+        ],
+        "pivotX": 0.48423240263847445,
+        "grip": null,
+        "gripSide": 0,
+        "name": "sit-front",
+        "source": "kay",
+        "referenceHeight": 228,
+        "foot": [
+          67.79253636938643,
+          223
+        ],
+        "seat": [
+          67.79253636938643,
+          160.56
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          982,
+          49,
+          130,
+          218
+        ],
+        "pivotX": 0.49303686967238297,
+        "grip": null,
+        "gripSide": 0,
+        "name": "sit-back",
+        "source": "kay",
+        "referenceHeight": 228,
+        "foot": [
+          64.09479305740979,
+          218
+        ],
+        "seat": [
+          64.09479305740979,
+          156.96
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          1169,
+          43,
+          138,
+          224
+        ],
+        "pivotX": 0.48693387681159483,
+        "grip": null,
+        "gripSide": 0,
+        "name": "piano-rest",
+        "source": "kay",
+        "referenceHeight": 228,
+        "foot": [
+          67.19687500000009,
+          224
+        ],
+        "seat": [
+          67.19687500000009,
+          161.28
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          1357,
+          43,
+          138,
+          224
+        ],
+        "pivotX": 0.48481943963719315,
+        "grip": null,
+        "gripSide": 0,
+        "name": "piano-play",
+        "source": "kay",
+        "referenceHeight": 228,
+        "foot": [
+          66.90508266993265,
+          224
+        ],
+        "seat": [
+          66.90508266993265,
+          161.28
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          40,
+          291,
+          140,
+          221
+        ],
+        "pivotX": 0.5177836248258784,
+        "grip": null,
+        "gripSide": 0,
+        "name": "walk-front-0",
+        "source": "kay",
+        "referenceHeight": 228,
+        "foot": [
+          72.48970747562296,
+          221
+        ],
+        "seat": [
+          72.48970747562296,
+          159.12
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          226,
+          291,
+          141,
+          221
+        ],
+        "pivotX": 0.5068470361614568,
+        "grip": null,
+        "gripSide": 0,
+        "name": "walk-front-1",
+        "source": "kay",
+        "referenceHeight": 228,
+        "foot": [
+          71.4654320987654,
+          221
+        ],
+        "seat": [
+          71.4654320987654,
+          159.12
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          412,
+          291,
+          142,
+          221
+        ],
+        "pivotX": 0.5055120077449176,
+        "grip": null,
+        "gripSide": 0,
+        "name": "walk-front-2",
+        "source": "kay",
+        "referenceHeight": 228,
+        "foot": [
+          71.7827050997783,
+          221
+        ],
+        "seat": [
+          71.7827050997783,
+          159.12
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          593,
+          291,
+          141,
+          221
+        ],
+        "pivotX": 0.4625143896764639,
+        "grip": null,
+        "gripSide": 0,
+        "name": "walk-front-3",
+        "source": "kay",
+        "referenceHeight": 228,
+        "foot": [
+          65.21452894438141,
+          221
+        ],
+        "seat": [
+          65.21452894438141,
+          159.12
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          40,
+          291,
+          140,
+          221
+        ],
+        "pivotX": 0.5177836248258784,
+        "grip": null,
+        "gripSide": 0,
+        "name": "walk-front-4",
+        "source": "kay",
+        "referenceHeight": 228,
+        "foot": [
+          72.48970747562296,
+          221
+        ],
+        "seat": [
+          72.48970747562296,
+          159.12
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          226,
+          291,
+          141,
+          221
+        ],
+        "pivotX": 0.5068470361614568,
+        "grip": null,
+        "gripSide": 0,
+        "name": "walk-front-5",
+        "source": "kay",
+        "referenceHeight": 228,
+        "foot": [
+          71.4654320987654,
+          221
+        ],
+        "seat": [
+          71.4654320987654,
+          159.12
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          786,
+          44,
+          140,
+          223
+        ],
+        "pivotX": 0.48423240263847445,
+        "grip": null,
+        "gripSide": 0,
+        "name": "sit-down-front",
+        "source": "kay",
+        "referenceHeight": 228,
+        "foot": [
+          67.79253636938643,
+          223
+        ],
+        "seat": [
+          67.79253636938643,
+          160.56
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          42,
+          39,
+          138,
+          228
+        ],
+        "pivotX": 0.500388198757764,
+        "grip": null,
+        "gripSide": 0,
+        "name": "stand-up-front",
+        "source": "kay",
+        "referenceHeight": 228,
+        "foot": [
+          69.05357142857143,
+          228
+        ],
+        "seat": [
+          69.05357142857143,
+          164.16
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          793,
+          296,
+          135,
+          216
+        ],
+        "pivotX": 0.5070966658268247,
+        "grip": null,
+        "gripSide": 0,
+        "name": "walk-back-0",
+        "source": "kay",
+        "referenceHeight": 228,
+        "foot": [
+          68.45804988662132,
+          216
+        ],
+        "seat": [
+          68.45804988662132,
+          155.51999999999998
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          980,
+          295,
+          135,
+          217
+        ],
+        "pivotX": 0.509100646809212,
+        "grip": null,
+        "gripSide": 0,
+        "name": "walk-back-1",
+        "source": "kay",
+        "referenceHeight": 228,
+        "foot": [
+          68.72858731924362,
+          217
+        ],
+        "seat": [
+          68.72858731924362,
+          156.23999999999998
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          1168,
+          295,
+          136,
+          217
+        ],
+        "pivotX": 0.5000876393465603,
+        "grip": null,
+        "gripSide": 0,
+        "name": "walk-back-2",
+        "source": "kay",
+        "referenceHeight": 228,
+        "foot": [
+          68.0119189511322,
+          217
+        ],
+        "seat": [
+          68.0119189511322,
+          156.23999999999998
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          1355,
+          296,
+          135,
+          216
+        ],
+        "pivotX": 0.4855176288804614,
+        "grip": null,
+        "gripSide": 0,
+        "name": "walk-back-3",
+        "source": "kay",
+        "referenceHeight": 228,
+        "foot": [
+          65.54487989886229,
+          216
+        ],
+        "seat": [
+          65.54487989886229,
+          155.51999999999998
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          793,
+          296,
+          135,
+          216
+        ],
+        "pivotX": 0.5070966658268247,
+        "grip": null,
+        "gripSide": 0,
+        "name": "walk-back-4",
+        "source": "kay",
+        "referenceHeight": 228,
+        "foot": [
+          68.45804988662132,
+          216
+        ],
+        "seat": [
+          68.45804988662132,
+          155.51999999999998
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          980,
+          295,
+          135,
+          217
+        ],
+        "pivotX": 0.509100646809212,
+        "grip": null,
+        "gripSide": 0,
+        "name": "walk-back-5",
+        "source": "kay",
+        "referenceHeight": 228,
+        "foot": [
+          68.72858731924362,
+          217
+        ],
+        "seat": [
+          68.72858731924362,
+          156.23999999999998
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          982,
+          49,
+          130,
+          218
+        ],
+        "pivotX": 0.49303686967238297,
+        "grip": null,
+        "gripSide": 0,
+        "name": "sit-down-back",
+        "source": "kay",
+        "referenceHeight": 228,
+        "foot": [
+          64.09479305740979,
+          218
+        ],
+        "seat": [
+          64.09479305740979,
+          156.96
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          417,
+          43,
+          128,
+          224
+        ],
+        "pivotX": 0.4936909007962842,
+        "grip": null,
+        "gripSide": 0,
+        "name": "stand-up-back",
+        "source": "kay",
+        "referenceHeight": 228,
+        "foot": [
+          63.19243530192438,
+          224
+        ],
+        "seat": [
+          63.19243530192438,
+          161.28
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          38,
+          528,
+          138,
+          211
+        ],
+        "pivotX": 0.5092305582224661,
+        "grip": null,
+        "gripSide": 0,
+        "name": "walk-right-0",
+        "source": "kay",
+        "referenceHeight": 228,
+        "foot": [
+          70.27381703470033,
+          211
+        ],
+        "seat": [
+          70.27381703470033,
+          151.92
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          224,
+          528,
+          137,
+          212
+        ],
+        "pivotX": 0.5416784024671436,
+        "grip": null,
+        "gripSide": 0,
+        "name": "walk-right-1",
+        "source": "kay",
+        "referenceHeight": 228,
+        "foot": [
+          74.20994113799867,
+          212
+        ],
+        "seat": [
+          74.20994113799867,
+          152.64
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          411,
+          528,
+          135,
+          212
+        ],
+        "pivotX": 0.5228772990677751,
+        "grip": null,
+        "gripSide": 0,
+        "name": "walk-right-2",
+        "source": "kay",
+        "referenceHeight": 228,
+        "foot": [
+          70.58843537414964,
+          212
+        ],
+        "seat": [
+          70.58843537414964,
+          152.64
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          595,
+          528,
+          138,
+          212
+        ],
+        "pivotX": 0.5743375969729065,
+        "grip": null,
+        "gripSide": 0,
+        "name": "walk-right-3",
+        "source": "kay",
+        "referenceHeight": 228,
+        "foot": [
+          79.25858838226111,
+          212
+        ],
+        "seat": [
+          79.25858838226111,
+          152.64
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          788,
+          528,
+          138,
+          212
+        ],
+        "pivotX": 0.5165406427221169,
+        "grip": null,
+        "gripSide": 0,
+        "name": "walk-right-4",
+        "source": "kay",
+        "referenceHeight": 228,
+        "foot": [
+          71.28260869565213,
+          212
+        ],
+        "seat": [
+          71.28260869565213,
+          152.64
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          974,
+          528,
+          137,
+          212
+        ],
+        "pivotX": 0.5340849118647649,
+        "grip": null,
+        "gripSide": 0,
+        "name": "walk-right-5",
+        "source": "kay",
+        "referenceHeight": 228,
+        "foot": [
+          73.1696329254728,
+          212
+        ],
+        "seat": [
+          73.1696329254728,
+          152.64
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          40,
+          758,
+          135,
+          224
+        ],
+        "pivotX": 0.49505701630383564,
+        "grip": null,
+        "gripSide": 0,
+        "name": "curl-rest",
+        "source": "kay",
+        "referenceHeight": 228,
+        "foot": [
+          66.83269720101781,
+          224
+        ],
+        "seat": [
+          66.83269720101781,
+          161.28
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          217,
+          758,
+          136,
+          224
+        ],
+        "pivotX": 0.5037077787319307,
+        "grip": null,
+        "gripSide": 0,
+        "name": "curl-lift",
+        "source": "kay",
+        "referenceHeight": 228,
+        "foot": [
+          68.50425790754258,
+          224
+        ],
+        "seat": [
+          68.50425790754258,
+          161.28
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          42,
+          39,
+          138,
+          228
+        ],
+        "pivotX": 0.500388198757764,
+        "grip": null,
+        "gripSide": 0,
+        "name": "hold-front",
+        "source": "kay",
+        "referenceHeight": 228,
+        "foot": [
+          69.05357142857143,
+          228
+        ],
+        "seat": [
+          69.05357142857143,
+          164.16
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          228,
+          43,
+          128,
+          224
+        ],
+        "pivotX": 0.5432768485915491,
+        "grip": null,
+        "gripSide": 0,
+        "name": "hold-right",
+        "source": "kay",
+        "referenceHeight": 228,
+        "foot": [
+          69.53943661971829,
+          224
+        ],
+        "seat": [
+          69.53943661971829,
+          161.28
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          417,
+          43,
+          128,
+          224
+        ],
+        "pivotX": 0.4936909007962842,
+        "grip": null,
+        "gripSide": 0,
+        "name": "hold-back",
+        "source": "kay",
+        "referenceHeight": 228,
+        "foot": [
+          63.19243530192438,
+          224
+        ],
+        "seat": [
+          63.19243530192438,
+          161.28
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          605,
+          43,
+          130,
+          224
+        ],
+        "pivotX": 0.440736728060672,
+        "grip": null,
+        "gripSide": 0,
+        "name": "hold-left",
+        "source": "kay",
+        "referenceHeight": 228,
+        "foot": [
+          57.295774647887356,
+          224
+        ],
+        "seat": [
+          57.295774647887356,
+          161.28
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          786,
+          44,
+          140,
+          223
+        ],
+        "pivotX": 0.48423240263847445,
+        "grip": null,
+        "gripSide": 0,
+        "name": "sit-hold-front",
+        "source": "kay",
+        "referenceHeight": 228,
+        "foot": [
+          67.79253636938643,
+          223
+        ],
+        "seat": [
+          67.79253636938643,
+          160.56
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          982,
+          49,
+          130,
+          218
+        ],
+        "pivotX": 0.49303686967238297,
+        "grip": null,
+        "gripSide": 0,
+        "name": "sit-hold-back",
+        "source": "kay",
+        "referenceHeight": 228,
+        "foot": [
+          64.09479305740979,
+          218
+        ],
+        "seat": [
+          64.09479305740979,
+          156.96
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          786,
+          44,
+          140,
+          223
+        ],
+        "pivotX": 0.48423240263847445,
+        "grip": null,
+        "gripSide": 0,
+        "name": "sit-hold-right",
+        "source": "kay",
+        "referenceHeight": 228,
+        "foot": [
+          67.79253636938643,
+          223
+        ],
+        "seat": [
+          67.79253636938643,
+          160.56
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          786,
+          44,
+          140,
+          223
+        ],
+        "pivotX": 0.48423240263847445,
+        "grip": null,
+        "gripSide": 0,
+        "name": "sit-right",
+        "source": "kay",
+        "referenceHeight": 228,
+        "foot": [
+          67.79253636938643,
+          223
+        ],
+        "seat": [
+          67.79253636938643,
+          160.56
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          40,
+          291,
+          140,
+          221
+        ],
+        "pivotX": 0.5177836248258784,
+        "grip": null,
+        "gripSide": 0,
+        "name": "hold-walk-front-0",
+        "source": "kay",
+        "referenceHeight": 228,
+        "foot": [
+          72.48970747562296,
+          221
+        ],
+        "seat": [
+          72.48970747562296,
+          159.12
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          226,
+          291,
+          141,
+          221
+        ],
+        "pivotX": 0.5068470361614568,
+        "grip": null,
+        "gripSide": 0,
+        "name": "hold-walk-front-1",
+        "source": "kay",
+        "referenceHeight": 228,
+        "foot": [
+          71.4654320987654,
+          221
+        ],
+        "seat": [
+          71.4654320987654,
+          159.12
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          412,
+          291,
+          142,
+          221
+        ],
+        "pivotX": 0.5055120077449176,
+        "grip": null,
+        "gripSide": 0,
+        "name": "hold-walk-front-2",
+        "source": "kay",
+        "referenceHeight": 228,
+        "foot": [
+          71.7827050997783,
+          221
+        ],
+        "seat": [
+          71.7827050997783,
+          159.12
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          593,
+          291,
+          141,
+          221
+        ],
+        "pivotX": 0.4625143896764639,
+        "grip": null,
+        "gripSide": 0,
+        "name": "hold-walk-front-3",
+        "source": "kay",
+        "referenceHeight": 228,
+        "foot": [
+          65.21452894438141,
+          221
+        ],
+        "seat": [
+          65.21452894438141,
+          159.12
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          40,
+          291,
+          140,
+          221
+        ],
+        "pivotX": 0.5177836248258784,
+        "grip": null,
+        "gripSide": 0,
+        "name": "hold-walk-front-4",
+        "source": "kay",
+        "referenceHeight": 228,
+        "foot": [
+          72.48970747562296,
+          221
+        ],
+        "seat": [
+          72.48970747562296,
+          159.12
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          226,
+          291,
+          141,
+          221
+        ],
+        "pivotX": 0.5068470361614568,
+        "grip": null,
+        "gripSide": 0,
+        "name": "hold-walk-front-5",
+        "source": "kay",
+        "referenceHeight": 228,
+        "foot": [
+          71.4654320987654,
+          221
+        ],
+        "seat": [
+          71.4654320987654,
+          159.12
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          393,
+          758,
+          160,
+          224
+        ],
+        "pivotX": 0.4926108374384235,
+        "grip": null,
+        "gripSide": 0,
+        "name": "dance-front-left",
+        "source": "kay",
+        "referenceHeight": 228,
+        "foot": [
+          78.81773399014776,
+          224
+        ],
+        "seat": [
+          78.81773399014776,
+          161.28
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          595,
+          759,
+          159,
+          223
+        ],
+        "pivotX": 0.4891060197663969,
+        "grip": null,
+        "gripSide": 0,
+        "name": "dance-front-right",
+        "source": "kay",
+        "referenceHeight": 228,
+        "foot": [
+          77.76785714285711,
+          223
+        ],
+        "seat": [
+          77.76785714285711,
+          160.56
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          793,
+          296,
+          135,
+          216
+        ],
+        "pivotX": 0.5070966658268247,
+        "grip": null,
+        "gripSide": 0,
+        "name": "hold-walk-back-0",
+        "source": "kay",
+        "referenceHeight": 228,
+        "foot": [
+          68.45804988662132,
+          216
+        ],
+        "seat": [
+          68.45804988662132,
+          155.51999999999998
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          980,
+          295,
+          135,
+          217
+        ],
+        "pivotX": 0.509100646809212,
+        "grip": null,
+        "gripSide": 0,
+        "name": "hold-walk-back-1",
+        "source": "kay",
+        "referenceHeight": 228,
+        "foot": [
+          68.72858731924362,
+          217
+        ],
+        "seat": [
+          68.72858731924362,
+          156.23999999999998
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          1168,
+          295,
+          136,
+          217
+        ],
+        "pivotX": 0.5000876393465603,
+        "grip": null,
+        "gripSide": 0,
+        "name": "hold-walk-back-2",
+        "source": "kay",
+        "referenceHeight": 228,
+        "foot": [
+          68.0119189511322,
+          217
+        ],
+        "seat": [
+          68.0119189511322,
+          156.23999999999998
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          1355,
+          296,
+          135,
+          216
+        ],
+        "pivotX": 0.4855176288804614,
+        "grip": null,
+        "gripSide": 0,
+        "name": "hold-walk-back-3",
+        "source": "kay",
+        "referenceHeight": 228,
+        "foot": [
+          65.54487989886229,
+          216
+        ],
+        "seat": [
+          65.54487989886229,
+          155.51999999999998
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          793,
+          296,
+          135,
+          216
+        ],
+        "pivotX": 0.5070966658268247,
+        "grip": null,
+        "gripSide": 0,
+        "name": "hold-walk-back-4",
+        "source": "kay",
+        "referenceHeight": 228,
+        "foot": [
+          68.45804988662132,
+          216
+        ],
+        "seat": [
+          68.45804988662132,
+          155.51999999999998
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          980,
+          295,
+          135,
+          217
+        ],
+        "pivotX": 0.509100646809212,
+        "grip": null,
+        "gripSide": 0,
+        "name": "hold-walk-back-5",
+        "source": "kay",
+        "referenceHeight": 228,
+        "foot": [
+          68.72858731924362,
+          217
+        ],
+        "seat": [
+          68.72858731924362,
+          156.23999999999998
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          778,
+          761,
+          154,
+          221
+        ],
+        "pivotX": 0.5099317244863043,
+        "grip": null,
+        "gripSide": 0,
+        "name": "dance-back-left",
+        "source": "kay",
+        "referenceHeight": 228,
+        "foot": [
+          78.52948557089087,
+          221
+        ],
+        "seat": [
+          78.52948557089087,
+          159.12
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          978,
+          761,
+          161,
+          221
+        ],
+        "pivotX": 0.4539859474879808,
+        "grip": null,
+        "gripSide": 0,
+        "name": "dance-back-right",
+        "source": "kay",
+        "referenceHeight": 228,
+        "foot": [
+          73.09173754556491,
+          221
+        ],
+        "seat": [
+          73.09173754556491,
+          159.12
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          38,
+          528,
+          138,
+          211
+        ],
+        "pivotX": 0.5092305582224661,
+        "grip": null,
+        "gripSide": 0,
+        "name": "hold-walk-right-0",
+        "source": "kay",
+        "referenceHeight": 228,
+        "foot": [
+          70.27381703470033,
+          211
+        ],
+        "seat": [
+          70.27381703470033,
+          151.92
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          224,
+          528,
+          137,
+          212
+        ],
+        "pivotX": 0.5416784024671436,
+        "grip": null,
+        "gripSide": 0,
+        "name": "hold-walk-right-1",
+        "source": "kay",
+        "referenceHeight": 228,
+        "foot": [
+          74.20994113799867,
+          212
+        ],
+        "seat": [
+          74.20994113799867,
+          152.64
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          411,
+          528,
+          135,
+          212
+        ],
+        "pivotX": 0.5228772990677751,
+        "grip": null,
+        "gripSide": 0,
+        "name": "hold-walk-right-2",
+        "source": "kay",
+        "referenceHeight": 228,
+        "foot": [
+          70.58843537414964,
+          212
+        ],
+        "seat": [
+          70.58843537414964,
+          152.64
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          595,
+          528,
+          138,
+          212
+        ],
+        "pivotX": 0.5743375969729065,
+        "grip": null,
+        "gripSide": 0,
+        "name": "hold-walk-right-3",
+        "source": "kay",
+        "referenceHeight": 228,
+        "foot": [
+          79.25858838226111,
+          212
+        ],
+        "seat": [
+          79.25858838226111,
+          152.64
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          788,
+          528,
+          138,
+          212
+        ],
+        "pivotX": 0.5165406427221169,
+        "grip": null,
+        "gripSide": 0,
+        "name": "hold-walk-right-4",
+        "source": "kay",
+        "referenceHeight": 228,
+        "foot": [
+          71.28260869565213,
+          212
+        ],
+        "seat": [
+          71.28260869565213,
+          152.64
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          974,
+          528,
+          137,
+          212
+        ],
+        "pivotX": 0.5340849118647649,
+        "grip": null,
+        "gripSide": 0,
+        "name": "hold-walk-right-5",
+        "source": "kay",
+        "referenceHeight": 228,
+        "foot": [
+          73.1696329254728,
+          212
+        ],
+        "seat": [
+          73.1696329254728,
+          152.64
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          1178,
+          758,
+          134,
+          225
+        ],
+        "pivotX": 0.633413619732028,
+        "grip": null,
+        "gripSide": 0,
+        "name": "run-right-0",
+        "source": "kay",
+        "referenceHeight": 228,
+        "foot": [
+          84.87742504409175,
+          225
+        ],
+        "seat": [
+          84.87742504409175,
+          162
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          1359,
+          758,
+          136,
+          225
+        ],
+        "pivotX": 0.5675428439092179,
+        "grip": null,
+        "gripSide": 0,
+        "name": "run-right-1",
+        "source": "kay",
+        "referenceHeight": 228,
+        "foot": [
+          77.18582677165364,
+          225
+        ],
+        "seat": [
+          77.18582677165364,
+          162
+        ],
+        "slot": null
+      },
+      {
+        "name": "walk-side-v8-0",
+        "source": "kay-walk-a-v8",
+        "rect": [
+          94,
+          59,
+          367,
+          591
+        ],
+        "referenceHeight": 591,
+        "pivotX": 0.5640326975476839,
+        "foot": [
+          207,
+          591
+        ],
+        "seat": [
+          186.7858724089354,
+          425.52
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null,
+        "scaleXRatio": 1,
+        "offsetYRatio": 0,
+        "headMetrics": {
+          "headWidth": 319,
+          "landmarkHeight": 210,
+          "centerX": 207,
+          "originalReferenceHeight": 591
+        }
+      },
+      {
+        "name": "walk-side-v8-1",
+        "source": "kay-walk-a-v8",
+        "rect": [
+          631,
+          59,
+          370,
+          591
+        ],
+        "referenceHeight": 591,
+        "pivotX": 0.5608108108108109,
+        "foot": [
+          207.50000000000003,
+          591
+        ],
+        "seat": [
+          187.35931224483022,
+          425.52
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null,
+        "scaleXRatio": 0.9845679012345679,
+        "offsetYRatio": 0,
+        "headMetrics": {
+          "headWidth": 324,
+          "landmarkHeight": 210,
+          "centerX": 207.5,
+          "originalReferenceHeight": 591
+        }
+      },
+      {
+        "name": "walk-side-v8-2",
+        "source": "kay-walk-a-v8",
+        "rect": [
+          1143,
+          59,
+          364,
+          591
+        ],
+        "referenceHeight": 591,
+        "pivotX": 0.5618131868131868,
+        "foot": [
+          204.5,
+          591
+        ],
+        "seat": [
+          184.19225197911396,
+          425.52
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null,
+        "scaleXRatio": 1.0031446540880504,
+        "offsetYRatio": 0,
+        "headMetrics": {
+          "headWidth": 318,
+          "landmarkHeight": 210,
+          "centerX": 204.5,
+          "originalReferenceHeight": 591
+        }
+      },
+      {
+        "name": "walk-side-v8-3",
+        "source": "kay-walk-a-v8",
+        "rect": [
+          1681,
+          59,
+          392,
+          591
+        ],
+        "referenceHeight": 591,
+        "pivotX": 0.5242346938775511,
+        "foot": [
+          205.50000000000003,
+          591
+        ],
+        "seat": [
+          185.5351109917051,
+          425.52
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null,
+        "scaleXRatio": 0.996875,
+        "offsetYRatio": 0,
+        "headMetrics": {
+          "headWidth": 320,
+          "landmarkHeight": 210,
+          "centerX": 205.5,
+          "originalReferenceHeight": 591
+        }
+      },
+      {
+        "name": "walk-side-v8-4",
+        "source": "kay-walk-b-v8",
+        "rect": [
+          85,
+          49,
+          364,
+          618
+        ],
+        "referenceHeight": 565.6714285714286,
+        "pivotX": 0.5769230769230769,
+        "foot": [
+          209.99999999999997,
+          618
+        ],
+        "seat": [
+          181.88309375809376,
+          444.96
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null,
+        "scaleXRatio": 0.9945556072591903,
+        "offsetYRatio": 0.09250700810667478,
+        "headMetrics": {
+          "headWidth": 307,
+          "landmarkHeight": 201,
+          "centerX": 210,
+          "originalReferenceHeight": 618
+        }
+      },
+      {
+        "name": "walk-side-v8-5",
+        "source": "kay-walk-b-v8",
+        "rect": [
+          631,
+          49,
+          360,
+          618
+        ],
+        "referenceHeight": 565.6714285714286,
+        "pivotX": 0.5722222222222222,
+        "foot": [
+          206,
+          618
+        ],
+        "seat": [
+          179.49216229428055,
+          444.96
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null,
+        "scaleXRatio": 0.9945556072591903,
+        "offsetYRatio": 0.09250700810667478,
+        "headMetrics": {
+          "headWidth": 307,
+          "landmarkHeight": 201,
+          "centerX": 206,
+          "originalReferenceHeight": 618
+        }
+      },
+      {
+        "name": "walk-side-v8-6",
+        "source": "kay-walk-b-v8",
+        "rect": [
+          1135,
+          49,
+          355,
+          618
+        ],
+        "referenceHeight": 565.6714285714286,
+        "pivotX": 0.571830985915493,
+        "foot": [
+          203,
+          618
+        ],
+        "seat": [
+          176.47624722746377,
+          444.96
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null,
+        "scaleXRatio": 1.0076850542197076,
+        "offsetYRatio": 0.09250700810667478,
+        "headMetrics": {
+          "headWidth": 303,
+          "landmarkHeight": 201,
+          "centerX": 203,
+          "originalReferenceHeight": 618
+        }
+      },
+      {
+        "name": "walk-side-v8-7",
+        "source": "kay-walk-b-v8",
+        "rect": [
+          1672,
+          49,
+          402,
+          618
+        ],
+        "referenceHeight": 565.6714285714286,
+        "pivotX": 0.5124378109452736,
+        "foot": [
+          206,
+          618
+        ],
+        "seat": [
+          179.16839208491683,
+          444.96
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null,
+        "scaleXRatio": 0.9945556072591903,
+        "offsetYRatio": 0.09250700810667478,
+        "headMetrics": {
+          "headWidth": 307,
+          "landmarkHeight": 201,
+          "centerX": 206,
+          "originalReferenceHeight": 618
+        }
+      },
+      {
+        "name": "run-side-v10-0",
+        "source": "kay-run-v10",
+        "rect": [
+          41,
+          66,
+          306,
+          454
+        ],
+        "referenceHeight": 455.9142857142857,
+        "pivotX": 0.5555555555555556,
+        "foot": [
+          170,
+          454
+        ],
+        "seat": [
+          153,
+          326.88
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null,
+        "scaleXRatio": 0.9962984384037016,
+        "offsetYRatio": -0.004198784232625208,
+        "headMetrics": {
+          "headWidth": 247,
+          "landmarkHeight": 162,
+          "centerX": 170,
+          "originalReferenceHeight": 454
+        }
+      },
+      {
+        "name": "run-side-v10-1",
+        "source": "kay-run-v10",
+        "rect": [
+          424,
+          66,
+          295,
+          454
+        ],
+        "referenceHeight": 458.7285714285714,
+        "pivotX": 0.5813559322033899,
+        "foot": [
+          171.50000000000003,
+          454
+        ],
+        "seat": [
+          147.5,
+          326.88
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null,
+        "scaleXRatio": 1.006523422377081,
+        "offsetYRatio": -0.010307994145308363,
+        "headMetrics": {
+          "headWidth": 246,
+          "landmarkHeight": 163,
+          "centerX": 171.5,
+          "originalReferenceHeight": 454
+        }
+      },
+      {
+        "name": "run-side-v10-2",
+        "source": "kay-run-v10",
+        "rect": [
+          800,
+          66,
+          296,
+          454
+        ],
+        "referenceHeight": 455.9142857142857,
+        "pivotX": 0.581081081081081,
+        "foot": [
+          171.99999999999997,
+          454
+        ],
+        "seat": [
+          148,
+          326.88
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null,
+        "scaleXRatio": 0.9962984384037016,
+        "offsetYRatio": -0.004198784232625208,
+        "headMetrics": {
+          "headWidth": 247,
+          "landmarkHeight": 162,
+          "centerX": 172,
+          "originalReferenceHeight": 454
+        }
+      },
+      {
+        "name": "run-side-v10-3",
+        "source": "kay-run-v10",
+        "rect": [
+          1185,
+          66,
+          321,
+          454
+        ],
+        "referenceHeight": 455.9142857142857,
+        "pivotX": 0.5342679127725857,
+        "foot": [
+          171.5,
+          454
+        ],
+        "seat": [
+          160.5,
+          326.88
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null,
+        "scaleXRatio": 0.9922811059907835,
+        "offsetYRatio": -0.004198784232625208,
+        "headMetrics": {
+          "headWidth": 248,
+          "landmarkHeight": 162,
+          "centerX": 171.5,
+          "originalReferenceHeight": 454
+        }
+      },
+      {
+        "name": "run-side-v10-4",
+        "source": "kay-run-v10",
+        "rect": [
+          45,
+          545,
+          295,
+          455
+        ],
+        "referenceHeight": 458.7285714285714,
+        "pivotX": 0.5644067796610169,
+        "foot": [
+          166.5,
+          455
+        ],
+        "seat": [
+          147.5,
+          327.59999999999997
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null,
+        "scaleXRatio": 0.9984062980030722,
+        "offsetYRatio": -0.008128055806421397,
+        "headMetrics": {
+          "headWidth": 248,
+          "landmarkHeight": 163,
+          "centerX": 166.5,
+          "originalReferenceHeight": 455
+        }
+      },
+      {
+        "name": "run-side-v10-5",
+        "source": "kay-run-v10",
+        "rect": [
+          432,
+          545,
+          287,
+          455
+        ],
+        "referenceHeight": 461.54285714285714,
+        "pivotX": 0.5644599303135889,
+        "foot": [
+          162,
+          455
+        ],
+        "seat": [
+          143.5,
+          327.59999999999997
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null,
+        "scaleXRatio": 1.0004972270032513,
+        "offsetYRatio": -0.014176055466138426,
+        "headMetrics": {
+          "headWidth": 249,
+          "landmarkHeight": 164,
+          "centerX": 162,
+          "originalReferenceHeight": 455
+        }
+      },
+      {
+        "name": "run-side-v10-6",
+        "source": "kay-run-v10",
+        "rect": [
+          806,
+          545,
+          291,
+          455
+        ],
+        "referenceHeight": 458.7285714285714,
+        "pivotX": 0.5721649484536082,
+        "foot": [
+          166.5,
+          455
+        ],
+        "seat": [
+          145.5,
+          327.59999999999997
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null,
+        "scaleXRatio": 0.9984062980030722,
+        "offsetYRatio": -0.008128055806421397,
+        "headMetrics": {
+          "headWidth": 248,
+          "landmarkHeight": 163,
+          "centerX": 166.5,
+          "originalReferenceHeight": 455
+        }
+      },
+      {
+        "name": "run-side-v10-7",
+        "source": "kay-run-v10",
+        "rect": [
+          1191,
+          545,
+          319,
+          455
+        ],
+        "referenceHeight": 458.7285714285714,
+        "pivotX": 0.5172413793103449,
+        "foot": [
+          165,
+          455
+        ],
+        "seat": [
+          159.5,
+          327.59999999999997
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null,
+        "scaleXRatio": 0.9943966341556704,
+        "offsetYRatio": -0.008128055806421397,
+        "headMetrics": {
+          "headWidth": 249,
+          "landmarkHeight": 163,
+          "centerX": 165,
+          "originalReferenceHeight": 455
+        }
+      }
+    ],
+    "carryFrames": [
+      {
+        "rect": [
+          96,
+          37,
+          151,
+          249
+        ],
+        "pivotX": 0.49695470624218724,
+        "grip": [
+          54.08904109589041,
+          153.68904109589042
+        ],
+        "gripSide": -1,
+        "name": "carry-0",
+        "source": "kay-carry",
+        "referenceHeight": 285,
+        "foot": [
+          75.04016064257027,
+          249
+        ],
+        "seat": [
+          75.04016064257027,
+          179.28
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          96,
+          37,
+          151,
+          249
+        ],
+        "pivotX": 0.49695470624218724,
+        "grip": [
+          54.08904109589041,
+          153.68904109589042
+        ],
+        "gripSide": -1,
+        "name": "carry-1",
+        "source": "kay-carry",
+        "referenceHeight": 285,
+        "foot": [
+          75.04016064257027,
+          249
+        ],
+        "seat": [
+          75.04016064257027,
+          179.28
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          551,
+          41,
+          148,
+          245
+        ],
+        "pivotX": 0.4878047958137778,
+        "grip": [
+          116.62295081967213,
+          178.95628415300547
+        ],
+        "gripSide": 1,
+        "name": "carry-2",
+        "source": "kay-carry",
+        "referenceHeight": 285,
+        "foot": [
+          72.19510978043911,
+          245
+        ],
+        "seat": [
+          72.19510978043911,
+          176.4
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          784,
+          39,
+          144,
+          247
+        ],
+        "pivotX": 0.44247989766081885,
+        "grip": [
+          40.043399638336346,
+          156.47739602169983
+        ],
+        "gripSide": -1,
+        "name": "carry-3",
+        "source": "kay-carry",
+        "referenceHeight": 285,
+        "foot": [
+          63.71710526315792,
+          247
+        ],
+        "seat": [
+          63.71710526315792,
+          177.84
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          90,
+          1168,
+          162,
+          285
+        ],
+        "pivotX": 0.49439810037075266,
+        "grip": [
+          49.719874804381845,
+          169.74021909233176
+        ],
+        "gripSide": -1,
+        "name": "carry-4",
+        "source": "kay-carry",
+        "referenceHeight": 285,
+        "foot": [
+          80.09249226006193,
+          285
+        ],
+        "seat": [
+          80.09249226006193,
+          205.2
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          317,
+          1168,
+          163,
+          285
+        ],
+        "pivotX": 0.47839574716153577,
+        "grip": [
+          142.10276679841897,
+          161.16205533596838
+        ],
+        "gripSide": 1,
+        "name": "carry-5",
+        "source": "kay-carry",
+        "referenceHeight": 285,
+        "foot": [
+          77.97850678733033,
+          285
+        ],
+        "seat": [
+          77.97850678733033,
+          205.2
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          96,
+          305,
+          151,
+          257
+        ],
+        "pivotX": 0.4725195740081314,
+        "grip": [
+          49.835182250396194,
+          158
+        ],
+        "gripSide": -1,
+        "name": "carry-6",
+        "source": "kay-carry",
+        "referenceHeight": 285,
+        "foot": [
+          71.35045567522783,
+          257
+        ],
+        "seat": [
+          71.35045567522783,
+          185.04
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          321,
+          305,
+          152,
+          257
+        ],
+        "pivotX": 0.510304375396322,
+        "grip": [
+          52.52808988764045,
+          155.47993579454254
+        ],
+        "gripSide": -1,
+        "name": "carry-7",
+        "source": "kay-carry",
+        "referenceHeight": 285,
+        "foot": [
+          77.56626506024095,
+          257
+        ],
+        "seat": [
+          77.56626506024095,
+          185.04
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          547,
+          305,
+          152,
+          257
+        ],
+        "pivotX": 0.5091581621284373,
+        "grip": [
+          51.49760765550239,
+          159.02392344497608
+        ],
+        "gripSide": -1,
+        "name": "carry-8",
+        "source": "kay-carry",
+        "referenceHeight": 285,
+        "foot": [
+          77.39204064352248,
+          257
+        ],
+        "seat": [
+          77.39204064352248,
+          185.04
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          774,
+          305,
+          152,
+          257
+        ],
+        "pivotX": 0.5194539319369571,
+        "grip": [
+          51.96124031007752,
+          154.7891472868217
+        ],
+        "gripSide": -1,
+        "name": "carry-9",
+        "source": "kay-carry",
+        "referenceHeight": 285,
+        "foot": [
+          78.95699765441748,
+          257
+        ],
+        "seat": [
+          78.95699765441748,
+          185.04
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          547,
+          305,
+          152,
+          257
+        ],
+        "pivotX": 0.5091581621284373,
+        "grip": [
+          51.49760765550239,
+          159.02392344497608
+        ],
+        "gripSide": -1,
+        "name": "carry-10",
+        "source": "kay-carry",
+        "referenceHeight": 285,
+        "foot": [
+          77.39204064352248,
+          257
+        ],
+        "seat": [
+          77.39204064352248,
+          185.04
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          321,
+          305,
+          152,
+          257
+        ],
+        "pivotX": 0.510304375396322,
+        "grip": [
+          52.52808988764045,
+          155.47993579454254
+        ],
+        "gripSide": -1,
+        "name": "carry-11",
+        "source": "kay-carry",
+        "referenceHeight": 285,
+        "foot": [
+          77.56626506024095,
+          257
+        ],
+        "seat": [
+          77.56626506024095,
+          185.04
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          95,
+          848,
+          158,
+          266
+        ],
+        "pivotX": 0.5179389084311157,
+        "grip": [
+          139.22556390977442,
+          155.04511278195488
+        ],
+        "gripSide": 1,
+        "name": "carry-12",
+        "source": "kay-carry",
+        "referenceHeight": 285,
+        "foot": [
+          81.83434753211628,
+          266
+        ],
+        "seat": [
+          81.83434753211628,
+          191.51999999999998
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          321,
+          848,
+          159,
+          268
+        ],
+        "pivotX": 0.48125215772804364,
+        "grip": [
+          140.3031496062992,
+          155.08267716535434
+        ],
+        "gripSide": 1,
+        "name": "carry-13",
+        "source": "kay-carry",
+        "referenceHeight": 285,
+        "foot": [
+          76.51909307875894,
+          268
+        ],
+        "seat": [
+          76.51909307875894,
+          192.95999999999998
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          547,
+          848,
+          158,
+          268
+        ],
+        "pivotX": 0.45474531402142176,
+        "grip": [
+          138.14074074074074,
+          154.78148148148148
+        ],
+        "gripSide": 1,
+        "name": "carry-14",
+        "source": "kay-carry",
+        "referenceHeight": 285,
+        "foot": [
+          71.84975961538464,
+          268
+        ],
+        "seat": [
+          71.84975961538464,
+          192.95999999999998
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          774,
+          848,
+          158,
+          268
+        ],
+        "pivotX": 0.47733167663275644,
+        "grip": [
+          139.18861209964413,
+          154.98932384341637
+        ],
+        "gripSide": 1,
+        "name": "carry-15",
+        "source": "kay-carry",
+        "referenceHeight": 285,
+        "foot": [
+          75.41840490797551,
+          268
+        ],
+        "seat": [
+          75.41840490797551,
+          192.95999999999998
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          547,
+          848,
+          158,
+          268
+        ],
+        "pivotX": 0.45474531402142176,
+        "grip": [
+          138.14074074074074,
+          154.78148148148148
+        ],
+        "gripSide": 1,
+        "name": "carry-16",
+        "source": "kay-carry",
+        "referenceHeight": 285,
+        "foot": [
+          71.84975961538464,
+          268
+        ],
+        "seat": [
+          71.84975961538464,
+          192.95999999999998
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          321,
+          848,
+          159,
+          268
+        ],
+        "pivotX": 0.48125215772804364,
+        "grip": [
+          140.3031496062992,
+          155.08267716535434
+        ],
+        "gripSide": 1,
+        "name": "carry-17",
+        "source": "kay-carry",
+        "referenceHeight": 285,
+        "foot": [
+          76.51909307875894,
+          268
+        ],
+        "seat": [
+          76.51909307875894,
+          192.95999999999998
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          91,
+          580,
+          151,
+          254
+        ],
+        "pivotX": 0.5521291945687965,
+        "grip": [
+          113.1926782273603,
+          153.47784200385357
+        ],
+        "gripSide": 1,
+        "name": "carry-18",
+        "source": "kay-carry",
+        "referenceHeight": 285,
+        "foot": [
+          83.37150837988827,
+          254
+        ],
+        "seat": [
+          83.37150837988827,
+          182.88
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          319,
+          580,
+          151,
+          254
+        ],
+        "pivotX": 0.57190836892207,
+        "grip": [
+          114.58464566929133,
+          153.03543307086613
+        ],
+        "gripSide": 1,
+        "name": "carry-19",
+        "source": "kay-carry",
+        "referenceHeight": 285,
+        "foot": [
+          86.35816370723256,
+          254
+        ],
+        "seat": [
+          86.35816370723256,
+          182.88
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          546,
+          580,
+          153,
+          253
+        ],
+        "pivotX": 0.5591752998104201,
+        "grip": [
+          116.75241779497098,
+          152.83558994197293
+        ],
+        "gripSide": 1,
+        "name": "carry-20",
+        "source": "kay-carry",
+        "referenceHeight": 285,
+        "foot": [
+          85.55382087099429,
+          253
+        ],
+        "seat": [
+          85.55382087099429,
+          182.16
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          774,
+          580,
+          152,
+          253
+        ],
+        "pivotX": 0.5662462699476714,
+        "grip": [
+          113.93465346534653,
+          152.9029702970297
+        ],
+        "gripSide": 1,
+        "name": "carry-21",
+        "source": "kay-carry",
+        "referenceHeight": 285,
+        "foot": [
+          86.06943303204605,
+          253
+        ],
+        "seat": [
+          86.06943303204605,
+          182.16
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          546,
+          580,
+          153,
+          253
+        ],
+        "pivotX": 0.5591752998104201,
+        "grip": [
+          116.75241779497098,
+          152.83558994197293
+        ],
+        "gripSide": 1,
+        "name": "carry-22",
+        "source": "kay-carry",
+        "referenceHeight": 285,
+        "foot": [
+          85.55382087099429,
+          253
+        ],
+        "seat": [
+          85.55382087099429,
+          182.16
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          319,
+          580,
+          151,
+          254
+        ],
+        "pivotX": 0.57190836892207,
+        "grip": [
+          114.58464566929133,
+          153.03543307086613
+        ],
+        "gripSide": 1,
+        "name": "carry-23",
+        "source": "kay-carry",
+        "referenceHeight": 285,
+        "foot": [
+          86.35816370723256,
+          254
+        ],
+        "seat": [
+          86.35816370723256,
+          182.88
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          324,
+          41,
+          144,
+          245
+        ],
+        "pivotX": 0.5223151703541171,
+        "grip": [
+          100.91699604743083,
+          154.52371541501975
+        ],
+        "gripSide": 1,
+        "name": "carry-24",
+        "source": "kay-carry",
+        "referenceHeight": 285,
+        "foot": [
+          75.21338453099287,
+          245
+        ],
+        "seat": [
+          75.21338453099287,
+          176.4
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          539,
+          1168,
+          170,
+          285
+        ],
+        "pivotX": 0.7734521158129175,
+        "grip": [
+          119.01430842607313,
+          168.32909379968203
+        ],
+        "gripSide": 1,
+        "name": "carry-25",
+        "source": "kay-carry",
+        "referenceHeight": 285,
+        "foot": [
+          131.48685968819598,
+          285
+        ],
+        "seat": [
+          131.48685968819598,
+          205.2
+        ],
+        "slot": null
+      },
+      {
+        "name": "carry-walk-side-v12-0",
+        "source": "kay-carry-walk-v12",
+        "rect": [
+          49,
+          46,
+          273,
+          444
+        ],
+        "referenceHeight": 419.3285714285714,
+        "pivotX": 0.5604395604395604,
+        "foot": [
+          153,
+          444
+        ],
+        "seat": [
+          136.5,
+          319.68
+        ],
+        "grip": [
+          210,
+          255
+        ],
+        "gripSide": 1,
+        "slot": null,
+        "scaleXRatio": 0.9883759617384071,
+        "offsetYRatio": 0.05883555343576474,
+        "headMetrics": {
+          "headWidth": 229,
+          "landmarkHeight": 149,
+          "centerX": 153,
+          "originalReferenceHeight": 444
+        }
+      },
+      {
+        "name": "carry-walk-side-v12-1",
+        "source": "kay-carry-walk-v12",
+        "rect": [
+          433,
+          46,
+          268,
+          444
+        ],
+        "referenceHeight": 419.3285714285714,
+        "pivotX": 0.5708955223880597,
+        "foot": [
+          153,
+          444
+        ],
+        "seat": [
+          134,
+          319.68
+        ],
+        "grip": [
+          208.5,
+          243.5
+        ],
+        "gripSide": 1,
+        "slot": null,
+        "scaleXRatio": 0.9883759617384071,
+        "offsetYRatio": 0.05883555343576474,
+        "headMetrics": {
+          "headWidth": 229,
+          "landmarkHeight": 149,
+          "centerX": 153,
+          "originalReferenceHeight": 444
+        }
+      },
+      {
+        "name": "carry-walk-side-v12-2",
+        "source": "kay-carry-walk-v12",
+        "rect": [
+          817,
+          46,
+          267,
+          444
+        ],
+        "referenceHeight": 419.3285714285714,
+        "pivotX": 0.5711610486891385,
+        "foot": [
+          152.5,
+          444
+        ],
+        "seat": [
+          133.5,
+          319.68
+        ],
+        "grip": [
+          207.5,
+          244
+        ],
+        "gripSide": 1,
+        "slot": null,
+        "scaleXRatio": 0.9927109440267334,
+        "offsetYRatio": 0.05883555343576474,
+        "headMetrics": {
+          "headWidth": 228,
+          "landmarkHeight": 149,
+          "centerX": 152.5,
+          "originalReferenceHeight": 444
+        }
+      },
+      {
+        "name": "carry-walk-side-v12-3",
+        "source": "kay-carry-walk-v12",
+        "rect": [
+          1201,
+          46,
+          300,
+          444
+        ],
+        "referenceHeight": 419.3285714285714,
+        "pivotX": 0.5066666666666667,
+        "foot": [
+          152,
+          444
+        ],
+        "seat": [
+          150,
+          319.68
+        ],
+        "grip": [
+          218.5,
+          245
+        ],
+        "gripSide": 1,
+        "slot": null,
+        "scaleXRatio": 0.9883759617384071,
+        "offsetYRatio": 0.05883555343576474,
+        "headMetrics": {
+          "headWidth": 229,
+          "landmarkHeight": 149,
+          "centerX": 152,
+          "originalReferenceHeight": 444
+        }
+      },
+      {
+        "name": "carry-walk-side-v12-4",
+        "source": "kay-carry-walk-v12",
+        "rect": [
+          49,
+          548,
+          273,
+          442
+        ],
+        "referenceHeight": 419.3285714285714,
+        "pivotX": 0.5604395604395604,
+        "foot": [
+          153,
+          442
+        ],
+        "seat": [
+          136.5,
+          318.24
+        ],
+        "grip": [
+          210.5,
+          253
+        ],
+        "gripSide": 1,
+        "slot": null,
+        "scaleXRatio": 0.9883759617384071,
+        "offsetYRatio": 0.054066023915783745,
+        "headMetrics": {
+          "headWidth": 229,
+          "landmarkHeight": 149,
+          "centerX": 153,
+          "originalReferenceHeight": 442
+        }
+      },
+      {
+        "name": "carry-walk-side-v12-5",
+        "source": "kay-carry-walk-v12",
+        "rect": [
+          433,
+          548,
+          268,
+          442
+        ],
+        "referenceHeight": 419.3285714285714,
+        "pivotX": 0.5708955223880597,
+        "foot": [
+          153,
+          442
+        ],
+        "seat": [
+          134,
+          318.24
+        ],
+        "grip": [
+          208.5,
+          247
+        ],
+        "gripSide": 1,
+        "slot": null,
+        "scaleXRatio": 0.9883759617384071,
+        "offsetYRatio": 0.054066023915783745,
+        "headMetrics": {
+          "headWidth": 229,
+          "landmarkHeight": 149,
+          "centerX": 153,
+          "originalReferenceHeight": 442
+        }
+      },
+      {
+        "name": "carry-walk-side-v12-6",
+        "source": "kay-carry-walk-v12",
+        "rect": [
+          817,
+          548,
+          267,
+          442
+        ],
+        "referenceHeight": 419.3285714285714,
+        "pivotX": 0.5711610486891385,
+        "foot": [
+          152.5,
+          442
+        ],
+        "seat": [
+          133.5,
+          318.24
+        ],
+        "grip": [
+          207.5,
+          243.5
+        ],
+        "gripSide": 1,
+        "slot": null,
+        "scaleXRatio": 0.9927109440267334,
+        "offsetYRatio": 0.054066023915783745,
+        "headMetrics": {
+          "headWidth": 228,
+          "landmarkHeight": 149,
+          "centerX": 152.5,
+          "originalReferenceHeight": 442
+        }
+      },
+      {
+        "name": "carry-walk-side-v12-7",
+        "source": "kay-carry-walk-v12",
+        "rect": [
+          1201,
+          548,
+          300,
+          442
+        ],
+        "referenceHeight": 419.3285714285714,
+        "pivotX": 0.5083333333333333,
+        "foot": [
+          152.5,
+          442
+        ],
+        "seat": [
+          150,
+          318.24
+        ],
+        "grip": [
+          219,
+          244.5
+        ],
+        "gripSide": 1,
+        "slot": null,
+        "scaleXRatio": 0.9927109440267334,
+        "offsetYRatio": 0.054066023915783745,
+        "headMetrics": {
+          "headWidth": 228,
+          "landmarkHeight": 149,
+          "centerX": 152.5,
+          "originalReferenceHeight": 442
+        }
+      }
+    ],
+    "officeFrames": [
+      {
+        "rect": [
+          1169,
+          43,
+          138,
+          224
+        ],
+        "pivotX": 0.48693387681159483,
+        "grip": null,
+        "gripSide": 0,
+        "name": "type-front-left",
+        "source": "kay",
+        "referenceHeight": 228,
+        "foot": [
+          67.19687500000009,
+          224
+        ],
+        "seat": [
+          67.19687500000009,
+          161.28
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          1357,
+          43,
+          138,
+          224
+        ],
+        "pivotX": 0.48481943963719315,
+        "grip": null,
+        "gripSide": 0,
+        "name": "type-front-right",
+        "source": "kay",
+        "referenceHeight": 228,
+        "foot": [
+          66.90508266993265,
+          224
+        ],
+        "seat": [
+          66.90508266993265,
+          161.28
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          1171,
+          531,
+          136,
+          209
+        ],
+        "pivotX": 0.49663239279451643,
+        "grip": null,
+        "gripSide": 0,
+        "name": "type-back-left",
+        "source": "kay",
+        "referenceHeight": 228,
+        "foot": [
+          67.54200542005424,
+          209
+        ],
+        "seat": [
+          67.54200542005424,
+          150.48
+        ],
+        "slot": null
+      },
+      {
+        "rect": [
+          1356,
+          531,
+          134,
+          209
+        ],
+        "pivotX": 0.4945267098519219,
+        "grip": null,
+        "gripSide": 0,
+        "name": "type-back-right",
+        "source": "kay",
+        "referenceHeight": 228,
+        "foot": [
+          66.26657912015753,
+          209
+        ],
+        "seat": [
+          66.26657912015753,
+          150.48
+        ],
+        "slot": null
+      }
+    ],
+    "carryFrontLoop": [
+      6,
+      7,
+      8,
+      9
+    ],
+    "carryBackLoop": [
+      12,
+      13,
+      14,
+      15
+    ],
+    "carryRightLoop": [
+      26,
+      27,
+      28,
+      29,
+      30,
+      31,
+      32,
+      33
+    ],
+    "walkLoopLength": 4,
+    "approvedLegacy": false,
+    "sideWalkLoop": [
+      64,
+      65,
+      66,
+      67,
+      68,
+      69,
+      70,
+      71
+    ],
+    "runLoop": [
+      72,
+      73,
+      74,
+      75,
+      76,
+      77,
+      78,
+      79
+    ],
+    "sideWalkFrameMs": 100,
+    "runFrameMs": 75,
+    "carrySideFrameMs": 100,
+    "mobilityFrames": [
+      {
+        "name": "scooter-riding-right",
+        "source": "kay-mobility",
+        "rect": [
+          0,
+          0,
+          47,
+          72
+        ],
+        "pivotX": 0.35,
+        "referenceHeight": 72,
+        "foot": [
+          23.5,
+          72
+        ],
+        "seat": [
+          16.45,
+          48.96
+        ],
+        "grip": null,
+        "gripSide": 1,
+        "slot": null
+      },
+      {
+        "name": "skateboard-balance-right",
+        "source": "kay-mobility",
+        "rect": [
+          96,
+          0,
+          57,
+          72
+        ],
+        "pivotX": 0.5,
+        "referenceHeight": 72,
+        "foot": [
+          28.5,
+          72
+        ],
+        "seat": [
+          19.95,
+          48.96
+        ],
+        "grip": null,
+        "gripSide": 1,
+        "slot": null
+      }
+    ]
+  },
+  "rendering": {
+    "mirrorDirection": 3,
+    "standingScale": "worldHeight / referenceHeight",
+    "carryStandingScale": "worldHeight / rect[3]",
+    "seatScale": "seatedHeight / referenceHeight",
+    "seatSurface": "seat[1]",
+    "grip": "frame-local pixels",
+    "frameDurationDefaultMs": 125
+  },
+  "provenance": {
+    "date": "2026-10-12",
+    "codeBase": "d57d36d + pre-existing working tree",
+    "acceptance": "local-equivalence; online baseline and human acceptance pending",
+    "migrationFixture": "scripts/fixtures/character-library-before.json"
+  },
+  "moles": {
+    "file": "kay/moles.png",
+    "origin": "team/v2/kay.png",
+    "size": [
+      1254,
+      1254
+    ],
+    "sha256": "254b73ea2c61c8b1fcac0818717500fdc227a7deeecc018298d58f2aa8952b54",
+    "frames": [
+      {
+        "name": "idle-front",
+        "rect": [
+          66,
+          27,
+          111,
+          156
+        ],
+        "floor": [
+          55.5,
+          156
+        ],
+        "seat": [
+          55.5,
+          124.80000000000001
+        ],
+        "direction": "front",
+        "grip": null,
+        "gripSide": -1,
+        "index": 0,
+        "foot": [
+          55.5,
+          156
+        ]
+      }
+    ]
+  }
+}

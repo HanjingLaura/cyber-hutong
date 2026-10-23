@@ -1,20 +1,22 @@
 import type {MultiplayerBridge} from './bridge';
+import {showMemoryTicket} from '../ticket-view';
 import {setupMemoryView,type MemoryEntry} from './memory-view';
 import {handOptions,itemLabel,playerInventory,type ItemName} from '../player-inventory';
 import {ensureCollectible,itemIcon} from '../collectible-art';
-import {registerGachaTextures} from '../gacha-assets';
+import {gachaReady,registerGachaTextures} from '../gacha-assets';
 import {registerProductTextures} from '../product-textures';
 import {dockPrompt} from '../hud';
 import {blindBoxes,toyImage,toyNames} from '../blind-box';
+import {bindDialogFocus} from '../world-focus';
 const toys=()=>blindBoxes.data.collection;
 
 type Entry=MemoryEntry;
 type Origin={scene:string;at:number};type Slot={name:string;count:number;seasoning:string[];origin?:Origin}|null;
-const sceneNames:Record<string,string>={hutong:'胡同办公室',hawaii:'夏威夷办公室',rest:'休息室',pop:'POP MART',bathroom:'洗手间',concert:'音乐厅',arcade:'娱乐室',noodle:'米线店',gym:'健身房',dance:'舞室',perler:'拼豆店',rehearsal:'排练厅',elevator:'电梯间',subway:'五道口站'};
+const sceneNames:Record<string,string>={manner:'MANNER 咖啡',hutong:'胡同办公室',hawaii:'夏威夷办公室',rest:'休息室',pop:'POP MART',bathroom:'洗手间',concert:'音乐厅',arcade:'娱乐室',noodle:'米线店',gym:'健身房',dance:'舞室',perler:'拼豆店',rehearsal:'排练厅',elevator:'电梯间',subway:'五道口站'};
 export function originText(o?:Origin){if(!o?.at)return '';const d=new Date(o.at),when=`${d.getMonth()+1}月${d.getDate()}日 ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;const who=o.scene.startsWith('gift:')?o.scene.slice(5):'',where=who?who.charAt(0).toUpperCase()+who.slice(1)+' 送的':sceneNames[o.scene]??'';return where?`${when} · ${where}`:when;}
 type Offer={id:string;sender:string;recipient:string;kind:string;item:string;status:string;expires:number;fromRole:string;toRole:string};
 export function setupLifeUI(bridge:MultiplayerBridge,request:(path:string,input?:any)=>Promise<any>,publish:()=>Promise<void>,client:string,notice:(s:string)=>void){
- const root=document.createElement('div');root.id='life-ui';root.innerHTML=`<dialog id="journal-dialog" class="social-dialog memory-dialog"></dialog><dialog id="bag-dialog" class="social-dialog bag-dialog"><div class="panel-heading"><h2>背包</h2><button data-close-life>关闭</button></div><div class="bag-hand-card"><div id="bag-hand-art" class="bag-art"></div><div><small>手上</small><strong id="bag-hand">空</strong></div></div><div class="bag-actions"><button id="bag-stow">放进背包</button><button id="bag-consume">吃 / 喝</button><button id="bag-collect">放进收藏</button></div><div id="bag-slots" class="bag-grid"></div></dialog><dialog id="collection-dialog" class="social-dialog cabinet-dialog"><div class="panel-heading"><h2>收藏</h2><span id="collection-count"></span><button data-close-life>关闭</button></div><div id="collection-slots" class="cabinet"></div></dialog><section id="hand-actions" hidden aria-label="手中物品"><span id="hand-item"></span><button id="hand-use"></button><button id="hand-stow">背包</button><button id="hand-collect">收藏</button></section><section id="life-offers" class="social-panel" aria-live="polite" hidden></section>`;
+ const root=document.createElement('div');root.id='life-ui';root.innerHTML=`<dialog id="journal-dialog" class="social-dialog memory-dialog"></dialog><dialog id="bag-dialog" class="social-dialog bag-dialog" aria-labelledby="bag-title"><div class="panel-heading"><h2 id="bag-title">背包</h2><button data-close-life>关闭</button></div><div class="bag-hand-card"><div id="bag-hand-art" class="bag-art"></div><div><small>手上</small><strong id="bag-hand">空</strong></div></div><div class="bag-actions"><button id="bag-stow">放进背包</button><button id="bag-consume">吃 / 喝</button><button id="bag-collect">放进收藏</button></div><div id="bag-slots" class="bag-grid"></div></dialog><dialog id="collection-dialog" class="social-dialog cabinet-dialog" aria-labelledby="collection-title"><div class="panel-heading"><h2 id="collection-title">收藏</h2><span id="collection-count"></span><button data-close-life>关闭</button></div><div id="collection-slots" class="cabinet"></div></dialog><section id="hand-actions" hidden aria-label="手中物品"><span id="hand-item"></span><button id="hand-use"></button><button id="hand-stow">背包</button><button id="hand-collect">收藏</button></section><section id="life-offers" class="social-panel" aria-live="polite" hidden></section>`;
  document.querySelector('.world')!.append(root);
  // dockPrompt moves #hand-actions to #hud-rail, so keep direct references instead of re-querying root.
  const quick=root.querySelector<HTMLElement>('#hand-actions'),handLabel=root.querySelector<HTMLElement>('#hand-item'),handUse=root.querySelector<HTMLButtonElement>('#hand-use');
@@ -25,20 +27,42 @@ export function setupLifeUI(bridge:MultiplayerBridge,request:(path:string,input?
  const button=(text:string,action:()=>void)=>{const b=document.createElement('button');b.textContent=text;b.onclick=action;return b;};
  const journalDialog=root.querySelector<HTMLDialogElement>('#journal-dialog')!,bagDialog=root.querySelector<HTMLDialogElement>('#bag-dialog')!,cabinetDialog=root.querySelector<HTMLDialogElement>('#collection-dialog')!;
  const memories=setupMemoryView(journalDialog,bridge);
- root.querySelectorAll('[data-close-life]').forEach(b=>b.addEventListener('click',()=>{(b.closest('dialog') as HTMLDialogElement).close();document.querySelector<HTMLElement>('.world')!.focus();}));
+ for(const [dialog,opener]of [[journalDialog,'memory-open'],[bagDialog,'bag-open'],[cabinetDialog,'collection-open']] as const)bindDialogFocus(dialog,()=>document.getElementById(opener));
+ root.querySelectorAll('[data-close-life]').forEach(b=>b.addEventListener('click',()=>{(b.closest('dialog') as HTMLDialogElement).close();}));
  async function journal(more=false){if(!bridge.user?.role){notice('请先登录');return;}if(loadingJournal)return;loadingJournal=true;try{const result=await request('journal'+(more&&entries.length?'?before='+entries[entries.length-1].seq:''));entries=more?[...entries,...result.entries]:result.entries;memories.set(entries,more);const moreButton=journalDialog.querySelector<HTMLButtonElement>('#journal-more');if(moreButton)moreButton.hidden=result.entries.length<50;if(!journalDialog.open)journalDialog.showModal();}catch(e){notice((e as Error).message);}finally{loadingJournal=false;}}
- function icon(element:HTMLElement,name:string){const scene=bridge.active;if(!scene)return;registerProductTextures(scene);registerGachaTextures(scene);const put=()=>{const src=itemIcon(scene,name);if(src&&element.isConnected){const img=document.createElement('img');img.src=src;img.alt='';element.prepend(img);}};if(name.startsWith('拼豆·'))void ensureCollectible(scene,name).then(put).catch(()=>{});else put();}
+ function icon(element:HTMLElement,name:string){const scene=bridge.active;if(!scene)return;registerProductTextures(scene);registerGachaTextures(scene);const put=()=>{const src=itemIcon(scene,name);if(src&&element.isConnected){const img=document.createElement('img');img.src=src;img.alt='';element.prepend(img);}};if(name.startsWith('拼豆·'))void ensureCollectible(scene,name).then(put).catch(()=>{});else if(name.startsWith('扭蛋·')||name.startsWith('娃娃·'))void gachaReady().then(()=>{if(!scene.sys.game)return;registerGachaTextures(scene);put();}).catch(()=>{});else put();}
  function drawBag(){const next=JSON.stringify([bridge.user?.id,bridge.user?.hand,bag,collection,toys().length,loading,bridge.active?.sys.settings.key,!!document.querySelector('#arcade-game[open],#perler-workshop[open]')]);if(next===bagSignature)return;bagSignature=next;const hand=bridge.user?.hand,opts=handOptions(hand),edible=opts.edible,collectible=opts.collect;
   root.querySelector('#bag-hand')!.textContent=hand?itemLabel(hand):'空着';const handArt=root.querySelector<HTMLElement>('#bag-hand-art')!;handArt.replaceChildren();if(hand)icon(handArt,hand);
-  const slots=root.querySelector('#bag-slots')!;slots.replaceChildren();bag.forEach((s,i)=>{const b=document.createElement('button');b.className='bag-cell'+(s?'':' empty');b.disabled=!s||!!hand||loading;if(s){const art=document.createElement('span');art.className='bag-art';const name=document.createElement('span');name.className='bag-name';name.textContent=itemLabel(s.name);const count=document.createElement('b');count.className='bag-count';count.textContent=s.count>1?'×'+s.count:'';b.append(art,name,count);b.onclick=()=>void inventory('equip',i);}slots.append(b);if(s)icon(b.querySelector<HTMLElement>('.bag-art')!,s.name);});
+  const slots=root.querySelector('#bag-slots')!;slots.replaceChildren();bag.forEach((s,i)=>{const b=document.createElement('button');b.className='bag-cell'+(s?'':' empty');b.setAttribute('aria-label',s?`背包第 ${i+1} 格，${itemLabel(s.name)}，${s.count} 件`:`背包第 ${i+1} 格，空`);if(!s)b.textContent='空';b.disabled=!s||!!hand||loading;if(s){const art=document.createElement('span');art.className='bag-art';const name=document.createElement('span');name.className='bag-name';name.textContent=itemLabel(s.name);const count=document.createElement('b');count.className='bag-count';count.textContent=s.count>1?'×'+s.count:'';b.append(art,name,count);b.onclick=()=>void inventory('equip',i);}slots.append(b);if(s)icon(b.querySelector<HTMLElement>('.bag-art')!,s.name);});
   const cabinet=root.querySelector('#collection-slots')!;cabinet.replaceChildren();const total=collection.reduce((n,s)=>n+(s?.count??0),0)+toys().length;root.querySelector('#collection-count')!.textContent=total?total+' 件':'';
-  collection.forEach((s,i)=>{if(!s)return;const card=document.createElement('figure');card.className='cabinet-item';const art=document.createElement('div');art.className='cabinet-art';const cap=document.createElement('figcaption');const name=document.createElement('strong');name.textContent=itemLabel(s.name)+(s.count>1?' ×'+s.count:'');const meta=document.createElement('small');meta.textContent=originText(s.origin);const take=document.createElement('button');take.textContent='拿到手上';take.disabled=!!hand||loading;take.onclick=()=>void inventory('retrieve',i);cap.append(name,meta,take);card.append(art,cap);cabinet.append(card);icon(art,s.name);});
+  collection.forEach((s,i)=>{if(!s)return;const card=document.createElement('figure');card.className='cabinet-item';const art=document.createElement('div');art.className='cabinet-art';const cap=document.createElement('figcaption');const name=document.createElement('strong');name.textContent=itemLabel(s.name)+(s.count>1?' ×'+s.count:'');const meta=document.createElement('small');meta.textContent=originText(s.origin);const take=document.createElement('button');take.textContent=s.name.startsWith('车票·')?'查看纪念票':'拿到手上';take.disabled=s.name.startsWith('车票·')?loading:!!hand||loading;take.onclick=()=>void inventory('retrieve',i);cap.append(name,meta,take);card.append(art,cap);cabinet.append(card);icon(art,s.name);});
   for(const t of toys()){const card=document.createElement('figure');card.className='cabinet-item';const art=document.createElement('div');art.className='cabinet-art';const src=toyImage(t.toy);if(src){const img=document.createElement('img');img.alt='';img.src=src;art.append(img);}const cap=document.createElement('figcaption');const name=document.createElement('strong');name.textContent=toyNames[t.toy]??'盲盒';const meta=document.createElement('small');meta.textContent=originText({scene:'pop',at:t.at});cap.append(name,meta);card.append(art,cap);cabinet.append(card);}
+  if(!total){const empty=document.createElement('p');empty.className='cabinet-empty';empty.textContent='收藏还空着。把手中的盲盒或拼豆作品放进收藏，就能在这里查看。';cabinet.append(empty);}
 
   (root.querySelector('#bag-stow') as HTMLButtonElement).disabled=!hand||loading;(root.querySelector('#bag-consume') as HTMLButtonElement).disabled=!edible||loading;(root.querySelector('#bag-collect') as HTMLButtonElement).disabled=!collectible||loading;
   if(quick)quick.hidden=!hand||!bridge.user?.role||!!document.querySelector('#arcade-game[open],#perler-workshop[open]');if(handLabel){handLabel.replaceChildren();handLabel.textContent=hand?itemLabel(hand):'';if(hand)icon(handLabel,hand);}if(handUse){handUse.textContent=opts.verb;handUse.hidden=!edible;handUse.disabled=loading;}const qs=quick?.querySelector<HTMLButtonElement>('#hand-stow'),qc=quick?.querySelector<HTMLButtonElement>('#hand-collect');if(qs){qs.disabled=loading;}if(qc){qc.hidden=!collectible;qc.disabled=loading;}
  }
- async function inventory(action:string,slot?:number){if(loading)return;loading=true;drawBag();const hand=bridge.user?.hand;try{await publish();const input={action,slot,client,revision:bridge.user?.revision,requestId:crypto.randomUUID()};let result;try{result=await request('inventory',input);}catch(e){if((e as any).status)throw e;result=await request('inventory',input);}bridge.user=result.self;playerInventory.hand=result.self.hand as ItemName|null;playerInventory.noodleSeasoning=result.self.seasoning??[];const ui=document.getElementById('social-ui');if(ui)ui.dataset.revision=String(result.self.revision);bag=result.bag;collection=result.collection??collection;window.dispatchEvent(new Event('hutong:hand-changed'));}catch(e){notice((e as Error).message);}finally{loading=false;drawBag();}}
+ async function inventory(action:string,slot?:number){
+  if(loading)return;
+  const trigger=document.activeElement,fromQuick=!!trigger&&!!quick?.contains(trigger);
+  loading=true;drawBag();
+  try{
+   await publish();
+   const input={action,slot,client,revision:bridge.user?.revision,requestId:crypto.randomUUID()};let result;
+   try{result=await request('inventory',input);}catch(e){if((e as any).status)throw e;result=await request('inventory',input);}
+   bridge.user=result.self;playerInventory.hand=result.self.hand as ItemName|null;playerInventory.noodleSeasoning=result.self.seasoning??[];
+   const ui=document.getElementById('social-ui');if(ui)ui.dataset.revision=String(result.self.revision);
+   bag=result.bag;collection=result.collection??collection;window.dispatchEvent(new Event('hutong:hand-changed'));
+  }catch(e){notice((e as Error).message);}
+  finally{
+   loading=false;drawBag();
+   const active=document.activeElement;
+   // The quick control can disappear after use. Resume play unless the user
+   // moved to another input or opened a modal while the request was pending.
+   if(fromQuick&&!document.querySelector('dialog[open]')&&(active===document.body||active===trigger||!!active&&!!quick?.contains(active)))document.querySelector<HTMLElement>('.world')?.focus();
+  }
+ }
+
  journalDialog.querySelector('#journal-more')?.addEventListener('click',()=>void journal(true));
  root.querySelector('#bag-stow')!.addEventListener('click',()=>void inventory('stow'));
  root.querySelector('#bag-consume')!.addEventListener('click',()=>void inventory('consume'));
@@ -46,6 +70,10 @@ export function setupLifeUI(bridge:MultiplayerBridge,request:(path:string,input?
  handUse?.addEventListener('click',()=>void inventory('consume'));quick?.querySelector('#hand-stow')?.addEventListener('click',()=>void inventory('stow'));quick?.querySelector('#hand-collect')?.addEventListener('click',()=>void inventory('collect'));
  const load=async(dialog:HTMLDialogElement)=>{if(!bridge.user?.role){notice('请先登录');return;}try{const result=await request('life');bag=result.bag;collection=result.collection??[];bagSignature='';drawBag();if(!dialog.open){bagDialog.close();cabinetDialog.close();dialog.showModal();}}catch(e){notice((e as Error).message);}};
  const openBag=()=>load(bagDialog),openCollection=()=>void load(cabinetDialog);window.addEventListener('hutong:open-collection',openCollection);
+ async function viewTicket(){try{const r=await request('ticket');if(r.ticket){bagDialog.close();cabinetDialog.close();showMemoryTicket(r.ticket);}}catch(e){notice((e as Error).message);}}
+ const ticketButton=button('总结会纪念票',()=>void viewTicket());ticketButton.className='bag-ticket';ticketButton.hidden=true;bagDialog.append(ticketButton);
+ root.addEventListener('click',event=>{const target=event.target as HTMLElement;const card=target.closest('.cabinet-item');if(card?.querySelector('strong')?.textContent?.startsWith('车票·')){event.stopImmediatePropagation();event.preventDefault();void viewTicket();}},true);
+ const updateTicket=()=>{ticketButton.hidden=!collection.some(s=>s?.name.startsWith('车票·'));};bridge.game.events.on('poststep',updateTicket);bridge.game.events.once('destroy',()=>bridge.game.events.off('poststep',updateTicket));
  const bagButton=button('背包',()=>void openBag());bagButton.id='bag-open';tools.insertBefore(bagButton,tools.querySelector('#settings-open'));
  const favorites=button('收藏',()=>openCollection());favorites.id='collection-open';tools.insertBefore(favorites,tools.querySelector('#settings-open'));
  const memoryButton=button('回看',()=>void journal());memoryButton.id='memory-open';tools.insertBefore(memoryButton,tools.querySelector('#settings-open'));

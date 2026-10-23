@@ -1,5 +1,6 @@
 import geometry from './interactions.json' with {type:'json'};
 import {ktvWalkable} from './ktv.mjs';
+import {outdoorWalkable} from './outdoor-collision.mjs';
 const popFloor=[200,150,237.5,150,237.5,287.5,405,287.5,405,150,460,150,550,305,415,310,415,345,225,345,225,310,85,305];
 function inPolygon(x,y,points){let inside=false;for(let i=0,j=points.length-2;i<points.length;j=i,i+=2){const xi=points[i],yi=points[i+1],xj=points[j],yj=points[j+1];if((yi>y)!==(yj>y)&&x<(xj-xi)*(y-yi)/(yj-yi)+xi)inside=!inside;}return inside;}
 // Static furniture geometry shared by human movement, API validation and NPC routing.
@@ -7,6 +8,9 @@ function inPolygon(x,y,points){let inside=false;for(let i=0,j=points.length-2;i<
 export function sceneWalkable(scene,x,y,{doors=[]}={}){
  if(typeof scene!=='string'||!Object.hasOwn(geometry,scene)||!Number.isFinite(x)||!Number.isFinite(y))return false;
  const seats=Object.values(geometry[scene].seats);
+ if(scene==='street'||scene==='campus')return outdoorWalkable(scene,x,y);
+ if(['yousheng','google','meeting'].includes(scene))return x>=35&&x<=605&&y>=(scene==='google'?175:scene==='yousheng'?255:190)&&y<=345&&!(scene==='yousheng'&&x>355&&x<450&&y<285)&&!(scene==='meeting'&&x>110&&x<530&&y>185&&y<270)&&!seats.some(s=>Math.abs(x-s.at[0])<18&&Math.abs(y-s.at[1])<12);
+ if(scene==='manner')return x>=40&&x<=600&&y>=204&&y<=345;
  if(scene==='ktv')return ktvWalkable(x,y);
  if(scene==='hutong'||scene==='hawaii')return (x>=69&&x<=603&&y>=166&&y<=221)||(x>=586&&x<=608&&y>=130&&y<=260);
  if(scene==='rest')return x>=52&&x<=590&&y>=140&&y<=278&&![200,360,520].some(cx=>((x-cx)/43.6)**2+((y-267)/24.2)**2<1)&&!seats.some(s=>Math.abs(x-s.at[0])<19&&y>s.at[1]-14&&y<s.at[1]+3);
@@ -14,7 +18,7 @@ export function sceneWalkable(scene,x,y,{doors=[]}={}){
  if(scene==='pop')return inPolygon(x,y,popFloor)&&!(x>240&&x<400&&y>171&&y<283)&&!(x>416&&x<459&&y<150);
  if(scene==='concert')return x>=55&&x<=585&&y>=159&&y<=349&&!seats.some(s=>Math.abs(x-s.at[0])<18&&y>s.at[1]-14&&y<s.at[1]+13);
  if(scene==='gym'){const inset=32+(350-y)*.09;return x>=inset&&x<=640-inset&&y>=90&&y<=338&&![225,320,415].some(cx=>Math.abs(x-cx)<31&&y<143)&&!(x<90&&y<178)&&!(x>490&&y<185)&&!(x>74&&x<143&&y>140&&y<211)&&!(x<90&&y>218&&y<305)&&!(x>565&&y>210&&y<266);}
- if(scene==='arcade')return x>=55&&x<=595&&y>=192&&y<=343&&!(x>72&&x<178&&y>220&&y<335)&&!(x>356&&x<512&&y>247&&y<311)&&!(x>479&&x<591&&y>332);
+ if(scene==='arcade')return x>=55&&x<=595&&y>=192&&y<=343&&!(x>72&&x<178&&y>220&&y<335)&&!(x>356&&x<512&&y>247&&y<311)&&!(x>252&&x<320&&y>265&&y<308)&&!(x>479&&x<591&&y>332);
  if(scene==='dance')return x>=30+(340-y)*.1&&x<=610-(340-y)*.1&&y>=177&&y<=338&&!(x<160&&y>239&&y<290);
  if(scene==='elevator')return x>=43&&x<=597&&y>=242&&y<=340&&!(x>328&&x<390&&y<257)&&!(x<107&&y<264);
  if(scene==='subway')return x>=40&&x<=600&&y>=226&&y<=343;

@@ -1,0 +1,13 @@
+#memory-ticket{box-sizing:border-box;width:min(1080px,calc(100vw - 32px));max-width:1080px;max-height:calc(100dvh - 32px);overflow:auto;border:1px solid var(--hto-line-strong);border-radius:0;background:var(--hto-surface);color:var(--hto-ink);padding:24px;font-family:var(--hto-font)}
+#memory-ticket h2{margin:0;font-size:20px;color:var(--hto-ink-bright)}
+#memory-ticket .ticket-note{margin:8px 0 24px;font-size:14px;color:var(--hto-ink-soft);line-height:1.6}
+#memory-ticket .ticket-viewport{overflow-x:auto;overscroll-behavior-x:contain;scrollbar-color:var(--hto-line-strong) var(--hto-bg);scrollbar-width:thin}
+#memory-ticket .ticket-viewport img{display:block;width:100%;min-width:760px;height:auto;image-rendering:pixelated}
+#memory-ticket .ticket-status{font-size:13px;line-height:1.7;color:var(--hto-ink-soft);margin:16px 0 24px;min-height:22px}
+#memory-ticket .ticket-actions{display:flex;gap:12px;justify-content:flex-end;flex-wrap:wrap}
+#memory-ticket button{min-height:44px;border:1px solid var(--hto-button-border);border-radius:0;background:var(--hto-button);color:var(--hto-ink);padding:10px 16px;font:inherit;cursor:pointer}
+#memory-ticket button:hover{background:var(--hto-button-hover)}
+#memory-ticket button:disabled{opacity:.6;cursor:wait}
+#memory-ticket :focus-visible{outline:2px solid var(--hto-focus);outline-offset:3px}
+.bag-ticket{margin-top:16px;width:100%}
+@media(max-width:600px){#memory-ticket{width:calc(100vw - 16px);padding:16px;max-height:calc(100dvh - 16px)}#memory-ticket .ticket-note{margin-bottom:16px}#memory-ticket .ticket-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}#memory-ticket button{padding:10px 8px}}

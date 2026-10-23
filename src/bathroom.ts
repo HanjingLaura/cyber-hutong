@@ -1,4 +1,6 @@
+import {bindSceneEvent} from './scene-dom';
 import Phaser from 'phaser';
+import {setGuide} from './hud';
 import {sharedAction} from './multiplayer/world-client';
 import { preloadGuest, placeGuest, guestBlocks } from './easter-eggs';
 import { playerInventory } from './player-inventory';
@@ -54,8 +56,8 @@ export class BathroomScene extends Phaser.Scene {
     window.addEventListener('keydown',action);window.addEventListener('blur',clear);world.addEventListener('blur',clear);
     this.events.once('shutdown',()=>{window.removeEventListener('keydown',action);window.removeEventListener('blur',clear);world.removeEventListener('blur',clear);});
     this.events.on('sleep',clear);
-    document.querySelector('#interact')!.addEventListener('click',()=>{if(this.sys.isActive())this.interact();});
-    document.querySelector('#bathroom-door')!.addEventListener('click',()=>{
+    bindSceneEvent(this, document.querySelector('#interact')!, 'click', ()=>{if(this.sys.isActive())this.interact();});
+    bindSceneEvent(this, document.querySelector('#bathroom-door')!, 'click', ()=>{
       if(!this.sys.isActive())return;
       const target=this.nearest(),index=this.seated??(target&&target.kind!=='sink'?target.index:null);
       if(index!==null)this.toggleDoor(index);
@@ -175,8 +177,7 @@ export class BathroomScene extends Phaser.Scene {
     doorButton.textContent=doorIndex===null?'':`${this.open[doorIndex]?'关':'开'}门`;
     document.querySelector('#mode')!.textContent=this.seated!==null?`坐在 ${this.seated+1} 号马桶上`:this.washing!==null?'正在洗手':moving?'在厕所走动':'站在厕所';
     document.querySelector('#hint')!.textContent=this.message;
-    document.querySelector('#guide-title')!.textContent='WASD / 方向键移动';
-    document.querySelector('#guide-action')!.textContent=this.seated!==null?'E / Esc 起身 · F 开关隔间门':target?`E · ${button.textContent}${target.kind==='toilet'?' · F 关门':''}`:'E 开门 / 坐下 · E 洗手';
+    setGuide('WASD / 方向键移动',this.seated!==null?'E / Esc 起身 · F 开关隔间门':target?`E · ${button.textContent}${target.kind==='toilet'?' · F 关门':''}`:'');
     document.querySelector('#bathroom-state')!.textContent='';
   }
 }

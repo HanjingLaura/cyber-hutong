@@ -28,6 +28,11 @@ try{
   const started=Date.now();await page.goto(base);await page.waitForFunction(()=>document.querySelector('#account-dialog')?.open);
   await page.waitForTimeout(1700);
   assert.ok(await page.evaluate(()=>performance.getEntriesByType('resource').some(r=>/hutong-wall-view-v5.*\.webp/.test(r.name))),'production room textures go through lossless compression');
+  // WASD must type into login fields; Phaser key capture is disabled while the account dialog is open.
+  await page.locator('#account-name').click();
+  await page.keyboard.type('wasd');
+  assert.equal(await page.locator('#account-name').inputValue(),'wasd');
+  await page.locator('#account-name').fill('');
   const login=await page.evaluate(()=>{
    const d=document.querySelector('#account-dialog'),input=document.querySelector('#account-password');
    return {rect:d.getBoundingClientRect().toJSON(),font:getComputedStyle(input).fontSize,labelledby:d.getAttribute('aria-labelledby'),zoom:document.querySelector('meta[name=viewport]').content};

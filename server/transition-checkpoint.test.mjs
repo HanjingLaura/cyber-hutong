@@ -1,0 +1,127 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {createMvpServer} from './app.mjs';
+import {openStore} from './store.mjs';
+import {createLife} from './life.mjs';
+
+test('an abandoned checkpoint expires after 120 seconds and autonomy can persist its new scene',async t=>{
+ let now=Date.now();t.mock.method(Date,'now',()=>now);
+ const store=openStore(':memory:');t.after(()=>store.close());
+ const {user}=await store.register('checkpoint_expiry','checkpoint-password','sid'),life=createLife(store);
+ const exit={id:user.id,scene:'hutong',x:596,y:194,facing:0,seat:null,activity:'walk'};
+ const checkpoint={id:'abandoned',client:'closed-tab',at:now};life.savePosition(exit,{checkpoint});
+ const stale={...exit,x:400};
+ now+=120000;life.savePosition(stale);
+ assert.equal(life.position(user.id).x,596,'a checkpoint accepted by transition still protects the exit');
+ assert.equal(life.position(user.id).checkpoint.id,checkpoint.id);
+ now+=1;
+ const moved={...exit,scene:'rest',x:320,y:190,checkpoint};
+ life.savePosition(moved);
+ assert.equal(life.position(user.id).scene,'rest','expired checkpoint must not pin the source scene');
+ assert.equal(life.position(user.id).x,320);assert.equal(life.position(user.id).checkpoint,undefined);
+ life.savePosition({...moved,x:330});
+ assert.equal(life.position(user.id).x,330);assert.equal(life.position(user.id).checkpoint,undefined,'stale in-memory markers cannot be resurrected');
+});
+
+test('validated travel checkpoint persists the exit even inside the normal save interval',async t=>{
+ const app=createMvpServer({dbPath:':memory:',llmOptions:{key:''}});t.after(()=>app.close());
+ await new Promise(r=>app.server.listen(0,'127.0.0.1',r));
+ const account=await app.store.register('checkpoint_user','checkpoint-password','laura'),origin='http://127.0.0.1:'+app.server.address().port;
+ async function api(path,input){const response=await fetch(origin+'/api/'+path,{method:'POST',headers:{Cookie:'hutong_session='+account.token,'Content-Type':'application/json'},body:JSON.stringify(input)});return {status:response.status,body:await response.json()};}
+ await api('control',{client:'checkpoint'});const p=app.players.get(account.user.id);
+ Object.assign(p,{scene:'hutong',x:560,y:194,seat:null,activity:'walk',fresh:false,at:Date.now()-1000,savedAt:Date.now()});app.life.savePosition(p);
+ const pose={client:'checkpoint',scene:'hutong',x:596,y:194,facing:0,seat:null,hand:null,activity:'walk',checkpoint:true};
+ const confirmed=await api('presence',pose);assert.equal(confirmed.status,200);
+ assert.equal(app.life.position(account.user.id).x,596,'next server replica must see the exit checkpoint');
+ // A cold instance reconstructs its live player from the durable position.
+ app.players.delete(account.user.id);app.autonomy.doubles.delete(account.user.id);
+ assert.equal((await api('transition',{client:'checkpoint',target:'rest',checkpoint:confirmed.body.checkpoint})).status,200);
+});
+
+test('another warm replica consumes only the latest verified controller checkpoint',async t=>{
+ const app=createMvpServer({dbPath:':memory:',llmOptions:{key:''}});t.after(()=>app.close());await new Promise(r=>app.server.listen(0,'127.0.0.1',r));
+ const account=await app.store.register('checkpoint_warm','checkpoint-password','laura'),origin='http://127.0.0.1:'+app.server.address().port;
+ const api=async(path,input)=>{const r=await fetch(origin+'/api/'+path,{method:'POST',headers:{Cookie:'hutong_session='+account.token,'Content-Type':'application/json'},body:JSON.stringify(input)});return {status:r.status,body:await r.json()};};
+ await api('control',{client:'owner'});const p=app.players.get(account.user.id);
+ Object.assign(p,{scene:'hutong',x:560,y:194,seat:null,activity:'walk',fresh:false,at:Date.now()-1000,savedAt:Date.now()});app.life.savePosition(p);
+ const stale={...p},confirmed=await api('presence',{client:'owner',scene:'hutong',x:596,y:194,facing:0,seat:null,hand:null,activity:'walk',checkpoint:true});
+ assert.equal(confirmed.status,200);assert.equal(typeof confirmed.body.checkpoint,'string');
+ Object.assign(p,stale);delete p.checkpoint;
+ assert.equal((await api('transition',{client:'owner',target:'rest',checkpoint:'forged'})).status,409);
+ assert.equal((await api('transition',{client:'viewer',target:'rest',checkpoint:confirmed.body.checkpoint})).status,409);
+ const saved=app.life.position(account.user.id);
+ app.life.savePosition({id:p.id,...saved},{checkpoint:{...saved.checkpoint,at:Date.now()-120001}});
+ assert.equal((await api('transition',{client:'owner',target:'rest',checkpoint:confirmed.body.checkpoint})).status,409,'expired checkpoint cannot be used');
+ app.life.savePosition({id:p.id,...saved},{checkpoint:saved.checkpoint});
+ Object.assign(p,{at:Date.now()+1,x:550,y:194,scene:'hutong',fresh:false});
+ assert.equal((await api('transition',{client:'owner',target:'rest',checkpoint:confirmed.body.checkpoint})).status,409,'old checkpoint cannot overwrite newer live movement away from the exit');
+ Object.assign(p,{...stale,at:Date.now()+1,x:596,y:194,scene:'hutong',fresh:false});
+ // Same-exit pulse with a newer local `at` on a warm replica must still consume the marker.
+ assert.equal((await api('transition',{client:'owner',target:'rest',checkpoint:confirmed.body.checkpoint})).status,200);
+ assert.equal(app.life.position(account.user.id).checkpoint,undefined,'successful travel consumes checkpoint');
+ assert.equal((await api('transition',{client:'owner',target:'ktv',checkpoint:confirmed.body.checkpoint})).status,409,'consumed source cannot be replayed');
+});
+test('travel checkpoint still rejects invalid movement and foreign controllers',async t=>{
+ const app=createMvpServer({dbPath:':memory:',llmOptions:{key:''}});t.after(()=>app.close());await new Promise(r=>app.server.listen(0,'127.0.0.1',r));
+ const account=await app.store.register('checkpoint_guard','checkpoint-password','laura'),origin='http://127.0.0.1:'+app.server.address().port;
+ const api=async(path,input)=>{const r=await fetch(origin+'/api/'+path,{method:'POST',headers:{Cookie:'hutong_session='+account.token,'Content-Type':'application/json'},body:JSON.stringify(input)});return r.status;};
+ await api('control',{client:'owner'});const p=app.players.get(account.user.id);Object.assign(p,{x:320,y:194,at:Date.now(),fresh:false});app.life.savePosition(p);
+ const pose={client:'owner',scene:'hutong',x:596,y:194,facing:0,seat:null,hand:null,activity:'walk',checkpoint:true};
+ assert.equal(await api('presence',pose),409);assert.equal(app.life.position(account.user.id).x,320);
+ assert.equal(await api('presence',{...pose,client:'viewer'}),409);
+});
+
+test('ordinary movement on another instance revokes a durable exit checkpoint immediately',async t=>{
+ const app=createMvpServer({dbPath:':memory:',llmOptions:{key:''}});t.after(()=>app.close());await new Promise(r=>app.server.listen(0,'127.0.0.1',r));
+ const account=await app.store.register('checkpoint_revoke','checkpoint-password','laura'),origin='http://127.0.0.1:'+app.server.address().port;
+ const api=async(path,input)=>{const r=await fetch(origin+'/api/'+path,{method:'POST',headers:{Cookie:'hutong_session='+account.token,'Content-Type':'application/json'},body:JSON.stringify(input)});return {status:r.status,body:await r.json()};};
+ await api('control',{client:'owner'});const p=app.players.get(account.user.id);
+ Object.assign(p,{scene:'hutong',x:596,y:194,seat:null,activity:'walk',fresh:false,at:Date.now()-1000,savedAt:Date.now()});
+ const pose={client:'owner',scene:'hutong',x:596,y:194,facing:0,seat:null,hand:null,activity:'walk'};
+ const confirmed=await api('presence',{...pose,checkpoint:true});assert.equal(confirmed.status,200);
+ const staleWarm={...p,checkpoint:{...p.checkpoint}};
+ // Another warm instance has only its local pose, not the marker created elsewhere.
+ delete p.checkpoint;p.at=Date.now()-1000;
+ assert.equal((await api('presence',{...pose,x:540})).status,200);
+ assert.equal(app.life.position(account.user.id).checkpoint,undefined);
+ assert.equal(app.life.position(account.user.id).x,540);
+ app.life.savePosition(staleWarm);
+ assert.equal(app.life.position(account.user.id).checkpoint,undefined,'stale disconnect/logout saves must never resurrect a revoked marker');
+ Object.assign(p,{x:560,at:Date.now()-2000});
+ assert.equal((await api('transition',{client:'owner',target:'rest',checkpoint:confirmed.body.checkpoint})).status,409);
+});
+
+test('disconnect and autonomy saves preserve a durable travel checkpoint',async t=>{
+ const app=createMvpServer({dbPath:':memory:',llmOptions:{key:''}});t.after(()=>app.close());await new Promise(r=>app.server.listen(0,'127.0.0.1',r));
+ const account=await app.store.register('checkpoint_keep','checkpoint-password','laura'),origin='http://127.0.0.1:'+app.server.address().port;
+ const api=async(path,input)=>{const r=await fetch(origin+'/api/'+path,{method:'POST',headers:{Cookie:'hutong_session='+account.token,'Content-Type':'application/json'},body:JSON.stringify(input)});return {status:r.status,body:await r.json()};};
+ await api('control',{client:'owner'});const p=app.players.get(account.user.id);
+ Object.assign(p,{scene:'hutong',x:596,y:194,seat:null,activity:'walk',fresh:false,at:Date.now()-1000,savedAt:Date.now()});
+ const confirmed=await api('presence',{client:'owner',scene:'hutong',x:596,y:194,facing:0,seat:null,hand:null,activity:'walk',checkpoint:true});
+ assert.equal(confirmed.status,200);assert.equal(typeof confirmed.body.checkpoint,'string');
+ // Simulate SSE teardown on another warm replica that never saw the marker in memory.
+ const orphan={id:p.id,role:p.role,scene:'hutong',x:560,y:194,facing:0,seat:null,activity:'walk'};
+ app.life.savePosition(orphan);
+ assert.equal(app.life.position(account.user.id).checkpoint?.id,confirmed.body.checkpoint,'teardown must not wipe a marker issued elsewhere');
+ assert.equal((await api('transition',{client:'owner',target:'rest',checkpoint:confirmed.body.checkpoint})).status,200);
+ assert.equal(app.life.position(account.user.id).scene,'rest');
+ assert.equal(app.life.position(account.user.id).checkpoint,undefined);
+});
+
+test('warm replica adopts durable non-hutong position after a committed transition',async t=>{
+ const app=createMvpServer({dbPath:':memory:',llmOptions:{key:''}});t.after(()=>app.close());await new Promise(r=>app.server.listen(0,'127.0.0.1',r));
+ const account=await app.store.register('checkpoint_restore','checkpoint-password','laura'),origin='http://127.0.0.1:'+app.server.address().port;
+ const api=async(path,input)=>{const r=await fetch(origin+'/api/'+path,{method:'POST',headers:{Cookie:'hutong_session='+account.token,'Content-Type':'application/json'},body:JSON.stringify(input)});return {status:r.status,body:await r.json()};};
+ await api('control',{client:'owner'});const p=app.players.get(account.user.id);
+ Object.assign(p,{scene:'hutong',x:596,y:194,seat:null,activity:'walk',fresh:false,at:Date.now()-1000,savedAt:Date.now()});
+ const confirmed=await api('presence',{client:'owner',scene:'hutong',x:596,y:194,facing:0,seat:null,hand:null,activity:'walk',checkpoint:true});
+ assert.equal((await api('transition',{client:'owner',target:'arcade',checkpoint:confirmed.body.checkpoint})).status,200);
+ assert.equal(app.life.position(account.user.id).scene,'arcade');
+ // Stale warm memory as if this instance never handled the transition.
+ Object.assign(p,{scene:'hutong',x:384,y:207,fresh:false,disconnectedAt:Date.now()-1000,at:Date.now()-5000});
+ delete p.checkpoint;
+ await api('control',{client:'owner'});
+ const restored=app.players.get(account.user.id);
+ assert.equal(restored.scene,'arcade','startPlayer must adopt the durable scene on a warm replica');
+ assert.equal(restored.x,app.life.position(account.user.id).x);
+});

@@ -45,3 +45,14 @@ test('client guards: no snapping to remote/offline self, gym stop keeps position
  assert.doesNotMatch(src('multiplayer/social.ts'),/err\.status===409\)\{bridge\.stand\(\);const self/);
  assert.match(src('multiplayer/world-client.ts'),/await this\.ensureLive\(\)/);
 });
+
+test('controlling tab restores the durable scene through pendingSpawn and keeps the scene gate',()=>{
+ const src=f=>readFileSync(new URL('../src/'+f,import.meta.url),'utf8');
+ assert.match(src('multiplayer/social.ts'),/bridge\.pendingSpawn=self;initializedRole=user\.role/);
+ assert.match(src('multiplayer/social.ts'),/bridge\.connected=connected\|\|party\.connected/);
+ assert.match(src('multiplayer/social.ts'),/if\(transitionCheckpoint\)\{/);
+ assert.match(src('multiplayer/bridge.ts'),/pendingSpawn\?\.scene===local\.scene/);
+ assert.match(src('multiplayer/bridge.ts'),/\(!this\.controller\|\|this\.pendingSpawn\)/);
+ assert.match(src('scene-gate.ts'),/scene-pending/);
+ assert.match(src('room-navigation.ts'),/bridge\.user\?\.role\?publish\(\)/);
+});

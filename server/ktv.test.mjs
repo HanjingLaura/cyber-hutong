@@ -19,11 +19,11 @@ test('KTV queue advances on one clock, pause preserves the bar, exhausted queues
  const next=ktvPlayback(state,start+10000+songDuration(first));
  assert.equal(next.song.id,second.id);assert.ok(Math.abs(next.elapsed-3000)<.001);
  state=changeKtvPlayer(state,'skip',undefined,start+10001);assert.equal(ktvPlayback(state,start+10001).song.id,second.id);
- state=changeKtvPlayer(state,'queue',first.id,start+100000);
- assert.equal(ktvPlayback(state,start+100000).song.id,first.id);assert.equal(ktvPlayback(state,start+100000).elapsed,0);
+ state=changeKtvPlayer(state,'queue',first.id,start+10000+songDuration(first)+songDuration(second)+1000);
+ assert.equal(ktvPlayback(state,start+10000+songDuration(first)+songDuration(second)+1000).song.id,first.id);assert.equal(ktvPlayback(state,start+10000+songDuration(first)+songDuration(second)+1000).elapsed,0);
  assert.throws(()=>changeKtvPlayer(state,'queue','missing'),/不存在/);
- for(let i=1;i<12;i++)state=changeKtvPlayer(state,'queue',first.id,start+100000);
- assert.throws(()=>changeKtvPlayer(state,'queue',first.id,start+100000),/12/);
+ for(let i=1;i<12;i++)state=changeKtvPlayer(state,'queue',first.id,start+10000+songDuration(first)+songDuration(second)+1000);
+ assert.throws(()=>changeKtvPlayer(state,'queue',first.id,start+10000+songDuration(first)+songDuration(second)+1000),/12/);
  assert.equal(ktvBeatResult(18,120).points,100);assert.equal(ktvBeatResult(140,120).points,60);assert.equal(ktvBeatResult(250,120).points,0);
 });
 
@@ -36,13 +36,13 @@ test('KTV furniture leaves routes to every seat and device from the exit',()=>{
 test('KTV shared controls persist and retries cannot queue twice; remote players cannot control objects',async()=>{
  const store=openStore(':memory:');try{
   const account=await store.register('ktv_world','test-password-123');store.claim(account.user.id,'suki');const user=store.publicAccount(store.byId(account.user.id)),world=createWorld(store);
-  const position={scene:'ktv',x:557,y:226},input={object:'ktv:player',action:'queue',song:'night',revision:0,requestId:'queue-once'};
+  const position={scene:'ktv',x:557,y:226},input={object:'ktv:player',action:'queue',song:'power',revision:0,requestId:'queue-once'};
   const one=world.interact(user,position,input,new Map()),two=world.interact(user,position,input,new Map());assert.deepEqual(one,two);
   assert.equal(world.snapshot('ktv').find(o=>o.id==='ktv:player').queue.length,1);
   assert.throws(()=>world.interact(user,{...position,scene:'rest'},{...input,requestId:'wrong-room'},new Map()),/当前房间/);
   assert.throws(()=>world.interact(user,{...position,x:60,y:320},{...input,requestId:'far'},new Map()),/附近/);
   world.interact(user,{scene:'ktv',x:581,y:259},{object:'ktv:lights',action:'light',revision:0,requestId:'light'},new Map());
-  const restored=createWorld(store).snapshot('ktv');assert.equal(restored.find(o=>o.id==='ktv:lights').mode,1);assert.deepEqual(restored.find(o=>o.id==='ktv:player').queue,['night']);
+  const restored=createWorld(store).snapshot('ktv');assert.equal(restored.find(o=>o.id==='ktv:lights').mode,1);assert.deepEqual(restored.find(o=>o.id==='ktv:player').queue,['power']);
  }finally{store.close();}
 });
 

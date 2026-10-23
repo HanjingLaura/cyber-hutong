@@ -1,17 +1,17 @@
 import { IDS, MolesGame } from './engine.mjs';
 import { UnoSerial } from './serial.mjs';
-import metadata from '../../assets/metadata/team-v2.json';
+import metadata from '../../assets/characters/moles.json';
 
 const names = ['Suki', 'Sid', 'Jilly', 'Laura', 'Kay', 'Franco', 'Cora', 'Amber'];
 const urls = [
-  new URL('../../assets/characters/team/v2/suki.png', import.meta.url).href,
-  new URL('../../assets/characters/team/v2/sid.png', import.meta.url).href,
-  new URL('../../assets/characters/team/v2/jilly.png', import.meta.url).href,
-  new URL('../../assets/characters/team/v2/laura.png', import.meta.url).href,
-  new URL('../../assets/characters/team/v2/kay.png', import.meta.url).href,
-  new URL('../../assets/characters/team/v2/franco.png', import.meta.url).href,
-  new URL('../../assets/characters/team/v2/cora.png', import.meta.url).href,
-  new URL('../../assets/characters/team/v2/amber.png', import.meta.url).href,
+  new URL('../../assets/characters/suki/moles.png', import.meta.url).href,
+  new URL('../../assets/characters/sid/moles.png', import.meta.url).href,
+  new URL('../../assets/characters/jilly/moles.png', import.meta.url).href,
+  new URL('../../assets/characters/laura/moles.png', import.meta.url).href,
+  new URL('../../assets/characters/kay/moles.png', import.meta.url).href,
+  new URL('../../assets/characters/franco/moles.png', import.meta.url).href,
+  new URL('../../assets/characters/cora/moles.png', import.meta.url).href,
+  new URL('../../assets/characters/amber/moles.png', import.meta.url).href,
 ];
 const $ = id => document.getElementById(id);
 const storage = { get(key, fallback) { try { return JSON.parse(localStorage.getItem(key)) ?? fallback; } catch { return fallback; } },

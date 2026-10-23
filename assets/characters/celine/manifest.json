@@ -1,0 +1,2939 @@
+{
+  "schemaVersion": 1,
+  "role": "celine",
+  "worldHeight": 61.44,
+  "seatedHeight": 62.4,
+  "sources": {
+    "celine-v1": {
+      "file": "celine/poses.png",
+      "size": [
+        1246,
+        1263
+      ],
+      "sha256": "a2a4c92f07204383219cf1cfeb37b241e59c20a208df71e9e435ff6a61e82be3",
+      "origin": "../npcs/celine-v1.png"
+    },
+    "celine-walk-a-v8": {
+      "file": "celine/walk-side-a.png",
+      "size": [
+        2172,
+        724
+      ],
+      "sha256": "f5af4c676bb12b38be065f1c363dc2a46e6375e858997c4466b3f7acd7198213",
+      "origin": "team/v8/celine-a.png"
+    },
+    "celine-walk-b-v8": {
+      "file": "celine/walk-side-b.png",
+      "size": [
+        2172,
+        724
+      ],
+      "sha256": "7c6d9cf58ca4da7dabf19dde392ea209645ad12db2c24bbdb00f9123a6a69841",
+      "origin": "team/v8/celine-b.png"
+    },
+    "celine-run-v10": {
+      "file": "celine/run.png",
+      "size": [
+        1536,
+        1024
+      ],
+      "sha256": "8c052ce041b89b2e6d5dabd46d24ff1e629a76df0fd19470cec5ac67b6218c61",
+      "origin": "team/v10/celine-run.png"
+    },
+    "celine-mobility": {
+      "file": "celine/mobility.png",
+      "size": [
+        192,
+        72
+      ],
+      "sha256": "0a32517566bc55af537ec7b9ca80d838f045f39107a0258b96b856be85410f1c",
+      "origin": "imagegen side riding and skateboard balance 2026-10-15"
+    }
+  },
+  "member": {
+    "seat": "L4",
+    "frames": [
+      {
+        "name": "idle-front",
+        "rect": [
+          42,
+          60,
+          241,
+          368
+        ],
+        "source": "celine-v1",
+        "referenceHeight": 368,
+        "pivotX": 0.5,
+        "foot": [
+          120.5,
+          368
+        ],
+        "seat": [
+          120.5,
+          264.96
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null
+      },
+      {
+        "name": "idle-right",
+        "rect": [
+          642,
+          62,
+          238,
+          366
+        ],
+        "source": "celine-v1",
+        "referenceHeight": 368,
+        "pivotX": 0.5,
+        "foot": [
+          119,
+          366
+        ],
+        "seat": [
+          119,
+          263.52
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null
+      },
+      {
+        "name": "idle-back",
+        "rect": [
+          355,
+          60,
+          227,
+          368
+        ],
+        "source": "celine-v1",
+        "referenceHeight": 368,
+        "pivotX": 0.5,
+        "foot": [
+          113.5,
+          368
+        ],
+        "seat": [
+          113.5,
+          264.96
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null
+      },
+      {
+        "name": "idle-front",
+        "rect": [
+          42,
+          60,
+          241,
+          368
+        ],
+        "source": "celine-v1",
+        "referenceHeight": 368,
+        "pivotX": 0.5,
+        "foot": [
+          120.5,
+          368
+        ],
+        "seat": [
+          120.5,
+          264.96
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null
+      },
+      {
+        "name": "sit-front",
+        "rect": [
+          644,
+          847,
+          244,
+          347
+        ],
+        "source": "celine-v1",
+        "referenceHeight": 368,
+        "pivotX": 0.5,
+        "foot": [
+          122,
+          347
+        ],
+        "seat": [
+          122,
+          249.84
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null
+      },
+      {
+        "name": "sit-back",
+        "rect": [
+          960,
+          852,
+          228,
+          342
+        ],
+        "source": "celine-v1",
+        "referenceHeight": 368,
+        "pivotX": 0.5,
+        "foot": [
+          114,
+          342
+        ],
+        "seat": [
+          114,
+          246.23999999999998
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null
+      },
+      {
+        "name": "idle-front",
+        "rect": [
+          42,
+          60,
+          241,
+          368
+        ],
+        "source": "celine-v1",
+        "referenceHeight": 368,
+        "pivotX": 0.5,
+        "foot": [
+          120.5,
+          368
+        ],
+        "seat": [
+          120.5,
+          264.96
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null
+      },
+      {
+        "name": "idle-front",
+        "rect": [
+          42,
+          60,
+          241,
+          368
+        ],
+        "source": "celine-v1",
+        "referenceHeight": 368,
+        "pivotX": 0.5,
+        "foot": [
+          120.5,
+          368
+        ],
+        "seat": [
+          120.5,
+          264.96
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null
+      },
+      {
+        "name": "walk-front-0",
+        "rect": [
+          649,
+          459,
+          240,
+          361
+        ],
+        "source": "celine-v1",
+        "referenceHeight": 368,
+        "pivotX": 0.5,
+        "foot": [
+          120,
+          361
+        ],
+        "seat": [
+          120,
+          259.92
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null
+      },
+      {
+        "name": "walk-front-1",
+        "rect": [
+          951,
+          459,
+          241,
+          361
+        ],
+        "source": "celine-v1",
+        "referenceHeight": 368,
+        "pivotX": 0.5,
+        "foot": [
+          120.5,
+          361
+        ],
+        "seat": [
+          120.5,
+          259.92
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null
+      },
+      {
+        "name": "walk-front-0",
+        "rect": [
+          649,
+          459,
+          240,
+          361
+        ],
+        "source": "celine-v1",
+        "referenceHeight": 368,
+        "pivotX": 0.5,
+        "foot": [
+          120,
+          361
+        ],
+        "seat": [
+          120,
+          259.92
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null
+      },
+      {
+        "name": "walk-front-1",
+        "rect": [
+          951,
+          459,
+          241,
+          361
+        ],
+        "source": "celine-v1",
+        "referenceHeight": 368,
+        "pivotX": 0.5,
+        "foot": [
+          120.5,
+          361
+        ],
+        "seat": [
+          120.5,
+          259.92
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null
+      },
+      {
+        "name": "idle-front",
+        "rect": [
+          42,
+          60,
+          241,
+          368
+        ],
+        "source": "celine-v1",
+        "referenceHeight": 368,
+        "pivotX": 0.5,
+        "foot": [
+          120.5,
+          368
+        ],
+        "seat": [
+          120.5,
+          264.96
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null
+      },
+      {
+        "name": "idle-front",
+        "rect": [
+          42,
+          60,
+          241,
+          368
+        ],
+        "source": "celine-v1",
+        "referenceHeight": 368,
+        "pivotX": 0.5,
+        "foot": [
+          120.5,
+          368
+        ],
+        "seat": [
+          120.5,
+          264.96
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null
+      },
+      {
+        "name": "idle-front",
+        "rect": [
+          42,
+          60,
+          241,
+          368
+        ],
+        "source": "celine-v1",
+        "referenceHeight": 368,
+        "pivotX": 0.5,
+        "foot": [
+          120.5,
+          368
+        ],
+        "seat": [
+          120.5,
+          264.96
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null
+      },
+      {
+        "name": "idle-front",
+        "rect": [
+          42,
+          60,
+          241,
+          368
+        ],
+        "source": "celine-v1",
+        "referenceHeight": 368,
+        "pivotX": 0.5,
+        "foot": [
+          120.5,
+          368
+        ],
+        "seat": [
+          120.5,
+          264.96
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null
+      },
+      {
+        "name": "walk-back-0",
+        "rect": [
+          50,
+          836,
+          223,
+          361
+        ],
+        "source": "celine-v1",
+        "referenceHeight": 368,
+        "pivotX": 0.5,
+        "foot": [
+          111.5,
+          361
+        ],
+        "seat": [
+          111.5,
+          259.92
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null
+      },
+      {
+        "name": "walk-back-1",
+        "rect": [
+          358,
+          835,
+          224,
+          363
+        ],
+        "source": "celine-v1",
+        "referenceHeight": 368,
+        "pivotX": 0.5,
+        "foot": [
+          112,
+          363
+        ],
+        "seat": [
+          112,
+          261.36
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null
+      },
+      {
+        "name": "walk-back-0",
+        "rect": [
+          50,
+          836,
+          223,
+          361
+        ],
+        "source": "celine-v1",
+        "referenceHeight": 368,
+        "pivotX": 0.5,
+        "foot": [
+          111.5,
+          361
+        ],
+        "seat": [
+          111.5,
+          259.92
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null
+      },
+      {
+        "name": "walk-back-1",
+        "rect": [
+          358,
+          835,
+          224,
+          363
+        ],
+        "source": "celine-v1",
+        "referenceHeight": 368,
+        "pivotX": 0.5,
+        "foot": [
+          112,
+          363
+        ],
+        "seat": [
+          112,
+          261.36
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null
+      },
+      {
+        "name": "idle-front",
+        "rect": [
+          42,
+          60,
+          241,
+          368
+        ],
+        "source": "celine-v1",
+        "referenceHeight": 368,
+        "pivotX": 0.5,
+        "foot": [
+          120.5,
+          368
+        ],
+        "seat": [
+          120.5,
+          264.96
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null
+      },
+      {
+        "name": "idle-front",
+        "rect": [
+          42,
+          60,
+          241,
+          368
+        ],
+        "source": "celine-v1",
+        "referenceHeight": 368,
+        "pivotX": 0.5,
+        "foot": [
+          120.5,
+          368
+        ],
+        "seat": [
+          120.5,
+          264.96
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null
+      },
+      {
+        "name": "idle-front",
+        "rect": [
+          42,
+          60,
+          241,
+          368
+        ],
+        "source": "celine-v1",
+        "referenceHeight": 368,
+        "pivotX": 0.5,
+        "foot": [
+          120.5,
+          368
+        ],
+        "seat": [
+          120.5,
+          264.96
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null
+      },
+      {
+        "name": "idle-front",
+        "rect": [
+          42,
+          60,
+          241,
+          368
+        ],
+        "source": "celine-v1",
+        "referenceHeight": 368,
+        "pivotX": 0.5,
+        "foot": [
+          120.5,
+          368
+        ],
+        "seat": [
+          120.5,
+          264.96
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null
+      },
+      {
+        "name": "walk-right-0",
+        "rect": [
+          41,
+          459,
+          235,
+          353
+        ],
+        "source": "celine-v1",
+        "referenceHeight": 368,
+        "pivotX": 0.5,
+        "foot": [
+          117.5,
+          353
+        ],
+        "seat": [
+          117.5,
+          254.16
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null
+      },
+      {
+        "name": "walk-right-1",
+        "rect": [
+          347,
+          459,
+          235,
+          353
+        ],
+        "source": "celine-v1",
+        "referenceHeight": 368,
+        "pivotX": 0.5,
+        "foot": [
+          117.5,
+          353
+        ],
+        "seat": [
+          117.5,
+          254.16
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null
+      },
+      {
+        "name": "walk-right-0",
+        "rect": [
+          41,
+          459,
+          235,
+          353
+        ],
+        "source": "celine-v1",
+        "referenceHeight": 368,
+        "pivotX": 0.5,
+        "foot": [
+          117.5,
+          353
+        ],
+        "seat": [
+          117.5,
+          254.16
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null
+      },
+      {
+        "name": "walk-right-1",
+        "rect": [
+          347,
+          459,
+          235,
+          353
+        ],
+        "source": "celine-v1",
+        "referenceHeight": 368,
+        "pivotX": 0.5,
+        "foot": [
+          117.5,
+          353
+        ],
+        "seat": [
+          117.5,
+          254.16
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null
+      },
+      {
+        "name": "walk-right-0",
+        "rect": [
+          41,
+          459,
+          235,
+          353
+        ],
+        "source": "celine-v1",
+        "referenceHeight": 368,
+        "pivotX": 0.5,
+        "foot": [
+          117.5,
+          353
+        ],
+        "seat": [
+          117.5,
+          254.16
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null
+      },
+      {
+        "name": "walk-right-1",
+        "rect": [
+          347,
+          459,
+          235,
+          353
+        ],
+        "source": "celine-v1",
+        "referenceHeight": 368,
+        "pivotX": 0.5,
+        "foot": [
+          117.5,
+          353
+        ],
+        "seat": [
+          117.5,
+          254.16
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null
+      },
+      {
+        "name": "idle-front",
+        "rect": [
+          42,
+          60,
+          241,
+          368
+        ],
+        "source": "celine-v1",
+        "referenceHeight": 368,
+        "pivotX": 0.5,
+        "foot": [
+          120.5,
+          368
+        ],
+        "seat": [
+          120.5,
+          264.96
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null
+      },
+      {
+        "name": "idle-front",
+        "rect": [
+          42,
+          60,
+          241,
+          368
+        ],
+        "source": "celine-v1",
+        "referenceHeight": 368,
+        "pivotX": 0.5,
+        "foot": [
+          120.5,
+          368
+        ],
+        "seat": [
+          120.5,
+          264.96
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null
+      },
+      {
+        "name": "idle-front",
+        "rect": [
+          42,
+          60,
+          241,
+          368
+        ],
+        "source": "celine-v1",
+        "referenceHeight": 368,
+        "pivotX": 0.5,
+        "foot": [
+          120.5,
+          368
+        ],
+        "seat": [
+          120.5,
+          264.96
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null
+      },
+      {
+        "name": "idle-front",
+        "rect": [
+          42,
+          60,
+          241,
+          368
+        ],
+        "source": "celine-v1",
+        "referenceHeight": 368,
+        "pivotX": 0.5,
+        "foot": [
+          120.5,
+          368
+        ],
+        "seat": [
+          120.5,
+          264.96
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null
+      },
+      {
+        "name": "idle-front",
+        "rect": [
+          42,
+          60,
+          241,
+          368
+        ],
+        "source": "celine-v1",
+        "referenceHeight": 368,
+        "pivotX": 0.5,
+        "foot": [
+          120.5,
+          368
+        ],
+        "seat": [
+          120.5,
+          264.96
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null
+      },
+      {
+        "name": "idle-front",
+        "rect": [
+          42,
+          60,
+          241,
+          368
+        ],
+        "source": "celine-v1",
+        "referenceHeight": 368,
+        "pivotX": 0.5,
+        "foot": [
+          120.5,
+          368
+        ],
+        "seat": [
+          120.5,
+          264.96
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null
+      },
+      {
+        "name": "idle-front",
+        "rect": [
+          42,
+          60,
+          241,
+          368
+        ],
+        "source": "celine-v1",
+        "referenceHeight": 368,
+        "pivotX": 0.5,
+        "foot": [
+          120.5,
+          368
+        ],
+        "seat": [
+          120.5,
+          264.96
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null
+      },
+      {
+        "name": "idle-front",
+        "rect": [
+          42,
+          60,
+          241,
+          368
+        ],
+        "source": "celine-v1",
+        "referenceHeight": 368,
+        "pivotX": 0.5,
+        "foot": [
+          120.5,
+          368
+        ],
+        "seat": [
+          120.5,
+          264.96
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null
+      },
+      {
+        "name": "idle-front",
+        "rect": [
+          42,
+          60,
+          241,
+          368
+        ],
+        "source": "celine-v1",
+        "referenceHeight": 368,
+        "pivotX": 0.5,
+        "foot": [
+          120.5,
+          368
+        ],
+        "seat": [
+          120.5,
+          264.96
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null
+      },
+      {
+        "name": "sit-front",
+        "rect": [
+          644,
+          847,
+          244,
+          347
+        ],
+        "source": "celine-v1",
+        "referenceHeight": 368,
+        "pivotX": 0.5,
+        "foot": [
+          122,
+          347
+        ],
+        "seat": [
+          122,
+          249.84
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null
+      },
+      {
+        "name": "idle-front",
+        "rect": [
+          42,
+          60,
+          241,
+          368
+        ],
+        "source": "celine-v1",
+        "referenceHeight": 368,
+        "pivotX": 0.5,
+        "foot": [
+          120.5,
+          368
+        ],
+        "seat": [
+          120.5,
+          264.96
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null
+      },
+      {
+        "name": "idle-front",
+        "rect": [
+          42,
+          60,
+          241,
+          368
+        ],
+        "source": "celine-v1",
+        "referenceHeight": 368,
+        "pivotX": 0.5,
+        "foot": [
+          120.5,
+          368
+        ],
+        "seat": [
+          120.5,
+          264.96
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null
+      },
+      {
+        "name": "idle-front",
+        "rect": [
+          42,
+          60,
+          241,
+          368
+        ],
+        "source": "celine-v1",
+        "referenceHeight": 368,
+        "pivotX": 0.5,
+        "foot": [
+          120.5,
+          368
+        ],
+        "seat": [
+          120.5,
+          264.96
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null
+      },
+      {
+        "name": "idle-front",
+        "rect": [
+          42,
+          60,
+          241,
+          368
+        ],
+        "source": "celine-v1",
+        "referenceHeight": 368,
+        "pivotX": 0.5,
+        "foot": [
+          120.5,
+          368
+        ],
+        "seat": [
+          120.5,
+          264.96
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null
+      },
+      {
+        "name": "idle-front",
+        "rect": [
+          42,
+          60,
+          241,
+          368
+        ],
+        "source": "celine-v1",
+        "referenceHeight": 368,
+        "pivotX": 0.5,
+        "foot": [
+          120.5,
+          368
+        ],
+        "seat": [
+          120.5,
+          264.96
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null
+      },
+      {
+        "name": "idle-front",
+        "rect": [
+          42,
+          60,
+          241,
+          368
+        ],
+        "source": "celine-v1",
+        "referenceHeight": 368,
+        "pivotX": 0.5,
+        "foot": [
+          120.5,
+          368
+        ],
+        "seat": [
+          120.5,
+          264.96
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null
+      },
+      {
+        "name": "idle-front",
+        "rect": [
+          42,
+          60,
+          241,
+          368
+        ],
+        "source": "celine-v1",
+        "referenceHeight": 368,
+        "pivotX": 0.5,
+        "foot": [
+          120.5,
+          368
+        ],
+        "seat": [
+          120.5,
+          264.96
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null
+      },
+      {
+        "name": "idle-front",
+        "rect": [
+          42,
+          60,
+          241,
+          368
+        ],
+        "source": "celine-v1",
+        "referenceHeight": 368,
+        "pivotX": 0.5,
+        "foot": [
+          120.5,
+          368
+        ],
+        "seat": [
+          120.5,
+          264.96
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null
+      },
+      {
+        "name": "idle-front",
+        "rect": [
+          42,
+          60,
+          241,
+          368
+        ],
+        "source": "celine-v1",
+        "referenceHeight": 368,
+        "pivotX": 0.5,
+        "foot": [
+          120.5,
+          368
+        ],
+        "seat": [
+          120.5,
+          264.96
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null
+      },
+      {
+        "name": "idle-front",
+        "rect": [
+          42,
+          60,
+          241,
+          368
+        ],
+        "source": "celine-v1",
+        "referenceHeight": 368,
+        "pivotX": 0.5,
+        "foot": [
+          120.5,
+          368
+        ],
+        "seat": [
+          120.5,
+          264.96
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null
+      },
+      {
+        "name": "idle-front",
+        "rect": [
+          42,
+          60,
+          241,
+          368
+        ],
+        "source": "celine-v1",
+        "referenceHeight": 368,
+        "pivotX": 0.5,
+        "foot": [
+          120.5,
+          368
+        ],
+        "seat": [
+          120.5,
+          264.96
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null
+      },
+      {
+        "name": "idle-front",
+        "rect": [
+          42,
+          60,
+          241,
+          368
+        ],
+        "source": "celine-v1",
+        "referenceHeight": 368,
+        "pivotX": 0.5,
+        "foot": [
+          120.5,
+          368
+        ],
+        "seat": [
+          120.5,
+          264.96
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null
+      },
+      {
+        "name": "idle-front",
+        "rect": [
+          42,
+          60,
+          241,
+          368
+        ],
+        "source": "celine-v1",
+        "referenceHeight": 368,
+        "pivotX": 0.5,
+        "foot": [
+          120.5,
+          368
+        ],
+        "seat": [
+          120.5,
+          264.96
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null
+      },
+      {
+        "name": "idle-front",
+        "rect": [
+          42,
+          60,
+          241,
+          368
+        ],
+        "source": "celine-v1",
+        "referenceHeight": 368,
+        "pivotX": 0.5,
+        "foot": [
+          120.5,
+          368
+        ],
+        "seat": [
+          120.5,
+          264.96
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null
+      },
+      {
+        "name": "idle-front",
+        "rect": [
+          42,
+          60,
+          241,
+          368
+        ],
+        "source": "celine-v1",
+        "referenceHeight": 368,
+        "pivotX": 0.5,
+        "foot": [
+          120.5,
+          368
+        ],
+        "seat": [
+          120.5,
+          264.96
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null
+      },
+      {
+        "name": "idle-front",
+        "rect": [
+          42,
+          60,
+          241,
+          368
+        ],
+        "source": "celine-v1",
+        "referenceHeight": 368,
+        "pivotX": 0.5,
+        "foot": [
+          120.5,
+          368
+        ],
+        "seat": [
+          120.5,
+          264.96
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null
+      },
+      {
+        "name": "idle-front",
+        "rect": [
+          42,
+          60,
+          241,
+          368
+        ],
+        "source": "celine-v1",
+        "referenceHeight": 368,
+        "pivotX": 0.5,
+        "foot": [
+          120.5,
+          368
+        ],
+        "seat": [
+          120.5,
+          264.96
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null
+      },
+      {
+        "name": "idle-front",
+        "rect": [
+          42,
+          60,
+          241,
+          368
+        ],
+        "source": "celine-v1",
+        "referenceHeight": 368,
+        "pivotX": 0.5,
+        "foot": [
+          120.5,
+          368
+        ],
+        "seat": [
+          120.5,
+          264.96
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null
+      },
+      {
+        "name": "idle-front",
+        "rect": [
+          42,
+          60,
+          241,
+          368
+        ],
+        "source": "celine-v1",
+        "referenceHeight": 368,
+        "pivotX": 0.5,
+        "foot": [
+          120.5,
+          368
+        ],
+        "seat": [
+          120.5,
+          264.96
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null
+      },
+      {
+        "name": "idle-front",
+        "rect": [
+          42,
+          60,
+          241,
+          368
+        ],
+        "source": "celine-v1",
+        "referenceHeight": 368,
+        "pivotX": 0.5,
+        "foot": [
+          120.5,
+          368
+        ],
+        "seat": [
+          120.5,
+          264.96
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null
+      },
+      {
+        "name": "idle-front",
+        "rect": [
+          42,
+          60,
+          241,
+          368
+        ],
+        "source": "celine-v1",
+        "referenceHeight": 368,
+        "pivotX": 0.5,
+        "foot": [
+          120.5,
+          368
+        ],
+        "seat": [
+          120.5,
+          264.96
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null
+      },
+      {
+        "name": "idle-front",
+        "rect": [
+          42,
+          60,
+          241,
+          368
+        ],
+        "source": "celine-v1",
+        "referenceHeight": 368,
+        "pivotX": 0.5,
+        "foot": [
+          120.5,
+          368
+        ],
+        "seat": [
+          120.5,
+          264.96
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null
+      },
+      {
+        "name": "walk-right-0",
+        "rect": [
+          41,
+          459,
+          235,
+          353
+        ],
+        "source": "celine-v1",
+        "referenceHeight": 368,
+        "pivotX": 0.5,
+        "foot": [
+          117.5,
+          353
+        ],
+        "seat": [
+          117.5,
+          254.16
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null
+      },
+      {
+        "name": "walk-right-1",
+        "rect": [
+          347,
+          459,
+          235,
+          353
+        ],
+        "source": "celine-v1",
+        "referenceHeight": 368,
+        "pivotX": 0.5,
+        "foot": [
+          117.5,
+          353
+        ],
+        "seat": [
+          117.5,
+          254.16
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null
+      },
+      {
+        "name": "walk-side-v8-0",
+        "source": "celine-walk-a-v8",
+        "rect": [
+          82,
+          57,
+          382,
+          594
+        ],
+        "referenceHeight": 594,
+        "pivotX": 0.5798429319371727,
+        "foot": [
+          221.49999999999997,
+          594
+        ],
+        "seat": [
+          201.59236671916366,
+          427.68
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null,
+        "scaleXRatio": 1,
+        "offsetYRatio": 0,
+        "headMetrics": {
+          "headWidth": 320,
+          "landmarkHeight": 220,
+          "centerX": 221.5,
+          "originalReferenceHeight": 594
+        }
+      },
+      {
+        "name": "walk-side-v8-1",
+        "source": "celine-walk-a-v8",
+        "rect": [
+          611,
+          57,
+          384,
+          594
+        ],
+        "referenceHeight": 594,
+        "pivotX": 0.5755208333333334,
+        "foot": [
+          221,
+          594
+        ],
+        "seat": [
+          202.4040680424606,
+          427.68
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null,
+        "scaleXRatio": 0.9846153846153847,
+        "offsetYRatio": 0,
+        "headMetrics": {
+          "headWidth": 325,
+          "landmarkHeight": 220,
+          "centerX": 221,
+          "originalReferenceHeight": 594
+        }
+      },
+      {
+        "name": "walk-side-v8-2",
+        "source": "celine-walk-a-v8",
+        "rect": [
+          1145,
+          57,
+          374,
+          594
+        ],
+        "referenceHeight": 591.3000000000001,
+        "pivotX": 0.5762032085561497,
+        "foot": [
+          215.5,
+          594
+        ],
+        "seat": [
+          196.85345618986094,
+          427.68
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null,
+        "scaleXRatio": 1.0080552359033372,
+        "offsetYRatio": 0.004566210045662045,
+        "headMetrics": {
+          "headWidth": 316,
+          "landmarkHeight": 219,
+          "centerX": 215.5,
+          "originalReferenceHeight": 594
+        }
+      },
+      {
+        "name": "walk-side-v8-3",
+        "source": "celine-walk-a-v8",
+        "rect": [
+          1673,
+          57,
+          406,
+          594
+        ],
+        "referenceHeight": 594,
+        "pivotX": 0.5431034482758621,
+        "foot": [
+          220.5,
+          594
+        ],
+        "seat": [
+          200.86592587663858,
+          427.68
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null,
+        "scaleXRatio": 1,
+        "offsetYRatio": 0,
+        "headMetrics": {
+          "headWidth": 320,
+          "landmarkHeight": 220,
+          "centerX": 220.5,
+          "originalReferenceHeight": 594
+        }
+      },
+      {
+        "name": "walk-side-v8-4",
+        "source": "celine-walk-b-v8",
+        "rect": [
+          94,
+          38,
+          359,
+          619
+        ],
+        "referenceHeight": 558.9,
+        "pivotX": 0.5779944289693594,
+        "foot": [
+          207.50000000000003,
+          619
+        ],
+        "seat": [
+          184.04608356397347,
+          445.68
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null,
+        "scaleXRatio": 0.9969897652016857,
+        "offsetYRatio": 0.10753265342637319,
+        "headMetrics": {
+          "headWidth": 302,
+          "landmarkHeight": 207,
+          "centerX": 207.5,
+          "originalReferenceHeight": 619
+        }
+      },
+      {
+        "name": "walk-side-v8-5",
+        "source": "celine-walk-b-v8",
+        "rect": [
+          633,
+          38,
+          363,
+          619
+        ],
+        "referenceHeight": 558.9,
+        "pivotX": 0.5798898071625345,
+        "foot": [
+          210.5,
+          619
+        ],
+        "seat": [
+          186.52475933008043,
+          445.68
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null,
+        "scaleXRatio": 0.9904306220095693,
+        "offsetYRatio": 0.10753265342637319,
+        "headMetrics": {
+          "headWidth": 304,
+          "landmarkHeight": 207,
+          "centerX": 210.5,
+          "originalReferenceHeight": 619
+        }
+      },
+      {
+        "name": "walk-side-v8-6",
+        "source": "celine-walk-b-v8",
+        "rect": [
+          1141,
+          38,
+          356,
+          619
+        ],
+        "referenceHeight": 558.9,
+        "pivotX": 0.5786516853932584,
+        "foot": [
+          206,
+          619
+        ],
+        "seat": [
+          182.3391614269863,
+          445.68
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null,
+        "scaleXRatio": 1.0069930069930069,
+        "offsetYRatio": 0.10753265342637319,
+        "headMetrics": {
+          "headWidth": 299,
+          "landmarkHeight": 207,
+          "centerX": 206,
+          "originalReferenceHeight": 619
+        }
+      },
+      {
+        "name": "walk-side-v8-7",
+        "source": "celine-walk-b-v8",
+        "rect": [
+          1674,
+          38,
+          399,
+          619
+        ],
+        "referenceHeight": 558.9,
+        "pivotX": 0.5275689223057645,
+        "foot": [
+          210.50000000000003,
+          619
+        ],
+        "seat": [
+          185.94791494427727,
+          445.68
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null,
+        "scaleXRatio": 0.9969897652016857,
+        "offsetYRatio": 0.10753265342637319,
+        "headMetrics": {
+          "headWidth": 302,
+          "landmarkHeight": 207,
+          "centerX": 210.5,
+          "originalReferenceHeight": 619
+        }
+      },
+      {
+        "name": "run-side-v10-0",
+        "source": "celine-run-v10",
+        "rect": [
+          62,
+          48,
+          280,
+          434
+        ],
+        "referenceHeight": 415.8,
+        "pivotX": 0.5910714285714286,
+        "foot": [
+          165.5,
+          434
+        ],
+        "seat": [
+          140,
+          312.47999999999996
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null,
+        "scaleXRatio": 0.9824561403508771,
+        "offsetYRatio": 0.04377104377104368,
+        "headMetrics": {
+          "headWidth": 228,
+          "landmarkHeight": 154,
+          "centerX": 165.5,
+          "originalReferenceHeight": 435
+        }
+      },
+      {
+        "name": "run-side-v10-1",
+        "source": "celine-run-v10",
+        "rect": [
+          438,
+          47,
+          280,
+          435
+        ],
+        "referenceHeight": 415.8,
+        "pivotX": 0.5910714285714286,
+        "foot": [
+          165.5,
+          435
+        ],
+        "seat": [
+          140,
+          313.2
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null,
+        "scaleXRatio": 0.9824561403508771,
+        "offsetYRatio": 0.04617604617604609,
+        "headMetrics": {
+          "headWidth": 228,
+          "landmarkHeight": 154,
+          "centerX": 165.5,
+          "originalReferenceHeight": 435
+        }
+      },
+      {
+        "name": "run-side-v10-2",
+        "source": "celine-run-v10",
+        "rect": [
+          813,
+          47,
+          282,
+          435
+        ],
+        "referenceHeight": 418.5,
+        "pivotX": 0.5904255319148937,
+        "foot": [
+          166.5,
+          435
+        ],
+        "seat": [
+          141,
+          313.2
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null,
+        "scaleXRatio": 0.9802371541501975,
+        "offsetYRatio": 0.03942652329749108,
+        "headMetrics": {
+          "headWidth": 230,
+          "landmarkHeight": 155,
+          "centerX": 166.5,
+          "originalReferenceHeight": 435
+        }
+      },
+      {
+        "name": "run-side-v10-3",
+        "source": "celine-run-v10",
+        "rect": [
+          1199,
+          47,
+          295,
+          435
+        ],
+        "referenceHeight": 418.5,
+        "pivotX": 0.5542372881355933,
+        "foot": [
+          163.5,
+          435
+        ],
+        "seat": [
+          147.5,
+          313.2
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null,
+        "scaleXRatio": 0.9888357256778308,
+        "offsetYRatio": 0.03942652329749108,
+        "headMetrics": {
+          "headWidth": 228,
+          "landmarkHeight": 155,
+          "centerX": 163.5,
+          "originalReferenceHeight": 435
+        }
+      },
+      {
+        "name": "run-side-v10-4",
+        "source": "celine-run-v10",
+        "rect": [
+          63,
+          536,
+          281,
+          440
+        ],
+        "referenceHeight": 413.1,
+        "pivotX": 0.5907473309608541,
+        "foot": [
+          166,
+          440
+        ],
+        "seat": [
+          140.5,
+          316.8
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null,
+        "scaleXRatio": 0.9718142119888845,
+        "offsetYRatio": 0.06511740498668606,
+        "headMetrics": {
+          "headWidth": 229,
+          "landmarkHeight": 153,
+          "centerX": 166,
+          "originalReferenceHeight": 443
+        }
+      },
+      {
+        "name": "run-side-v10-5",
+        "source": "celine-run-v10",
+        "rect": [
+          440,
+          534,
+          282,
+          442
+        ],
+        "referenceHeight": 415.8,
+        "pivotX": 0.5886524822695035,
+        "foot": [
+          166,
+          442
+        ],
+        "seat": [
+          141,
+          318.24
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null,
+        "scaleXRatio": 0.9696969696969697,
+        "offsetYRatio": 0.06301106301106296,
+        "headMetrics": {
+          "headWidth": 231,
+          "landmarkHeight": 154,
+          "centerX": 166,
+          "originalReferenceHeight": 443
+        }
+      },
+      {
+        "name": "run-side-v10-6",
+        "source": "celine-run-v10",
+        "rect": [
+          814,
+          533,
+          284,
+          443
+        ],
+        "referenceHeight": 421.20000000000005,
+        "pivotX": 0.5897887323943662,
+        "foot": [
+          167.5,
+          443
+        ],
+        "seat": [
+          142,
+          318.96
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null,
+        "scaleXRatio": 0.9780564263322885,
+        "offsetYRatio": 0.05175688509021836,
+        "headMetrics": {
+          "headWidth": 232,
+          "landmarkHeight": 156,
+          "centerX": 167.5,
+          "originalReferenceHeight": 443
+        }
+      },
+      {
+        "name": "run-side-v10-7",
+        "source": "celine-run-v10",
+        "rect": [
+          1195,
+          533,
+          298,
+          443
+        ],
+        "referenceHeight": 418.5,
+        "pivotX": 0.5620805369127517,
+        "foot": [
+          167.50000000000003,
+          443
+        ],
+        "seat": [
+          149,
+          318.96
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null,
+        "scaleXRatio": 0.9717868338557993,
+        "offsetYRatio": 0.05854241338112298,
+        "headMetrics": {
+          "headWidth": 232,
+          "landmarkHeight": 155,
+          "centerX": 167.5,
+          "originalReferenceHeight": 443
+        }
+      }
+    ],
+    "carryFrames": [
+      {
+        "name": "idle-front",
+        "rect": [
+          42,
+          60,
+          241,
+          368
+        ],
+        "source": "celine-v1",
+        "referenceHeight": 368,
+        "pivotX": 0.5,
+        "foot": [
+          120.5,
+          368
+        ],
+        "seat": [
+          120.5,
+          264.96
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null
+      },
+      {
+        "name": "idle-right",
+        "rect": [
+          642,
+          62,
+          238,
+          366
+        ],
+        "source": "celine-v1",
+        "referenceHeight": 368,
+        "pivotX": 0.5,
+        "foot": [
+          119,
+          366
+        ],
+        "seat": [
+          119,
+          263.52
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null
+      },
+      {
+        "name": "idle-back",
+        "rect": [
+          355,
+          60,
+          227,
+          368
+        ],
+        "source": "celine-v1",
+        "referenceHeight": 368,
+        "pivotX": 0.5,
+        "foot": [
+          113.5,
+          368
+        ],
+        "seat": [
+          113.5,
+          264.96
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null
+      },
+      {
+        "name": "idle-front",
+        "rect": [
+          42,
+          60,
+          241,
+          368
+        ],
+        "source": "celine-v1",
+        "referenceHeight": 368,
+        "pivotX": 0.5,
+        "foot": [
+          120.5,
+          368
+        ],
+        "seat": [
+          120.5,
+          264.96
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null
+      },
+      {
+        "name": "sit-front",
+        "rect": [
+          644,
+          847,
+          244,
+          347
+        ],
+        "source": "celine-v1",
+        "referenceHeight": 368,
+        "pivotX": 0.5,
+        "foot": [
+          122,
+          347
+        ],
+        "seat": [
+          122,
+          249.84
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null
+      },
+      {
+        "name": "sit-back",
+        "rect": [
+          960,
+          852,
+          228,
+          342
+        ],
+        "source": "celine-v1",
+        "referenceHeight": 368,
+        "pivotX": 0.5,
+        "foot": [
+          114,
+          342
+        ],
+        "seat": [
+          114,
+          246.23999999999998
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null
+      },
+      {
+        "name": "idle-front",
+        "rect": [
+          42,
+          60,
+          241,
+          368
+        ],
+        "source": "celine-v1",
+        "referenceHeight": 368,
+        "pivotX": 0.5,
+        "foot": [
+          120.5,
+          368
+        ],
+        "seat": [
+          120.5,
+          264.96
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null
+      },
+      {
+        "name": "idle-front",
+        "rect": [
+          42,
+          60,
+          241,
+          368
+        ],
+        "source": "celine-v1",
+        "referenceHeight": 368,
+        "pivotX": 0.5,
+        "foot": [
+          120.5,
+          368
+        ],
+        "seat": [
+          120.5,
+          264.96
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null
+      },
+      {
+        "name": "walk-front-0",
+        "rect": [
+          649,
+          459,
+          240,
+          361
+        ],
+        "source": "celine-v1",
+        "referenceHeight": 368,
+        "pivotX": 0.5,
+        "foot": [
+          120,
+          361
+        ],
+        "seat": [
+          120,
+          259.92
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null
+      },
+      {
+        "name": "walk-front-1",
+        "rect": [
+          951,
+          459,
+          241,
+          361
+        ],
+        "source": "celine-v1",
+        "referenceHeight": 368,
+        "pivotX": 0.5,
+        "foot": [
+          120.5,
+          361
+        ],
+        "seat": [
+          120.5,
+          259.92
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null
+      },
+      {
+        "name": "walk-front-0",
+        "rect": [
+          649,
+          459,
+          240,
+          361
+        ],
+        "source": "celine-v1",
+        "referenceHeight": 368,
+        "pivotX": 0.5,
+        "foot": [
+          120,
+          361
+        ],
+        "seat": [
+          120,
+          259.92
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null
+      },
+      {
+        "name": "walk-front-1",
+        "rect": [
+          951,
+          459,
+          241,
+          361
+        ],
+        "source": "celine-v1",
+        "referenceHeight": 368,
+        "pivotX": 0.5,
+        "foot": [
+          120.5,
+          361
+        ],
+        "seat": [
+          120.5,
+          259.92
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null
+      },
+      {
+        "name": "idle-front",
+        "rect": [
+          42,
+          60,
+          241,
+          368
+        ],
+        "source": "celine-v1",
+        "referenceHeight": 368,
+        "pivotX": 0.5,
+        "foot": [
+          120.5,
+          368
+        ],
+        "seat": [
+          120.5,
+          264.96
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null
+      },
+      {
+        "name": "idle-front",
+        "rect": [
+          42,
+          60,
+          241,
+          368
+        ],
+        "source": "celine-v1",
+        "referenceHeight": 368,
+        "pivotX": 0.5,
+        "foot": [
+          120.5,
+          368
+        ],
+        "seat": [
+          120.5,
+          264.96
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null
+      },
+      {
+        "name": "idle-front",
+        "rect": [
+          42,
+          60,
+          241,
+          368
+        ],
+        "source": "celine-v1",
+        "referenceHeight": 368,
+        "pivotX": 0.5,
+        "foot": [
+          120.5,
+          368
+        ],
+        "seat": [
+          120.5,
+          264.96
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null
+      },
+      {
+        "name": "idle-front",
+        "rect": [
+          42,
+          60,
+          241,
+          368
+        ],
+        "source": "celine-v1",
+        "referenceHeight": 368,
+        "pivotX": 0.5,
+        "foot": [
+          120.5,
+          368
+        ],
+        "seat": [
+          120.5,
+          264.96
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null
+      },
+      {
+        "name": "walk-back-0",
+        "rect": [
+          50,
+          836,
+          223,
+          361
+        ],
+        "source": "celine-v1",
+        "referenceHeight": 368,
+        "pivotX": 0.5,
+        "foot": [
+          111.5,
+          361
+        ],
+        "seat": [
+          111.5,
+          259.92
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null
+      },
+      {
+        "name": "walk-back-1",
+        "rect": [
+          358,
+          835,
+          224,
+          363
+        ],
+        "source": "celine-v1",
+        "referenceHeight": 368,
+        "pivotX": 0.5,
+        "foot": [
+          112,
+          363
+        ],
+        "seat": [
+          112,
+          261.36
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null
+      },
+      {
+        "name": "walk-back-0",
+        "rect": [
+          50,
+          836,
+          223,
+          361
+        ],
+        "source": "celine-v1",
+        "referenceHeight": 368,
+        "pivotX": 0.5,
+        "foot": [
+          111.5,
+          361
+        ],
+        "seat": [
+          111.5,
+          259.92
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null
+      },
+      {
+        "name": "walk-back-1",
+        "rect": [
+          358,
+          835,
+          224,
+          363
+        ],
+        "source": "celine-v1",
+        "referenceHeight": 368,
+        "pivotX": 0.5,
+        "foot": [
+          112,
+          363
+        ],
+        "seat": [
+          112,
+          261.36
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null
+      },
+      {
+        "name": "idle-front",
+        "rect": [
+          42,
+          60,
+          241,
+          368
+        ],
+        "source": "celine-v1",
+        "referenceHeight": 368,
+        "pivotX": 0.5,
+        "foot": [
+          120.5,
+          368
+        ],
+        "seat": [
+          120.5,
+          264.96
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null
+      },
+      {
+        "name": "idle-front",
+        "rect": [
+          42,
+          60,
+          241,
+          368
+        ],
+        "source": "celine-v1",
+        "referenceHeight": 368,
+        "pivotX": 0.5,
+        "foot": [
+          120.5,
+          368
+        ],
+        "seat": [
+          120.5,
+          264.96
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null
+      },
+      {
+        "name": "idle-front",
+        "rect": [
+          42,
+          60,
+          241,
+          368
+        ],
+        "source": "celine-v1",
+        "referenceHeight": 368,
+        "pivotX": 0.5,
+        "foot": [
+          120.5,
+          368
+        ],
+        "seat": [
+          120.5,
+          264.96
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null
+      },
+      {
+        "name": "idle-front",
+        "rect": [
+          42,
+          60,
+          241,
+          368
+        ],
+        "source": "celine-v1",
+        "referenceHeight": 368,
+        "pivotX": 0.5,
+        "foot": [
+          120.5,
+          368
+        ],
+        "seat": [
+          120.5,
+          264.96
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null
+      },
+      {
+        "name": "walk-right-0",
+        "rect": [
+          41,
+          459,
+          235,
+          353
+        ],
+        "source": "celine-v1",
+        "referenceHeight": 368,
+        "pivotX": 0.5,
+        "foot": [
+          117.5,
+          353
+        ],
+        "seat": [
+          117.5,
+          254.16
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null
+      },
+      {
+        "name": "walk-right-1",
+        "rect": [
+          347,
+          459,
+          235,
+          353
+        ],
+        "source": "celine-v1",
+        "referenceHeight": 368,
+        "pivotX": 0.5,
+        "foot": [
+          117.5,
+          353
+        ],
+        "seat": [
+          117.5,
+          254.16
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null
+      }
+    ],
+    "officeFrames": [
+      {
+        "name": "sit-front",
+        "rect": [
+          644,
+          847,
+          244,
+          347
+        ],
+        "source": "celine-v1",
+        "referenceHeight": 368,
+        "pivotX": 0.5,
+        "foot": [
+          122,
+          347
+        ],
+        "seat": [
+          122,
+          249.84
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null
+      },
+      {
+        "name": "sit-front",
+        "rect": [
+          644,
+          847,
+          244,
+          347
+        ],
+        "source": "celine-v1",
+        "referenceHeight": 368,
+        "pivotX": 0.5,
+        "foot": [
+          122,
+          347
+        ],
+        "seat": [
+          122,
+          249.84
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null
+      },
+      {
+        "name": "sit-back",
+        "rect": [
+          960,
+          852,
+          228,
+          342
+        ],
+        "source": "celine-v1",
+        "referenceHeight": 368,
+        "pivotX": 0.5,
+        "foot": [
+          114,
+          342
+        ],
+        "seat": [
+          114,
+          246.23999999999998
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null
+      },
+      {
+        "name": "sit-back",
+        "rect": [
+          960,
+          852,
+          228,
+          342
+        ],
+        "source": "celine-v1",
+        "referenceHeight": 368,
+        "pivotX": 0.5,
+        "foot": [
+          114,
+          342
+        ],
+        "seat": [
+          114,
+          246.23999999999998
+        ],
+        "grip": null,
+        "gripSide": 0,
+        "slot": null
+      }
+    ],
+    "carryFrontLoop": [
+      8,
+      9,
+      8,
+      9
+    ],
+    "carryBackLoop": [
+      16,
+      17,
+      16,
+      17
+    ],
+    "carryRightLoop": [
+      24,
+      25,
+      24,
+      25
+    ],
+    "walkLoopLength": 2,
+    "approvedLegacy": false,
+    "sideWalkLoop": [
+      64,
+      65,
+      66,
+      67,
+      68,
+      69,
+      70,
+      71
+    ],
+    "runLoop": [
+      72,
+      73,
+      74,
+      75,
+      76,
+      77,
+      78,
+      79
+    ],
+    "sideWalkFrameMs": 100,
+    "runFrameMs": 75,
+    "mobilityFrames": [
+      {
+        "name": "scooter-riding-right",
+        "source": "celine-mobility",
+        "rect": [
+          0,
+          0,
+          51,
+          72
+        ],
+        "pivotX": 0.35,
+        "referenceHeight": 72,
+        "foot": [
+          25.5,
+          72
+        ],
+        "seat": [
+          17.849999999999998,
+          48.96
+        ],
+        "grip": null,
+        "gripSide": 1,
+        "slot": null
+      },
+      {
+        "name": "skateboard-balance-right",
+        "source": "celine-mobility",
+        "rect": [
+          96,
+          0,
+          61,
+          72
+        ],
+        "pivotX": 0.5,
+        "referenceHeight": 72,
+        "foot": [
+          30.5,
+          72
+        ],
+        "seat": [
+          21.349999999999998,
+          48.96
+        ],
+        "grip": null,
+        "gripSide": 1,
+        "slot": null
+      }
+    ]
+  },
+  "rendering": {
+    "mirrorDirection": 3,
+    "standingScale": "worldHeight / referenceHeight",
+    "carryStandingScale": "worldHeight / rect[3]",
+    "seatScale": "seatedHeight / referenceHeight",
+    "seatSurface": "seat[1]",
+    "grip": "frame-local pixels",
+    "frameDurationDefaultMs": 125
+  },
+  "provenance": {
+    "date": "2026-10-12",
+    "codeBase": "d57d36d + pre-existing working tree",
+    "acceptance": "local-equivalence; online baseline and human acceptance pending",
+    "migrationFixture": "scripts/fixtures/character-library-before.json"
+  },
+  "officeGuest": {
+    "image": "celine-v1.png",
+    "referenceHeight": 368,
+    "frames": [
+      {
+        "name": "idle-front",
+        "rect": [
+          42,
+          60,
+          241,
+          368
+        ]
+      },
+      {
+        "name": "idle-back",
+        "rect": [
+          355,
+          60,
+          227,
+          368
+        ]
+      },
+      {
+        "name": "idle-right",
+        "rect": [
+          642,
+          62,
+          238,
+          366
+        ]
+      },
+      {
+        "name": "idle-left",
+        "rect": [
+          968,
+          62,
+          236,
+          367
+        ]
+      },
+      {
+        "name": "walk-right-0",
+        "rect": [
+          41,
+          459,
+          235,
+          353
+        ]
+      },
+      {
+        "name": "walk-right-1",
+        "rect": [
+          347,
+          459,
+          235,
+          353
+        ]
+      },
+      {
+        "name": "walk-front-0",
+        "rect": [
+          649,
+          459,
+          240,
+          361
+        ]
+      },
+      {
+        "name": "walk-front-1",
+        "rect": [
+          951,
+          459,
+          241,
+          361
+        ]
+      },
+      {
+        "name": "walk-back-0",
+        "rect": [
+          50,
+          836,
+          223,
+          361
+        ]
+      },
+      {
+        "name": "walk-back-1",
+        "rect": [
+          358,
+          835,
+          224,
+          363
+        ]
+      },
+      {
+        "name": "sit-front",
+        "rect": [
+          644,
+          847,
+          244,
+          347
+        ]
+      },
+      {
+        "name": "sit-back",
+        "rect": [
+          960,
+          852,
+          228,
+          342
+        ]
+      }
+    ]
+  }
+}

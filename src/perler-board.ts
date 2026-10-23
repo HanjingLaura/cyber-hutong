@@ -1,5 +1,6 @@
 export const BEAD_COLORS=['#fff4dc','#303438','#eb6269','#ffae54','#f5d965','#82bd68','#339a91','#71cce0','#478fc2','#7267b4','#b58bd0','#ee94bd','#a2684c','#ddd4c1','#a3acb4','#654e47'];
 import {saveProgress,onlineWorld,personalProgress} from './multiplayer/world-client';
+import {restoreWorldFocus} from './world-focus';
 export const BOARD_SIZE=16;
 export type BeadWork={cells:number[];pattern:string;created:number;key?:string};
 type BoardState={cells:number[];pattern:string;fused:boolean};
@@ -55,7 +56,7 @@ export class PerlerBoard {
     this.listen(this.canvas,'pointermove',e=>{if(e.pointerId===this.pointer)this.paint(e,(e.buttons&2)!==0||this.erasing);});
     const end=(e:PointerEvent)=>{if(e.pointerId===this.pointer)this.commitStroke();};
     this.listen(this.canvas,'pointerup',end);this.listen(this.canvas,'pointercancel',end);this.listen(this.canvas,'lostpointercapture',end);
-    this.listen(this.dialog,'close',()=>{this.commitStroke();this.cancelIron();document.querySelector<HTMLElement>('.world')!.focus();});
+    this.listen(this.dialog,'close',()=>{this.commitStroke();this.cancelIron();restoreWorldFocus(this.dialog);});
     const exit=(e:KeyboardEvent)=>{if(this.dialog.open&&e.code==='KeyE'&&!e.repeat&&!/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName||'')){e.preventDefault();e.stopImmediatePropagation();this.close();}};
     this.listen(window,'keydown',exit);
     this.render();
@@ -66,7 +67,7 @@ export class PerlerBoard {
   private get history(){return this.histories[this.seat];}
   getState(){return {open:this.dialog.open,seat:this.seat,color:this.color,erasing:this.erasing,busy:this.busy,cells:[...this.board.cells],pattern:this.board.pattern,fused:this.board.fused,works:this.works.length,undo:this.history.undo.length,message:this.message};}
   cellsAt(seat:number){return this.boards[seat].cells;}
-  open(seat:number,gallery=false){if(onlineWorld()?.bridge.user?.role){const progress=personalProgress();this.works=progress.filter(p=>p.kind==='bead').map(p=>({...p.data,key:p.key}));const draft=progress.find(p=>p.kind==='draft'&&p.key===String(seat));if(!this.dialog.open)this.boards[seat]=draft?structuredClone(draft.data):{cells:empty(),pattern:'自由',fused:false};}this.seat=seat;this.galleryOnly=gallery;this.dialog.dataset.gallery=String(gallery);this.message='';this.render();this.dialog.showModal();}
+  open(seat:number,gallery=false){if(onlineWorld()?.bridge.user?.role){const progress=personalProgress();this.works=progress.filter(p=>p.kind==='bead').map(p=>({...p.data,key:p.key}));const draft=progress.find(p=>p.kind==='draft'&&p.key===String(seat));if(!this.dialog.open){this.boards[seat]=draft?structuredClone(draft.data):{cells:empty(),pattern:'自由',fused:false};this.histories[seat]={undo:[],redo:[]};}}this.seat=seat;this.galleryOnly=gallery;this.dialog.dataset.gallery=String(gallery);this.message='';this.render();this.dialog.showModal();}
   close(){if(this.dialog.open)this.dialog.close();else this.cancelIron();}
   private paint(e:PointerEvent,erase:boolean){
     const rect=this.canvas.getBoundingClientRect();const px=(e.clientX-rect.left)*360/rect.width,py=(e.clientY-rect.top)*360/rect.height;
@@ -87,15 +88,19 @@ export class PerlerBoard {
   }
   private undo(redo:boolean){if(this.busy||this.board.fused)return;this.commitStroke();const from=redo?this.history.redo:this.history.undo,to=redo?this.history.undo:this.history.redo;const cells=from.pop();if(!cells)return;to.push([...this.board.cells]);this.board.cells=cells;this.save();this.render();this.onChange();}
   private cancelIron(){if(this.timer)clearTimeout(this.timer);this.timer=undefined;this.revision++;this.busy=false;this.render();}
+  private operationContext(){
+    const revision=this.revision,service=onlineWorld(),account=service?.bridge.user?.id,scene=service?.bridge.active,epoch=service?.epoch;
+    return {service,current:()=>revision===this.revision&&this.dialog.open&&onlineWorld()===service&&service?.bridge.user?.id===account&&service?.bridge.active===scene&&service?.epoch===epoch};
+  }
   private iron(){
     if(this.busy||this.board.fused||!this.board.cells.some(c=>c>=0))return;
-    this.commitStroke();this.busy=true;this.message='';this.render();const revision=++this.revision;
-    this.timer=setTimeout(async()=>{if(revision!==this.revision||!this.dialog.open)return;this.timer=undefined;const work={cells:[...this.board.cells],pattern:this.board.pattern,created:Date.now()},board=this.board;
-      try{if(onlineWorld()?.bridge.user?.role)await onlineWorld()!.saveNow('bead',String(work.created),work);else{this.works.push(work);this.works=this.works.slice(-24);}board.fused=true;this.message='';this.save();this.onChange();}catch(e){this.message=(e as Error).message;}finally{this.busy=false;this.render();}
+    this.commitStroke();this.busy=true;this.message='';this.render();++this.revision;const {service,current}=this.operationContext();
+    this.timer=setTimeout(async()=>{if(!current())return;this.timer=undefined;const work={cells:[...this.board.cells],pattern:this.board.pattern,created:Date.now()},board=this.board;
+      try{if(service?.bridge.user?.role)await service.saveNow('bead',String(work.created),work);else{this.works.push(work);this.works=this.works.slice(-24);}if(!current())return;board.fused=true;this.message='';this.save();this.onChange();}catch(e){if(current())this.message=(e as Error).message;}finally{if(current()){this.busy=false;this.render();}}
     },1000);
   }
   private save(){if(onlineWorld()?.bridge.user?.role){saveProgress('draft',String(this.seat),this.board);return;}try{localStorage.setItem('hutong-perler-v1',JSON.stringify({boards:this.boards,works:this.works}));}catch{/* keep working in memory */}}
-  private async takeWork(work:BeadWork,collect:boolean){if(this.busy)return;this.busy=true;this.render();try{const service=onlineWorld();if(!service?.bridge.user?.role)throw Error('请先登录');await service.reward('perler',{key:work.key??String(work.created),collect});this.message='';}catch(e){this.message=(e as Error).message;}finally{this.busy=false;this.render();}}
+  private async takeWork(work:BeadWork,collect:boolean){if(this.busy)return;this.busy=true;this.render();const {service,current}=this.operationContext();try{if(!service?.bridge.user?.role)throw Error('请先登录');await service.reward('perler',{key:work.key??String(work.created),collect});if(current())this.message='';}catch(e){if(current())this.message=(e as Error).message;}finally{if(current()){this.busy=false;this.render();}}}
   render(){
     const ctx=this.ctx;ctx.fillStyle='#a88559';ctx.fillRect(0,0,360,360);ctx.fillStyle='#eae7d8';ctx.fillRect(14,14,332,332);
     const guide=guideCells(this.board.pattern);let correct=0,total=0;

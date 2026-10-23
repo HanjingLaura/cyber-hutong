@@ -407,54 +407,106 @@
   "activities": {}
  },
  "noodle": {
-  "seats": {
-   "0": {
-    "at": [
-     179,
-     286
-    ],
-    "approach": [
-     179,
-     311
-    ],
-    "surfaceY": 270
+   "seats": {
+     "0": {
+       "at": [
+         179,
+         286
+       ],
+       "approach": [
+         179,
+         311
+       ],
+       "surfaceY": 270,
+       "facing": 2
+     },
+     "1": {
+       "at": [
+         247,
+         286
+       ],
+       "approach": [
+         247,
+         311
+       ],
+       "surfaceY": 270,
+       "facing": 2
+     },
+     "2": {
+       "at": [
+         405,
+         286
+       ],
+       "approach": [
+         405,
+         311
+       ],
+       "surfaceY": 270,
+       "facing": 2
+     },
+     "3": {
+       "at": [
+         473,
+         286
+       ],
+       "approach": [
+         473,
+         311
+       ],
+       "surfaceY": 270,
+       "facing": 2
+     },
+     "4": {
+       "at": [
+         179,
+         230
+       ],
+       "approach": [
+         179,
+         202
+       ],
+       "surfaceY": 215,
+       "facing": 0
+     },
+     "5": {
+       "at": [
+         247,
+         230
+       ],
+       "approach": [
+         247,
+         202
+       ],
+       "surfaceY": 215,
+       "facing": 0
+     },
+     "6": {
+       "at": [
+         405,
+         230
+       ],
+       "approach": [
+         405,
+         202
+       ],
+       "surfaceY": 215,
+       "facing": 0
+     },
+     "7": {
+       "at": [
+         473,
+         230
+       ],
+       "approach": [
+         473,
+         202
+       ],
+       "surfaceY": 215,
+       "facing": 0
+     }
    },
-   "1": {
-    "at": [
-     247,
-     286
-    ],
-    "approach": [
-     247,
-     311
-    ],
-    "surfaceY": 270
-   },
-   "2": {
-    "at": [
-     405,
-     286
-    ],
-    "approach": [
-     405,
-     311
-    ],
-    "surfaceY": 270
-   },
-   "3": {
-    "at": [
-     473,
-     286
-    ],
-    "approach": [
-     473,
-     311
-    ],
-    "surfaceY": 270
-   }
-  },
-  "devices": {},
-  "activities": {}
+   "devices": {},
+   "activities": {}
  },
  "arcade": {
   "seats": {
@@ -1054,5 +1106,133 @@
     }
    ]
   }
+ },
+ "yousheng": {
+  "seats": {},
+  "devices": {},
+  "activities": {}
+ },
+ "google": {
+  "seats": {
+   "G1": {
+    "at": [
+     185,
+     240
+    ],
+    "approach": [
+     185,
+     275
+    ],
+    "facing": 2,
+    "surfaceY": 213
+   },
+   "G2": {
+    "at": [
+     275,
+     240
+    ],
+    "approach": [
+     275,
+     275
+    ],
+    "facing": 2,
+    "surfaceY": 213
+   },
+   "G3": {
+    "at": [
+     364,
+     240
+    ],
+    "approach": [
+     364,
+     275
+    ],
+    "facing": 2,
+    "surfaceY": 213
+   },
+   "G4": {
+    "at": [
+     452,
+     240
+    ],
+    "approach": [
+     452,
+     275
+    ],
+    "facing": 2,
+    "surfaceY": 213
+   }
+  },
+  "devices": {},
+  "activities": {}
+ },
+ "meeting": {
+  "seats": {
+   "M1": {
+    "at": [
+     176,
+     273
+    ],
+    "approach": [
+     176,
+     310
+    ],
+    "facing": 2,
+    "surfaceY": 246
+   },
+   "M2": {
+    "at": [
+     269,
+     273
+    ],
+    "approach": [
+     269,
+     310
+    ],
+    "facing": 2,
+    "surfaceY": 246
+   },
+   "M3": {
+    "at": [
+     367,
+     273
+    ],
+    "approach": [
+     367,
+     310
+    ],
+    "facing": 2,
+    "surfaceY": 246
+   },
+   "M4": {
+    "at": [
+     466,
+     273
+    ],
+    "approach": [
+     466,
+     310
+    ],
+    "facing": 2,
+    "surfaceY": 246
+   }
+  },
+  "devices": {},
+  "activities": {}
+ },
+ "street": {
+  "seats": {},
+  "devices": {},
+  "activities": {}
+ },
+ "campus": {
+  "seats": {},
+  "devices": {},
+  "activities": {}
+ },
+ "manner": {
+  "seats": {},
+  "devices": {},
+  "activities": {}
  }
 }

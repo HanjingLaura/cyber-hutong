@@ -1,30 +1,38 @@
 import type {KtvSong} from '../shared/ktv.mjs';
 
-/** Locally enabled synthesized accompaniment, aligned to the shared song clock. */
+const videos:Record<string,string>={
+ power:new URL('../assets/video/ktv-power.mp4',import.meta.url).href,
+ 'beauty-and-a-beat':new URL('../assets/video/ktv-beauty-and-a-beat.mp4',import.meta.url).href,
+ 'lover-boy-88':new URL('../assets/video/ktv-lover-boy-88.mp4',import.meta.url).href,
+ 'eyes-nose-lips':new URL('../assets/video/ktv-eyes-nose-lips.mp4',import.meta.url).href,
+};
+
+/** Local MV playback follows the same clock as the queue and beat game. */
 export class KtvAudio{
- private context?:AudioContext;
- private voices=new Set<OscillatorNode>();
- private lastBeat=-1;
- private song='';
- async enable(){this.context??=new AudioContext();await this.context.resume();}
- stop(){for(const voice of this.voices){try{voice.stop();}catch{/* finished */}voice.disconnect();}this.voices.clear();this.lastBeat=-1;this.song='';void this.context?.suspend();}
- dispose(){this.stop();void this.context?.close();}
- update(song:KtvSong,elapsed:number){
-  const context=this.context;if(!context||context.state!=='running')return;
-  const beat=Math.floor(elapsed/(60000/song.bpm));if(this.song===song.id&&beat===this.lastBeat)return;
-  this.song=song.id;this.lastBeat=beat;
-  const phase=(elapsed%(60000/song.bpm))/1000,time=context.currentTime+.015,period=60/song.bpm;
-  // Skip late frames instead of stacking delayed notes after a background-tab pause.
-  if(phase>period*.5)return;
-  this.tone(time,beat%4===0?90:150,.1,.06,'sine');
-  const midi=song.notes[beat%song.notes.length];
-  this.tone(time,440*2**((midi-69)/12),period*.65,.045,'triangle');
-  if(beat%2===0)this.tone(time,440*2**((midi-24-69)/12),period*.8,.035,'sine');
+ private video:HTMLVideoElement;private enabled=false;private song='';private pending=false;private wanted=false;private blocked=false;private lastSync=0;private elapsed=0;private playEpoch=0;
+ constructor(private host:HTMLElement,private status:(message:string)=>void){
+  this.video=document.createElement('video');this.video.playsInline=true;this.video.preload='none';
+  this.video.setAttribute('aria-label','KTV 歌曲 MV');this.video.tabIndex=0;
+  this.video.addEventListener('loadedmetadata',()=>{if(this.enabled)this.video.currentTime=this.elapsed/1000;});
+  this.video.addEventListener('error',()=>{this.blocked=true;this.status('MV 加载失败，请关闭后重试；仍可跟拍唱歌');});
+  const retry=()=>{this.blocked=false;this.play();document.querySelector<HTMLElement>('.world')?.focus();};
+  this.video.addEventListener('click',retry);
+  this.video.addEventListener('keydown',event=>{if(event.code==='Enter'){event.preventDefault();retry();}});
+  host.append(this.video);
  }
- private tone(time:number,frequency:number,duration:number,volume:number,type:OscillatorType){
-  const c=this.context!,voice=c.createOscillator(),gain=c.createGain();voice.type=type;voice.frequency.value=frequency;
-  gain.gain.setValueAtTime(.0001,time);gain.gain.exponentialRampToValueAtTime(volume,time+.012);gain.gain.exponentialRampToValueAtTime(.0001,time+duration);
-  voice.connect(gain).connect(c.destination);this.voices.add(voice);voice.start(time);voice.stop(time+duration);
-  voice.onended=()=>{this.voices.delete(voice);voice.disconnect();gain.disconnect();};
+ async enable(){this.enabled=true;this.blocked=false;this.host.hidden=false;}
+ stop(){this.playEpoch++;this.pending=false;this.enabled=false;this.wanted=false;this.video.pause();this.host.hidden=true;}
+ dispose(){this.stop();this.video.removeAttribute('src');this.video.load();this.host.replaceChildren();}
+ private play(){
+  if(this.pending||this.blocked||!this.enabled||!this.wanted)return;this.pending=true;const request=++this.playEpoch;
+  void this.video.play().catch((error:DOMException)=>{if(request===this.playEpoch&&this.enabled&&this.wanted&&error.name!=='AbortError'){this.blocked=true;this.status('点击 MV 画面播放，或关闭后重新开启 MV');}}).finally(()=>{if(request!==this.playEpoch)return;this.pending=false;if(!this.enabled||!this.wanted)this.video.pause();});
+ }
+ update(song:KtvSong|null,elapsed:number,playing=true){
+  if(!this.enabled)return;this.elapsed=elapsed;const wanted=!!song&&playing;if(this.wanted&&!wanted){this.playEpoch++;this.pending=false;}this.wanted=wanted;
+  if(!song){this.video.pause();return;}
+  if(this.song!==song.id){this.playEpoch++;this.pending=false;this.song=song.id;this.video.src=videos[song.id];this.video.load();this.blocked=false;this.lastSync=0;}
+  const now=performance.now();
+  if(this.video.readyState>=1&&now-this.lastSync>500){this.lastSync=now;if(Math.abs(this.video.currentTime-elapsed/1000)>.5)this.video.currentTime=elapsed/1000;}
+  if(playing){if(this.video.paused)this.play();}else this.video.pause();
  }
 }

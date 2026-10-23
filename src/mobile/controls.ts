@@ -10,7 +10,7 @@ const RADIUS = 56;
 function send(code: string, down: boolean) {
   const [key, keyCode] = KEY[code];
   const world = document.querySelector<HTMLElement>('.world');
-  if (world && document.activeElement !== world && !document.querySelector('dialog[open]')) world.focus({ preventScroll: true });
+  if (down && world && document.activeElement !== world && !document.querySelector('dialog[open]')) world.focus({ preventScroll: true });
   const event = new KeyboardEvent(down ? 'keydown' : 'keyup', { key, code, bubbles: true, cancelable: true });
   Object.defineProperty(event, 'keyCode', { get: () => keyCode });
   Object.defineProperty(event, 'which', { get: () => keyCode });
@@ -44,7 +44,8 @@ export function mountTouchControls() {
   root.id = 'touch-controls';
   root.innerHTML = `<div id="stick-zone" aria-label="移动摇杆"><div id="stick-base"><div id="stick-knob"></div></div></div>
     <div id="touch-actions"><button id="touch-secondary" type="button" hidden></button><button id="touch-primary" type="button"><span>互动</span></button></div>`;
-  document.body.append(root);
+  // Share the world's layer ordering so the floating stick cannot cover its menus.
+  (document.querySelector('.world') ?? document.body).append(root);
   const hint=document.createElement('aside');hint.id='orientation-hint';hint.innerHTML='<span>横屏可以看得更清楚</span><button type="button" aria-label="关闭横屏提示">知道了</button>';
   let hintDismissed=false;try{hintDismissed=sessionStorage.getItem('hutong:landscape-hint')==='dismissed';}catch{}
   hint.hidden=hintDismissed;hint.querySelector('button')!.onclick=()=>{hint.hidden=true;try{sessionStorage.setItem('hutong:landscape-hint','dismissed');}catch{}};document.body.append(hint);
@@ -77,7 +78,7 @@ export function mountTouchControls() {
   let last = '';
   const refresh = () => {
     const text = document.querySelector('#guide-action')?.textContent ?? '';
-    const modal = !!document.querySelector('dialog[open]');
+    const modal = !!document.querySelector('dialog[open],#chat-panel:not([hidden]),#people-panel:not([hidden])');
     root.classList.toggle('hidden', modal);
     if (modal && pointer !== null) release();
     if (text !== last) {

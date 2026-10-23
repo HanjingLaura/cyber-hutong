@@ -1,3 +1,4 @@
+import {noodleTableReachable} from '../shared/noodle.mjs';
 import {randomInt} from 'node:crypto';
 import {fail} from './store.mjs';
 import {changeKtvPlayer,emptyKtvPlayer,ktvLights,ktvTargets} from '../shared/ktv.mjs';
@@ -37,7 +38,7 @@ export function createWorld(store,life){
  const progress=account=>{const version=store.byId(account)?.progress_revision,cached=progressCache.get(account);if(!cached||cached.version!==version)progressCache.set(account,{version,value:db.prepare('SELECT kind,key,data FROM achievements WHERE account=? ORDER BY rowid').all(account).map(r=>({...r,data:JSON.parse(r.data)}))});return progressCache.get(account).value;};
  const write=(account,kind,key,data)=>{const value=JSON.stringify(data);if(db.prepare('SELECT data FROM achievements WHERE account=? AND kind=? AND key=?').get(account,kind,key)?.data===value)return;db.prepare('INSERT INTO achievements VALUES(?,?,?,?) ON CONFLICT(account,kind,key) DO UPDATE SET data=excluded.data').run(account,kind,key,value);db.prepare('UPDATE accounts SET progress_revision=progress_revision+1 WHERE id=?').run(account);progressCache.delete(account);};
  const snapshot=scene=>Object.keys(objects).filter(id=>id.startsWith(scene+':')).map(load);
- const checkNear=(p,id,action)=>{const spec=objects[id]||supplies[id];if(!spec||!id.startsWith(p.scene+':'))fail(400,'物件不在当前房间');let points=[spec.at],radius=65;if(id.startsWith('pop:')){if(action!=='gacha'){if(Math.hypot(Math.max(240-p.x,0,p.x-400),Math.max(171-p.y,0,p.y-283))>46)fail(409,'请走到物件附近');return;}points=[[438,162]];radius=45;}if(id==='subway:doors'){points=[[113.5,242],[320,242],[525.5,242]];radius=42;}if(!points.some(([x,y])=>Math.hypot(p.x-x,p.y-y)<=radius))fail(409,'请走到物件附近');};
+ const checkNear=(p,id,action)=>{const spec=objects[id]||supplies[id];if(!spec||!id.startsWith(p.scene+':'))fail(400,'物件不在当前房间');if(/^noodle:table-[01]$/.test(id)){if(!noodleTableReachable(Number(id.at(-1)),p.x,p.y))fail(409,'请走到餐桌附近');return;}let points=[spec.at],radius=65;if(id.startsWith('pop:')){if(action!=='gacha'){if(Math.hypot(Math.max(240-p.x,0,p.x-400),Math.max(171-p.y,0,p.y-283))>46)fail(409,'请走到物件附近');return;}points=[[438,162]];radius=45;}if(id==='subway:doors'){points=[[113.5,242],[320,242],[525.5,242]];radius=42;}if(!points.some(([x,y])=>Math.hypot(p.x-x,p.y-y)<=radius))fail(409,'请走到物件附近');};
  function interact(user,p,input,players,options={}){
   if(typeof input.requestId!=='string'||input.requestId.length>120)fail(400,'操作编号无效');
   const replay=db.prepare('SELECT result FROM operations WHERE account=? AND id=?').get(user.id,input.requestId);if(replay)return JSON.parse(replay.result);
@@ -46,7 +47,7 @@ export function createWorld(store,life){
   let ownedTx=true;try{if(typeof db.isTransaction==='boolean'?db.isTransaction:false)ownedTx=false;else db.exec('BEGIN IMMEDIATE');}catch(e){if(String(e?.message||e).includes('within a transaction'))ownedTx=false;else throw e;}
   try{
    const account=store.byId(user.id);if(account.revision!==input.revision)fail(409,'手中物品已改变，请重试');
-   let hand=account.hand,seasoning=JSON.parse(account.seasoning||'[]');const spec=supplies[input.object];let o=spec?null:load(input.object);const slot=input.slot;
+   let hand=account.hand,seasoning=JSON.parse(account.seasoning||'[]');const spec=supplies[input.object];let o=spec?null:load(input.object);const slot=input.slot;if(o&&input.expectedObjectVersion!==undefined&&(!Number.isInteger(input.expectedObjectVersion)||o.version!==input.expectedObjectVersion))fail(409,'桌上物品已改变，请重新选择');
    if(input.action==='supply'){
     if(!spec||!spec.items.includes(input.item))fail(400,'不能领取此物品');
     if(spec.requires?hand!==spec.requires:hand!==null)fail(409,spec.requires?'先拿碗筷':'手中已有物品');hand=input.item;seasoning=[];
